@@ -8,7 +8,6 @@ export const translations = {
     nav_compliance: "Compliance",
     nav_blog: "Insights",
     nav_contact: "Contact",
-    nav_portal: "Client Portal",
     nav_about: "About Us",
     nav_saved: "Saved Items",
 
@@ -119,7 +118,6 @@ export const translations = {
     nav_compliance: "अनुपालन",
     nav_blog: "अंतर्दृष्टि",
     nav_contact: "संपर्क",
-    nav_portal: "क्लाइंट पोर्टल",
     nav_about: "हमारे बारे में",
     nav_saved: "सहेजे गए",
 

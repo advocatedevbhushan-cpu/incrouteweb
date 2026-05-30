@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Shield, Building2, Scale, Heart, FileText, Phone, Menu, X, Sun, Moon, BookOpen, UserCheck, Globe, Info, Database } from "lucide-react";
+import { Shield, Building2, Scale, FileText, Phone, Menu, X, Sun, Moon, BookOpen, Globe, Info, Database } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
 import type { Lang } from "../lib/i18n";
+import { motion } from "motion/react";
 
 interface NavbarProps {
   activeTab: string;
@@ -63,33 +64,48 @@ export default function Navbar({
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
-            <button onClick={() => setActiveTab("services")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("services")}`}>
-              <div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />{t("nav_services") as string}</div>
-            </button>
-
-            <button onClick={() => setActiveTab("compliance")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("compliance")}`}>
-              <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />{t("nav_compliance") as string}</div>
-            </button>
-
-            <button onClick={() => setActiveTab("blog")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("blog")}`}>
-              <div className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" />{t("nav_blog") as string}</div>
-            </button>
-
-            <button onClick={() => setActiveTab("catalog")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("catalog")}`}>
-              <div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Catalog</div>
-            </button>
-
-            <button onClick={() => setActiveTab("about")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("about")}`}>
-              <div className="flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />{t("nav_about") as string}</div>
-            </button>
-
-            <button onClick={() => setActiveTab("contact")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("contact")}`}>
-              <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />{t("nav_contact") as string}</div>
-            </button>
-
-            <button onClick={() => setActiveTab("portal")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("portal")}`}>
-              <div className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" />{t("nav_portal") as string}</div>
-            </button>
+            {[
+              { tab: "services", icon: Building2, label: t("nav_services") as string },
+              { tab: "compliance", icon: FileText, label: t("nav_compliance") as string },
+              { tab: "blog", icon: BookOpen, label: t("nav_blog") as string },
+              { tab: "catalog", icon: Database, label: "Catalog" },
+              { tab: "about", icon: Info, label: t("nav_about") as string },
+              { tab: "contact", icon: Phone, label: t("nav_contact") as string },
+            ].map((item) => {
+              const isActive = activeTab === item.tab;
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.tab}
+                  onClick={() => setActiveTab(item.tab)}
+                  className={`relative px-3.5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu cursor-pointer select-none outline-none ${
+                    isActive
+                      ? isLightMode
+                        ? "text-[#111827]"
+                        : "text-brand-gold"
+                      : "text-brand-text-muted hover:text-brand-gold"
+                  }`}
+                >
+                  {/* Gliding Active Pill */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="navActivePill"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      className={`absolute inset-0 rounded-full z-0 ${
+                        isLightMode
+                          ? "bg-[#efece6] border border-[#dcd9d0] shadow-sm"
+                          : "bg-brand-gold/15 border border-brand-gold/25"
+                      }`}
+                    />
+                  )}
+                  {/* Label Content */}
+                  <span className="relative z-10 flex items-center gap-1.5 pointer-events-none">
+                    <Icon className="w-3.5 h-3.5" />
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
 
             {/* Language Toggle */}
             <button
@@ -149,7 +165,7 @@ export default function Navbar({
       </div>
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-brand-bg border-b border-brand-border px-4 py-3 space-y-2">
+        <div className="md:hidden bg-brand-bg border-b border-brand-border px-4 py-3 space-y-2 relative overflow-hidden">
           {[
             { tab: "services", icon: Building2, label: t("nav_services") as string },
             { tab: "compliance", icon: FileText, label: t("nav_compliance") as string },
@@ -157,17 +173,30 @@ export default function Navbar({
             { tab: "catalog", icon: Database, label: "Catalog" },
             { tab: "about", icon: Info, label: t("nav_about") as string },
             { tab: "contact", icon: Phone, label: t("nav_contact") as string },
-            { tab: "portal", icon: Heart, label: t("nav_portal") as string },
-          ].map(({ tab, icon: Icon, label }) => (
-            <button
-              key={tab}
-              onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
-              className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-            >
-              <Icon className="w-5 h-5 text-brand-text-muted" />
-              {label}
-            </button>
-          ))}
+          ].map(({ tab, icon: Icon, label }) => {
+            const isMobileActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+                className={`relative w-full text-left px-3 py-2.5 rounded-md text-sm font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 outline-none select-none ${
+                  isMobileActive ? "text-brand-gold font-bold" : "text-brand-text hover:text-brand-gold"
+                }`}
+              >
+                {isMobileActive && (
+                  <motion.div
+                    layoutId="mobileNavActivePill"
+                    className="absolute inset-0 rounded-md z-0 bg-brand-gold/10 border border-brand-gold/15"
+                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-3 pointer-events-none">
+                  <Icon className="w-5 h-5 text-brand-text-muted" />
+                  {label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </nav>

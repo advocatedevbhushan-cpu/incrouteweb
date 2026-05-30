@@ -577,6 +577,9 @@ export default function RegistrationServices({
   useEffect(() => {
     if (prefilledEntityType) {
       setSelectedEntityId(prefilledEntityType);
+      setCalcEntity(prefilledEntityType);
+      setViewMode("detail");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [prefilledEntityType]);
 

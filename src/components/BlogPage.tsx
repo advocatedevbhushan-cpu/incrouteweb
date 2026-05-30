@@ -1,25 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { BlogPost } from "../types";
 import { 
-  BookOpen, 
-  Lock, 
-  Unlock, 
-  Plus, 
-  Trash2, 
-  ArrowLeft, 
-  Calendar, 
-  User, 
-  Image as ImageIcon, 
-  X, 
-  Sparkles, 
-  Check, 
-  Eye, 
-  AlertCircle,
-  Loader2,
-  Search,
-  Tag,
+  BookOpen, Lock, Unlock, Plus, Trash2, ArrowLeft, Calendar, User,
+  Image as ImageIcon, X, Sparkles, Eye, AlertCircle, Loader2,
+  Search, Tag, Bold, Italic, Heading1, Heading2, Heading3,
+  List, Minus, Quote, Link, Code, AlignLeft, RotateCcw, RotateCw,
+  Monitor, Edit3, CheckSquare,
 } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
+import { motion, AnimatePresence } from "motion/react";
 
 // Predefined tag taxonomy for filtering
 const BLOG_TAGS = ["GST", "ROC", "LLP", "Pvt Ltd", "Startup India", "Compliance", "TDS", "OPC", "Trademark"] as const;
@@ -30,6 +19,16 @@ function inferTags(post: BlogPost): BlogTag[] {
   const text = `${post.title} ${post.subtitle} ${post.content}`.toLowerCase();
   return BLOG_TAGS.filter((tag) => text.includes(tag.toLowerCase()));
 }
+
+// Unsplash image presets
+const IMAGE_PRESETS = [
+  { name: "Legal Authority", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800" },
+  { name: "Business Consultation", url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800" },
+  { name: "Compliance Ledger", url: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800" },
+  { name: "Corporate HQ", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
+  { name: "Analytical Audit", url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" },
+  { name: "Startup Office", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800" },
+];
 
 export default function BlogPage() {
   const { t } = useLang();
@@ -60,15 +59,19 @@ export default function BlogPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
-
-  // Unsplash Premium Presets
-  const imagePresets = [
-    { name: "Legal Authority", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800" },
-    { name: "Business Consultation", url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800" },
-    { name: "Compliance Ledger", url: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800" },
-    { name: "Modern Corporate HQ", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
-    { name: "Analytical Audit", url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" }
-  ];
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
+  const [history, setHistory] = useState<string[]>([""]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Inline Image Insertion states
+  const [showInlineImageModal, setShowInlineImageModal] = useState(false);
+  const [inlineImageUrl, setInlineImageUrl] = useState("");
+  const [inlineImageAlt, setInlineImageAlt] = useState("");
+  const [inlineImageType, setInlineImageType] = useState<"url" | "upload">("url");
+  const [inlineImagePreview, setInlineImagePreview] = useState<string | null>(null);
+  const [customTagInput, setCustomTagInput] = useState("");
 
   // Load Posts and Check Auth Session on mount
   useEffect(() => {
@@ -87,13 +90,89 @@ export default function BlogPage() {
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesTag =
-        !activeTag || inferTags(post).includes(activeTag);
-
+      const matchesTag = !activeTag || inferTags(post).includes(activeTag);
       return matchesSearch && matchesTag;
     });
   }, [posts, searchQuery, activeTag]);
+
+  // Push to undo history whenever content changes
+  const pushHistory = useCallback((val: string) => {
+    setHistory(prev => {
+      const trimmed = prev.slice(0, historyIndex + 1);
+      return [...trimmed, val].slice(-50);
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, 49));
+  }, [historyIndex]);
+
+  const handleContentChange = (val: string) => {
+    setNewContent(val);
+    pushHistory(val);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIdx = historyIndex - 1;
+      setHistoryIndex(newIdx);
+      setNewContent(history[newIdx]);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIdx = historyIndex + 1;
+      setHistoryIndex(newIdx);
+      setNewContent(history[newIdx]);
+    }
+  };
+
+  // Toolbar action: wrap selection or insert at cursor
+  const applyFormat = (prefix: string, suffix = "", placeholder = "text") => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = newContent.slice(start, end) || placeholder;
+    const before = newContent.slice(0, start);
+    const after = newContent.slice(end);
+    const inserted = `${prefix}${selected}${suffix}`;
+    const next = before + inserted + after;
+    handleContentChange(next);
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    }, 0);
+  };
+
+  const insertAtCursor = (text: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const before = newContent.slice(0, start);
+    const after = newContent.slice(start);
+    const next = before + text + after;
+    handleContentChange(next);
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + text.length, start + text.length);
+    }, 0);
+  };
+
+  const toolbarActions = [
+    { icon: Bold,       title: "Bold",        action: () => applyFormat("**", "**", "bold text") },
+    { icon: Italic,     title: "Italic",      action: () => applyFormat("*", "*", "italic text") },
+    { icon: Code,       title: "Inline Code", action: () => applyFormat("`", "`", "code") },
+    { icon: Heading1,   title: "Heading 1",   action: () => insertAtCursor("\n# ") },
+    { icon: Heading2,   title: "Heading 2",   action: () => insertAtCursor("\n## ") },
+    { icon: Heading3,   title: "Heading 3",   action: () => insertAtCursor("\n### ") },
+    { icon: List,       title: "Bullet List", action: () => insertAtCursor("\n* ") },
+    { icon: CheckSquare,title: "Checklist",   action: () => insertAtCursor("\n- [ ] ") },
+    { icon: Quote,      title: "Blockquote",  action: () => insertAtCursor("\n> ") },
+    { icon: Minus,      title: "Divider",     action: () => insertAtCursor("\n\n---\n\n") },
+    { icon: Link,       title: "Link",        action: () => applyFormat("[", "](https://)", "link text") },
+    { icon: ImageIcon,  title: "Insert Image Inline", action: () => setShowInlineImageModal(true) },
+    { icon: RotateCcw,  title: "Undo",        action: undo, disabled: historyIndex === 0 },
+    { icon: RotateCw,   title: "Redo",        action: redo, disabled: historyIndex === history.length - 1 }
+  ];
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -179,6 +258,24 @@ export default function BlogPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleInlineImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image exceeds maximum 2MB size limit. Please choose a smaller visual file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setInlineImageUrl(base64String);
+      setInlineImagePreview(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Handle Publish Post
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,8 +292,9 @@ export default function BlogPage() {
       title: newTitle.trim(),
       subtitle: newSubtitle.trim(),
       content: newContent,
-      image: newImage || imagePresets[0].url,
+      image: newImage || IMAGE_PRESETS[0].url,
       author: newAuthor.trim(),
+      tags: selectedTags,
       token
     };
 
@@ -208,15 +306,18 @@ export default function BlogPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        // Unshift to list
         setPosts((prev) => [data.post, ...prev]);
         setShowCreateModal(false);
-        // Reset inputs
+        // Reset all fields
         setNewTitle("");
         setNewSubtitle("");
         setNewContent("");
         setNewImage("");
         setImagePreview(null);
+        setSelectedTags([]);
+        setEditorMode("write");
+        setHistory([""]);
+        setHistoryIndex(0);
       } else {
         setPublishError(data.error || "Error compiling editorial document.");
       }
@@ -253,14 +354,105 @@ export default function BlogPage() {
     }
   };
 
-  // Custom Editorial Light Markdown Parser
-  const parseBoldText = (text: string) => {
-    const parts = text.split(/\*\*(.*?)\*\*/g);
-    return parts.map((part, i) => {
-      if (i % 2 === 1) {
-        return <strong key={i} className="text-brand-text font-bold">{part}</strong>;
+  // Custom Editorial Upgraded Markdown Parser
+  const parseInlineMarkdown = (text: string): React.ReactNode[] => {
+    let tokens: Array<{ type: string; content: string; extra?: string } | string> = [text];
+    
+    const rules = [
+      {
+        name: "image",
+        regex: /!\[(.*?)\]\((.*?)\)/g,
+        makeToken: (match: string[]) => ({ type: "image", content: match[1], extra: match[2] })
+      },
+      {
+        name: "link",
+        regex: /\[(.*?)\]\((.*?)\)/g,
+        makeToken: (match: string[]) => ({ type: "link", content: match[1], extra: match[2] })
+      },
+      {
+        name: "bold",
+        regex: /\*\*(.*?)\*\*/g,
+        makeToken: (match: string[]) => ({ type: "bold", content: match[1] })
+      },
+      {
+        name: "italic",
+        regex: /\*(.*?)\*/g,
+        makeToken: (match: string[]) => ({ type: "italic", content: match[1] })
+      },
+      {
+        name: "code",
+        regex: /`(.*?)`/g,
+        makeToken: (match: string[]) => ({ type: "code", content: match[1] })
       }
-      return part;
+    ];
+    
+    for (const rule of rules) {
+      const nextTokens: typeof tokens = [];
+      for (const token of tokens) {
+        if (typeof token !== "string") {
+          nextTokens.push(token);
+          continue;
+        }
+        
+        let lastIndex = 0;
+        rule.regex.lastIndex = 0;
+        let match;
+        
+        while ((match = rule.regex.exec(token)) !== null) {
+          const matchIndex = match.index;
+          if (matchIndex > lastIndex) {
+            nextTokens.push(token.substring(lastIndex, matchIndex));
+          }
+          nextTokens.push(rule.makeToken(match));
+          lastIndex = rule.regex.lastIndex;
+        }
+        
+        if (lastIndex < token.length) {
+          nextTokens.push(token.substring(lastIndex));
+        }
+      }
+      tokens = nextTokens;
+    }
+    
+    return tokens.map((token, i) => {
+      if (typeof token === "string") {
+        return token;
+      }
+      switch (token.type) {
+        case "image":
+          return (
+            <span key={i} className="block my-4 text-center">
+              <img 
+                src={token.extra} 
+                alt={token.content} 
+                className="max-h-[350px] max-w-full rounded-lg border border-brand-border/60 mx-auto shadow-md object-contain" 
+              />
+              {token.content && (
+                <span className="block text-[11px] text-brand-text-muted italic mt-1.5">{token.content}</span>
+              )}
+            </span>
+          );
+        case "link":
+          return (
+            <a 
+              key={i} 
+              href={token.extra} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-brand-gold hover:underline font-semibold inline-flex items-center gap-0.5"
+            >
+              {token.content}
+            </a>
+          );
+        case "bold":
+          return <strong key={i} className="text-brand-text font-bold">{token.content}</strong>;
+        case "italic":
+          return <em key={i} className="italic text-brand-text/90">{token.content}</em>;
+        case "code":
+          return <code key={i} className="px-1.5 py-0.5 bg-brand-bg-darker border border-brand-border rounded font-mono text-[11px] text-brand-gold">{token.content}</code>;
+        default:
+          return token.content;
+      }
     });
   };
 
@@ -272,22 +464,29 @@ export default function BlogPage() {
       if (trimmed.startsWith("### ")) {
         return (
           <h3 key={index} className="text-base sm:text-lg font-semibold text-brand-gold font-serif mt-6 mb-2.5 tracking-wide">
-            {trimmed.replace("### ", "")}
+            {parseInlineMarkdown(trimmed.replace("### ", ""))}
           </h3>
         );
       }
       if (trimmed.startsWith("## ")) {
         return (
           <h2 key={index} className="text-lg sm:text-xl font-bold text-brand-gold font-serif mt-8 mb-3 tracking-wide border-l-2 border-brand-gold/45 pl-3">
-            {trimmed.replace("## ", "")}
+            {parseInlineMarkdown(trimmed.replace("## ", ""))}
           </h2>
         );
       }
       if (trimmed.startsWith("# ")) {
         return (
           <h1 key={index} className="text-xl sm:text-2xl font-light text-brand-gold font-serif mt-10 mb-4 tracking-wide">
-            {trimmed.replace("# ", "")}
+            {parseInlineMarkdown(trimmed.replace("# ", ""))}
           </h1>
+        );
+      }
+      if (trimmed.startsWith("> ")) {
+        return (
+          <blockquote key={index} className="border-l-4 border-brand-gold bg-brand-gold/5 pl-4 py-2 pr-2 my-4 rounded-r italic text-brand-text/90 font-serif text-sm">
+            {parseInlineMarkdown(trimmed.replace("> ", ""))}
+          </blockquote>
         );
       }
       if (trimmed === "---") {
@@ -296,14 +495,14 @@ export default function BlogPage() {
       if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
         return (
           <li key={index} className="text-xs sm:text-sm text-brand-text-muted leading-relaxed font-sans list-disc list-inside ml-3 my-1.5">
-            {parseBoldText(trimmed.substring(2))}
+            {parseInlineMarkdown(trimmed.substring(2))}
           </li>
         );
       }
 
       return (
         <p key={index} className="text-xs sm:text-sm text-brand-text-muted leading-relaxed font-sans mb-4">
-          {parseBoldText(trimmed)}
+          {parseInlineMarkdown(trimmed)}
         </p>
       );
     });
@@ -513,14 +712,21 @@ export default function BlogPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPosts.map((post) => {
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPosts.map((post, idx) => {
                 const postTags = inferTags(post);
                 return (
-                <div 
+                <motion.div 
                   key={post.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+                  whileHover={{ y: -6, scale: 1.015, boxShadow: "0 20px 40px -15px rgba(158,137,106,0.15)" }}
+                  whileTap={{ scale: 0.985 }}
                   onClick={() => handleSelectPost(post)}
-                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden hover:border-brand-gold/30 transition-all duration-150 fast-transition group cursor-pointer shadow-xl flex flex-col justify-between premium-card"
+                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden group cursor-pointer flex flex-col justify-between premium-card"
                 >
                   <div className="space-y-4">
                     {/* Hover Scaling Image Container */}
@@ -581,80 +787,105 @@ export default function BlogPage() {
                       {t("blog_read") as string} <BookOpen className="w-3 h-3" />
                     </span>
                   </div>
-                </div>
+                </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           )}
         </div>
       )}
 
       {/* --- ADMINISTRATIVE LOGIN MODAL --- */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200 premium-card">
-            <button 
-              onClick={() => { setShowLoginModal(false); setLoginError(null); }}
-              className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.92, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.92, y: 15, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 26 }}
+              className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative premium-card"
             >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="text-center space-y-2">
-              <div className="p-3 bg-brand-gold/10 text-brand-gold border border-brand-gold/25 rounded-full inline-block">
-                <Lock className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-light text-brand-text font-serif">Administrative Portal Login</h3>
-              <p className="text-xs text-brand-text-muted font-sans">
-                Authenticate using secure keys to access publishing, draft modifications, and deletion gates.
-              </p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[9px] uppercase font-mono tracking-widest text-brand-gold font-bold">Admin Credentials Password</label>
-                <input 
-                  type="password" 
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="Enter administrative password..." 
-                  className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-mono tracking-widest"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              {loginError && (
-                <div className="p-3 bg-red-950/20 border border-red-500/10 text-red-400 rounded-lg text-xs leading-normal flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{loginError}</span>
-                </div>
-              )}
-
               <button 
-                type="submit" 
-                disabled={loginLoading}
-                className="w-full bg-brand-gold disabled:bg-brand-gold/45 text-black font-mono font-bold uppercase tracking-widest text-[10px] py-3 rounded-lg transition-colors cursor-pointer shadow-lg shadow-brand-gold/10"
+                onClick={() => { setShowLoginModal(false); setLoginError(null); }}
+                className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
               >
-                {loginLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                ) : (
-                  "Unlock Registrar Console"
-                )}
+                <X className="w-5 h-5" />
               </button>
-            </form>
 
-            <div className="text-center text-[9px] text-brand-text-muted font-mono pt-2 border-t border-brand-border/60">
-              Session is encrypted with local tab security keys
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="text-center space-y-2">
+                <div className="p-3 bg-brand-gold/10 text-brand-gold border border-brand-gold/25 rounded-full inline-block">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-light text-brand-text font-serif">Administrative Portal Login</h3>
+                <p className="text-xs text-brand-text-muted font-sans">
+                  Authenticate using secure keys to access publishing, draft modifications, and deletion gates.
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase font-mono tracking-widest text-brand-gold font-bold">Admin Credentials Password</label>
+                  <input 
+                    type="password" 
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Enter administrative password..." 
+                    className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-mono tracking-widest"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                {loginError && (
+                  <div className="p-3 bg-red-950/20 border border-red-500/10 text-red-400 rounded-lg text-xs leading-normal flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{loginError}</span>
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={loginLoading}
+                  className="w-full bg-brand-gold disabled:bg-brand-gold/45 text-black font-mono font-bold uppercase tracking-widest text-[10px] py-3 rounded-lg transition-colors cursor-pointer shadow-lg shadow-brand-gold/10"
+                >
+                  {loginLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  ) : (
+                    "Unlock Registrar Console"
+                  )}
+                </button>
+              </form>
+
+              <div className="text-center text-[9px] text-brand-text-muted font-mono pt-2 border-t border-brand-border/60">
+                Session is encrypted with local tab security keys
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* --- CREATE NEW BLOG MODAL --- */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-200 premium-card">
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
+          >
+            <motion.div 
+              initial={{ scale: 0.93, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.93, y: 15, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 26 }}
+              className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-8 premium-card"
+            >
             <button 
               onClick={() => { setShowCreateModal(false); setPublishError(null); }}
               className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
@@ -753,7 +984,7 @@ export default function BlogPage() {
                   <div className="space-y-1.5">
                     <label className="text-[8px] uppercase font-mono tracking-wider text-brand-text-muted font-bold block">Or Quick Premium Preset Visuals</label>
                     <div className="flex flex-wrap gap-2">
-                      {imagePresets.map((preset, idx) => (
+                      {IMAGE_PRESETS.map((preset, idx) => (
                         <button
                           key={idx}
                           type="button"
@@ -806,22 +1037,140 @@ export default function BlogPage() {
                 </div>
               )}
 
-              {/* Editorial Body Text Area */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
+              {/* Editorial Body Tab Selector */}
+              <div className="space-y-1.5 pt-2">
+                <div className="flex justify-between items-center border-b border-brand-border/60 pb-0.5">
                   <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold">5. Editorial Body Text (Markdown Supported) *</label>
-                  <span className="text-[8px] text-brand-text-muted font-mono tracking-wider">
-                    Use **bold**, # Header1, ## Header2, ### Header3, or --- for separators
-                  </span>
+                  <div className="flex">
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode("write")}
+                      className={`px-3 py-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                        editorMode === "write"
+                          ? "border-brand-gold text-brand-gold font-bold"
+                          : "border-transparent text-brand-text-muted hover:text-brand-text"
+                      }`}
+                    >
+                      Write
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode("preview")}
+                      className={`px-3 py-1 text-[10px] font-mono uppercase tracking-wider font-bold border-b-2 transition-all cursor-pointer ${
+                        editorMode === "preview"
+                          ? "border-brand-gold text-brand-gold font-bold"
+                          : "border-transparent text-brand-text-muted hover:text-brand-text"
+                      }`}
+                    >
+                      Live Preview
+                    </button>
+                  </div>
                 </div>
-                <textarea 
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  placeholder="### Section Heading&#10;Write your deep professional statutory details here...&#10;&#10;Use bullets with:&#10;* Bullet item one&#10;* Bullet item two" 
-                  rows={8}
-                  className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-3 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-mono leading-relaxed resize-y"
-                  required
-                />
+
+                {editorMode === "write" ? (
+                  <div className="space-y-0">
+                    {/* Formatting Toolbar */}
+                    <div className="flex flex-wrap items-center gap-1 bg-brand-bg-darker border border-brand-border p-1.5 rounded-t-lg">
+                      {toolbarActions.map((act, idx) => {
+                        const Icon = act.icon;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={act.action}
+                            disabled={"disabled" in act ? act.disabled : false}
+                            title={act.title}
+                            className="p-2 text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg rounded transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Textarea */}
+                    <textarea 
+                      ref={textareaRef}
+                      value={newContent}
+                      onChange={(e) => handleContentChange(e.target.value)}
+                      placeholder="### Section Heading&#10;Write your deep professional statutory details here...&#10;&#10;Use bullets with:&#10;* Bullet item one&#10;* Bullet item two" 
+                      rows={8}
+                      className="w-full bg-brand-input-bg border border-brand-border border-t-0 rounded-b-lg p-3.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-mono leading-relaxed resize-y min-h-[160px]"
+                      required
+                    />
+                  </div>
+                ) : (
+                  /* Real-Time Live Preview Pane */
+                  <div className="w-full bg-brand-input-bg border border-brand-border rounded-lg p-5 min-h-[160px] overflow-y-auto max-h-[300px] prose prose-invert max-w-none">
+                    {newTitle && <h3 className="text-base sm:text-lg font-light text-brand-gold font-serif mt-2 mb-1">{newTitle}</h3>}
+                    {newSubtitle && <p className="text-[11px] text-brand-text-muted font-sans italic mb-4">{newSubtitle}</p>}
+                    <div className="border-t border-brand-border/40 my-3" />
+                    {newContent ? renderContent(newContent) : <p className="text-xs text-brand-text-muted italic">Type some content in the Write tab to see it previewed here...</p>}
+                  </div>
+                )}
+              </div>
+
+              {/* Interactive Tags Pills Selector */}
+              <div className="space-y-1.5 pt-1">
+                <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold block">6. Select Taxonomy Tags *</label>
+                <div className="flex flex-wrap items-center gap-1.5 p-3 bg-brand-bg/50 border border-brand-border rounded-xl">
+                  {BLOG_TAGS.map((tag) => {
+                    const isSelected = selectedTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedTags(selectedTags.filter((t) => t !== tag));
+                          } else {
+                            setSelectedTags([...selectedTags, tag]);
+                          }
+                        }}
+                        className={`text-[8px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border cursor-pointer transition-all ${
+                          isSelected
+                            ? "bg-brand-gold text-black border-brand-gold font-bold shadow-md shadow-brand-gold/15"
+                            : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/45 hover:text-brand-text"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Custom dynamic tag input */}
+                  <div className="flex items-center gap-1 pl-2 border-l border-brand-border/60 ml-2">
+                    <input
+                      type="text"
+                      value={customTagInput}
+                      onChange={(e) => setCustomTagInput(e.target.value)}
+                      placeholder="Add Custom Tag..."
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const tag = customTagInput.trim();
+                          if (tag && !selectedTags.includes(tag)) {
+                            setSelectedTags([...selectedTags, tag]);
+                            setCustomTagInput("");
+                          }
+                        }
+                      }}
+                      className="bg-brand-input-bg border border-brand-border/60 rounded px-2 py-0.5 text-[9px] font-sans text-brand-text placeholder-brand-text-muted/40 outline-none focus:border-brand-gold w-[110px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tag = customTagInput.trim();
+                        if (tag && !selectedTags.includes(tag)) {
+                          setSelectedTags([...selectedTags, tag]);
+                          setCustomTagInput("");
+                        }
+                      }}
+                      className="text-[10px] text-brand-gold hover:text-brand-gold/80 font-bold px-1"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {publishError && (
@@ -854,9 +1203,173 @@ export default function BlogPage() {
               </div>
 
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+    </AnimatePresence>
+
+      {/* --- INLINE IMAGE INSERTION MODAL --- */}
+      <AnimatePresence>
+        {showInlineImageModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.92, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.92, y: 15, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 26 }}
+              className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative premium-card"
+            >
+            <button 
+              type="button"
+              onClick={() => { setShowInlineImageModal(false); setInlineImageUrl(""); setInlineImageAlt(""); setInlineImagePreview(null); }}
+              className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="p-3 bg-brand-gold/10 text-brand-gold border border-brand-gold/25 rounded-full inline-block">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-light text-brand-text font-serif">Insert Image Inline</h3>
+              <p className="text-xs text-brand-text-muted">
+                Add an image at the current cursor position inside your article body.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Caption/Alt text */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold">Image Caption (Alt Text)</label>
+                <input 
+                  type="text" 
+                  value={inlineImageAlt}
+                  onChange={(e) => setInlineImageAlt(e.target.value)}
+                  placeholder="e.g. GST Registration Workflow Diagram..." 
+                  className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40"
+                />
+              </div>
+
+              {/* Source Type Toggle */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold">Image Source Type</label>
+                <div className="flex bg-brand-bg rounded-lg border border-brand-border p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => { setInlineImageType("url"); setInlineImageUrl(""); setInlineImagePreview(null); }}
+                    className={`flex-1 text-[10px] font-mono py-1 rounded cursor-pointer ${inlineImageType === "url" ? "bg-brand-gold text-black font-bold" : "text-brand-text-muted hover:text-brand-text"}`}
+                  >
+                    URL / Presets
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setInlineImageType("upload"); setInlineImageUrl(""); setInlineImagePreview(null); }}
+                    className={`flex-1 text-[10px] font-mono py-1 rounded cursor-pointer ${inlineImageType === "upload" ? "bg-brand-gold text-black font-bold" : "text-brand-text-muted hover:text-brand-text"}`}
+                  >
+                    Upload Local
+                  </button>
+                </div>
+              </div>
+
+              {inlineImageType === "url" ? (
+                <div className="space-y-3 p-3 bg-brand-bg/60 border border-brand-border rounded-xl">
+                  <div className="space-y-1">
+                    <label className="text-[8px] uppercase font-mono tracking-wider text-brand-text-muted font-bold block">Image Link URL</label>
+                    <input 
+                      type="text" 
+                      value={inlineImageUrl}
+                      onChange={(e) => { setInlineImageUrl(e.target.value); setInlineImagePreview(e.target.value || null); }}
+                      placeholder="Paste external image URL..." 
+                      className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[8px] uppercase font-mono tracking-wider text-brand-text-muted font-bold block">Or Quick Presets</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {IMAGE_PRESETS.map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => { setInlineImageUrl(preset.url); setInlineImagePreview(preset.url); }}
+                          className={`text-[9px] px-2 py-0.5 rounded-full border cursor-pointer transition-colors ${
+                            inlineImageUrl === preset.url
+                              ? "bg-brand-gold/15 text-brand-gold border-brand-gold"
+                              : "bg-brand-bg-lighter border-brand-border hover:border-brand-gold/45 text-brand-text-muted"
+                          }`}
+                        >
+                          {preset.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 border border-dashed border-brand-border/80 hover:border-brand-gold/35 rounded-xl text-center space-y-2 relative transition-all duration-300">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleInlineImageFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <ImageIcon className="w-8 h-8 text-brand-text-muted/40 mx-auto" />
+                  <p className="text-xs text-brand-text font-bold">Select Local File</p>
+                  <p className="text-[9px] text-brand-text-muted">Max 2MB limit (PNG, JPG, WEBP)</p>
+                </div>
+              )}
+
+              {inlineImagePreview && (
+                <div className="p-3 bg-brand-bg rounded-xl border border-brand-border/65 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-10 rounded overflow-hidden border border-brand-border shrink-0">
+                      <img src={inlineImagePreview} className="w-full h-full object-cover" alt="Preview inline image" />
+                    </div>
+                    <span className="text-[8px] uppercase font-mono tracking-wider bg-brand-gold/15 text-brand-gold px-1.5 py-0.5 rounded font-bold">Preview Ready</span>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => { setInlineImageUrl(""); setInlineImagePreview(null); }}
+                    className="text-brand-text-muted hover:text-red-400 p-1.5 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 text-xs pt-2 border-t border-brand-border">
+              <button 
+                type="button"
+                onClick={() => { setShowInlineImageModal(false); setInlineImageUrl(""); setInlineImageAlt(""); setInlineImagePreview(null); }}
+                className="bg-transparent hover:bg-brand-bg-lighter border border-brand-border text-brand-text-muted px-3 py-2 rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                disabled={!inlineImageUrl}
+                onClick={() => {
+                  const tag = `\n![${inlineImageAlt || "image"}](${inlineImageUrl})\n`;
+                  insertAtCursor(tag);
+                  setShowInlineImageModal(false);
+                  setInlineImageUrl("");
+                  setInlineImageAlt("");
+                  setInlineImagePreview(null);
+                }}
+                className="bg-brand-gold disabled:bg-brand-gold/45 text-black font-mono font-bold uppercase tracking-widest text-[9px] px-4 py-2 rounded-lg cursor-pointer"
+              >
+                Insert Inline
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
 
     </div>
   );

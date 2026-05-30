@@ -20,64 +20,6 @@ const ai = new GoogleGenAI({
 });
 
 // Dynamic In-Memory Database for demonstration/tracking consistency
-let portalOrders = [
-  {
-    id: "ORD-4821",
-    companyName: "Acme Software Solutions Ltd",
-    firmType: "Private Limited Company",
-    status: "document_review", // draft, name_approval, document_review, roc_filing, approved
-    stepProgress: 60,
-    createdAt: "2026-05-18",
-    email: "dev.bhushan.g.m@gmail.com",
-    checklist: [
-      { id: "1", name: "Director PAN Card & Voter ID/Passport", required: true, status: "approved", uploadedFile: "pan_aadhaar_docs.pdf", size: "1.8 MB" },
-      { id: "2", name: "Utility Bill for Office (Electricity Bill)", required: true, status: "pending", uploadedFile: null, size: null },
-      { id: "3", name: "NOC from Commercial Property Owner", required: true, status: "pending", uploadedFile: null, size: null },
-      { id: "4", name: "Consent of Director to Act (Form DIR-2)", required: true, status: "approved", uploadedFile: "dir2_consent_signed.pdf", size: "850 KB" }
-    ],
-    complianceStatus: {
-      nextDue: "2026-09-30",
-      alertCount: 1,
-      items: [
-        { id: "c1", name: "First Board Meeting (Within 30 Days)", status: "pending", dueDate: "2026-06-18", description: "Convening of first meeting of Directors" },
-        { id: "c2", name: "Commencement of Business Certificate (Form 20A)", status: "pending", dueDate: "2026-11-18", description: "Verification filing within 180 days of incorporation" }
-      ]
-    },
-    history: [
-      { date: "2026-05-18", activity: "Order ORD-4821 created & compliance checklists assigned." },
-      { date: "2026-05-20", activity: "Form DIR-2 checked and marked as approved by consultancy." },
-      { date: "2026-05-22", activity: "Director PAN/ID identity materials received." }
-    ]
-  },
-  {
-    id: "ORD-5192",
-    companyName: "Vanguard Architects LLP",
-    firmType: "Limited Liability Partnership (LLP)",
-    status: "approved",
-    stepProgress: 100,
-    createdAt: "2026-04-10",
-    email: "dev.bhushan.g.m@gmail.com",
-    checklist: [
-      { id: "1", name: "Partner ID & Address Proofs", required: true, status: "approved", uploadedFile: "partner_kyc_vanguard.zip", size: "4.5 MB" },
-      { id: "2", name: "LLP Registered Office Rental Deed", required: true, status: "approved", uploadedFile: "rent_agreement_vanguard.pdf", size: "2.1 MB" },
-      { id: "3", name: "Standard LLP Partnership Agreement", required: true, status: "approved", uploadedFile: "llp_agreement_stamped.pdf", size: "3.4 MB" }
-    ],
-    complianceStatus: {
-      nextDue: "2026-05-30",
-      alertCount: 0,
-      items: [
-        { id: "c3", name: "LLP Agreement Filing (Form 3)", status: "approved", dueDate: "2026-05-10", description: "Filing signed agreement within 30 days" },
-        { id: "c4", name: "Annual LLP Statement (Form 8)", status: "pending", dueDate: "2026-10-30", description: "Statement of Accounts & Solvency" }
-      ]
-    },
-    history: [
-      { date: "2026-04-10", activity: "Partner registration successfully started." },
-      { date: "2026-04-15", activity: "Vanguard partnership deeds completed and uploaded to portal." },
-      { date: "2026-04-25", activity: "LLP Registrar approved incorporation certificate (LLPIN: AAA-7821)." },
-      { date: "2026-05-08", Agreement: "Agreements filed with ROC and verified." }
-    ]
-  }
-];
 
 // Active compliance calendar list for reference or audit tasks
 let complianceCalendar = [
@@ -95,172 +37,14 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-  // API Route - Get current orders tracking data
-  app.get("/api/portal/orders", (req, res) => {
-    const { email } = req.query;
-    if (email && typeof email === "string") {
-      const filtered = portalOrders.filter(
-        (o) => o.email.toLowerCase() === email.toLowerCase()
-      );
-      return res.json({ success: true, count: filtered.length, orders: filtered });
-    }
-    res.json({ success: true, count: portalOrders.length, orders: portalOrders });
-  });
 
-  // API Route - Create a new firm onboarding / registration service request
-  app.post("/api/portal/orders", (req, res) => {
-    const { companyName, firmType, email, partnersCount, stateOfRegistration } = req.body;
-
-    if (!companyName || !firmType) {
-      return res.status(400).json({ success: false, error: "Company name and firm type are required." });
-    }
-
-    const newId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
-    
-    // Auto populate custom onboarding checklist based on company type
-    let defaultChecklist = [
-      { id: "1", name: "Director / Partner PAN Card Credentials", required: true, status: "pending", uploadedFile: null, size: null },
-      { id: "2", name: "Director / Partner Address Proof (Aadhar, Utility bills, or Passport)", required: true, status: "pending", uploadedFile: null, size: null },
-      { id: "3", name: "Registered Office Address proof (Electricity Bill / Gas Bill)", required: true, status: "pending", uploadedFile: null, size: null }
-    ];
-
-    if (firmType.includes("Private Limited")) {
-      defaultChecklist.push({ id: "4", name: "Form DIR-2 (Consent of Directors) & INC-9 declaration", required: true, status: "pending", uploadedFile: null, size: null });
-      defaultChecklist.push({ id: "5", name: "Digital Signature Certificate (DSC) Request", required: false, status: "pending", uploadedFile: null, size: null });
-    } else if (firmType.includes("LLP")) {
-      defaultChecklist.push({ id: "4", name: "Draft Limited Liability Partnership Deed Status", required: true, status: "pending", uploadedFile: null, size: null });
-    } else if (firmType.includes("Partnership")) {
-      defaultChecklist.push({ id: "4", name: "Signed Stamp Paper Partnership Agreement", required: true, status: "pending", uploadedFile: null, size: null });
-    }
-
-    const newOrder = {
-      id: newId,
-      companyName,
-      firmType,
-      status: "draft",
-      stepProgress: 20,
-      createdAt: new Date().toISOString().split("T")[0],
-      email: email || "user@example.com",
-      checklist: defaultChecklist,
-      complianceStatus: {
-        nextDue: "Pending Incorporation",
-        alertCount: 0,
-        items: []
-      },
-      history: [
-        { date: new Date().toISOString().split("T")[0], activity: `Onboarding initiated for ${companyName} (${firmType}) in State: ${stateOfRegistration || "Default"}.` }
-      ]
-    };
-
-    portalOrders.unshift(newOrder);
-    res.json({ success: true, message: "Onboarding initiated successfully!", order: newOrder });
-  });
-
-  // API Route - Document simulated upload & automated checks
-  app.post("/api/portal/upload", (req, res) => {
-    const { orderId, checklistItemId, fileName, fileSize } = req.body;
-
-    if (!orderId || !checklistItemId || !fileName) {
-      return res.status(400).json({ success: false, error: "Missing parameters for file reference." });
-    }
-
-    const orderIndex = portalOrders.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) {
-      return res.status(404).json({ success: false, error: "Order not found." });
-    }
-
-    const checklistItem = portalOrders[orderIndex].checklist.find(item => item.id === checklistItemId);
-    if (!checklistItem) {
-      return res.status(404).json({ success: false, error: "Checklist item not found." });
-    }
-
-    // Process simulation
-    checklistItem.uploadedFile = fileName;
-    checklistItem.size = fileSize || "1.2 MB";
-    checklistItem.status = "approved"; // Auto approve for ease of client simulation
-
-    // Update process flow progress
-    const items = portalOrders[orderIndex].checklist;
-    const uploadedCount = items.filter(i => i.uploadedFile !== null).length;
-    const completionPercent = Math.min(20 + Math.round((uploadedCount / items.length) * 60), 90);
-    portalOrders[orderIndex].stepProgress = completionPercent;
-
-    if (completionPercent >= 80 && portalOrders[orderIndex].status === "draft") {
-      portalOrders[orderIndex].status = "document_review";
-    }
-
-    portalOrders[orderIndex].history.unshift({
-      date: new Date().toISOString().split("T")[0],
-      activity: `Document uploaded: '${fileName}' associated with task: '${checklistItem.name}'. Marked as submitted.`
-    });
-
-    res.json({
-      success: true,
-      message: "Document registered in secure ledger successfully.",
-      order: portalOrders[orderIndex]
-    });
-  });
 
   // API Route - Compliance Calendar listing
   app.get("/api/compliance/calendar", (req, res) => {
     res.json({ success: true, calendar: complianceCalendar });
   });
 
-  // API Route - AI Consultant advisor (Gemini)
-  app.post("/api/portal/chat", async (req, res) => {
-    const { messages, selectedOrder } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ success: false, error: "Messages array is required." });
-    }
-
-      // Grab user instructions context for Incroute Legal Advisor agent
-      const contextInfo = `You are "Incroute Advisor", a premium legal corporate consultancy AI assistant specialized in firm registrations (Private Limited, LLP, Sole Proprietorship, Partnership, One Person Company) and absolute corporate compliance.
-You assist client business founders, small enterprise operators, and entrepreneurs to correctly complete filings, name approvals, agreements structures, tax filings (GST, ROC, Form 8, AOC-4, DIR-2), and other critical statutory items.
-
-${selectedOrder ? `
-Active Portal Case Context Selected by User:
-- Company: ${selectedOrder.companyName}
-- Firm Type: ${selectedOrder.firmType}
-- Phase Status: ${selectedOrder.status}
-- Incorporation Step Progress: ${selectedOrder.stepProgress}%
-- Assigned Checklist Info: ${JSON.stringify(selectedOrder.checklist)}
-` : `No specific active case context is selected yet, provide general professional corporate registration advice.`}
-
-Keep your responses highly clear, professional, structured and informative with markdown tables, bullet points, and exact legal checklists or requirements wherever possible. Always end with a comforting note of authority and reliability. Do not mention port numbers, hosting, API structures or mock backend elements.`;
-
-    try {
-      // Map chat conversation into format for Gemini
-      // Format chat messages
-      const formattedContents = messages.map((m: any) => {
-        return {
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        };
-      });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: formattedContents,
-        config: {
-          systemInstruction: contextInfo,
-          temperature: 0.7,
-        },
-      });
-
-      res.json({
-        success: true,
-        reply: response.text || "I apologize, I am unable to generate a detailed response at this moment. Please double-check your file requirements."
-      });
-    } catch (err: any) {
-      console.error("Gemini Advisor API Error:", err);
-      res.status(500).json({
-        success: false,
-        error: "AI Consultation service is currently connecting. Please verify your GEMINI_API_KEY environment config in settings.",
-        details: err.message
-      });
-    }
-  });
 
   // Persistent Config storage for Google Forms Connection
   const CONFIG_FILE = path.join(process.cwd(), "contact-form-config.json");
@@ -385,7 +169,7 @@ app.post("/api/contact", async (req, res) => {
   res.json({ success: true, message: "Contact saved successfully." });
 });
 
-  // AI Name Feasibility clearance check (Gemini Integration)
+  // AI Name Feasibility clearance check (DeepSeek API Integration)
   app.post("/api/consult/name-check", async (req, res) => {
     const { name, entityType, industry } = req.body;
 
@@ -399,7 +183,7 @@ Entity Type: "${entityType}"
 Sector/Industry: "${industry}"
 
 Assess the proposed name meticulously against naming guidelines (e.g. check if generic, check if offensive, check prefix/suffix suitability, check for prefix descriptiveness).
-Format your response as a strict, clean JSON object. Do not include any markdown styling like \`\`\`json or backticks. Return ONLY the raw JSON string matching this exact structure:
+Format your response as a strict, clean JSON object. Return ONLY the raw JSON string matching this exact structure:
 {
   "score": 85,
   "summary": "Detailed professional suitability summary...",
@@ -418,35 +202,105 @@ Format your response as a strict, clean JSON object. Do not include any markdown
     "Suggested Name 3",
     "Suggested Name 4",
     "Suggested Name 5"
-  ]
+  ],
+  "domains": [
+    { "ext": ".com", "status": "Available" },
+    { "ext": ".in", "status": "Available" },
+    { "ext": ".co.in", "status": "Taken" },
+    { "ext": ".net", "status": "Available" }
+  ],
+  "trademarks": [
+    { "class": "Class 9 (Software/Tech)", "status": "Clear", "matches": "No direct matches found." },
+    { "class": "Class 35 (Business Services)", "status": "Clear", "matches": "No direct matches found." },
+    { "class": "Class 42 (IT & Cloud Services)", "status": "Clear", "matches": "No direct matches found." }
+  ],
+  "postFilingKit": {
+    "steps": [
+      { "step": "DSC Allocation", "detail": "Obtain Digital Signature Certificates for all directors.", "cost": "₹1,500 - ₹2,500" },
+      { "step": "DIN Application", "detail": "Apply for Director Identification Numbers during incorporation.", "cost": "Included in Spice+" },
+      { "step": "Spice+ Part A filing", "detail": "Reserve the approved name on the MCA portal.", "cost": "₹1,000" }
+    ],
+    "stampDuties": "Varies by state (estimated ₹2,000 for standard nominal share capital of ₹1,00,000).",
+    "timeframe": "Estimated 2 to 4 working days for ROC name clearance."
+  }
 }`;
 
+    const cleanName = name.trim();
+    const lowerName = cleanName.toLowerCase();
+    
+    // Set up local deterministic values for fallbacks/supplementary data
+    let hash = 0;
+    for (let i = 0; i < cleanName.length; i++) {
+      hash = (hash << 5) - hash + cleanName.charCodeAt(i);
+      hash |= 0;
+    }
+    const positiveHash = Math.abs(hash);
+
     try {
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("API Key is missing, triggering fallback simulation.");
+      const apiKey = process.env.DEEPSEEK_API_KEY;
+      if (!apiKey || apiKey === "sk-cbeeee451dd848c3876906ac24293bbc_demo") {
+        throw new Error("DeepSeek key not loaded or placeholder.");
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: checkPrompt,
-        config: {
-          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON without markdown syntax blocks.",
-          temperature: 0.2,
-        }
+      const dsResponse = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON without markdown syntax blocks." },
+            { role: "user", content: checkPrompt }
+          ],
+          response_format: {
+            type: "json_object"
+          },
+          temperature: 0.2
+        })
       });
 
-      // Try parsing response as JSON
-      let resultText = response.text || "{}";
-      // Strip markdown JSON codeblock markers if any
+      if (!dsResponse.ok) {
+        throw new Error(`DeepSeek API returned error status: ${dsResponse.status}`);
+      }
+
+      const data = await dsResponse.json();
+      let resultText = data.choices?.[0]?.message?.content || "{}";
       resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsed = JSON.parse(resultText);
+
+      // Verify necessary fields are present
+      if (!parsed.domains) {
+        parsed.domains = [
+          { ext: ".com", status: positiveHash % 3 === 0 ? "Taken" : "Available" },
+          { ext: ".in", status: positiveHash % 4 === 0 ? "Taken" : "Available" },
+          { ext: ".co.in", status: "Available" },
+          { ext: ".net", status: "Available" }
+        ];
+      }
+      if (!parsed.trademarks) {
+        parsed.trademarks = [
+          { class: "Class 9 (Software/Tech)", status: "Clear", matches: "No direct conflicts." },
+          { class: "Class 35 (Business Services)", status: "Clear", matches: "No direct conflicts." },
+          { class: "Class 42 (IT & Cloud Services)", status: "Clear", matches: "No direct conflicts." }
+        ];
+      }
+      if (!parsed.postFilingKit) {
+        parsed.postFilingKit = {
+          steps: [
+            { step: "DSC Allocation", detail: "Obtain Digital Signature Certificates for directors.", cost: "₹2,000 estimated" },
+            { step: "DIN Application", detail: "Apply for DIN inside SPICe+ MCA application.", cost: "Included in Spice+" },
+            { step: "Spice+ Part A filing", detail: `Formally reserve the brand prefix "${cleanName}".`, cost: "₹1,000 MCA fee" }
+          ],
+          stampDuties: "Estimated ₹2,000 state stamp duties.",
+          timeframe: "Clearance approved in 2-3 working days."
+        };
+      }
+
       res.json({ success: true, report: parsed });
     } catch (err: any) {
-      console.warn("⚠️ AI Name Feasibility falling back to simulated analysis:", err.message);
-      
-      // Dynamic Heuristic Analysis Engine for Offline/Missing Key State
-      const cleanName = name.trim();
-      const lowerName = cleanName.toLowerCase();
+      console.warn("⚠️ DeepSeek Feasibility clearance falling back to simulated engine:", err.message);
       
       let score = 85;
       const conflicts: string[] = [];
@@ -489,13 +343,6 @@ Format your response as a strict, clean JSON object. Do not include any markdown
       }
 
       // Rule 4: Phonetic trademark clearance simulator using deterministic character hash
-      let hash = 0;
-      for (let i = 0; i < cleanName.length; i++) {
-        hash = (hash << 5) - hash + cleanName.charCodeAt(i);
-        hash |= 0;
-      }
-      const positiveHash = Math.abs(hash);
-      
       if (positiveHash % 3 === 0) {
         score -= 8;
         checklist[3].passed = false;
@@ -557,12 +404,38 @@ Format your response as a strict, clean JSON object. Do not include any markdown
         summary += `The proposed name has moderate to low feasibility (${score}%). We highly recommend adjusting the name prefix or adopting one of our recommended alternatives below to avoid registrar rejection.`;
       }
 
+      const domains = [
+        { ext: ".com", status: positiveHash % 4 === 0 ? "Taken" : "Available" },
+        { ext: ".in", status: positiveHash % 5 === 0 ? "Taken" : "Available" },
+        { ext: ".co.in", status: positiveHash % 3 === 0 ? "Taken" : "Available" },
+        { ext: ".net", status: "Available" }
+      ];
+
+      const trademarks = [
+        { class: "Class 9 (Software/Tech)", status: positiveHash % 3 === 0 ? "Conflict" : "Clear", matches: positiveHash % 3 === 0 ? `Phonetic phonetic match found: "${cleanName} Technologies"` : "No similar phonetic trademark found." },
+        { class: "Class 35 (Business Services)", status: "Clear", matches: "No phonetic conflict found in public Class 35 register." },
+        { class: "Class 42 (IT & Cloud Services)", status: positiveHash % 7 === 0 ? "Conflict" : "Clear", matches: positiveHash % 7 === 0 ? `Semantic matching trademark "Project ${cleanName}" is registered` : "No matches found." }
+      ];
+
+      const postFilingKit = {
+        steps: [
+          { step: "DSC Allocation", detail: `Acquire Class 3 Digital Signatures for proposed directors. Required for SPICe+ digital signing.`, cost: "₹2,000 estimated" },
+          { step: "DIN Registration", detail: `Acquire unique Director Identification Numbers inside SPICe+ MCA application.`, cost: "Free for up to 3 directors" },
+          { step: "SPICe+ Part A filing", detail: `Formally reserve the brand prefix "${cleanName}" with the Central Registration Centre (CRC).`, cost: "₹1,000 government filing fee" }
+        ],
+        stampDuties: `Estimated ₹2,000 for Pvt Ltd with ₹1,00,000 nominal share capital. Stamping fees vary slightly based on jurisdiction.`,
+        timeframe: "Typically approved within 2-3 MCA working days."
+      };
+
       const fallbackData = {
         score,
         summary,
         conflicts: conflicts.length > 0 ? conflicts : ["No critical conflict reports identified. The brand prefix is relatively unique."],
         checklist,
-        suggestions
+        suggestions,
+        domains,
+        trademarks,
+        postFilingKit
       };
 
       res.json({ success: true, report: fallbackData });
@@ -757,7 +630,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   app.post("/api/blog/posts", (req, res) => {
-    const { title, subtitle, content, image, author, token } = req.body;
+    const { title, subtitle, content, image, author, tags, token } = req.body;
 
     if (token !== "admin-session-secure-token") {
       return res.status(403).json({ success: false, error: "Unauthorized access." });
@@ -776,6 +649,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       image: image || "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
       date: new Date().toISOString().split("T")[0],
       author: author || "Advocate Dev Bhushan",
+      tags: Array.isArray(tags) ? tags : [],
       views: 0
     };
 
