@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  /* Midnight Dark Theme variables */
+  --color-brand-gold: #c5a880; /* Rich Champagne Gold */
+  --color-brand-dark: #08080a; /* Deep Charcoal-Obsidian */
+  --color-brand-bg: #08080a; /* Midnight Background */
+  --color-brand-bg-darker: #040405; /* Solid Onyx */
+  --color-brand-bg-lighter: #0f1013; /* Elegant Slate Charcoal */
+  --color-brand-border: #1d1e22; /* Clean Slate Dark Border */
+  --color-brand-text: #f3f4f6; /* Crisp Off-White Text */
+  --color-brand-text-muted: #94a3b8; /* Slate Muted Gray */
+  --color-brand-card: rgba(255, 255, 255, 0.025);
+  --color-brand-input-bg: rgba(8, 8, 10, 0.85);
+}
+
+.light {
+  /* Marble Light Theme variables */
+  --color-brand-dark: #fcfbf9; /* Pristine Marble White */
+  --color-brand-bg: #FAF9F6; /* Luxury Warm Ivory Background */
+  --color-brand-bg-darker: #f0ede6; /* Soft Alabaster Gray */
+  --color-brand-bg-lighter: #ffffff; /* Solid Pure White Cards */
+  --color-brand-border: #e4e4e7; /* Fine Slate Border */
+  --color-brand-text: #111827; /* Rich Dark Charcoal Text */
+  --color-brand-text-muted: #4b5563; /* Charcoal Muted Gray */
+  --color-brand-card: rgba(255, 255, 255, 0.95);
+  --color-brand-input-bg: #ffffff;
+}
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-brand-gold: var(--color-brand-gold);
+  --color-brand-dark: var(--color-brand-dark);
+  --color-brand-card: var(--color-brand-card);
+  --color-brand-bg: var(--color-brand-bg);
+  --color-brand-text: var(--color-brand-text);
+  --color-brand-bg-darker: var(--color-brand-bg-darker);
+  --color-brand-bg-lighter: var(--color-brand-bg-lighter);
+  --color-brand-border: var(--color-brand-border);
+  --color-brand-text-muted: var(--color-brand-text-muted);
+  --color-brand-input-bg: var(--color-brand-input-bg);
+}
+
+/* Sophisticated styling utilities */
+@layer utilities {
+  .subtle-glow {
+    box-shadow: 0 0 25px -5px rgba(197, 168, 128, 0.12);
+  }
+  .accent-gradient {
+    background: linear-gradient(135deg, var(--color-brand-dark) 0%, var(--color-brand-bg-darker) 100%);
+  }
+  .serif {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-text);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Executive Theme Enhancements */
+.executive-glow-1 {
+  position: fixed;
+  top: -15%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.04) 0%, rgba(197, 168, 128, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.executive-glow-2 {
+  position: fixed;
+  bottom: -15%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.03) 0%, rgba(197, 168, 128, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.light .executive-glow-1 {
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.09) 0%, rgba(197, 168, 128, 0) 70%);
+}
+
+.light .executive-glow-2 {
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.075) 0%, rgba(197, 168, 128, 0) 70%);
+}
+
+.executive-grid {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(var(--color-brand-border) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.25;
+  z-index: -2;
+  pointer-events: none;
+  mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 90%);
+}
