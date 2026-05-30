@@ -4,9 +4,12 @@ import RegistrationServices from "./components/RegistrationServices";
 import { motion } from "motion/react";
 import NameFeasibilityChecker from "./components/NameFeasibilityChecker";
 import BlogPage from "./components/BlogPage";
+import AboutPage from "./components/AboutPage";
+import ServiceCatalogInsights from "./components/ServiceCatalogInsights";
 import { ComplianceEvent } from "./types";
 import { initAuth } from "./lib/firebase";
 import ContactFormWidget from "./components/ContactFormWidget";
+import ClientPortal from "./components/ClientPortal";
 import { 
   Sparkles, 
   Search, 
@@ -21,7 +24,10 @@ import {
   Loader2,
   CheckSquare,
   AlertCircle,
-  Info
+  Info,
+  Scale,
+  ShieldCheck,
+  Check
 } from "lucide-react";
 
 export default function App() {
@@ -68,6 +74,12 @@ export default function App() {
   // Prefilled state to pass to RegistrationServices
   const [prefilledName, setPrefilledName] = useState<string>("");
   const [prefilledEntityType, setPrefilledEntityType] = useState<string>("");
+
+  const handleServiceClick = (serviceId: string) => {
+    setActiveTab("services");
+    setPrefilledEntityType(serviceId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Compliance Calendar State
   const [complianceEvents, setComplianceEvents] = useState<ComplianceEvent[]>([]);
@@ -207,6 +219,21 @@ export default function App() {
           <BlogPage />
         )}
 
+        {/* Service Catalog */}
+        {activeTab === "catalog" && (
+          <ServiceCatalogInsights setActiveTab={setActiveTab} />
+        )}
+
+        {/* Secure Client Compliance Portal Section */}
+        {activeTab === "portal" && (
+          <ClientPortal />
+        )}
+
+        {/* About Us Section */}
+        {activeTab === "about" && (
+          <AboutPage setActiveTab={setActiveTab} />
+        )}
+
         {/* Compliance Calendars Section */}
         {activeTab === "compliance" && (
           <div className="space-y-12">
@@ -256,14 +283,14 @@ export default function App() {
                              isSelected
                                ? "bg-brand-gold text-black border-brand-gold scale-125 shadow-lg shadow-brand-gold/25"
                                : isPast
-                               ? "bg-[#1f1a14] text-brand-gold border-brand-gold/70"
+                               ? "bg-brand-gold/15 text-brand-gold border-brand-gold/70"
                                : "bg-brand-bg text-brand-text-muted border-brand-border"
                            }`}
                          >
                            {idx + 1}
                          </button>
                          <div>
-                           <span className={`text-[10px] font-mono uppercase tracking-wider block transition-colors ${isSelected ? "text-brand-gold font-bold" : "text-slate-400"}`}>
+                           <span className={`text-[10px] font-mono uppercase tracking-wider block transition-colors ${isSelected ? "text-brand-gold font-bold" : "text-brand-text-muted"}`}>
                              {m.days}
                            </span>
                          </div>
@@ -306,7 +333,7 @@ export default function App() {
                  </div>
 
                  {/* Right Penalty Alert box (5 cols) */}
-                 <div className="md:col-span-5 bg-gradient-to-br from-red-900/10 to-red-900/5 border border-red-500/10 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                 <div className="md:col-span-5 compliance-penalty-card border rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 blur-2xl rounded-full" />
                    
                    <div className="space-y-3 relative z-10">
@@ -314,7 +341,7 @@ export default function App() {
                        <AlertCircle className="w-4 h-4" />
                        <span className="text-[10px] uppercase font-mono tracking-wider font-bold">Penalty Warning</span>
                      </div>
-                     <p className="text-[11px] text-red-200/80 leading-relaxed font-sans">
+                     <p className="text-[11px] compliance-penalty-text leading-relaxed font-sans">
                        {roadmapMilestones[selectedMilestone].penalty}
                      </p>
                    </div>
@@ -322,7 +349,7 @@ export default function App() {
                    <button
                      type="button"
                      onClick={() => setActiveTab("contact")}
-                     className="w-full bg-red-950/30 hover:bg-red-500 hover:text-black border border-red-500/20 hover:border-red-500 text-red-300 font-mono uppercase tracking-widest text-[9px] py-2.5 rounded transition-all cursor-pointer font-bold duration-300 mt-4"
+                     className="w-full compliance-penalty-btn border font-mono uppercase tracking-widest text-[9px] py-2.5 rounded transition-all cursor-pointer font-bold duration-300 mt-4"
                    >
                      Delegate Compliance Task <ArrowRight className="w-3 h-3 inline-block ml-1" />
                    </button>
@@ -431,16 +458,107 @@ export default function App() {
       </main>
 
       {/* Footer segment */}
-      <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-text-muted">
-          <div>
-            <span className="font-serif tracking-widest text-[#9E896A] text-xs uppercase mr-2 font-light">Incroute</span> 
-            © {new Date().getFullYear()} All Rights Reserved. Secure Corporate Registrar.
-          </div>
-          <div className="flex items-center gap-4 font-mono text-[10px] uppercase tracking-wider text-brand-text-muted/65">
-            <span>TLS 1.3 Certified</span>
-            <span>•</span>
-            <span>256-Bit SSL Logs</span>
+      <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-12 md:py-16 text-brand-text-muted mt-auto transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+            
+            {/* Column 1: Brand Info */}
+            <div className="md:col-span-4 space-y-5">
+              <div className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={() => handleServiceClick("pvt-ltd")}>
+                <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
+                  <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
+                </div>
+                <div className="flex flex-col select-none">
+                  <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">
+                    INC<span className="text-brand-gold font-serif italic font-normal tracking-normal text-xl lowercase">route</span>
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-sm">
+                Premium corporate registration and compliance advisory platform for startups, SMEs, and professionals in India.
+              </p>
+              <div className="text-[10px] font-mono tracking-widest text-[#9E896A] font-semibold uppercase pt-1">
+                MAKE IT RIGHT
+              </div>
+            </div>
+
+            {/* Column 2: Our Services */}
+            <div className="md:col-span-4 space-y-4">
+              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
+                Our Services
+              </h4>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs font-sans">
+                <div className="space-y-2.5">
+                  <div 
+                    onClick={() => handleServiceClick("pvt-ltd")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    Private Limited Company
+                  </div>
+                  <div 
+                    onClick={() => handleServiceClick("opc")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    One Person Company
+                  </div>
+                  <div 
+                    onClick={() => handleServiceClick("section8")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    Section 8 NGO / Foundation
+                  </div>
+                </div>
+                <div className="space-y-2.5">
+                  <div 
+                    onClick={() => handleServiceClick("llp")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    Limited Liability Partnership
+                  </div>
+                  <div 
+                    onClick={() => handleServiceClick("partnership")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    Partnership Firm
+                  </div>
+                  <div 
+                    onClick={() => handleServiceClick("virtual-cfo")}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  >
+                    Virtual CFO Services
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Column 3: Security & Trust */}
+            <div className="md:col-span-4 space-y-4">
+              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
+                Security & Trust
+              </h4>
+              <p className="text-xs text-brand-text-muted font-sans leading-relaxed">
+                All filings are handled by registered advocates and chartered accountants. Your data is protected with TLS 1.3 encryption and 256-bit SSL.
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                {/* TLS Pill */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[10px] font-semibold text-green-600 dark:text-green-400">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>TLS 1.3 Certified</span>
+                </div>
+                
+                {/* SSL Pill */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-gold/10 border border-brand-gold/20 rounded-full text-[10px] font-semibold text-brand-gold">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
+                  <span>256-bit SSL</span>
+                </div>
+              </div>
+
+              <div className="text-[10px] font-mono tracking-wider uppercase text-brand-text-muted/65 pt-2 select-none">
+                © {new Date().getFullYear()} INCROUTE. ALL RIGHTS RESERVED.
+              </div>
+            </div>
+
           </div>
         </div>
       </footer>

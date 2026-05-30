@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Shield, Building2, Bell, CheckSquare, Sparkles, UserCheck, Menu, X, Sun, Moon, BookOpen } from "lucide-react";
+import { Shield, Building2, Scale, Heart, FileText, Phone, Menu, X, Sun, Moon, BookOpen, UserCheck, Globe, Info, Database } from "lucide-react";
+import { useLang } from "../lib/LanguageContext";
+import type { Lang } from "../lib/i18n";
 
 interface NavbarProps {
   activeTab: string;
@@ -11,15 +13,17 @@ export default function Navbar({
   setActiveTab
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [isLightMode, setIsLightMode] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(true);
+  const { lang, setLang, t } = useLang();
 
   useEffect(() => {
+    // Check initial mode
     const isLight = document.documentElement.classList.contains("light");
     setIsLightMode(isLight);
   }, []);
 
   const toggleTheme = () => {
-    if (document.documentElement.classList.contains("light")) {
+    if (isLightMode) {
       document.documentElement.classList.remove("light");
       setIsLightMode(false);
     } else {
@@ -28,119 +32,114 @@ export default function Navbar({
     }
   };
 
+  const toggleLang = () => {
+    setLang(lang === "en" ? "hi" : "en");
+  };
+
+  const navActiveClass = (tab: string) =>
+    activeTab === tab
+      ? isLightMode
+        ? "bg-[#efece6] text-[#111827] border border-[#dcd9d0] shadow-sm"
+        : "bg-brand-gold/15 text-brand-gold border border-brand-gold/30"
+      : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter border border-transparent";
+
   return (
-    <nav className="sticky top-0 z-50 bg-brand-bg/95 border-b border-brand-border backdrop-blur-md transition-colors duration-300">
+    <nav className="sticky top-0 z-50 bg-brand-bg/95 border-b border-brand-border backdrop-blur-md transition-colors duration-150 fast-transition transform-gpu">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
           {/* Logo Brand */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab("services")}>
-            <div className="p-2 bg-brand-gold/10 rounded-lg border border-brand-gold/20 text-brand-gold">
-              <Building2 className="w-5 h-5" />
+          <div className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={() => setActiveTab("services")}>
+            <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
+              <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
             </div>
-            <div>
-              <span className="text-lg font-light text-brand-text tracking-widest uppercase">
-                Inc<span className="text-brand-gold font-serif italic font-normal text-xl lowercase">route</span>
+            <div className="flex flex-col select-none">
+              <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">
+                INC<span className="text-brand-gold font-serif italic font-normal tracking-normal text-xl lowercase">route</span>
               </span>
-              <p className="text-[9px] text-brand-text-muted font-mono tracking-widest uppercase">Make it right</p>
+              <p className="text-[8px] text-brand-text-muted font-mono tracking-widest uppercase mt-0.5">{t("footer_motto") as string}</p>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
-            <button
-              onClick={() => setActiveTab("services")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer ${
-                activeTab === "services"
-                  ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/30"
-                  : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
-                Firm Registrations
-              </div>
+            <button onClick={() => setActiveTab("services")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("services")}`}>
+              <div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />{t("nav_services") as string}</div>
             </button>
 
-            <button
-              onClick={() => setActiveTab("name-checker")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer ${
-                activeTab === "name-checker"
-                  ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/30"
-                  : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Name Feasibility
-              </div>
+            <button onClick={() => setActiveTab("compliance")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("compliance")}`}>
+              <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />{t("nav_compliance") as string}</div>
             </button>
 
-            <button
-              onClick={() => setActiveTab("compliance")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer ${
-                activeTab === "compliance"
-                  ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/30"
-                  : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <CheckSquare className="w-4 h-4" />
-                Compliance Roadmap
-              </div>
+            <button onClick={() => setActiveTab("blog")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("blog")}`}>
+              <div className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" />{t("nav_blog") as string}</div>
             </button>
 
-            <button
-              onClick={() => setActiveTab("blog")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer ${
-                activeTab === "blog"
-                  ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/30"
-                  : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                Insights Blog
-              </div>
+            <button onClick={() => setActiveTab("catalog")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("catalog")}`}>
+              <div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Catalog</div>
             </button>
 
-            <button
-              onClick={() => setActiveTab("contact")}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer ${
-                activeTab === "contact"
-                  ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/30"
-                  : "text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Contact Us
-              </div>
+            <button onClick={() => setActiveTab("about")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("about")}`}>
+              <div className="flex items-center gap-1.5"><Info className="w-3.5 h-3.5" />{t("nav_about") as string}</div>
             </button>
 
-            {/* Desktop Theme Toggle Switch */}
+            <button onClick={() => setActiveTab("contact")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("contact")}`}>
+              <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />{t("nav_contact") as string}</div>
+            </button>
+
+            <button onClick={() => setActiveTab("portal")} className={`px-3 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-150 fast-transition transform-gpu cursor-pointer ${navActiveClass("portal")}`}>
+              <div className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" />{t("nav_portal") as string}</div>
+            </button>
+
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter border border-transparent transition-colors duration-150 fast-transition ml-1 cursor-pointer"
+              title={lang === "en" ? "Switch to Hindi" : "Switch to English"}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {lang === "en" ? "हिं" : "EN"}
+            </button>
+
+            {/* Desktop Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter transition-colors ml-2 cursor-pointer"
-              title={isLightMode ? "Switch to Midnight Theme" : "Switch to Marble Theme"}
+              className="p-2.5 rounded-full text-brand-text-muted hover:text-brand-gold hover:bg-brand-bg-lighter transition-colors duration-150 fast-transition ml-1 cursor-pointer border border-transparent"
+              title={isLightMode ? "Switch to Midnight Theme" : "Switch to Marble Light Theme"}
             >
-              {isLightMode ? <Moon className="w-4 h-4 text-slate-700" /> : <Sun className="w-4 h-4 text-brand-gold" />}
+              {isLightMode ? (
+                <Moon className="w-4 h-4 text-slate-700" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
+              )}
             </button>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Mobile Theme Toggle Button */}
+            {/* Mobile Language Toggle */}
+            <button
+              onClick={toggleLang}
+              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-gold focus:outline-none fast-transition cursor-pointer text-xs font-mono font-bold"
+            >
+              {lang === "en" ? "हिं" : "EN"}
+            </button>
+
+            {/* Mobile Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-gold focus:outline-none cursor-pointer"
+              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-gold focus:outline-none fast-transition cursor-pointer"
             >
-              {isLightMode ? <Moon className="w-5 h-5 text-slate-700" /> : <Sun className="w-5 h-5 text-brand-gold" />}
+              {isLightMode ? (
+                <Moon className="w-5 h-5 text-slate-700" />
+              ) : (
+                <Sun className="w-5 h-5 text-amber-400 fill-amber-400" />
+              )}
             </button>
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-text focus:outline-none cursor-pointer"
+              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-text focus:outline-none fast-transition cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -148,64 +147,27 @@ export default function Navbar({
 
         </div>
       </div>
-
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-brand-bg border-b border-brand-border px-4 py-3 space-y-2">
-          <button
-            onClick={() => {
-              setActiveTab("services");
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-          >
-            <Building2 className="w-5 h-5 text-brand-text-muted" />
-            Firm Registrations
-          </button>
-          
-          <button
-            onClick={() => {
-              setActiveTab("name-checker");
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-          >
-            <Shield className="w-5 h-5 text-brand-text-muted" />
-            Name Feasibility
-          </button>
-          
-          <button
-            onClick={() => {
-              setActiveTab("compliance");
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-          >
-            <CheckSquare className="w-5 h-5 text-brand-text-muted" />
-            Compliance Roadmap
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("blog");
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-          >
-            <BookOpen className="w-5 h-5 text-brand-text-muted" />
-            Insights Blog
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("contact");
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
-          >
-            <Sparkles className="w-5 h-5 text-brand-text-muted" />
-            Contact Us
-          </button>
+          {[
+            { tab: "services", icon: Building2, label: t("nav_services") as string },
+            { tab: "compliance", icon: FileText, label: t("nav_compliance") as string },
+            { tab: "blog", icon: BookOpen, label: t("nav_blog") as string },
+            { tab: "catalog", icon: Database, label: "Catalog" },
+            { tab: "about", icon: Info, label: t("nav_about") as string },
+            { tab: "contact", icon: Phone, label: t("nav_contact") as string },
+            { tab: "portal", icon: Heart, label: t("nav_portal") as string },
+          ].map(({ tab, icon: Icon, label }) => (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+              className="w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-brand-text hover:bg-brand-bg-lighter hover:text-brand-gold flex items-center gap-3 cursor-pointer"
+            >
+              <Icon className="w-5 h-5 text-brand-text-muted" />
+              {label}
+            </button>
+          ))}
         </div>
       )}
     </nav>

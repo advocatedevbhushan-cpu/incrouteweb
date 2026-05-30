@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { BlogPost } from "../types";
 import { 
   BookOpen, 
@@ -15,14 +15,32 @@ import {
   Check, 
   Eye, 
   AlertCircle,
-  Loader2
+  Loader2,
+  Search,
+  Tag,
 } from "lucide-react";
+import { useLang } from "../lib/LanguageContext";
+
+// Predefined tag taxonomy for filtering
+const BLOG_TAGS = ["GST", "ROC", "LLP", "Pvt Ltd", "Startup India", "Compliance", "TDS", "OPC", "Trademark"] as const;
+type BlogTag = typeof BLOG_TAGS[number];
+
+// Auto-assign tags based on title/content keywords
+function inferTags(post: BlogPost): BlogTag[] {
+  const text = `${post.title} ${post.subtitle} ${post.content}`.toLowerCase();
+  return BLOG_TAGS.filter((tag) => text.includes(tag.toLowerCase()));
+}
 
 export default function BlogPage() {
+  const { t } = useLang();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTag, setActiveTag] = useState<BlogTag | null>(null);
 
   // Admin States
   const [isAdmin, setIsAdmin] = useState(false);
@@ -60,6 +78,22 @@ export default function BlogPage() {
       setIsAdmin(true);
     }
   }, []);
+
+  // Filtered posts derived from search + tag
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      const matchesSearch =
+        !searchQuery ||
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesTag =
+        !activeTag || inferTags(post).includes(activeTag);
+
+      return matchesSearch && matchesTag;
+    });
+  }, [posts, searchQuery, activeTag]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -279,62 +313,119 @@ export default function BlogPage() {
     <div className="space-y-12 w-full">
       
       {/* Intro Header Section */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-brand-border/55 pb-6">
-        <div className="text-left space-y-2">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded font-mono uppercase tracking-widest border border-brand-gold/15">
-            <Sparkles className="w-3.5 h-3.5" /> Corporate Editorial Insights
+      <div className="space-y-5 border-b border-brand-border/55 pb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="text-left space-y-2">
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded font-mono uppercase tracking-widest border border-brand-gold/15">
+              <Sparkles className="w-3.5 h-3.5" /> {t("blog_badge") as string}
+            </div>
+            <h1 className="text-3xl font-light text-brand-text tracking-tight sm:text-4xl serif">
+              {t("blog_title") as string} <span className="text-brand-gold italic font-normal">{t("blog_title_accent") as string}</span>
+            </h1>
+            <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-xl">
+              {t("blog_subtitle") as string}
+            </p>
           </div>
-          <h1 className="text-3xl font-light text-brand-text tracking-tight sm:text-4xl serif">
-            LegisCorp <span className="text-brand-gold italic font-normal">Legal Ledger.</span>
-          </h1>
-          <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-xl">
-            Thought leadership, compliance briefs, statutory warnings, and registrar intelligence mapped directly by corporate advocates and chartered analysts.
-          </p>
+
+          {/* Admin Access Controls */}
+          <div className="shrink-0 flex items-center gap-2">
+            {isAdmin ? (
+              <div className="flex items-center gap-2 bg-brand-bg-lighter border border-brand-gold/30 rounded-xl px-3.5 py-2">
+                <div className="flex items-center gap-2 text-brand-gold text-xs font-mono font-bold uppercase tracking-wider">
+                  <Unlock className="w-3.5 h-3.5" /> {t("blog_admin_active") as string}
+                </div>
+                <button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-brand-gold text-black border border-brand-gold text-[10px] font-mono uppercase font-bold tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer hover:bg-transparent hover:text-brand-gold"
+                >
+                  <Plus className="w-3.5 h-3.5 inline mr-1" /> {t("blog_new_post") as string}
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/45 text-[9px] font-mono uppercase tracking-widest px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                >
+                  {t("blog_exit") as string}
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowLoginModal(true)}
+                className="text-brand-text-muted hover:text-brand-gold bg-brand-bg-lighter border border-brand-border hover:border-brand-gold/25 p-2.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-black/5"
+                title={t("blog_admin_login") as string}
+              >
+                <Lock className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Admin Access Controls */}
-        <div className="shrink-0 flex items-center gap-2">
-          {isAdmin ? (
-            <div className="flex items-center gap-2 bg-brand-bg-lighter border border-brand-gold/30 rounded-xl px-3.5 py-2">
-              <div className="flex items-center gap-2 text-brand-gold text-xs font-mono font-bold uppercase tracking-wider">
-                <Unlock className="w-3.5 h-3.5" /> Admin Active
-              </div>
-              <button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-brand-gold text-black border border-brand-gold text-[10px] font-mono uppercase font-bold tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer hover:bg-transparent hover:text-brand-gold"
-              >
-                <Plus className="w-3.5 h-3.5 inline mr-1" /> New Post
-              </button>
-              <button 
-                onClick={handleLogout}
-                className="text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/45 text-[9px] font-mono uppercase tracking-widest px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                Exit
-              </button>
+        {/* Search Bar + Tag Filters */}
+        {!selectedPost && (
+          <div className="space-y-3">
+            {/* Search Input */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-brand-text-muted/50" />
+              <input
+                type="text"
+                placeholder={t("blog_search_placeholder") as string}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3 py-2 pl-9 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none focus:border-brand-gold transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-2.5 text-brand-text-muted hover:text-brand-gold transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-          ) : (
-            <button 
-              onClick={() => setShowLoginModal(true)}
-              className="text-brand-text-muted hover:text-brand-gold bg-brand-bg-lighter border border-brand-border hover:border-brand-gold/25 p-2.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-black/5"
-              title="System Administrative Gate"
-            >
-              <Lock className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+
+            {/* Tag Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-widest text-brand-text-muted font-semibold">
+                <Tag className="w-3 h-3" /> Tags:
+              </div>
+              <button
+                onClick={() => setActiveTag(null)}
+                className={`text-[9px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
+                  activeTag === null
+                    ? "bg-brand-gold text-black border-brand-gold font-bold"
+                    : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/40 hover:text-brand-text"
+                }`}
+              >
+                {t("blog_filter_all") as string}
+              </button>
+              {BLOG_TAGS.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`text-[9px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${
+                    activeTag === tag
+                      ? "bg-brand-gold text-black border-brand-gold font-bold"
+                      : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/40 hover:text-brand-text"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Content Pane */}
       {selectedPost ? (
         /* Full Article Detailed Reader */
-        <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-10 space-y-6 max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+        <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-10 space-y-6 max-w-4xl mx-auto shadow-2xl relative overflow-hidden premium-card">
           <div className="absolute top-0 right-0 w-36 h-36 bg-brand-gold/5 blur-3xl rounded-full" />
           
           <button 
             onClick={() => setSelectedPost(null)}
             className="flex items-center gap-2 text-brand-text-muted hover:text-brand-gold font-mono uppercase tracking-widest text-[10px] pb-2 cursor-pointer transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Articles
+            <ArrowLeft className="w-3.5 h-3.5" /> {t("blog_back") as string}
           </button>
 
           {/* Banner Image */}
@@ -357,7 +448,7 @@ export default function BlogPage() {
                 <Eye className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.views || 0} Views
               </div>
               <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-2 py-0.5 rounded">
-                Verified Compliance Insight
+                {t("blog_verified") as string}
               </span>
             </div>
           </div>
@@ -371,9 +462,9 @@ export default function BlogPage() {
           <div className="border-t border-brand-border pt-6 mt-6 flex justify-between items-center text-xs">
             <button 
               onClick={() => setSelectedPost(null)}
-              className="bg-brand-bg text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/35 font-mono uppercase tracking-widest text-[10px] px-4 py-2.5 rounded transition-all cursor-pointer font-bold duration-300"
+              className="bg-brand-bg text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/35 font-mono uppercase tracking-widest text-[10px] px-4 py-2.5 rounded transition-all duration-150 fast-transition snappy-press cursor-pointer font-bold"
             >
-              Close Ledger Reader
+              {t("blog_close") as string}
             </button>
             
             {isAdmin && (
@@ -381,7 +472,7 @@ export default function BlogPage() {
                 onClick={(e) => handleDeletePost(e, selectedPost.id)}
                 className="text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-500 font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Delete Post
+                <Trash2 className="w-3.5 h-3.5 inline mr-1" /> {t("blog_delete") as string}
               </button>
             )}
           </div>
@@ -400,30 +491,43 @@ export default function BlogPage() {
               <h4 className="text-sm font-semibold text-brand-text">Platform Service Connection Error</h4>
               <p className="text-xs text-brand-text-muted font-sans leading-relaxed">{error}</p>
               <button 
-                onClick={fetchPosts}
-                className="bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold/35 hover:border-brand-gold font-mono uppercase text-[9px] tracking-widest py-2 px-4 rounded transition-all cursor-pointer"
-              >
+            onClick={fetchPosts}
+            className="bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold/35 hover:border-brand-gold font-mono uppercase text-[9px] tracking-widest py-2 px-4 rounded transition-all duration-150 fast-transition"
+          >
                 Re-establish Connection
               </button>
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20 text-brand-text-muted italic serif text-base">
-              The editorial database is currently clean and empty. Log in as admin to publish insights.
+              {t("blog_empty") as string}
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-16 space-y-3">
+              <Search className="w-8 h-8 text-brand-text-muted/40 mx-auto" />
+              <p className="text-sm text-brand-text-muted italic serif">{t("blog_no_results") as string}</p>
+              <button
+                onClick={() => { setSearchQuery(""); setActiveTag(null); }}
+                className="text-[10px] font-mono uppercase tracking-widest text-brand-gold border border-brand-gold/30 hover:bg-brand-gold/10 px-4 py-2 rounded-lg transition-colors"
+              >
+                Clear Filters
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
+              {filteredPosts.map((post) => {
+                const postTags = inferTags(post);
+                return (
                 <div 
                   key={post.id}
                   onClick={() => handleSelectPost(post)}
-                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden hover:border-brand-gold/30 transition-all duration-300 group cursor-pointer shadow-xl flex flex-col justify-between"
+                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden hover:border-brand-gold/30 transition-all duration-150 fast-transition group cursor-pointer shadow-xl flex flex-col justify-between premium-card"
                 >
                   <div className="space-y-4">
                     {/* Hover Scaling Image Container */}
                     <div className="h-[180px] w-full overflow-hidden border-b border-brand-border relative">
                       <img 
                         src={post.image} 
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" 
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-350 fast-transition" 
                         alt={post.title} 
                       />
                       {isAdmin && (
@@ -447,6 +551,20 @@ export default function BlogPage() {
                       <p className="text-xs text-brand-text-muted font-sans line-clamp-3 leading-relaxed">
                         {post.subtitle}
                       </p>
+                      {/* Inferred Tag Pills */}
+                      {postTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {postTags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              onClick={(e) => { e.stopPropagation(); setActiveTag(tag); }}
+                              className="text-[8px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-gold/10 text-brand-gold border border-brand-gold/15 hover:bg-brand-gold hover:text-black transition-colors cursor-pointer"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -460,11 +578,12 @@ export default function BlogPage() {
                       </div>
                     </div>
                     <span className="text-brand-gold font-bold flex items-center gap-1 group-hover:underline">
-                      Read Article <BookOpen className="w-3 h-3" />
+                      {t("blog_read") as string} <BookOpen className="w-3 h-3" />
                     </span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -473,7 +592,7 @@ export default function BlogPage() {
       {/* --- ADMINISTRATIVE LOGIN MODAL --- */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200 premium-card">
             <button 
               onClick={() => { setShowLoginModal(false); setLoginError(null); }}
               className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
@@ -535,7 +654,7 @@ export default function BlogPage() {
       {/* --- CREATE NEW BLOG MODAL --- */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-200">
+          <div className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-8 animate-in fade-in zoom-in duration-200 premium-card">
             <button 
               onClick={() => { setShowCreateModal(false); setPublishError(null); }}
               className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"

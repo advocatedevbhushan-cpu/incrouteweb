@@ -91,7 +91,7 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 premium-card p-4">
       {isAdmin && (
         <div className="flex items-center justify-between pb-3 border-b border-[#1f1f22]">
           {formUri ? (
@@ -138,7 +138,7 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
             placeholder="e.g. John Doe"
             value={contactForm.name}
             onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-            className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none"
+            className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none fast-transition"
           />
         </div>
 
@@ -151,7 +151,7 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
               placeholder="john@example.com"
               value={contactForm.email}
               onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-              className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none"
+              className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none fast-transition"
             />
           </div>
           
@@ -174,14 +174,14 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
             placeholder="Tell us about your requirements..."
             value={contactForm.message}
             onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-            className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none h-32 resize-none"
+            className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none h-32 resize-none fast-transition"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmittingContact}
-          className="w-full bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold font-mono uppercase tracking-widest text-xs px-6 py-3 rounded transition-all cursor-pointer font-bold duration-300 xl:w-max xl:px-8 mt-4"
+          className="w-full bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold font-mono uppercase tracking-widest text-xs px-6 py-3 rounded transition-all duration-150 fast-transition snappy-press xl:w-max xl:px-8 mt-4"
         >
           {isSubmittingContact ? "SENDING..." : "Send Message"}
         </button>

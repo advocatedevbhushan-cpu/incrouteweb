@@ -63,4 +63,21 @@ export interface BlogPost {
   date: string;
   author: string;
   views: number;
+  tags?: string[];
+}
+
+export interface NameCheckHistoryEntry {
+  id: string;
+  name: string;
+  entityType: string;
+  industry: string;
+  score: number;
+  checkedAt: string;
+  report: {
+    score: number;
+    summary: string;
+    conflicts: string[];
+    checklist: { criterion: string; passed: boolean; reason: string }[];
+    suggestions: string[];
+  };
 }

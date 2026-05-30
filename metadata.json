@@ -1,5 +1,5 @@
 {
-  "name": "LegisCorp Registrations",
+  "name": "incroute",
   "description": "Secure firm registration and corporate compliance platform featuring a private client document portal and AI-driven regulatory consulting.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

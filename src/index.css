@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
   /* Midnight Dark Theme variables */
@@ -16,23 +17,30 @@
   --color-brand-text-muted: #94a3b8; /* Slate Muted Gray */
   --color-brand-card: rgba(255, 255, 255, 0.025);
   --color-brand-input-bg: rgba(8, 8, 10, 0.85);
+  /* Motion tokens for snappy UI */
+  --motion-duration-fast: 160ms;
+  --motion-duration-medium: 320ms;
+  --motion-ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-quick: cubic-bezier(0.22, 1, 0.36, 1);
+  --elevation-1: 0 6px 18px -10px rgba(2,6,23,0.6);
 }
 
 .light {
   /* Marble Light Theme variables */
   --color-brand-dark: #fcfbf9; /* Pristine Marble White */
   --color-brand-bg: #FAF9F6; /* Luxury Warm Ivory Background */
-  --color-brand-bg-darker: #f0ede6; /* Soft Alabaster Gray */
-  --color-brand-bg-lighter: #ffffff; /* Solid Pure White Cards */
-  --color-brand-border: #e4e4e7; /* Fine Slate Border */
+  --color-brand-bg-darker: #e8e5dc; /* Soft Alabaster Gray */
+  --color-brand-bg-lighter: rgba(255, 255, 255, 0.7); /* Advanced Translucent White Cards */
+  --color-brand-border: rgba(197, 168, 128, 0.2); /* Premium Warm Gold-Slate Border */
   --color-brand-text: #111827; /* Rich Dark Charcoal Text */
   --color-brand-text-muted: #4b5563; /* Charcoal Muted Gray */
-  --color-brand-card: rgba(255, 255, 255, 0.95);
+  --color-brand-card: rgba(255, 255, 255, 0.8);
   --color-brand-input-bg: #ffffff;
 }
 
 @theme {
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
   --color-brand-gold: var(--color-brand-gold);
   --color-brand-dark: var(--color-brand-dark);
@@ -49,20 +57,49 @@
 /* Sophisticated styling utilities */
 @layer utilities {
   .subtle-glow {
-    box-shadow: 0 0 25px -5px rgba(197, 168, 128, 0.12);
+    box-shadow: 0 12px 40px -15px rgba(197, 168, 128, 0.08), 0 1px 3px rgba(197, 168, 128, 0.03);
   }
   .accent-gradient {
     background: linear-gradient(135deg, var(--color-brand-dark) 0%, var(--color-brand-bg-darker) 100%);
   }
   .serif {
-    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+    font-family: var(--font-serif);
+  }
+  .advanced-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    border: 0.5px solid rgba(197, 168, 128, 0.2);
+    box-shadow: 0 12px 40px -15px rgba(197, 168, 128, 0.06), 0 2px 4px -2px rgba(197, 168, 128, 0.02);
+  }
+  .advanced-btn {
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: 0.05em;
+  }
+  /* Fast, snappy utility for micro-interactions */
+  .fast-transition {
+    transition: all var(--motion-duration-fast) var(--motion-ease-snappy) !important;
+    will-change: transform, opacity;
+  }
+  .snappy-press:active {
+    transform: translateY(1px) scale(0.998);
+    transition: transform var(--motion-duration-fast) var(--motion-ease-quick);
+  }
+  .premium-card {
+    border-radius: 16px;
+    background-clip: padding-box;
+    box-shadow: var(--elevation-1), 0 2px 8px -4px rgba(197,168,128,0.04);
+    transition: transform var(--motion-duration-fast) var(--motion-ease-snappy), box-shadow var(--motion-duration-fast) var(--motion-ease-snappy);
+  }
+  .premium-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 50px -20px rgba(2,6,23,0.6), 0 6px 18px -8px rgba(197,168,128,0.08);
   }
 }
 
 body {
   background-color: var(--color-brand-bg);
   color: var(--color-brand-text);
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
   position: relative;
   overflow-x: hidden;
 }
@@ -111,4 +148,103 @@ body {
   z-index: -2;
   pointer-events: none;
   mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 90%);
+}
+
+/* Premium Service Cards theme adapters */
+.premium-service-card {
+  background-color: #0c0c0e;
+  border-color: #1d1e22;
+}
+
+.light .premium-service-card {
+  background-color: #ffffff;
+  border-color: rgba(197, 168, 128, 0.2);
+}
+
+.card-header-bg {
+  background-color: rgba(4, 4, 5, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.light .card-header-bg {
+  background-color: #0a1128;
+  border-bottom: none;
+}
+
+/* Premium Hero and Advisor Card theme adapters */
+.premium-hero-card {
+  background-color: #0c0c0e; /* Obsidian dark in dark mode */
+  border-color: #1d1e22;
+}
+
+.light .premium-hero-card {
+  background-color: #0a1128; /* Solid deep navy/blue in light mode */
+  border-color: #1e2d5a;
+}
+
+.premium-advisor-card {
+  background-color: #0c0d12; /* Deep obsidian in dark mode */
+  border-color: #1d1e22;
+  color: var(--color-brand-text);
+}
+
+.light .premium-advisor-card {
+  background-color: #ffffff; /* Solid white in light mode */
+  border-color: rgba(197, 168, 128, 0.2);
+  color: #111827;
+}
+
+.premium-advisor-input {
+  background-color: #040405; /* obsidian onyx dark in dark mode */
+  border-color: #1d1e22;
+  color: #f3f4f6;
+}
+
+.light .premium-advisor-input {
+  background-color: #FAF9F6; /* luxury warm ivory in light mode */
+  border-color: #e2e8f0;
+  color: #1e293b;
+}
+
+/* Compliance Penalty Card theme adapters */
+.compliance-penalty-card {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.15) 0%, rgba(127, 29, 29, 0.06) 100%);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.light .compliance-penalty-card {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.compliance-penalty-text {
+  color: rgba(254, 202, 202, 0.85); /* red-200 bright on dark bg */
+}
+
+.light .compliance-penalty-text {
+  color: #991b1b; /* red-800, strong dark red on light bg */
+}
+
+.compliance-penalty-btn {
+  background-color: rgba(69, 10, 10, 0.35);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5; /* red-300 */
+}
+
+.compliance-penalty-btn:hover {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #000;
+}
+
+.light .compliance-penalty-btn {
+  background-color: rgba(254, 226, 226, 0.6);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #b91c1c; /* red-700 */
+}
+
+.light .compliance-penalty-btn:hover {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
 }

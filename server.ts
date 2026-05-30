@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Initialize GoogleGenAI SDK on server side with proper headers
 const ai = new GoogleGenAI({
@@ -97,6 +97,13 @@ async function startServer() {
 
   // API Route - Get current orders tracking data
   app.get("/api/portal/orders", (req, res) => {
+    const { email } = req.query;
+    if (email && typeof email === "string") {
+      const filtered = portalOrders.filter(
+        (o) => o.email.toLowerCase() === email.toLowerCase()
+      );
+      return res.json({ success: true, count: filtered.length, orders: filtered });
+    }
     res.json({ success: true, count: portalOrders.length, orders: portalOrders });
   });
 
@@ -207,8 +214,8 @@ async function startServer() {
       return res.status(400).json({ success: false, error: "Messages array is required." });
     }
 
-    // Grab user instructions context for LegisCorp Legal Advisor agent
-    const contextInfo = `You are "LegisCorp Advisor", a premium legal corporate consultancy AI assistant specialized in firm registrations (Private Limited, LLPs, Sole Proprietorship, Partnership, One Person Company) and absolute corporate compliance.
+      // Grab user instructions context for Incroute Legal Advisor agent
+      const contextInfo = `You are "Incroute Advisor", a premium legal corporate consultancy AI assistant specialized in firm registrations (Private Limited, LLP, Sole Proprietorship, Partnership, One Person Company) and absolute corporate compliance.
 You assist client business founders, small enterprise operators, and entrepreneurs to correctly complete filings, name approvals, agreements structures, tax filings (GST, ROC, Form 8, AOC-4, DIR-2), and other critical statutory items.
 
 ${selectedOrder ? `
@@ -423,7 +430,7 @@ Format your response as a strict, clean JSON object. Do not include any markdown
         model: "gemini-3.5-flash",
         contents: checkPrompt,
         config: {
-          systemInstruction: "You are the Senior Registrar Compliance Director of LegisCorp. Return ONLY raw JSON without markdown syntax blocks.",
+          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON without markdown syntax blocks.",
           temperature: 0.2,
         }
       });
@@ -586,7 +593,7 @@ Format your response in structured sections:
         model: "gemini-3.5-flash",
         contents: auditPrompt,
         config: {
-          systemInstruction: "You are the Senior Registrar Compliance Director of LegisCorp. Provide pristine corporate insights designed to guide new founders.",
+          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute. Provide pristine corporate insights designed to guide new founders.",
           temperature: 0.3,
         }
       });
@@ -827,11 +834,20 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
   // Vite Integration for Full-Stack routing
   if (process.env.NODE_ENV !== "production") {
+    const hmrPort = Number(process.env.WS_PORT) || (PORT + 100);
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: {
+          protocol: 'ws',
+          host: 'localhost',
+          port: hmrPort,
+        },
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
+    console.log(`Vite HMR configured to ws://localhost:${hmrPort}`);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
@@ -841,7 +857,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`LegisCorp backend server active running on http://0.0.0.0:${PORT}`);
+    console.log(`Incroute backend server active running on http://0.0.0.0:${PORT}`);
   });
 }
 

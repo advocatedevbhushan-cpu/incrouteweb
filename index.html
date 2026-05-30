@@ -4,7 +4,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Legis & Corp</title>
+  <title>incroute</title>
+  <script>
+    (function(){
+      try {
+        const storageKey = 'site-theme';
+        const html = document.documentElement;
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) {
+          html.classList.remove('light');
+          html.classList.add('dark');
+          localStorage.setItem(storageKey, 'dark');
+        } else {
+          html.classList.toggle('dark', saved === 'dark');
+          html.classList.toggle('light', saved === 'light');
+        }
+      } catch (e) {
+        /* ignore storage errors */
+      }
+    })();
+  </script>
 </head>
 
 <body>
