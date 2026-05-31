@@ -43,6 +43,11 @@ export default function Navbar({
   // Active Dropdowns State for hover triggers on desktop
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
+  const handleNavClick = (e: React.MouseEvent, tab: string) => {
+    e.preventDefault();
+    setActiveTab(tab);
+  };
+
   useEffect(() => {
     // Check initial mode
     const isLight = document.documentElement.classList.contains("light");
@@ -72,7 +77,7 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16">
           
           {/* Logo Brand */}
-          <div className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={() => setActiveTab("services")}>
+          <a href="/" className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={(e) => handleNavClick(e, "services")}>
             <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
               <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
             </div>
@@ -82,7 +87,7 @@ export default function Navbar({
               </span>
               <p className="text-[8px] text-brand-text-muted font-mono tracking-widest uppercase mt-0.5">{t("footer_motto") as string}</p>
             </div>
-          </div>
+          </a>
 
           {/* Desktop Navigation Links - Organized into Dropdowns */}
           <div className="hidden lg:flex items-center space-x-1">
@@ -130,9 +135,10 @@ export default function Navbar({
                       { tab: "catalog", icon: Database, title: "Detailed Catalog", desc: "Document rules & advantages" },
                       { tab: "tools", icon: Calculator, title: "Interactive Utilities", desc: "Calculators & draft generators" }
                     ].map((sub) => (
-                      <button
+                      <a
                         key={sub.tab}
-                        onClick={() => { setActiveTab(sub.tab); setHoveredMenu(null); }}
+                        href={sub.tab === "services" ? "/" : `/${sub.tab}`}
+                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
                         className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
                           activeTab === sub.tab ? "bg-brand-gold/5" : ""
                         }`}
@@ -146,7 +152,7 @@ export default function Navbar({
                           </span>
                           <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
                         </div>
-                      </button>
+                      </a>
                     ))}
                   </motion.div>
                 )}
@@ -197,9 +203,10 @@ export default function Navbar({
                       { tab: "impact", icon: TrendingUp, title: "Impact Dashboard", desc: "Timeline & growth visualizations" },
                       { tab: "compliance", icon: FileText, title: "Due Date Tracker", desc: "Static statutory calendars" }
                     ].map((sub) => (
-                      <button
+                      <a
                         key={sub.tab}
-                        onClick={() => { setActiveTab(sub.tab); setHoveredMenu(null); }}
+                        href={`/${sub.tab}`}
+                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
                         className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
                           activeTab === sub.tab ? "bg-brand-gold/5" : ""
                         }`}
@@ -213,7 +220,7 @@ export default function Navbar({
                           </span>
                           <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
                         </div>
-                      </button>
+                      </a>
                     ))}
                   </motion.div>
                 )}
@@ -262,9 +269,10 @@ export default function Navbar({
                       { tab: "blog", icon: BookOpen, title: "Knowledge Base", desc: "Expert statutory articles" },
                       { tab: "testimonials", icon: MessageSquare, title: "Client Reflections", desc: "Founder feedback & reviews" }
                     ].map((sub) => (
-                      <button
+                      <a
                         key={sub.tab}
-                        onClick={() => { setActiveTab(sub.tab); setHoveredMenu(null); }}
+                        href={`/${sub.tab}`}
+                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
                         className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
                           activeTab === sub.tab ? "bg-brand-gold/5" : ""
                         }`}
@@ -278,7 +286,7 @@ export default function Navbar({
                           </span>
                           <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
                         </div>
-                      </button>
+                      </a>
                     ))}
                   </motion.div>
                 )}
@@ -293,9 +301,10 @@ export default function Navbar({
               const isActive = activeTab === item.tab;
               const Icon = item.icon;
               return (
-                <button
+                <a
                   key={item.tab}
-                  onClick={() => setActiveTab(item.tab)}
+                  href={`/${item.tab}`}
+                  onClick={(e) => handleNavClick(e, item.tab)}
                   className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu cursor-pointer select-none outline-none ${
                     isActive
                       ? isLightMode ? "text-[#111827]" : "text-brand-gold"
@@ -315,7 +324,7 @@ export default function Navbar({
                     <Icon className="w-3.5 h-3.5" />
                     {item.label}
                   </span>
-                </button>
+                </a>
               );
             })}
 
@@ -387,16 +396,17 @@ export default function Navbar({
               { tab: "catalog", icon: Database, label: "Detailed Catalog" },
               { tab: "tools", icon: Calculator, label: "Interactive Tools" }
             ].map(({ tab, icon: Icon, label }) => (
-              <button
+              <a
                 key={tab}
-                onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+                href={tab === "services" ? "/" : `/${tab}`}
+                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
                   activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
                 }`}
               >
                 <Icon className="w-4 h-4 text-brand-text-muted" />
                 {label}
-              </button>
+              </a>
             ))}
           </div>
 
@@ -413,16 +423,17 @@ export default function Navbar({
               const Icon = item.icon || FileText;
               const label = item.label || "Due Date Tracker";
               return (
-                <button
+                <a
                   key={tab}
-                  onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+                  href={`/${tab}`}
+                  onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
                   className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
                     activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
                   }`}
                 >
                   <Icon className="w-4 h-4 text-brand-text-muted" />
                   {label}
-                </button>
+                </a>
               );
             })}
           </div>
@@ -434,16 +445,17 @@ export default function Navbar({
               { tab: "blog", icon: BookOpen, label: "Knowledge Base Articles" },
               { tab: "testimonials", icon: MessageSquare, label: "Client Reflections" }
             ].map(({ tab, icon: Icon, label }) => (
-              <button
+              <a
                 key={tab}
-                onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+                href={`/${tab}`}
+                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
                   activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
                 }`}
               >
                 <Icon className="w-4 h-4 text-brand-text-muted" />
                 {label}
-              </button>
+              </a>
             ))}
           </div>
 
@@ -454,16 +466,17 @@ export default function Navbar({
               { tab: "about", icon: Info, label: t("nav_about") as string },
               { tab: "contact", icon: Phone, label: t("nav_contact") as string },
             ].map(({ tab, icon: Icon, label }) => (
-              <button
+              <a
                 key={tab}
-                onClick={() => { setActiveTab(tab); setMobileMenuOpen(false); }}
+                href={`/${tab}`}
+                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
                   activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
                 }`}
               >
                 <Icon className="w-4 h-4 text-brand-text-muted" />
                 {label}
-              </button>
+              </a>
             ))}
           </div>
         </div>

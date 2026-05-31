@@ -2,6 +2,183 @@ import React, { useState, useEffect } from "react";
 import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milestone, ArrowRight, CornerDownRight, Sparkles, Search, Lock, ChevronRight, AlertTriangle, CheckCircle2, Loader2, Star, Shield, Database, Landmark, TrendingUp, Scale, FileText, Heart, X, ArrowLeft } from "lucide-react";
 import { FirmOrder } from "../types";
 import { motion } from "motion/react";
+import { useLang } from "../lib/LanguageContext";
+const getTranslatedService = (service: any, lang: string) => {
+  if (lang !== "hi") return service;
+
+  const translationsMap: Record<string, any> = {
+    "pvt-ltd": {
+      name: "प्राइवेट लिमिटेड कंपनी (Pvt Ltd)",
+      timeline: "7–10 वर्किंग दिन",
+      minDirectors: "न्यूनतम 2 डायरेक्टर",
+      description: "स्टार्टअप्स और बढ़ते व्यवसायों के लिए सबसे लोकप्रिय संरचना।",
+      badge: "सबसे लोकप्रिय",
+      features: [
+        "अलग कानूनी पहचान (Separate Legal Entity)",
+        "सीमित दायित्व सुरक्षा (Limited Liability)",
+        "निवेशक पूँजी जुटाना बेहद आसान"
+      ],
+      detailedAbout: "एक प्राइवेट लिमिटेड कंपनी (Pvt Ltd) भारत में स्टार्टअप और छोटे-मध्यम उद्योगों के लिए सबसे पसंदीदा बिजनेस संरचना है। यह लिमिटेड लायबिलिटी प्रोटेक्शन, अलग कानूनी पहचान और वेंचर कैपिटल फंड जुटाने की सुविधा प्रदान करती है। यह कंपनी अधिनियम 2013 के तहत कॉर्पोरेट मामलों के मंत्रालय (MCA) द्वारा पंजीकृत की जाती है।",
+      keyAdvantages: [
+        "अलग कानूनी पहचान (Separate Legal Entity)",
+        "लिमिटेड लायबिलिटी सुरक्षा (Limited Liability)",
+        "स्टार्टअप फंडिंग जुटाने में बेहद आसान",
+        "स्थायित्व और निरंतरता (Perpetual Succession)",
+        "स्टार्टअप इंडिया योजना के लिए योग्य"
+      ],
+      documents: [
+        "पैन कार्ड (PAN Card)",
+        "आधार कार्ड / पासपोर्ट",
+        "बिजली/पानी का बिल (Utility Bill)",
+        "बैंक स्टेटमेंट (Bank Statement)",
+        "प्रॉपर्टी ओनर से एनओसी (NOC)"
+      ]
+    },
+    "llp": {
+      name: "लिमिटेड लायबिलिटी पार्टनरशिप (LLP)",
+      timeline: "8–12 वर्किंग दिन",
+      minDirectors: "न्यूनतम 2 पार्टनर्स",
+      description: "कम प्रशासनिक नियमों के साथ साझेदारी का सबसे आधुनिक रूप।",
+      badge: "पसंदीदा विकल्प",
+      features: [
+        "पार्टनर्स का सीमित दायित्व (Limited Liability)",
+        "अलग कानूनी पहचान (Separate Legal Entity)",
+        "कोई न्यूनतम पूंजी आवश्यकता नहीं"
+      ],
+      detailedAbout: "लिमिटेड लायबिलिटी पार्टनरशिप (LLP) पारंपरिक पार्टनरशिप फर्म और प्राइवेट लिमिटेड कंपनी का एक बेहतरीन मिश्रण है। यह पार्टनर्स को लिमिटेड लायबिलिटी प्रदान करती है जबकि इसके संचालन के नियम अत्यंत लचीले होते हैं।",
+      keyAdvantages: [
+        "पार्टनर्स का सीमित दायित्व (Limited Liability)",
+        "कम ऑडिट और कम्प्लायंस का खर्च",
+        "कोई न्यूनतम पूंजी आवश्यकता नहीं",
+        "पार्टनरशिप एग्रीमेंट में लचीलापन",
+        "अलग कानूनी पहचान (Separate Legal Entity)"
+      ],
+      documents: [
+        "पैन कार्ड (PAN Card)",
+        "आधार कार्ड / वोटर आईडी",
+        "बिजली/पानी का बिल (Utility Bill)",
+        "बैंक स्टेटमेंट (Bank Statement)",
+        "पार्टनरशिप एग्रीमेंट ड्राफ्ट"
+      ]
+    },
+    "opc": {
+      name: "वन पर्सन कंपनी (OPC)",
+      timeline: "7–10 वर्किंग दिन",
+      minDirectors: "1 डायरेक्टर और 1 नॉमिनी",
+      description: "एकल संस्थापकों के लिए सीमित दायित्व वाली कंपनी।",
+      badge: "एकल फाउंडर्स हेतु",
+      features: [
+        "100% नियंत्रण एवं स्वामित्व",
+        "सीमित दायित्व सुरक्षा (Limited Liability)",
+        "अलग कानूनी पहचान (Separate Legal Entity)"
+      ],
+      detailedAbout: "वन पर्सन कंपनी (OPC) एक व्यक्ति को एक कंपनी संरचना बनाने की अनुमति देती है। यह एकल स्वामित्व (Proprietorship) के नियंत्रण को कॉर्पोरेट संरचना के फायदों के साथ जोड़ती है।",
+      keyAdvantages: [
+        "100% नियंत्रण एवं पूर्ण स्वामित्व",
+        "सीमित दायित्व सुरक्षा (Limited Liability)",
+        "अलग कानूनी पहचान (Separate Legal Entity)",
+        "सालाना कम्प्लायंस में छूट",
+        "बैंक लोन मिलने में आसानी"
+      ],
+      documents: [
+        "पैन कार्ड (PAN Card)",
+        "आधार कार्ड / वोटर आईडी",
+        "बिजली/पानी का बिल (Utility Bill)",
+        "बैंक स्टेटमेंट (Bank Statement)",
+        "नॉमिनी की सहमति (Nominee Consent)"
+      ]
+    },
+    "partnership": {
+      name: "पार्टनरशिप फर्म (Partnership)",
+      timeline: "3–5 वर्किंग दिन",
+      minDirectors: "न्यूनतम 2 पार्टनर्स",
+      description: "छोटे व्यापारियों के लिए सरल और त्वरित बिज़नेस पार्टनरशिप।",
+      badge: "त्वरित पंजीकरण",
+      features: [
+        "न्यूनतम सालाना कम्प्लायंस",
+        "पार्टनरशिप डीड के साथ आसान संचालन",
+        "कम शुरुआती सेटअप लागत"
+      ],
+      detailedAbout: "पार्टनरशिप फर्म भारत में बिज़नेस शुरू करने के सबसे पुराने और सरल तरीकों में से एक है। इसमें दो या दो से अधिक व्यक्ति आपस में मुनाफा बांटने की सहमति के साथ व्यापार शुरू करते हैं।",
+      keyAdvantages: [
+        "बहुत कम सालाना कम्प्लायंस",
+        "आसान पार्टनरशिप डीड द्वारा संचालन",
+        "शुरुआती सेटअप की कम लागत",
+        "त्वरित पंजीकरण प्रक्रिया",
+        "आसान बिज़नेस बंद करने की प्रक्रिया"
+      ],
+      documents: [
+        "पैन कार्ड (PAN Card)",
+        "पार्टनर्स के आधार कार्ड",
+        "बिजली/पानी का बिल (Utility Bill)",
+        "साझेदारी विलेख (Partnership Deed)",
+        "एनओसी (NOC)"
+      ]
+    },
+    "section8": {
+      name: "सेक्शन 8 एनजीओ (Section 8 NGO)",
+      timeline: "15–20 वर्किंग दिन",
+      minDirectors: "न्यूनतम 2 डायरेक्टर्स",
+      description: "धर्मार्थ या सामाजिक कार्यों के लिए गैर-लाभकारी संस्था (NGO)।",
+      badge: "गैर-लाभकारी संस्था",
+      features: [
+        "इनकम टैक्स में छूट (80G/12A)",
+        "प्रीमियम क्रेडिबिलिटी",
+        "नाम के पीछे 'Limited' लगाना जरूरी नहीं"
+      ],
+      detailedAbout: "सेक्शन 8 कंपनी एक गैर-लाभकारी संगठन (NGO) है जिसकी स्थापना कला, विज्ञान, धर्मार्थ, शिक्षा या पर्यावरण संरक्षण के लिए की जाती है। इसका कोई भी मुनाफा सदस्यों को लाभांश (Dividend) के रूप में नहीं बांटा जाता।",
+      keyAdvantages: [
+        "इनकम टैक्स में बड़ी छूट (80G/12A)",
+        "विदेशी अनुदान (FCRA) के लिए योग्य",
+        "प्रीमियम क्रेडिबिलिटी",
+        "नाम के पीछे 'Limited' लगाना जरूरी नहीं",
+        "सरकारी अनुदान के लिए प्राथमिक पात्रता"
+      ],
+      documents: [
+        "पैन कार्ड (PAN Card)",
+        "आधार कार्ड / वोटर आईडी",
+        "बिजली/पानी का बिल (Utility Bill)",
+        "संस्था के उद्देश्य (MOA/AOA)",
+        "3 साल का अनुमानित बजट"
+      ]
+    },
+    "virtual-cfo": {
+      name: "वर्चुअल सीएफओ सेवाएं (Virtual CFO)",
+      timeline: "सालाना / मासिक सब्सक्रिप्शन",
+      minDirectors: "कस्टम आवर्ती सेवाएं",
+      description: "स्टार्टअप्स के लिए पार्ट-टाइम सीए (CA) वित्तीय सलाहकार सेवाएं।",
+      badge: "हाई ग्रोथ हेतु",
+      features: [
+        "टैक्स प्लानिंग और सेविंग सलाह",
+        "नियमित बुककीपिंग एवं जीएसटी रिटर्न",
+        "इन्वेस्टर रिपोर्टिंग एवं कैश-फ्लो मैनेजमेंट"
+      ],
+      detailedAbout: "वर्चुअल सीएफओ सेवाएं छोटे व्यवसायों और स्टार्टअप्स को एक पूर्ण-कालिक सीएफओ की भारी लागत के बिना एक वरिष्ठ वित्तीय सलाहकार (CA) की विशेषज्ञता प्रदान करती हैं।",
+      keyAdvantages: [
+        "टैक्स प्लानिंग और लीगल सेविंग सलाह",
+        "नियमित बुककीपिंग एवं जीएसटी कम्प्लायंस",
+        "कैश-फ्लो और वर्किंग कैपिटल मैनेजमेंट",
+        "इन्वेस्टर रिपोर्टिंग एवं बोर्ड मीटिंग्स सपोर्ट",
+        "वित्तीय जोखिमों से पूर्ण सुरक्षा"
+      ],
+      documents: [
+        "कंपनी रजिस्ट्रेशन सर्टिफिकेट",
+        "पिछले 6 महीने का बैंक स्टेटमेंट",
+        "जीएसटी लॉगिन क्रेडेंशियल",
+        "मौजूदा बुककीपिंग डेटा",
+        "टैन/पैन क्रेडेंशियल्स"
+      ]
+    }
+  };
+
+  const tVal = translationsMap[service.id];
+  if (!tVal) return service;
+
+  return {
+    ...service,
+    ...tVal
+  };
+};
 
 interface RegistrationServicesProps {
   setActiveTab: (tab: string) => void;
@@ -30,7 +207,7 @@ const serviceCatalog = [
       "Startup India eligibility"
     ],
     badge: "Most Popular",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "The gold standard for startups and growing businesses.",
     popular: true,
@@ -67,7 +244,7 @@ const serviceCatalog = [
       "Tax benefits on partner remuneration"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "Flexibility of a partnership with corporate protection.",
     popular: false,
@@ -103,7 +280,7 @@ const serviceCatalog = [
       "Nominee director safety net"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 4.8,
     description: "Solo founder? Get full corporate protection alone.",
     popular: false,
@@ -139,7 +316,7 @@ const serviceCatalog = [
       "Mutual agency collaboration"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 4.5,
     description: "Simple, fast, and cost-effective for small businesses.",
     popular: false,
@@ -175,7 +352,7 @@ const serviceCatalog = [
       "Easy domestic/international donation flow"
     ],
     badge: "NGO Special",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "Charitable non-profit status with tax exemptions.",
     popular: false,
@@ -211,7 +388,7 @@ const serviceCatalog = [
       "Stock exchange listing eligibility"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "Raise public capital with unlimited shareholders.",
     popular: false,
@@ -247,7 +424,7 @@ const serviceCatalog = [
       "Dedicated CA Lead assigned"
     ],
     badge: "Compliance Special",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "ROC filing, Director KYC, and board meeting minutes.",
     popular: false,
@@ -283,7 +460,7 @@ const serviceCatalog = [
       "Inter-state commerce legal clearance"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 4.9,
     description: "GSTIN activation, MSME registration, and PAN/TAN.",
     popular: false,
@@ -319,7 +496,7 @@ const serviceCatalog = [
       "Detailed board performance metrics"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 5,
     description: "Cash flow modeling, treasury operations, and performance reports.",
     popular: false,
@@ -354,7 +531,7 @@ const serviceCatalog = [
       "Lease liability isolation"
     ],
     badge: "",
-    expert: "Adv. Dev Bhushan",
+    expert: "D Bhushan",
     rating: 4.8,
     description: "GST & ROC compliant addresses with scan/forward support.",
     popular: false,
@@ -632,8 +809,10 @@ export default function RegistrationServices({
     };
   };
 
+  const { lang } = useLang();
+  const activeCatalog = serviceCatalog.map((s) => getTranslatedService(s, lang));
   const pricing = getCalculatorPricing();
-  const selectedEntity = entityCatalog.find((e) => e.id === selectedEntityId) || entityCatalog[0];
+  const selectedEntity = activeCatalog.find((e) => e.id === selectedEntityId) || activeCatalog[0];
 
   return (
     <div className="space-y-12">
@@ -918,22 +1097,26 @@ export default function RegistrationServices({
           <div id="service-catalog-section" className="flex flex-col gap-6 w-full max-w-5xl mx-auto pt-6 text-left">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-brand-border/60 pb-4 gap-4">
               <div>
-                <h2 className="font-serif text-2xl font-bold tracking-tight text-brand-text">Browse by Service Type</h2>
-                <p className="text-xs text-brand-text-muted mt-1 leading-relaxed">Select the right structure for your business goals</p>
+                <h2 className="font-serif text-2xl font-bold tracking-tight text-brand-text">
+                  {lang === "hi" ? "सेवा प्रकार के अनुसार खोजें" : "Browse by Service Type"}
+                </h2>
+                <p className="text-xs text-brand-text-muted mt-1 leading-relaxed">
+                  {lang === "hi" ? "अपने व्यावसायिक लक्ष्यों के लिए सही संरचना चुनें" : "Select the right structure for your business goals"}
+                </p>
               </div>
               <span className="text-[10px] uppercase font-mono tracking-widest text-[#9E896A] font-bold bg-brand-gold/10 border border-brand-gold/20 px-3 py-1 rounded-full">
-                {serviceCatalog.filter(s => activeCategory === "all" || s.category === activeCategory).length} services available
+                {activeCatalog.filter(s => activeCategory === "all" || s.category === activeCategory).length} {lang === "hi" ? "सेवाएं उपलब्ध" : "services available"}
               </span>
             </div>
 
             {/* Category Pills Bar */}
             <div className="flex items-center gap-2 overflow-x-auto py-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
               {[
-                { id: "all", label: "All Services", icon: Scale },
-                { id: "private-corporate", label: "Private Corporate", icon: Building2 },
-                { id: "alternative-entity", label: "Alternative Entity", icon: Landmark },
-                { id: "compliance", label: "Compliance", icon: FileText },
-                { id: "enterprise-growth", label: "Enterprise & Growth", icon: TrendingUp }
+                { id: "all", label: lang === "hi" ? "सभी सेवाएं" : "All Services", icon: Scale },
+                { id: "private-corporate", label: lang === "hi" ? "प्राइवेट कॉर्पोरेट" : "Private Corporate", icon: Building2 },
+                { id: "alternative-entity", label: lang === "hi" ? "वैकल्पिक इकाई" : "Alternative Entity", icon: Landmark },
+                { id: "compliance", label: lang === "hi" ? "सालाना कम्प्लायंस" : "Compliance", icon: FileText },
+                { id: "enterprise-growth", label: lang === "hi" ? "बिजनेस ग्रोथ" : "Enterprise & Growth", icon: TrendingUp }
               ].map((cat) => {
                 const Icon = cat.icon;
                 const isActive = activeCategory === cat.id;
@@ -956,7 +1139,7 @@ export default function RegistrationServices({
 
             {/* Dynamic Service Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-              {serviceCatalog
+              {activeCatalog
                 .filter((s) => activeCategory === "all" || s.category === activeCategory)
                 .map((service, index) => {
                   const isSaved = savedServices.includes(service.id);
@@ -1206,7 +1389,7 @@ export default function RegistrationServices({
                     </div>
                     <div>
                       <div className="flex items-center flex-wrap gap-2">
-                        <span className="font-serif text-sm font-bold text-brand-text">{selectedEntity.expert || "Adv. Dev Bhushan"}</span>
+                        <span className="font-serif text-sm font-bold text-brand-text">{selectedEntity.expert || "D Bhushan"}</span>
                         <span className="bg-brand-gold/10 text-[#9E896A] border border-[#9E896A]/30 text-[8px] font-extrabold px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">
                           Super Expert
                         </span>

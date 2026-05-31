@@ -461,7 +461,7 @@ export default function TestimonialsSection() {
                   <textarea
                     rows={4}
                     required
-                    placeholder="Describe your registration and audit experience with Advocate Dev Bhushan..."
+                    placeholder="Describe your registration and audit experience with D Bhushan..."
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
                     className="w-full bg-brand-bg border border-brand-border focus:border-brand-gold rounded px-3 py-2 text-xs text-brand-text outline-none resize-none font-sans"

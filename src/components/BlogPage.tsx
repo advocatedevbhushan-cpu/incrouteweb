@@ -53,7 +53,7 @@ export default function BlogPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newSubtitle, setNewSubtitle] = useState("");
   const [newContent, setNewContent] = useState("");
-  const [newAuthor, setNewAuthor] = useState("Advocate Dev Bhushan");
+  const [newAuthor, setNewAuthor] = useState("D Bhushan");
   const [newImage, setNewImage] = useState("");
   const [imageType, setImageType] = useState<"url" | "upload">("url");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -939,7 +939,7 @@ export default function BlogPage() {
                     type="text" 
                     value={newAuthor}
                     onChange={(e) => setNewAuthor(e.target.value)}
-                    placeholder="Advocate Dev Bhushan" 
+                    placeholder="D Bhushan" 
                     className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-mono"
                     required
                   />

@@ -540,7 +540,7 @@ File the **SPICe+ (Simplified Proforma for Incorporating Company Electronically)
 * No minimum paid-up capital is required under current rules.`,
       image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
       date: "2026-05-28",
-      author: "Advocate Dev Bhushan",
+      author: "D Bhushan",
       views: 342
     },
     {
@@ -611,7 +611,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 | **Perpetual Succession**| Yes | Yes |`,
       image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
       date: "2026-05-02",
-      author: "Advocate Dev Bhushan",
+      author: "D Bhushan",
       views: 254
     }
   ];
@@ -669,7 +669,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       content,
       image: image || "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
       date: new Date().toISOString().split("T")[0],
-      author: author || "Advocate Dev Bhushan",
+      author: author || "D Bhushan",
       tags: Array.isArray(tags) ? tags : [],
       views: 0
     };
@@ -738,7 +738,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       designation: "CEO, FinTech Solutions",
       entityType: "Pvt Ltd Company",
       rating: 5,
-      content: "Incroute made Pvt Ltd company registration completely hassle-free! Advocate Dev Bhushan personally reviewed all files and completed the incorporation in just 8 working days. Peerless service!",
+      content: "Incroute made Pvt Ltd company registration completely hassle-free! D Bhushan personally reviewed all files and completed the incorporation in just 8 working days. Peerless service!",
       approved: true,
       timestamp: new Date().toISOString()
     },
@@ -904,6 +904,114 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     res.json({ success: true, message: "Testimonial deleted successfully!", testimonial: deleted[0] });
   });
 
+  // SEO Metadata profiles for sitemappable pages
+  const seoProfiles: Record<string, { title: string; description: string; keywords: string }> = {
+    "/": {
+      title: "INCroute | Premium Startup & Corporate Registrations in India",
+      description: "INCroute is a premium corporate registration and compliance advisory platform. Launch and scale your Indian startup with professional guidance for Pvt Ltd, LLP, Section 8, and GST filings.",
+      keywords: "company registration, private limited, LLP registration, India, ROC filings, GST, startup advisory, virtual CFO"
+    },
+    "/services": {
+      title: "Statutory Incorporation Services | INCroute",
+      description: "Premium end-to-end corporate registration services in India. Register Private Limited, LLP, One Person Company, Partnership, and Section 8 NGO seamlessly.",
+      keywords: "Pvt Ltd company registration, LLP registration, OPC registration, NGO Section 8, company setup"
+    },
+    "/about": {
+      title: "Meet the Corporate Expert - D Bhushan | INCroute",
+      description: "Learn about D Bhushan, the founder and principal legal advisor behind INCroute. Experience startup legal architecture and Fortune 500 audit-backed corporate compliance.",
+      keywords: "D Bhushan, INCroute founder, corporate law consultant, startup legal architecture"
+    },
+    "/blog": {
+      title: "LegisCorp Editorial & Compliance Insights Ledger | INCroute",
+      description: "Explore statutory briefs, ROC filing warnings, tax advisory articles, and legal ledger insights managed by corporate advocates and chartered analysts.",
+      keywords: "compliance blogs, ROC updates, GST changes, corporate law articles"
+    },
+    "/name-checker": {
+      title: "AI-Powered Registrar Name Feasibility Auditor | INCroute",
+      description: "Audit your proposed brand name against official Registrar (MCA) guidelines. Our dynamic auditor maps trade registry databases instantly for zero-conflict incorporation.",
+      keywords: "company name search, MCA name checker, startup brand auditor, business name registry"
+    },
+    "/tools": {
+      title: "Interactive Statutory Utilities & Draft Generators | INCroute",
+      description: "Calculate stamp duty rates across states, compute estimated company setup costs, and generate live previews of legal draft documents instantly.",
+      keywords: "stamp duty calculator, legal draft generator, company registration cost, statutory utilities"
+    },
+    "/testimonials": {
+      title: "Founder Trust & Client Reflections Board | INCroute",
+      description: "See reviews and testimonials from Indian startup founders and business owners who registered their companies and handled ROC annual compliance with INCroute.",
+      keywords: "INCroute reviews, startup founder feedback, statutory filing client reviews"
+    },
+    "/contact": {
+      title: "Schedule an Expert Corporate Consultation | INCroute",
+      description: "Get in touch with our senior registrars and compliance specialists. Book your consultation for company registration, annual compliance, or taxation.",
+      keywords: "contact INCroute, corporate consultation, talk to CA, hire startup lawyer"
+    },
+    "/flowchart": {
+      title: "Interactive Corporate Compliance Flowcharts | INCroute",
+      description: "Visualize step-by-step statutory filing timelines and ROC compliance pipelines for Private Limited and LLP setups in India.",
+      keywords: "compliance flowchart, ROC timeline, company registration pipeline"
+    },
+    "/comparison": {
+      title: "Corporate Entity Structural Comparisons | INCroute",
+      description: "Compare Private Limited, LLP, OPC, and Partnership structures side-by-side on liability, funding readiness, audit requirements, and compliance costs.",
+      keywords: "Pvt Ltd vs LLP, OPC vs Partnership, compare business structures, startup entity type"
+    },
+    "/impact": {
+      title: "Filing Speeds & Statutory Impact Dashboard | INCroute",
+      description: "Track live operational metrics, ROC filing speeds, and statutory SLA timelines managed by our senior corporate desk.",
+      keywords: "ROC filing speed, compliance SLA, INCroute dashboard"
+    },
+    "/timeline-viz": {
+      title: "Statutory Filing Timelines Dashboard | INCroute",
+      description: "Track first-year statutory due dates, ROC filings, and calendar roadmaps to prevent compliance penalties.",
+      keywords: "statutory calendar, ROC timelines, compliance dashboard"
+    }
+  };
+
+  function injectSEOMetadata(html: string, route: string): string {
+    const profile = seoProfiles[route] || seoProfiles["/"];
+    
+    // Replace <title>
+    let transformed = html.replace(/<title>.*?<\/title>/gi, `<title>${profile.title}</title>`);
+    
+    // Replace or inject description
+    const descMeta = `<meta name="description" content="${profile.description}" />`;
+    if (transformed.includes('name="description"')) {
+      transformed = transformed.replace(/<meta name="description" content=".*?" \/>/gi, descMeta);
+    } else {
+      transformed = transformed.replace("</head>", `  ${descMeta}\n</head>`);
+    }
+
+    // Replace or inject keywords
+    const keywordsMeta = `<meta name="keywords" content="${profile.keywords}" />`;
+    if (transformed.includes('name="keywords"')) {
+      transformed = transformed.replace(/<meta name="keywords" content=".*?" \/>/gi, keywordsMeta);
+    } else {
+      transformed = transformed.replace("</head>", `  ${keywordsMeta}\n</head>`);
+    }
+
+    // OpenGraph OG Title & Description
+    const ogTitle = `<meta property="og:title" content="${profile.title}" />`;
+    const ogDesc = `<meta property="og:description" content="${profile.description}" />`;
+    
+    if (transformed.includes('property="og:title"')) {
+      transformed = transformed.replace(/<meta property="og:title" content=".*?" \/>/gi, ogTitle);
+    } else {
+      transformed = transformed.replace("</head>", `  ${ogTitle}\n</head>`);
+    }
+
+    if (transformed.includes('property="og:description"')) {
+      transformed = transformed.replace(/<meta property="og:description" content=".*?" \/>/gi, ogDesc);
+    } else {
+      transformed = transformed.replace("</head>", `  ${ogDesc}\n</head>`);
+    }
+
+    return transformed;
+  }
+
+  // SEO sitemappable page routes
+  const seoRoutes = Object.keys(seoProfiles);
+
   // Vite Integration for Full-Stack routing
   if (process.env.NODE_ENV !== "production") {
     const hmrPort = Number(process.env.WS_PORT) || (PORT + 100);
@@ -916,12 +1024,47 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           port: hmrPort,
         },
       },
-      appType: "spa",
+      appType: "custom",
     });
+
+    // Intercept SEO routes dynamically in development
+    app.get(seoRoutes, async (req, res, next) => {
+      try {
+        const url = req.originalUrl.split("?")[0];
+        const templatePath = path.join(process.cwd(), "index.html");
+        let template = fs.readFileSync(templatePath, "utf-8");
+        
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+        const html = injectSEOMetadata(template, url);
+        
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (err: any) {
+        console.error("Vite index transform error:", err.message);
+        next(err);
+      }
+    });
+
     app.use(vite.middlewares);
     console.log(`Vite HMR configured to ws://localhost:${hmrPort}`);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+
+    // Intercept SEO routes dynamically in production
+    app.get(seoRoutes, (req, res, next) => {
+      try {
+        const url = req.originalUrl.split("?")[0];
+        const templatePath = path.join(distPath, "index.html");
+        if (fs.existsSync(templatePath)) {
+          const template = fs.readFileSync(templatePath, "utf-8");
+          const html = injectSEOMetadata(template, url);
+          return res.status(200).set({ "Content-Type": "text/html" }).end(html);
+        }
+        next();
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));

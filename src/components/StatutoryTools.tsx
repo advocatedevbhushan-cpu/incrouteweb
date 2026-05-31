@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLang } from "../lib/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Calculator, 
@@ -56,6 +57,7 @@ const STATE_STAMP_RATES: Record<string, { pvtLtdBase: number, pvtLtdPercent: num
 };
 
 export default function StatutoryTools() {
+  const { lang } = useLang();
   const [activeTab, setActiveTab] = useState<"calculator" | "generator">("calculator");
 
   // Calculator State
@@ -217,13 +219,19 @@ Founder A Signature                     Founder B Signature`;
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
-          <Sparkles className="w-3.5 h-3.5" /> Premium Client Utilities
+          <Sparkles className="w-3.5 h-3.5" /> {lang === "hi" ? "प्रीमियम क्लाइंट उपयोगिताएँ" : "Premium Client Utilities"}
         </div>
         <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
-          Statutory Tools & <span className="text-brand-gold italic font-normal">Legal Utilities.</span>
+          {lang === "hi" ? (
+            <>वैधानिक उपकरण और <span className="text-brand-gold italic font-normal">कानूनी उपयोगिताएँ।</span></>
+          ) : (
+            <>Statutory Tools & <span className="text-brand-gold italic font-normal">Legal Utilities.</span></>
+          )}
         </h1>
         <p className="text-xs text-brand-text-muted font-sans max-w-xl mx-auto leading-relaxed">
-          Interactive calculator for government stamp duties and an intelligent generator to build, preview, and download custom corporate document drafts.
+          {lang === "hi" 
+            ? "स्टैम्प ड्यूटी की गणना करने के लिए इंटरैक्टिव कैलकुलेटर और कस्टमाइज़्ड कानूनी ड्राफ्ट तैयार करने एवं डाउनलोड करने के लिए स्मार्ट जनरेटर।"
+            : "Interactive calculator for government stamp duties and an intelligent generator to build, preview, and download custom corporate document drafts."}
         </p>
       </div>
 
@@ -238,7 +246,7 @@ Founder A Signature                     Founder B Signature`;
                 : "text-brand-text-muted hover:text-brand-text"
             }`}
           >
-            <Calculator className="w-4 h-4" /> Stamp Duty Calculator
+            <Calculator className="w-4 h-4" /> {lang === "hi" ? "स्टैम्प ड्यूटी कैलकुलेटर" : "Stamp Duty Calculator"}
           </button>
           <button
             onClick={() => setActiveTab("generator")}
@@ -248,7 +256,7 @@ Founder A Signature                     Founder B Signature`;
                 : "text-brand-text-muted hover:text-brand-text"
             }`}
           >
-            <FileText className="w-4 h-4" /> Legal Draft Generator
+            <FileText className="w-4 h-4" /> {lang === "hi" ? "कानूनी ड्राफ्ट जनरेटर" : "Legal Draft Generator"}
           </button>
         </div>
       </div>
@@ -257,10 +265,13 @@ Founder A Signature                     Founder B Signature`;
       <div className="bg-brand-gold/10 border border-brand-gold/30 rounded-xl p-4 text-xs text-brand-text flex items-start gap-3 shadow-md max-w-5xl mx-auto font-sans">
         <Sparkles className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold text-brand-gold uppercase tracking-wider block mb-1">Interactive Utility Advisory</span>
+          <span className="font-bold text-brand-gold uppercase tracking-wider block mb-1">
+            {lang === "hi" ? "वैधानिक उपकरण आवश्यक सूचना" : "Interactive Utility Advisory"}
+          </span>
           <p className="text-brand-text-muted leading-relaxed">
-            All prices and statutory fees displayed are strictly **Estimated Costs** marked with an asterisk (*). This tool serves as a reference **knowledge base** only. 
-            The **final number can be declared on your mail or on call through an expert** to ensure 100% precision with your custom requirements.
+            {lang === "hi" 
+              ? "नीचे दिखाए गए सभी शुल्क और स्टैम्प ड्यूटी पूरी तरह से अनुमानित लागत (Estimated Costs) हैं जो तारांकन (*) से चिह्नित हैं। यह केवल संदर्भ ज्ञान आधार (Reference Knowledge Base) है। अंतिम सटीक शुल्क केवल आपके ईमेल पर या विशेषज्ञ के साथ कॉल के माध्यम से ही घोषित किया जाएगा।"
+              : "All prices and statutory fees displayed are strictly Estimated Costs marked with an asterisk (*). This tool serves as a reference knowledge base only. The final number can be declared on your mail or on call through an expert to ensure 100% precision with your custom requirements."}
           </p>
         </div>
       </div>
@@ -279,15 +290,19 @@ Founder A Signature                     Founder B Signature`;
             <div className="lg:col-span-7 bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-6">
               <div className="border-b border-brand-border pb-3">
                 <h3 className="text-xl font-light text-brand-text serif flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-brand-gold" /> Fee Configuration
+                  <Calculator className="w-5 h-5 text-brand-gold" /> {lang === "hi" ? "शुल्क संरचना कॉन्फ़िगरेशन" : "Fee Configuration"}
                 </h3>
-                <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">Configure Company Share & Capital parameters</p>
+                <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">
+                  {lang === "hi" ? "कंपनी शेयर और पूंजी मानकों को सेट करें" : "Configure Company Share & Capital parameters"}
+                </p>
               </div>
 
               <div className="space-y-4">
                 {/* State selector */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">State / Union Territory</label>
+                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">
+                    {lang === "hi" ? "राज्य / केंद्र शासित प्रदेश" : "State / Union Territory"}
+                  </label>
                   <select
                     value={calcState}
                     onChange={(e) => setCalcState(e.target.value)}
@@ -301,7 +316,9 @@ Founder A Signature                     Founder B Signature`;
 
                 {/* Entity type selector */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">Entity Framework</label>
+                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">
+                    {lang === "hi" ? "कंपनी / एंटिटी का प्रकार" : "Entity Framework"}
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
                     {["Pvt Ltd", "LLP", "OPC"].map((type) => (
                       <button
@@ -324,7 +341,9 @@ Founder A Signature                     Founder B Signature`;
                 {/* Authorized Capital input slider */}
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest">
-                    <span className="text-brand-gold font-bold">Proposed Authorized Capital* (Estimated Cost)</span>
+                    <span className="text-brand-gold font-bold">
+                      {lang === "hi" ? "प्रस्तावित अधिकृत पूंजी* (अनुमानित लागत)" : "Proposed Authorized Capital* (Estimated Cost)"}
+                    </span>
                     <span className="text-brand-text font-bold">₹{authorizedCapital.toLocaleString()}*</span>
                   </div>
                   <input
@@ -337,9 +356,9 @@ Founder A Signature                     Founder B Signature`;
                     className="w-full h-1 bg-brand-border rounded-lg appearance-none cursor-pointer accent-brand-gold"
                   />
                   <div className="flex justify-between text-[9px] text-brand-text-muted/60 font-mono">
-                    <span>₹1,00,000* (Estimated Cost Min)</span>
-                    <span>₹50,00,000* (Estimated Cost Mid)</span>
-                    <span>₹1,00,00,000* (Estimated Cost Max)</span>
+                    <span>{lang === "hi" ? "₹1,00,000* (न्यूनतम अनुमानित)" : "₹1,00,000* (Estimated Cost Min)"}</span>
+                    <span>{lang === "hi" ? "₹50,00,000* (मध्यम अनुमानित)" : "₹50,00,000* (Estimated Cost Mid)"}</span>
+                    <span>{lang === "hi" ? "₹1,00,00,000* (अधिकतम अनुमानित)" : "₹1,00,00,000* (Estimated Cost Max)"}</span>
                   </div>
                 </div>
               </div>
@@ -351,46 +370,55 @@ Founder A Signature                     Founder B Signature`;
               
               <div className="space-y-4 relative z-10">
                 <div className="border-b border-brand-border pb-3 text-center">
-                  <span className="text-[9px] font-mono bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded border border-brand-gold/20 uppercase tracking-widest font-bold">Statutory Receipt Draft</span>
-                  <h4 className="text-lg font-light text-brand-text serif mt-2">{entityType} Incorporation cost*</h4>
-                  <p className="text-[9px] text-brand-text-muted/60 font-mono tracking-wider">State Jurisdiction: {calcState}</p>
+                  <span className="text-[9px] font-mono bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded border border-brand-gold/20 uppercase tracking-widest font-bold">
+                    {lang === "hi" ? "सरकारी रसीद ड्राफ्ट" : "Statutory Receipt Draft"}
+                  </span>
+                  <h4 className="text-lg font-light text-brand-text serif mt-2">
+                    {entityType} {lang === "hi" ? "रजिस्ट्रेशन लागत*" : "Incorporation cost*"}
+                  </h4>
+                  <p className="text-[9px] text-brand-text-muted/60 font-mono tracking-wider">
+                    {lang === "hi" ? "राज्य अधिकार क्षेत्र" : "State Jurisdiction"}: {calcState}
+                  </p>
                 </div>
 
                 <div className="space-y-3 font-mono text-[10px]">
                   <div className="flex justify-between text-brand-text-muted">
-                    <span>ROC Registration Base fee* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "ROC रजिस्ट्रेशन सरकारी बेस फीस* (अनुमानित लागत):" : "ROC Registration Base fee* (Estimated Cost):"}</span>
                     <span>₹{fees.govBaseFee.toLocaleString()}*</span>
                   </div>
                   <div className="flex justify-between text-brand-text-muted">
-                    <span>State Stamp Duty* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "राज्य स्टैम्प ड्यूटी सरकारी फीस* (अनुमानित लागत):" : "State Stamp Duty* (Estimated Cost):"}</span>
                     <span>₹{fees.stampDuty.toLocaleString()}*</span>
                   </div>
                   <div className="flex justify-between text-brand-text-muted">
-                    <span>PAN/TAN application fee* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "PAN/TAN सरकारी आवेदन फीस* (अनुमानित लागत):" : "PAN/TAN application fee* (Estimated Cost):"}</span>
                     <span>₹{fees.panTanGovFee.toLocaleString()}*</span>
                   </div>
                   <div className="border-t border-brand-border/40 pt-2 flex justify-between text-brand-text font-semibold">
-                    <span>Total Gov Statutory Fees* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "कुल सरकारी वैधानिक शुल्क* (अनुमानित लागत):" : "Total Gov Statutory Fees* (Estimated Cost):"}</span>
                     <span className="text-brand-gold">₹{fees.totalGovernmentFees.toLocaleString()}*</span>
                   </div>
 
                   <div className="border-t border-brand-border/40 pt-3 flex justify-between text-brand-text-muted">
-                    <span>Digital Signature Cost (DSC)* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "डिजिटल सिग्नेचर (DSC) सरकारी फीस* (अनुमानित लागत):" : "Digital Signature Cost (DSC)* (Estimated Cost):"}</span>
                     <span>₹{fees.dscCost.toLocaleString()}*</span>
                   </div>
                   <div className="flex justify-between text-brand-text-muted">
-                    <span>Incroute Professional Fee* (Estimated Cost):</span>
+                    <span>{lang === "hi" ? "Incroute प्रोफेशनल एडवाइजरी फीस* (अनुमानित लागत):" : "Incroute Professional Fee* (Estimated Cost):"}</span>
                     <span>₹{fees.professionalFee.toLocaleString()}*</span>
                   </div>
 
                   <div className="border-t border-brand-gold/30 border-dashed pt-4 mt-2 flex justify-between text-xs font-bold text-brand-text">
-                    <span className="flex items-center gap-1"><Scale className="w-3.5 h-3.5 text-brand-gold" /> Estimated Total Cost*:</span>
+                    <span className="flex items-center gap-1"><Scale className="w-3.5 h-3.5 text-brand-gold" /> {lang === "hi" ? "अनुमानित कुल लागत*:" : "Estimated Total Cost*:"}</span>
                     <span className="text-brand-gold text-sm font-bold">₹{fees.totalFinal.toLocaleString()}*</span>
                   </div>
                 </div>
 
                 <div className="bg-brand-bg border border-brand-border rounded-xl p-3.5 text-[9px] text-brand-text-muted/80 leading-relaxed font-sans mt-3">
-                  <span className="font-bold text-brand-gold">Statutory Disclaimer:</span> Fees calculated above are automated estimates* based on current state stamp laws and MCA guidelines. Government portals may vary state-wise processing fees slightly.
+                  <span className="font-bold text-brand-gold">{lang === "hi" ? "सरकारी अस्वीकरण:" : "Statutory Disclaimer:"}</span>{" "}
+                  {lang === "hi"
+                    ? "ऊपर दी गई गणना वर्तमान राज्य स्टैम्प कानूनों और MCA गाइडलाइन्स पर आधारित स्वचालित अनुमान* हैं। विभिन्न राज्यों में सरकारी फीस थोड़ी भिन्न हो सकती है।"
+                    : "Fees calculated above are automated estimates* based on current state stamp laws and MCA guidelines. Government portals may vary state-wise processing fees slightly."}
                 </div>
               </div>
             </div>
@@ -407,15 +435,19 @@ Founder A Signature                     Founder B Signature`;
             <div className="lg:col-span-5 bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-6">
               <div className="border-b border-brand-border pb-3">
                 <h3 className="text-xl font-light text-brand-text serif flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-brand-gold" /> Draft Credentials
+                  <FileText className="w-5 h-5 text-brand-gold" /> {lang === "hi" ? "ड्राफ्ट क्रेडेंशियल्स" : "Draft Credentials"}
                 </h3>
-                <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">Configure draft variables</p>
+                <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">
+                  {lang === "hi" ? "दस्तावेज़ ड्राफ्ट के मानों को सेट करें" : "Configure draft variables"}
+                </p>
               </div>
 
               <div className="space-y-4">
                 {/* Template selector */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">Document Class</label>
+                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">
+                    {lang === "hi" ? "दस्तावेज का प्रकार" : "Document Class"}
+                  </label>
                   <div className="flex gap-1.5">
                     <button
                       type="button"
@@ -426,7 +458,7 @@ Founder A Signature                     Founder B Signature`;
                           : "bg-brand-bg border-brand-border text-brand-text-muted hover:text-brand-text"
                       }`}
                     >
-                      Office NOC
+                      {lang === "hi" ? "ऑफिस NOC" : "Office NOC"}
                     </button>
                     <button
                       type="button"
@@ -437,7 +469,7 @@ Founder A Signature                     Founder B Signature`;
                           : "bg-brand-bg border-brand-border text-brand-text-muted hover:text-brand-text"
                       }`}
                     >
-                      Founders' Deed
+                      {lang === "hi" ? "फाउंडर्स डीड" : "Founders' Deed"}
                     </button>
                   </div>
                 </div>
@@ -445,7 +477,9 @@ Founder A Signature                     Founder B Signature`;
                 {/* Form fields */}
                 <div className="space-y-3.5">
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">Proposed Corporate Name</label>
+                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">
+                      {lang === "hi" ? "प्रस्तावित कंपनी का नाम" : "Proposed Corporate Name"}
+                    </label>
                     <input
                       type="text"
                       value={docFields.proposedName}
@@ -455,7 +489,9 @@ Founder A Signature                     Founder B Signature`;
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">Primary Declarant / Founder A</label>
+                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">
+                      {lang === "hi" ? "मुख्य घोषणाकर्ता / फाउंडर A" : "Primary Declarant / Founder A"}
+                    </label>
                     <input
                       type="text"
                       value={docFields.applicantName}
@@ -465,7 +501,9 @@ Founder A Signature                     Founder B Signature`;
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">Property Owner / Founder B</label>
+                    <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">
+                      {lang === "hi" ? "प्रॉपर्टी का मालिक / फाउंडर B" : "Property Owner / Founder B"}
+                    </label>
                     <input
                       type="text"
                       value={docFields.ownerName}
@@ -478,7 +516,9 @@ Founder A Signature                     Founder B Signature`;
                   {selectedDoc === "noc" && (
                     <>
                       <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">Registered Address details</label>
+                        <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">
+                          {lang === "hi" ? "पंजीकृत ऑफिस का पूरा पता (Address)" : "Registered Address details"}
+                        </label>
                         <textarea
                           rows={3}
                           value={docFields.premisesAddress}
@@ -488,17 +528,19 @@ Founder A Signature                     Founder B Signature`;
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">Applicant's Lease Relationship</label>
+                        <label className="text-[9px] font-mono uppercase text-brand-text-muted tracking-wider">
+                          {lang === "hi" ? "आवेदक के साथ लीज संबंध" : "Applicant's Lease Relationship"}
+                        </label>
                         <select
                           value={docFields.relationship}
                           onChange={(e) => setDocFields({ ...docFields, relationship: e.target.value })}
                           className="w-full bg-brand-bg border border-brand-border rounded px-3 py-2 text-xs text-brand-text outline-none focus:border-brand-gold"
                         >
-                          <option value="">-- Select / Leave Empty for Underline --</option>
-                          <option value="Tenant">Tenant / Lessee</option>
-                          <option value="Director">Director / Promoter</option>
-                          <option value="Son/Daughter">Son / Daughter of owner</option>
-                          <option value="Authorized User">Authorized Business User</option>
+                          <option value="">{lang === "hi" ? "-- चुनें / खाली स्थान के लिए रिक्त छोड़ें --" : "-- Select / Leave Empty for Underline --"}</option>
+                          <option value="Tenant">{lang === "hi" ? "किराएदार (Tenant / Lessee)" : "Tenant / Lessee"}</option>
+                          <option value="Director">{lang === "hi" ? "डायरेक्टर / प्रमोटर (Director / Promoter)" : "Director / Promoter"}</option>
+                          <option value="Son/Daughter">{lang === "hi" ? "मकान मालिक का पुत्र / पुत्री (Son/Daughter)" : "Son/Daughter of owner"}</option>
+                          <option value="Authorized User">{lang === "hi" ? "अधिकृत व्यावसायिक उपयोगकर्ता (Authorized User)" : "Authorized Business User"}</option>
                         </select>
                       </div>
                     </>
@@ -513,13 +555,13 @@ Founder A Signature                     Founder B Signature`;
                 {/* Stamp Paper header block */}
                 <div className="bg-[#131b2e] border-b border-brand-border px-4 py-3 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-[9px] font-mono uppercase text-brand-gold font-bold">
-                    <ClipboardCheck className="w-3.5 h-3.5 text-brand-gold" /> LIVE DRAFT CLEARANCE PREVIEW
+                    <ClipboardCheck className="w-3.5 h-3.5 text-brand-gold" /> {lang === "hi" ? "लाइव कानूनी ड्राफ्ट प्रिव्यू" : "LIVE DRAFT CLEARANCE PREVIEW"}
                   </span>
                   <div className="flex gap-1.5 font-mono text-[9px] text-brand-text-muted">
                     {isGenerating ? (
-                      <span className="text-brand-gold animate-pulse">● COMPILING DRAFT...</span>
+                      <span className="text-brand-gold animate-pulse">● {lang === "hi" ? "ड्राफ्ट कंपाइल हो रहा है..." : "COMPILING DRAFT..."}</span>
                     ) : (
-                      <span className="text-emerald-500">● SYNCED</span>
+                      <span className="text-emerald-500">● {lang === "hi" ? "सिंक हो गया" : "SYNCED"}</span>
                     )}
                   </div>
                 </div>
@@ -543,8 +585,12 @@ Founder A Signature                     Founder B Signature`;
                         </div>
 
                         <div className="space-y-1 font-mono">
-                          <p className="text-[10px] uppercase tracking-widest text-brand-gold font-semibold">Generating Live Preview...</p>
-                          <p className="text-[9px] text-brand-text-muted">Inserting custom details and applying statutory structure</p>
+                          <p className="text-[10px] uppercase tracking-widest text-brand-gold font-semibold">
+                            {lang === "hi" ? "लाइव प्रिव्यू तैयार हो रहा है..." : "Generating Live Preview..."}
+                          </p>
+                          <p className="text-[9px] text-brand-text-muted">
+                            {lang === "hi" ? "कस्टम विवरण दर्ज किए जा रहे हैं और वैधानिक प्रारूप लागू किया जा रहा है..." : "Inserting custom details and applying statutory structure"}
+                          </p>
                         </div>
                         <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-brand-gold to-transparent animate-pulse" />
                       </motion.div>
@@ -575,7 +621,7 @@ Founder A Signature                     Founder B Signature`;
                   onClick={handleDownload}
                   className="flex items-center gap-2 bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] px-5 py-3 rounded-lg transition-all cursor-pointer font-bold shadow-lg shadow-brand-gold/10"
                 >
-                  <Download className="w-4 h-4" /> Download Plain-Text Draft (.txt)
+                  <Download className="w-4 h-4" /> {lang === "hi" ? "कानूनी ड्राफ्ट डाउनलोड करें (.txt)" : "Download Plain-Text Draft (.txt)"}
                 </button>
               </div>
             </div>

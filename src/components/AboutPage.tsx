@@ -39,11 +39,6 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
   const timeline = [
     {
       year: "2025",
-      title: "Bar Council Enrollment",
-      desc: "Enrolled as an Advocate with the Bar Council of India. Commenced practice in corporate, commercial, and startup law.",
-    },
-    {
-      year: "2025",
       title: "Trained Under Fortune 500 CA",
       desc: "Worked under a Chartered Accountant with Fortune 500 audit and business consulting experience, gaining deep exposure to corporate compliance, financial audits, and strategic advisory at scale.",
     },
@@ -127,13 +122,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
                 +91 8707552183
               </a>
               <a
-                href="mailto:advocate.dev.bhushan@gmail.com"
+                href="mailto:d.bhushan@incroute.com"
                 className="flex items-center gap-3 text-xs text-brand-text-muted hover:text-brand-gold transition-colors group"
               >
                 <div className="p-1.5 rounded-lg bg-brand-gold/10 border border-brand-gold/20 text-brand-gold group-hover:bg-brand-gold group-hover:text-black transition-colors">
                   <Mail className="w-3 h-3" />
                 </div>
-                advocate.dev.bhushan@gmail.com
+                d.bhushan@incroute.com
               </a>
             </div>
           </div>
@@ -290,21 +285,23 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
             Ready to Register Your Business?
           </h3>
           <p className="text-sm text-slate-300 font-sans max-w-md mx-auto leading-relaxed">
-            Let Advocate Dev Bhushan and the Incroute team handle your incorporation end-to-end — from name approval to COI issuance.
+            Let D Bhushan and the Incroute team handle your incorporation end-to-end — from name approval to COI issuance.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <button
-              onClick={() => setActiveTab("services")}
-              className="px-6 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2"
+            <a
+              href="/"
+              onClick={(e) => { e.preventDefault(); setActiveTab("services"); }}
+              className="px-6 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2 decoration-none"
             >
               {t("about_cta") as string} <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setActiveTab("contact")}
-              className="px-6 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer bg-transparent"
+            </a>
+            <a
+              href="/contact"
+              onClick={(e) => { e.preventDefault(); setActiveTab("contact"); }}
+              className="px-6 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer bg-transparent decoration-none"
             >
               {t("about_contact_cta") as string}
-            </button>
+            </a>
           </div>
         </div>
       </motion.div>

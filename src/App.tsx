@@ -36,7 +36,32 @@ import {
 } from "lucide-react";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>("services");
+  const getTabFromPath = (): string => {
+    const path = window.location.pathname.replace(/^\//, "");
+    if (!path) return "services";
+    return path;
+  };
+
+  const [activeTab, setActiveTabState] = useState<string>(getTabFromPath);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    const newPath = tab === "services" ? "/" : `/${tab}`;
+    if (window.location.pathname !== newPath) {
+      window.history.pushState(null, "", newPath);
+    }
+  };
+
+  // Sync state on browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveTabState(getTabFromPath());
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   // Roadmap State
   const [selectedMilestone, setSelectedMilestone] = useState(0);
@@ -234,7 +259,7 @@ export default function App() {
                           <h4 className="text-[10px] font-mono text-brand-gold uppercase tracking-widest font-semibold mb-1">Contact Channels</h4>
                           <p className="text-sm text-brand-text-muted leading-relaxed font-sans mt-0.5">
                             Phone: +91 8707552183<br />
-                            Email: advocate.dev.bhushan@gmail.com<br />
+                            Email: info@incroute.com<br />
                             Hours: Mon-Fri, 9:00 AM - 6:00 PM IST
                           </p>
                         </div>
