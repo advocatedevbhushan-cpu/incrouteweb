@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Settings } from "lucide-react";
-import { motion } from "motion/react";
+import { Loader2, Settings, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { googleSignIn } from "../lib/firebase";
 import { createGoogleForm } from "../lib/forms";
 
@@ -91,12 +91,26 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
   };
 
   return (
-    <div className="space-y-4 premium-card p-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="space-y-4 premium-card p-6 bg-brand-bg-lighter border border-brand-border rounded-2xl"
+    >
       {isAdmin && (
-        <div className="flex items-center justify-between pb-3 border-b border-[#1f1f22]">
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="flex items-center justify-between pb-3 border-b border-brand-border"
+        >
           {formUri ? (
             <div className="text-[9px] uppercase font-mono tracking-widest flex items-center gap-1.5 text-emerald-500 font-semibold ml-auto bg-emerald-950/20 border border-emerald-500/10 px-2.5 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <motion.span 
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+              />
               Linked with Google Sheets
             </div>
           ) : (
@@ -110,29 +124,42 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
               Admin: Connect Google Forms
             </button>
           )}
-        </div>
+        </motion.div>
       )}
 
       <form onSubmit={handleContactSubmit} className="space-y-5">
-        {contactError && (
-          <div className="p-3 bg-red-950/40 border border-red-500/20 text-red-200 rounded-lg text-xs font-semibold">
-            {contactError}
-          </div>
-        )}
-        {contactSuccess && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="p-4 bg-brand-dark border border-brand-gold/30 rounded-xl text-brand-gold text-xs font-semibold"
-          >
-            {contactSuccess}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {contactError && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.3 }}
+              className="p-3 bg-red-950/40 border border-red-500/20 text-red-200 rounded-lg text-xs font-semibold"
+            >
+              {contactError}
+            </motion.div>
+          )}
+          {contactSuccess && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="p-4 bg-brand-dark border border-brand-gold/30 rounded-xl text-brand-gold text-xs font-semibold flex items-center gap-3"
+            >
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              {contactSuccess}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="space-y-1.5">
           <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono">Full Name *</label>
-          <input
+          <motion.input
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             type="text"
             required
             placeholder="e.g. John Doe"
@@ -143,7 +170,12 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="space-y-1.5"
+          >
             <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono">Email Address *</label>
             <input
               type="email"
@@ -153,9 +185,14 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
               onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
               className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none fast-transition"
             />
-          </div>
+          </motion.div>
           
-          <div className="space-y-1.5">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="space-y-1.5"
+          >
             <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono">Phone Number (Optional)</label>
             <input
               type="text"
@@ -164,10 +201,15 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
               onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
               className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none"
             />
-          </div>
+          </motion.div>
         </div>
 
-        <div className="space-y-1.5">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.25 }}
+          className="space-y-1.5"
+        >
           <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono">Your Message *</label>
           <textarea
             required
@@ -176,16 +218,21 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
             onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
             className="w-full bg-brand-input-bg border border-brand-border hover:border-brand-gold/20 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold rounded px-4 py-2.5 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none h-32 resize-none fast-transition"
           />
-        </div>
+        </motion.div>
 
-        <button
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          whileHover={{ scale: 1.02, boxShadow: "0 10px 30px -15px rgba(197,168,128,0.2)" }}
+          whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={isSubmittingContact}
           className="w-full bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold font-mono uppercase tracking-widest text-xs px-6 py-3 rounded transition-all duration-150 fast-transition snappy-press xl:w-max xl:px-8 mt-4"
         >
           {isSubmittingContact ? "SENDING..." : "Send Message"}
-        </button>
+        </motion.button>
       </form>
-    </div>
+    </motion.div>
   );
 }

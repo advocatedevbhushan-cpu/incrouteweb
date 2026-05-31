@@ -6,6 +6,12 @@ import NameFeasibilityChecker from "./components/NameFeasibilityChecker";
 import BlogPage from "./components/BlogPage";
 import AboutPage from "./components/AboutPage";
 import ServiceCatalogInsights from "./components/ServiceCatalogInsights";
+import StatutoryTools from "./components/StatutoryTools";
+import AnimatedTimeline from "./components/AnimatedTimeline";
+import EntityComparison from "./components/EntityComparison";
+import ServiceImpactDashboard from "./components/ServiceImpactDashboard";
+import ComplianceFlowchart from "./components/ComplianceFlowchart";
+import TestimonialsSection from "./components/TestimonialsSection";
 import { ComplianceEvent } from "./types";
 import { initAuth } from "./lib/firebase";
 import ContactFormWidget from "./components/ContactFormWidget";
@@ -266,6 +272,84 @@ export default function App() {
             </motion.div>
           )}
 
+          {/* Statutory Tools & Utilities */}
+          {activeTab === "tools" && (
+            <motion.div
+              key="tools"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <StatutoryTools />
+            </motion.div>
+          )}
+
+          {/* Compliance Flowchart Visualization */}
+          {activeTab === "flowchart" && (
+            <motion.div
+              key="flowchart"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ComplianceFlowchart />
+            </motion.div>
+          )}
+
+          {/* Entity Comparison Visualization */}
+          {activeTab === "comparison" && (
+            <motion.div
+              key="comparison"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <EntityComparison />
+            </motion.div>
+          )}
+
+          {/* Service Impact Dashboard */}
+          {activeTab === "impact" && (
+            <motion.div
+              key="impact"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ServiceImpactDashboard />
+            </motion.div>
+          )}
+
+          {/* Animated Timeline Visualization */}
+          {activeTab === "timeline-viz" && (
+            <motion.div
+              key="timeline-viz"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AnimatedTimeline items={roadmapMilestones} />
+            </motion.div>
+          )}
+
+          {/* Testimonials tab routing */}
+          {activeTab === "testimonials" && (
+            <motion.div
+              key="testimonials"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <TestimonialsSection />
+            </motion.div>
+          )}
+
           {/* About Us Section */}
           {activeTab === "about" && (
             <motion.div
@@ -484,9 +568,18 @@ export default function App() {
 
                           <div className="border-t border-brand-border/60 pt-3 mt-4 flex items-center justify-between text-[10px]">
                             <span className="text-brand-text-muted font-mono uppercase">Statutory Duty</span>
-                            <span className="text-brand-gold hover:underline cursor-pointer flex items-center gap-1">
-                              Download Template <ArrowRight className="w-2.5 h-2.5" />
-                            </span>
+                            {ev.downloadUrl ? (
+                              <a
+                                href={ev.downloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand-gold hover:underline flex items-center gap-1 font-semibold"
+                              >
+                                Access Official Portal <ArrowRight className="w-2.5 h-2.5" />
+                              </a>
+                            ) : (
+                              <span className="text-brand-text-muted italic">Template Unavailable</span>
+                            )}
                           </div>
                         </div>
                       ))}

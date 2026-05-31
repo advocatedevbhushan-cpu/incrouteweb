@@ -52,6 +52,7 @@ export interface ComplianceEvent {
   description: string;
   dueDate: string;
   type: string;
+  downloadUrl?: string;
 }
 
 export interface BlogPost {

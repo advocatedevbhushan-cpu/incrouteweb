@@ -23,11 +23,11 @@ const ai = new GoogleGenAI({
 
 // Active compliance calendar list for reference or audit tasks
 let complianceCalendar = [
-  { id: "1", service: "GST Filing", description: "Monthly GSTR-1 & GSTR-3B filings", dueDate: "11th and 20th of every month", type: "taxation" },
-  { id: "2", service: "Income Tax Audit", description: "Tax Audit Filing and assessment for entities", dueDate: "September 30th annually", type: "taxation" },
-  { id: "3", service: "ROC Annual Filing", description: "Form MGT-7 and Form AOC-4 Filing with Registrar", dueDate: "Within 30 and 60 days of AGM", type: "corporate" },
-  { id: "4", service: "TDS Returns", description: "Quarterly TDS Filings (Form 24Q, 26Q)", dueDate: "Last day of succeeding month of quarter", type: "taxation" },
-  { id: "5", service: "EPF & ESIC Return", description: "Monthly social security statutory deposit and returns", dueDate: "15th of every month", type: "employment" }
+  { id: "1", service: "GST Filing", description: "Monthly GSTR-1 & GSTR-3B filings", dueDate: "11th and 20th of every month", type: "taxation", downloadUrl: "https://www.gst.gov.in/" },
+  { id: "2", service: "Income Tax Audit", description: "Tax Audit Filing and assessment for entities", dueDate: "September 30th annually", type: "taxation", downloadUrl: "https://www.incometax.gov.in/iec/foportal/" },
+  { id: "3", service: "ROC Annual Filing", description: "Form MGT-7 and Form AOC-4 Filing with Registrar", dueDate: "Within 30 and 60 days of AGM", type: "corporate", downloadUrl: "https://www.mca.gov.in/content/mca/global/en/help-guide/company-forms-download.html" },
+  { id: "4", service: "TDS Returns", description: "Quarterly TDS Filings (Form 24Q, 26Q)", dueDate: "Last day of succeeding month of quarter", type: "taxation", downloadUrl: "https://www.tin-nsdl.com/services/etds-etcs/etds-index.html" },
+  { id: "5", service: "EPF & ESIC Return", description: "Monthly social security statutory deposit and returns", dueDate: "15th of every month", type: "employment", downloadUrl: "https://www.epfindia.gov.in/" }
 ];
 
 async function startServer() {
@@ -78,8 +78,19 @@ async function startServer() {
     res.json({ success: true, uri: contactFormUri });
   });
 
-// Local Memory Storage for Contact Submissions
+// Local Memory Storage and Disk Persistence for Contact Submissions
+const SUBMISSIONS_FILE = path.join(process.cwd(), "submissions.json");
 let contactSubmissions: any[] = [];
+
+// Load existing submissions from disk at startup
+if (fs.existsSync(SUBMISSIONS_FILE)) {
+  try {
+    contactSubmissions = JSON.parse(fs.readFileSync(SUBMISSIONS_FILE, "utf-8"));
+    console.log(`🟢 LOADED PERSISTED SUBMISSIONS: ${contactSubmissions.length} entries`);
+  } catch (err: any) {
+    console.error("Failed to read persisted contact submissions:", err.message);
+  }
+}
 
 // Contact form endpoint
 app.post("/api/contact", async (req, res) => {
@@ -88,15 +99,25 @@ app.post("/api/contact", async (req, res) => {
     return res.status(400).json({ success: false, error: "Missing required fields" });
   }
 
-  // Store in memory list
-  contactSubmissions.push({
+  const newSubmission = {
     id: `MSG-${Math.floor(Math.random() * 10000)}`,
     name,
     email,
     phone,
     message,
     timestamp: new Date().toISOString()
-  });
+  };
+
+  // Store in memory list
+  contactSubmissions.push(newSubmission);
+
+  // Persist immediately to local JSON file
+  try {
+    fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(contactSubmissions, null, 2), "utf-8");
+    console.log(`🟢 PERSISTED NEW SUBMISSION TO DISK: ${newSubmission.id}`);
+  } catch (err: any) {
+    console.error("Failed to persist submission to disk:", err.message);
+  }
 
   // Log to server console so user understands where it goes
   console.log("\n---- NEW CONTACT SUBMISSION ----");
@@ -105,7 +126,7 @@ app.post("/api/contact", async (req, res) => {
   console.log(`Phone: ${phone || "N/A"}`);
   console.log(`Message: ${message}`);
   console.log("--------------------------------\n");
-  console.log(`(NOTE: Total submissions saved in server memory: ${contactSubmissions.length})`);
+  console.log(`(NOTE: Total submissions saved in server memory & disk: ${contactSubmissions.length})`);
 
   // Background Google Form Sync (Method 2)
   if (contactFormUri) {
@@ -704,6 +725,183 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
 
     res.json({ success: true, message: "Blog post deleted successfully!", post: deleted[0] });
+  });
+
+  // Testimonials Persistent JSON Datastore
+  const TESTIMONIALS_FILE = path.join(process.cwd(), "testimonials.json");
+  let testimonials: any[] = [];
+
+  const defaultTestimonials = [
+    {
+      id: "test-1",
+      name: "Amit Sharma",
+      designation: "CEO, FinTech Solutions",
+      entityType: "Pvt Ltd Company",
+      rating: 5,
+      content: "Incroute made Pvt Ltd company registration completely hassle-free! Advocate Dev Bhushan personally reviewed all files and completed the incorporation in just 8 working days. Peerless service!",
+      approved: true,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: "test-2",
+      name: "Priya Nair",
+      designation: "Managing Partner, Zenith Consultancies",
+      entityType: "LLP Partnership",
+      rating: 5,
+      content: "Outstanding compliance support. The virtual CFO services and dashboard kept our LLP ledger clean for yearly audits. Highly recommend for growing service firms in India.",
+      approved: true,
+      timestamp: new Date().toISOString()
+    },
+    {
+      id: "test-3",
+      name: "Devendra Patel",
+      designation: "Founder, GreenAgro OPC",
+      entityType: "One Person Company",
+      rating: 5,
+      content: "The Registrar Name Advisor saved us from multiple MCA naming objections. The incorporation process was swift and transparent from day one. Incredibly modern legal tech platform.",
+      approved: true,
+      timestamp: new Date().toISOString()
+    }
+  ];
+
+  // Load testimonials from disk
+  if (fs.existsSync(TESTIMONIALS_FILE)) {
+    try {
+      testimonials = JSON.parse(fs.readFileSync(TESTIMONIALS_FILE, "utf-8"));
+      console.log(`🟢 LOADED PERSISTED TESTIMONIALS: ${testimonials.length} reviews`);
+    } catch (err: any) {
+      console.error("Failed to read persisted testimonials:", err.message);
+      testimonials = defaultTestimonials;
+    }
+  } else {
+    testimonials = defaultTestimonials;
+    try {
+      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+      console.log(`🟢 INITIALIZED SEED TESTIMONIALS ON DISK`);
+    } catch (err: any) {
+      console.error("Failed to write seed testimonials to disk:", err.message);
+    }
+  }
+
+  // Testimonials public and admin fetch endpoint
+  app.get("/api/testimonials", (req, res) => {
+    const token = req.query.token || req.headers["x-admin-token"];
+    if (token === "admin-session-secure-token") {
+      res.json({ success: true, count: testimonials.length, testimonials });
+    } else {
+      const approvedOnly = testimonials.filter((t) => t.approved === true);
+      res.json({ success: true, count: approvedOnly.length, testimonials: approvedOnly });
+    }
+  });
+
+  // Client submit review (defaults to approved: false)
+  app.post("/api/testimonials", (req, res) => {
+    const { name, designation, entityType: submittedEntity, rating, content } = req.body;
+    if (!name || !content) {
+      return res.status(400).json({ success: false, error: "Name and content review are required fields." });
+    }
+
+    const newTestimonial = {
+      id: `test-${Date.now()}`,
+      name,
+      designation: designation || "Entrepreneur",
+      entityType: submittedEntity || "Private Limited",
+      rating: Number(rating) || 5,
+      content,
+      approved: false, // requires admin approval
+      timestamp: new Date().toISOString()
+    };
+
+    testimonials.unshift(newTestimonial);
+    try {
+      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+      console.log(`🟢 PERSISTED NEW PENDING TESTIMONIAL TO DISK: ${newTestimonial.id}`);
+    } catch (err: any) {
+      console.error("Failed to persist testimonial:", err.message);
+    }
+
+    res.json({ success: true, message: "Review submitted successfully! Pending admin clearance.", testimonial: newTestimonial });
+  });
+
+  // Admin Approve / Toggle testimonial approval status
+  app.post("/api/testimonials/:id/approve", (req, res) => {
+    const { id } = req.params;
+    const { token, approved } = req.body;
+
+    if (token !== "admin-session-secure-token") {
+      return res.status(403).json({ success: false, error: "Unauthorized access." });
+    }
+
+    const tIndex = testimonials.findIndex((t) => t.id === id);
+    if (tIndex === -1) {
+      return res.status(404).json({ success: false, error: "Testimonial not found." });
+    }
+
+    testimonials[tIndex].approved = approved !== undefined ? approved : true;
+
+    try {
+      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+      console.log(`🟢 TESTIMONIAL APPROVAL TOGGLED: ${id} to approved=${testimonials[tIndex].approved}`);
+    } catch (err: any) {
+      console.error("Failed to update approval on disk:", err.message);
+    }
+
+    res.json({ success: true, testimonial: testimonials[tIndex] });
+  });
+
+  // Admin Edit testimonial
+  app.post("/api/testimonials/:id/edit", (req, res) => {
+    const { id } = req.params;
+    const { token, name, designation, entityType: editEntity, rating, content } = req.body;
+
+    if (token !== "admin-session-secure-token") {
+      return res.status(403).json({ success: false, error: "Unauthorized access." });
+    }
+
+    const tIndex = testimonials.findIndex((t) => t.id === id);
+    if (tIndex === -1) {
+      return res.status(404).json({ success: false, error: "Testimonial not found." });
+    }
+
+    if (name) testimonials[tIndex].name = name;
+    if (designation) testimonials[tIndex].designation = designation;
+    if (editEntity) testimonials[tIndex].entityType = editEntity;
+    if (rating) testimonials[tIndex].rating = Number(rating);
+    if (content) testimonials[tIndex].content = content;
+
+    try {
+      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+      console.log(`🟢 TESTIMONIAL EDITED: ${id}`);
+    } catch (err: any) {
+      console.error("Failed to edit testimonial on disk:", err.message);
+    }
+
+    res.json({ success: true, testimonial: testimonials[tIndex] });
+  });
+
+  // Admin Delete testimonial
+  app.delete("/api/testimonials/:id", (req, res) => {
+    const { id } = req.params;
+    const { token } = req.body;
+
+    if (token !== "admin-session-secure-token") {
+      return res.status(403).json({ success: false, error: "Unauthorized access." });
+    }
+
+    const tIndex = testimonials.findIndex((t) => t.id === id);
+    if (tIndex === -1) {
+      return res.status(404).json({ success: false, error: "Testimonial not found." });
+    }
+
+    const deleted = testimonials.splice(tIndex, 1);
+    try {
+      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+      console.log(`🟢 DELETED TESTIMONIAL FROM DISK: ${id}`);
+    } catch (err: any) {
+      console.error("Failed to delete testimonial from disk:", err.message);
+    }
+
+    res.json({ success: true, message: "Testimonial deleted successfully!", testimonial: deleted[0] });
   });
 
   // Vite Integration for Full-Stack routing
