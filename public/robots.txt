@@ -1,5 +1,14 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
 Sitemap: https://incroute.com/sitemap.xml
+Sitemap: https://incroute.com/blog/sitemap.xml

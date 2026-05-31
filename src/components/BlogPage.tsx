@@ -422,7 +422,7 @@ export default function BlogPage() {
         case "image":
           return (
             <span key={i} className="block my-4 text-center">
-              <img 
+              <img loading="lazy" 
                 src={token.extra} 
                 alt={token.content} 
                 className="max-h-[350px] max-w-full rounded-lg border border-brand-border/60 mx-auto shadow-md object-contain" 
@@ -629,7 +629,7 @@ export default function BlogPage() {
 
           {/* Banner Image */}
           <div className="w-full h-[220px] sm:h-[350px] rounded-xl overflow-hidden border border-brand-border/60 shadow-inner relative">
-            <img src={selectedPost.image} className="w-full h-full object-cover" alt={selectedPost.title} />
+            <img loading="lazy" src={selectedPost.image} className="w-full h-full object-cover" alt={selectedPost.title} />
           </div>
 
           <div className="space-y-4 border-b border-brand-border pb-5">
@@ -731,7 +731,7 @@ export default function BlogPage() {
                   <div className="space-y-4">
                     {/* Hover Scaling Image Container */}
                     <div className="h-[180px] w-full overflow-hidden border-b border-brand-border relative">
-                      <img 
+                      <img loading="lazy" 
                         src={post.image} 
                         className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-350 fast-transition" 
                         alt={post.title} 
@@ -1020,7 +1020,7 @@ export default function BlogPage() {
                 <div className="p-3 bg-brand-bg rounded-xl border border-brand-border/65 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-10 rounded overflow-hidden border border-brand-border shrink-0">
-                      <img src={imagePreview} className="w-full h-full object-cover" alt="Upload preview" />
+                      <img loading="lazy" src={imagePreview} className="w-full h-full object-cover" alt="Upload preview" />
                     </div>
                     <div>
                       <span className="text-[8px] uppercase font-mono tracking-wider bg-brand-gold/15 text-brand-gold px-1.5 py-0.5 rounded border border-brand-gold/20 font-bold">Visual Ready</span>
@@ -1327,7 +1327,7 @@ export default function BlogPage() {
                 <div className="p-3 bg-brand-bg rounded-xl border border-brand-border/65 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-10 rounded overflow-hidden border border-brand-border shrink-0">
-                      <img src={inlineImagePreview} className="w-full h-full object-cover" alt="Preview inline image" />
+                      <img loading="lazy" src={inlineImagePreview} className="w-full h-full object-cover" alt="Preview inline image" />
                     </div>
                     <span className="text-[8px] uppercase font-mono tracking-wider bg-brand-gold/15 text-brand-gold px-1.5 py-0.5 rounded font-bold">Preview Ready</span>
                   </div>

@@ -17,6 +17,13 @@ if (window.innerWidth <= 640) {
   console.log("📱 Incroute mobile optimizations loaded");
 }
 
+// Register service worker for offline caching
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 // Initialize premium motion layers
 initProgressBar();
 initAmbientCanvas();

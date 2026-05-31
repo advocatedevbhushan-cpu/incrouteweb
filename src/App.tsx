@@ -21,6 +21,7 @@ import { initAuth } from "./lib/firebase";
 import ContactFormWidget from "./components/ContactFormWidget";
 import LocalCityLanding from "./components/LocalCityLanding";
 import AnswerHub from "./components/AnswerHub";
+import NotFoundPage from "./components/NotFoundPage";
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { 
   Sparkles, 
@@ -739,6 +740,11 @@ export default function App() {
                 )}
               </div>
             </motion.div>
+          )}
+
+          {/* 404 Fallback — show when no tab matches */}
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi"].includes(activeTab) && (
+            <NotFoundPage />
           )}
         </AnimatePresence>
       </main>
