@@ -3,6 +3,7 @@ import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milest
 import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
+import { useAppNavigate } from "../lib/useAppNavigate";
 const getTranslatedService = (service: any, lang: string) => {
   if (lang !== "hi") return service;
 
@@ -181,7 +182,7 @@ const getTranslatedService = (service: any, lang: string) => {
 };
 
 interface RegistrationServicesProps {
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
   prefilledCompanyName?: string;
   prefilledEntityType?: string;
 }
@@ -666,6 +667,7 @@ export default function RegistrationServices({
   prefilledCompanyName = "",
   prefilledEntityType = ""
 }: RegistrationServicesProps) {
+  const navigateToTab = useAppNavigate();
   const [selectedEntityId, setSelectedEntityId] = useState("pvt-ltd");
   const [viewMode, setViewMode] = useState<"grid" | "detail">("grid");
   const [showOnboardModal, setShowOnboardModal] = useState(false);
@@ -867,7 +869,7 @@ export default function RegistrationServices({
                   Explore Services <ArrowRight className="w-3.5 h-3.5" />
                 </button>
                 <button 
-                  onClick={() => setActiveTab("compliance")}
+                  onClick={() => navigateToTab("compliance")}
                   className="px-5 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition transform-gpu cursor-pointer bg-transparent"
                 >
                   Compliance Roadmap

@@ -5,12 +5,14 @@ import {
   Shield, Star, TrendingUp, Users, ArrowRight, Sparkles, Building2,
   RefreshCw, Target, Zap, Quote, ExternalLink,
 } from "lucide-react";
+import { useAppNavigate } from "../lib/useAppNavigate";
 
 interface AboutPageProps {
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void; // kept for backward compat but unused
 }
 
 export default function AboutPage({ setActiveTab }: AboutPageProps) {
+  const navigateToTab = useAppNavigate();
   const expertise = [
     "Private Limited & LLP Incorporations",
     "ROC Annual Filings (AOC-4, MGT-7)",
@@ -295,13 +297,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button
-              onClick={() => setActiveTab("contact")}
+              onClick={() => navigateToTab("contact")}
               className="px-6 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2"
             >
               Talk to D Bhushan <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => setActiveTab("services")}
+              onClick={() => navigateToTab("services")}
               className="px-6 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer bg-transparent"
             >
               Explore Services

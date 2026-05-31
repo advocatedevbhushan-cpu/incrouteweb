@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAppNavigate } from "../lib/useAppNavigate";
 import { 
   HelpCircle, 
   Search, 
@@ -20,15 +21,16 @@ interface FAQItem {
   id: string;
   category: "pvt-ltd" | "opc" | "llp" | "section8" | "general";
   q: string;
-  bluf: string; // Bottom Line Up Front (<45 words)
+  bluf: string;
   inDepth: React.ReactNode;
 }
 
 interface AnswerHubProps {
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
+  const navigateToTab = useAppNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>("faq-1");
@@ -125,7 +127,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
             </div>
           </div>
           <button
-            onClick={() => setActiveTab("services")}
+            onClick={() => navigateToTab("services")}
             className="text-[10px] uppercase font-mono tracking-widest font-bold text-brand-gold hover:underline flex items-center gap-1 mt-2 cursor-pointer"
           >
             Start OPC Registration Panel <ArrowRight className="w-3 h-3" />
@@ -178,7 +180,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
           </div>
           <div className="flex gap-4 pt-2">
             <button
-              onClick={() => setActiveTab("comparison")}
+              onClick={() => navigateToTab("comparison")}
               className="px-4 py-2 border border-brand-gold/30 hover:border-brand-gold hover:bg-brand-gold/5 text-brand-gold text-[9px] font-mono uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
             >
               Interactive Entity Tool
@@ -224,7 +226,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
           <div className="p-3 bg-brand-gold/5 border border-brand-gold/20 rounded-lg flex items-center justify-between">
             <span className="text-[10px] text-brand-text font-mono">Calculate your state's exact stamp duty rate:</span>
             <button
-              onClick={() => setActiveTab("tools")}
+              onClick={() => navigateToTab("tools")}
               className="text-[9px] uppercase font-mono bg-brand-gold text-black font-bold px-3 py-1.5 rounded hover:bg-white transition-colors cursor-pointer"
             >
               Open Stamp duty calculator

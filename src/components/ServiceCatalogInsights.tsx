@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAppNavigate } from "../lib/useAppNavigate";
 import {
   Building2, Shield, Star, Clock, Users, FileText, CheckCircle2,
   ArrowRight, ChevronDown, ChevronUp, Sparkles, Award, TrendingUp,
@@ -265,10 +266,11 @@ const advantageSpectrum = [
 ];
 
 interface ServiceCatalogInsightsProps {
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogInsightsProps) {
+  const navigateToTab = useAppNavigate();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<"advantages" | "documents" | "compliance">("advantages");
@@ -477,7 +479,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {/* CTA */}
                       <div className="flex justify-end">
                         <button
-                          onClick={() => setActiveTab("services")}
+                          onClick={() => navigateToTab("services")}
                           className="flex items-center gap-2 bg-brand-gold text-black font-mono uppercase tracking-widest text-[10px] px-5 py-2.5 rounded-lg hover:bg-white transition-all cursor-pointer font-bold shadow-md shadow-brand-gold/10"
                         >
                           Get Started <ArrowRight className="w-3.5 h-3.5" />
@@ -534,13 +536,13 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
               <button
-                onClick={() => setActiveTab("services")}
+                onClick={() => navigateToTab("services")}
                 className="px-6 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2"
               >
                 Start Registration <ArrowRight className="w-3.5 h-3.5" />
               </button>
               <button
-                onClick={() => setActiveTab("contact")}
+                onClick={() => navigateToTab("contact")}
                 className="px-6 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer bg-transparent"
               >
                 Talk to an Expert

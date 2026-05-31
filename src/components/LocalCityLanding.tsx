@@ -15,15 +15,17 @@ import {
   Clock
 } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
+import { useAppNavigate } from "../lib/useAppNavigate";
 import TestimonialCarousel from "./TestimonialCarousel";
 
 interface LocalCityLandingProps {
   cityId: "bangalore" | "mumbai" | "delhi";
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export default function LocalCityLanding({ cityId, setActiveTab }: LocalCityLandingProps) {
   const { lang } = useLang();
+  const navigateToTab = useAppNavigate();
 
   // City-specific content matrix
   const cityContent = {
@@ -126,7 +128,7 @@ export default function LocalCityLanding({ cityId, setActiveTab }: LocalCityLand
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <button
-              onClick={() => setActiveTab("services")}
+              onClick={() => navigateToTab("services")}
               className="px-6 py-3.5 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 shadow-lg shadow-brand-gold/15 flex items-center gap-2 cursor-pointer"
             >
               Start Registration Online <ArrowRight className="w-3.5 h-3.5" />
@@ -181,7 +183,7 @@ export default function LocalCityLanding({ cityId, setActiveTab }: LocalCityLand
 
         {/* Right Column: Live Testimonial Carousel */}
         <div className="lg:col-span-5">
-          <TestimonialCarousel setActiveTab={setActiveTab} />
+          <TestimonialCarousel  />
         </div>
       </div>
 
@@ -195,7 +197,7 @@ export default function LocalCityLanding({ cityId, setActiveTab }: LocalCityLand
           Choosing the wrong corporate structure can cost thousands in compliance fees or lock you out of VC funding. Pvt Ltd is the gold standard for raising seed funding and ESOPs, whereas LLP offers limited liability with minimal annual compliance.
         </p>
         <button
-          onClick={() => setActiveTab("comparison")}
+          onClick={() => navigateToTab("comparison")}
           className="px-5 py-2.5 border border-brand-gold/40 hover:border-brand-gold hover:bg-brand-gold/10 text-brand-gold text-[9px] font-mono uppercase tracking-widest rounded-lg transition-colors cursor-pointer"
         >
           Compare Entities Side-by-Side

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Star, Quote, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAppNavigate } from "../lib/useAppNavigate";
 
 interface Testimonial {
   id: string;
@@ -12,10 +13,11 @@ interface Testimonial {
 }
 
 interface TestimonialCarouselProps {
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export default function TestimonialCarousel({ setActiveTab }: TestimonialCarouselProps) {
+  const navigateToTab = useAppNavigate();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -64,7 +66,7 @@ export default function TestimonialCarousel({ setActiveTab }: TestimonialCarouse
   };
 
   const handleClick = () => {
-    setActiveTab("testimonials");
+    navigateToTab("testimonials");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
