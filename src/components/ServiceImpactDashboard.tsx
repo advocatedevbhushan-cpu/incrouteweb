@@ -26,10 +26,10 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
 
   // Cost Breakdown Data
   const costData = [
-    { name: "Government Fees", value: 45, color: "#c5a880" }, // Champagne Gold
-    { name: "CA Service Charges", value: 35, color: "#94a3b8" }, // Slate Muted Gray
-    { name: "DSC & DIN Credentials", value: 15, color: "#e8e5dc" }, // Alabaster Gray
-    { name: "Miscellaneous Stamping", value: 5, color: "#5a4d3b" }, // Dark Gold/Bronze
+    { name: "Government Fees", value: 45, color: "#2B5B84" },       // Primary Blue
+    { name: "CA Service Charges", value: 35, color: "#C7A86B" },    // Primary Gold
+    { name: "DSC & DIN Credentials", value: 15, color: "#4A7B9C" }, // Secondary Blue
+    { name: "Miscellaneous Stamping", value: 5, color: "#E5C687" }, // Secondary Gold
   ];
 
   // Timeline Comparison Data
@@ -126,7 +126,7 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                       labelLine={false}
                       label={({ name, value }) => `${name} ${value}%`}
                       outerRadius={95}
-                      fill="#c5a880"
+                      fill="#2B5B84"
                       dataKey="value"
                     >
                       {costData.map((entry, index) => (
@@ -182,7 +182,7 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
           <div className="space-y-6">
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={timelineData} margin={{ top: 20, right: 20, left: -20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 168, 128, 0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(42, 45, 49, 0.6)" />
                 <XAxis dataKey="name" stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <YAxis stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <Tooltip
@@ -194,9 +194,9 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 10 }} />
-                <Bar dataKey="days" fill="#c5a880" name="Days to Complete" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="complexity" fill="#94a3b8" name="Complexity Score" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="compliance" fill="#5a4d3b" name="Compliance Level" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="days" fill="#2B5B84" name="Days to Complete" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="complexity" fill="#C7A86B" name="Complexity Score" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="compliance" fill="#4A7B9C" name="Compliance Level" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
 
@@ -223,7 +223,7 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
           <div className="space-y-6">
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={complianceTimeline} margin={{ top: 20, right: 20, left: -20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 168, 128, 0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(42, 45, 49, 0.6)" />
                 <XAxis dataKey="month" stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <YAxis stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <Tooltip
@@ -238,19 +238,19 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                 <Line
                   type="monotone"
                   dataKey="compliance"
-                  stroke="#c5a880"
+                  stroke="#2B5B84"
                   strokeWidth={3}
                   name="Compliance Level %"
-                  dot={{ fill: "#c5a880", r: 4 }}
+                  dot={{ fill: "#2B5B84", r: 4 }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="documents"
-                  stroke="#94a3b8"
+                  stroke="#C7A86B"
                   strokeWidth={3}
                   name="Documents Lodged"
-                  dot={{ fill: "#94a3b8", r: 4 }}
+                  dot={{ fill: "#C7A86B", r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -270,7 +270,7 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
           <div className="space-y-6">
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={growthData} margin={{ top: 20, right: 20, left: -20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(197, 168, 128, 0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(42, 45, 49, 0.6)" />
                 <XAxis dataKey="year" stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <YAxis stroke="var(--color-brand-text-muted)" fontSize={10} />
                 <Tooltip
@@ -285,26 +285,26 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                 <Line
                   type="monotone"
                   dataKey="pvtLtd"
-                  stroke="#c5a880"
+                  stroke="#2B5B84"
                   strokeWidth={3}
                   name="Pvt Ltd Structure"
-                  dot={{ fill: "#c5a880", r: 4 }}
+                  dot={{ fill: "#2B5B84", r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="llp"
-                  stroke="#94a3b8"
+                  stroke="#C7A86B"
                   strokeWidth={3}
                   name="LLP Partnership"
-                  dot={{ fill: "#94a3b8", r: 4 }}
+                  dot={{ fill: "#C7A86B", r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="opc"
-                  stroke="#5a4d3b"
+                  stroke="#4A7B9C"
                   strokeWidth={3}
                   name="OPC Solo Structure"
-                  dot={{ fill: "#5a4d3b", r: 4 }}
+                  dot={{ fill: "#4A7B9C", r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>

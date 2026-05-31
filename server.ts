@@ -190,6 +190,56 @@ app.post("/api/contact", async (req, res) => {
   res.json({ success: true, message: "Contact saved successfully." });
 });
 
+// Premium Draft Request endpoint
+// NOTE: For production, configure SMTP via Nodemailer or use EmailJS.
+// Currently logs to console and stores in memory. Replace with actual email sending.
+let premiumRequests: any[] = [];
+
+app.post("/api/send-premium-request", (req, res) => {
+  const { fullName, email, phone, companyName, notes, preferredTime, wizardData, agreedToTerms } = req.body;
+
+  if (!fullName || !email || !companyName || !agreedToTerms) {
+    return res.status(400).json({ success: false, error: "Missing required fields." });
+  }
+
+  const request = {
+    id: `PREM-${Math.floor(1000 + Math.random() * 9000)}`,
+    fullName,
+    email,
+    phone: phone || "N/A",
+    companyName,
+    notes: notes || "None",
+    preferredTime: preferredTime || "Anytime",
+    wizardData: wizardData || {},
+    agreedToTerms,
+    timestamp: new Date().toISOString(),
+  };
+
+  premiumRequests.push(request);
+
+  // Log to console (replace with Nodemailer SMTP in production)
+  console.log("\n════════════════════════════════════════════");
+  console.log("  🏆 NEW PREMIUM DRAFTING REQUEST");
+  console.log("════════════════════════════════════════════");
+  console.log(`  Name: ${fullName}`);
+  console.log(`  Email: ${email}`);
+  console.log(`  Phone: ${phone || "N/A"}`);
+  console.log(`  Company: ${companyName}`);
+  console.log(`  Notes: ${notes || "None"}`);
+  console.log(`  Preferred Time: ${preferredTime || "Anytime"}`);
+  console.log(`  Wizard Data: ${JSON.stringify(wizardData || {})}`);
+  console.log(`  Timestamp: ${request.timestamp}`);
+  console.log("════════════════════════════════════════════\n");
+  console.log(`  📧 TODO: Send email to premium@incroute.com`);
+  console.log(`  Subject: New Premium Drafting Request for ${companyName}\n`);
+
+  res.json({
+    success: true,
+    message: "Premium drafting request received successfully.",
+    requestId: request.id,
+  });
+});
+
   // AI Name Feasibility clearance check (DeepSeek API Integration)
   app.post("/api/consult/name-check", async (req, res) => {
     const { name, entityType, industry } = req.body;
@@ -965,6 +1015,250 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       title: "Statutory Filing Timelines Dashboard | INCroute",
       description: "Track first-year statutory due dates, ROC filings, and calendar roadmaps to prevent compliance penalties.",
       keywords: "statutory calendar, ROC timelines, compliance dashboard"
+    },
+    "/company-registration-bangalore": {
+      title: "Online Pvt Ltd Company Registration in Bangalore | INCroute",
+      description: "Instant online Pvt Ltd company registration in Bangalore. Access Silicon Valley's premium incorporation desk. Get MCA name approval, DSC, and local CA assistance for Bangalore startups.",
+      keywords: "online pvt ltd registration price, pvt ltd vs llp for startup, how long does online company registration take, documents needed for online opc registration, Bangalore startup incorporation, company registration Bangalore"
+    },
+    "/company-registration-mumbai": {
+      title: "Premium Pvt Ltd & LLP Registration in Mumbai | INCroute",
+      description: "Fast online company registration and LLP setup in Mumbai BKC. Maharashtra stamp duty compliance, instant MCA name clearance, and expert corporate legal advisory under one roof.",
+      keywords: "online pvt ltd registration price, pvt ltd vs llp for startup, instant llp registration, cheapest company registration online, Mumbai corporate registry, company registration Mumbai"
+    },
+    "/company-registration-delhi": {
+      title: "Elite Pvt Ltd & LLP Registration in Delhi NCR | INCroute",
+      description: "Online Pvt Ltd company registration & instant LLP setup in Delhi, Gurgaon & Noida. High-speed MCA filing, zero office visits. Get your Certificate of Incorporation in 8 working days.",
+      keywords: "online pvt ltd registration price, instant llp registration, how long does online company registration take, documents needed for online opc registration, Delhi company registration, Gurgaon company setup"
+    },
+    "/faq": {
+      title: "Filing Q&A Answer Hub: AEO & GEO-Optimized Company Registration FAQs | INCroute",
+      description: "Get instant BLUF-optimized answers on company registration timelines, document checklists, Pvt Ltd vs LLP comparison, OPC registration costs, and Section 8 NGO tax exemptions. Optimized for Google AI Overviews and voice search.",
+      keywords: "how long does online company registration take, documents needed for online opc registration, pvt ltd vs llp for startup, online pvt ltd registration price, Section 8 NGO tax exemption, company registration FAQ India"
+    }
+  };
+
+  // Rich Structured JSON-LD schemas for Search Engine optimization & organic rich snippets
+  const schemas: Record<string, any> = {
+    "/": {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "INCroute",
+      "url": "https://incroute.com",
+      "logo": "https://incroute.com/ashoka_lion_gold.png",
+      "description": "Premium corporate registration and compliance advisory platform. Get professional guidance for Pvt Ltd, LLP, and statutory filings in India.",
+      "founder": {
+        "@type": "Person",
+        "name": "D Bhushan",
+        "jobTitle": "Founder & Principal Legal Advisor"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+91-8707552183",
+        "contactType": "customer service",
+        "email": "info@incroute.com"
+      }
+    },
+    "/about": {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": "D Bhushan",
+        "jobTitle": "Founder & Principal Legal Advisor",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "INCroute",
+          "url": "https://incroute.com"
+        },
+        "description": "D Bhushan is a practicing corporate lawyer and compliance strategist trained under a CA with Fortune 500 audit experience."
+      }
+    },
+    "/contact": {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "mainEntity": {
+        "@type": "LocalBusiness",
+        "name": "INCroute",
+        "image": "https://incroute.com/ashoka_lion_gold.png",
+        "telephone": "+91-8707552183",
+        "email": "info@incroute.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "openingHours": "Mo-Fr 09:00-18:00"
+      }
+    },
+    "/blog": {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "INCroute LegisCorp Insights Ledger",
+      "description": "Corporate compliance alerts, GST filing guides, ROC updates, and statutory warnings managed by advocates and analysts.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "INCroute"
+      }
+    },
+    "/tools": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "INCroute Interactive Statutory Utilities",
+      "operatingSystem": "All",
+      "applicationCategory": "BusinessApplication",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Calculators for stamp duty rates, estimated incorporation fees, and live previews of statutory legal drafts in India."
+    },
+    "/company-registration-bangalore": {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "INCroute Bangalore Startup Desk",
+      "image": "https://incroute.com/ashoka_lion_gold.png",
+      "description": "Premium online Pvt Ltd company registration and LLP incorporation services for technology startups in Bangalore.",
+      "telephone": "+91-8707552183",
+      "email": "info@incroute.com",
+      "url": "https://incroute.com/company-registration-bangalore",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "80 Feet Rd, Koramangala 4th Block",
+        "addressLocality": "Bengaluru",
+        "addressRegion": "Karnataka",
+        "postalCode": "560034",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "12.9338",
+        "longitude": "77.6244"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    },
+    "/company-registration-mumbai": {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "INCroute Mumbai Corporate Desk",
+      "image": "https://incroute.com/ashoka_lion_gold.png",
+      "description": "Premium online company registration, LLP filings, and corporate legal compliance services for Mumbai enterprises.",
+      "telephone": "+91-8707552183",
+      "email": "info@incroute.com",
+      "url": "https://incroute.com/company-registration-mumbai",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "G Block BKC, Bandra Kurla Complex, Bandra East",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400051",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "19.0600",
+        "longitude": "72.8600"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    },
+    "/company-registration-delhi": {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "INCroute Delhi NCR Startup Desk",
+      "image": "https://incroute.com/ashoka_lion_gold.png",
+      "description": "Instant online company registration and elite LLP filing services for startups and e-commerce brands in Delhi NCR.",
+      "telephone": "+91-8707552183",
+      "email": "info@incroute.com",
+      "url": "https://incroute.com/company-registration-delhi",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Connaught Place",
+        "addressLocality": "New Delhi",
+        "addressRegion": "Delhi",
+        "postalCode": "110001",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "28.6304",
+        "longitude": "77.2177"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    },
+    "/faq": {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does online company registration take in India?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Online Pvt Ltd company registration in India takes 7 to 10 working days. This timeline includes acquiring Digital Signature Certificates (DSC), obtaining name approvals via SPICe+ Part A, and submitting final SPICe+ Part B forms to the Registrar of Companies."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What documents are needed for online OPC registration?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Online OPC registration requires the director's PAN card, Aadhaar card, photo, and bank statement (under 2 months old). The registered office requires a utility bill (electricity or water) and a signed No Objection Certificate (NOC) from the property owner."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Pvt Ltd vs LLP for startup: Which structure is best?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pvt Ltd is the best structure for raising venture capital, issuing ESOPs, and rapid scaling. Choose an LLP if you want limited liability with low annual compliance (audits are optional below 25 Lakh capital or 40 Lakh turnover) and do not need immediate VC funding."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the actual online Pvt Ltd registration price?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The total online Pvt Ltd registration price starts at Rs 5,999 (inclusive of professional fees, DSC for two directors, and government filing charges). The price varies by state depending on authorized share capital brackets and regional MCA stamp duty schedules."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the tax exemptions for a Section 8 NGO?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Section 8 NGOs enjoy 100% tax exemptions on donations under Section 12A and Section 80G of the Income Tax Act, 1961. The entity is also exempt from minimum capital criteria, stamp duty levies on incorporation, and corporate dividend distribution taxes."
+          }
+        }
+      ]
     }
   };
 
@@ -1005,6 +1299,18 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     } else {
       transformed = transformed.replace("</head>", `  ${ogDesc}\n</head>`);
     }
+
+    // Dynamic Canonical Link Tag
+    const canonicalUrl = `https://incroute.com${route === "/" ? "" : route}`;
+    const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
+    transformed = transformed.replace(/<link rel="canonical" href=".*?" \/>/gi, "");
+    transformed = transformed.replace("</head>", `  ${canonicalTag}\n</head>`);
+
+    // Dynamic JSON-LD Schema Markup
+    const schemaData = schemas[route] || schemas["/"];
+    const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schemaData, null, 2)}\n</script>`;
+    transformed = transformed.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/gi, "");
+    transformed = transformed.replace("</head>", `  ${schemaTag}\n</head>`);
 
     return transformed;
   }

@@ -12,9 +12,12 @@ import EntityComparison from "./components/EntityComparison";
 import ServiceImpactDashboard from "./components/ServiceImpactDashboard";
 import ComplianceFlowchart from "./components/ComplianceFlowchart";
 import TestimonialsSection from "./components/TestimonialsSection";
+import TestimonialCarousel from "./components/TestimonialCarousel";
 import { ComplianceEvent } from "./types";
 import { initAuth } from "./lib/firebase";
 import ContactFormWidget from "./components/ContactFormWidget";
+import LocalCityLanding from "./components/LocalCityLanding";
+import AnswerHub from "./components/AnswerHub";
 import { 
   Sparkles, 
   Search, 
@@ -171,6 +174,10 @@ export default function App() {
                 prefilledCompanyName={prefilledName}
                 prefilledEntityType={prefilledEntityType}
               />
+              {/* Live Testimonial Carousel */}
+              <div className="mt-12">
+                <TestimonialCarousel setActiveTab={setActiveTab} />
+              </div>
             </motion.div>
           )}
 
@@ -388,6 +395,56 @@ export default function App() {
             </motion.div>
           )}
 
+          {/* Local City Landing Pages */}
+          {activeTab === "company-registration-bangalore" && (
+            <motion.div
+              key="bangalore"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <LocalCityLanding cityId="bangalore" setActiveTab={setActiveTab} />
+            </motion.div>
+          )}
+
+          {activeTab === "company-registration-mumbai" && (
+            <motion.div
+              key="mumbai"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <LocalCityLanding cityId="mumbai" setActiveTab={setActiveTab} />
+            </motion.div>
+          )}
+
+          {activeTab === "company-registration-delhi" && (
+            <motion.div
+              key="delhi"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <LocalCityLanding cityId="delhi" setActiveTab={setActiveTab} />
+            </motion.div>
+          )}
+
+          {/* Answer Hub */}
+          {activeTab === "faq" && (
+            <motion.div
+              key="faq"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AnswerHub setActiveTab={setActiveTab} />
+            </motion.div>
+          )}
+
           {/* Compliance Calendars Section */}
           {activeTab === "compliance" && (
             <motion.div
@@ -411,111 +468,149 @@ export default function App() {
                 </p>
               </div>
 
-               {/* Interactive Compliance Roadmap */}
-               <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-8 max-w-5xl mx-auto shadow-2xl">
-                 <div className="border-b border-brand-border pb-4 flex justify-between items-center">
-                   <div>
-                     <h3 className="text-xl font-light text-brand-text serif">First-Year Statutory Roadmap</h3>
-                     <p className="text-[9px] text-brand-text-muted/60 font-mono uppercase tracking-widest">Chronological Incorporation Milestones</p>
+               {/* Premium Scroll-Driven Parallax Timeline */}
+               <div className="max-w-5xl mx-auto space-y-8">
+                 <div className="text-center space-y-3">
+                   <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
+                     First-Year Statutory Roadmap
                    </div>
-                   <span className="text-[9px] font-mono uppercase text-brand-gold border border-brand-gold/30 px-2.5 py-1 rounded bg-brand-gold/5 font-semibold">
-                     Post-Incorporation desk
-                   </span>
+                   <h3 className="text-2xl sm:text-3xl font-light text-brand-text serif">
+                     Post-Incorporation <span className="text-brand-gold italic font-normal">Compliance Timeline.</span>
+                   </h3>
+                   <p className="text-xs text-brand-text-muted font-sans max-w-lg mx-auto leading-relaxed">
+                     Critical milestones every founder must complete after incorporation — miss one and face compounding penalties.
+                   </p>
                  </div>
 
-                 {/* Timeline Node Selector Row */}
-                 <div className="relative pt-6 pb-2">
-                   {/* Connecting timeline bar */}
-                   <div className="absolute top-[37px] left-8 right-8 h-[2px] bg-brand-border z-0" />
-                   <div 
-                     className="absolute top-[37px] left-8 h-[2px] bg-brand-gold transition-all duration-500 z-0" 
-                     style={{ width: `${(selectedMilestone / 3) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
-                   />
+                 {/* 3D Perspective Timeline */}
+                 <div className="relative" style={{ perspective: "1200px" }}>
+                   {/* Central vertical line */}
+                   <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-brand-gold/60 via-brand-gold/30 to-transparent -translate-x-1/2 hidden md:block" />
 
-                   <div className="grid grid-cols-4 relative z-10">
-                     {roadmapMilestones.map((m, idx) => {
-                       const isSelected = selectedMilestone === idx;
-                       const isPast = selectedMilestone >= idx;
+                   <div className="space-y-0 md:space-y-0">
+                     {roadmapMilestones.map((milestone, idx) => {
+                       const isLeft = idx % 2 === 0;
+                       const isActive = selectedMilestone === idx;
                        return (
-                         <div key={idx} className="flex flex-col items-center text-center space-y-3">
-                           <button
-                             onClick={() => setSelectedMilestone(idx)}
-                             className={`w-6 h-6 rounded-full border flex items-center justify-center text-[10px] font-mono font-bold transition-all duration-300 cursor-pointer ${
-                               isSelected
-                                 ? "bg-brand-gold text-black border-brand-gold scale-125 shadow-lg shadow-brand-gold/25"
-                                 : isPast
-                                 ? "bg-brand-gold/15 text-brand-gold border-brand-gold/70"
-                                 : "bg-brand-bg text-brand-text-muted border-brand-border"
-                             }`}
-                           >
-                             {idx + 1}
-                           </button>
-                           <div>
-                             <span className={`text-[10px] font-mono uppercase tracking-wider block transition-colors ${isSelected ? "text-brand-gold font-bold" : "text-brand-text-muted"}`}>
-                               {m.days}
-                             </span>
+                         <motion.div
+                           key={idx}
+                           initial={{ opacity: 0, y: 40, rotateX: -8 }}
+                           animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                           transition={{ duration: 0.6, delay: idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                           className={`relative flex items-start md:items-center gap-4 md:gap-0 py-4 md:py-6 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"}`}
+                           style={{ transformStyle: "preserve-3d" }}
+                         >
+                           {/* Timeline node */}
+                           <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 z-20">
+                             <motion.button
+                               onClick={() => setSelectedMilestone(idx)}
+                               whileHover={{ scale: 1.3 }}
+                               whileTap={{ scale: 0.9 }}
+                               className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-mono font-bold transition-all duration-300 cursor-pointer shadow-lg ${
+                                 isActive
+                                   ? "bg-brand-gold text-black border-brand-gold shadow-brand-gold/30"
+                                   : idx < selectedMilestone
+                                   ? "bg-brand-gold/20 text-brand-gold border-brand-gold/50"
+                                   : "bg-brand-bg-lighter text-brand-text-muted border-brand-border hover:border-brand-gold/50"
+                               }`}
+                             >
+                               {idx + 1}
+                             </motion.button>
                            </div>
-                         </div>
+
+                           {/* Content card */}
+                           <motion.div
+                             onClick={() => setSelectedMilestone(idx)}
+                             whileHover={{ scale: 1.02, rotateY: isLeft ? 2 : -2 }}
+                             className={`ml-14 md:ml-0 md:w-[calc(50%-3rem)] cursor-pointer transition-all duration-300 ${
+                               isLeft ? "md:mr-auto md:pr-8" : "md:ml-auto md:pl-8"
+                             }`}
+                             style={{ transformStyle: "preserve-3d" }}
+                           >
+                             <div className={`p-5 rounded-2xl border transition-all duration-300 ${
+                               isActive
+                                 ? "bg-brand-bg-lighter border-brand-gold shadow-lg shadow-brand-gold/10"
+                                 : "bg-brand-bg-lighter/50 border-brand-border hover:border-brand-gold/40"
+                             }`}>
+                               {/* Days badge */}
+                               <div className="flex items-center justify-between mb-3">
+                                 <span className={`text-[9px] font-mono uppercase tracking-widest font-bold px-2.5 py-1 rounded-full border ${
+                                   isActive
+                                     ? "bg-brand-gold/15 text-brand-gold border-brand-gold/30"
+                                     : "bg-brand-bg text-brand-text-muted border-brand-border"
+                                 }`}>
+                                   {milestone.days}
+                                 </span>
+                                 {isActive && (
+                                   <motion.div
+                                     initial={{ scale: 0 }}
+                                     animate={{ scale: 1 }}
+                                     className="w-2 h-2 rounded-full bg-brand-gold animate-pulse"
+                                   />
+                                 )}
+                               </div>
+
+                               {/* Title */}
+                               <h4 className={`text-sm font-semibold mb-2 transition-colors ${
+                                 isActive ? "text-brand-gold" : "text-brand-text"
+                               }`}>
+                                 {milestone.title}
+                               </h4>
+
+                               {/* Form tag */}
+                               <p className="text-[10px] text-brand-text-muted font-mono leading-relaxed mb-3">
+                                 {milestone.form}
+                               </p>
+
+                               {/* Expandable detail panel */}
+                               {isActive && (
+                                 <motion.div
+                                   initial={{ opacity: 0, height: 0 }}
+                                   animate={{ opacity: 1, height: "auto" }}
+                                   exit={{ opacity: 0, height: 0 }}
+                                   transition={{ duration: 0.3 }}
+                                   className="space-y-3 pt-3 border-t border-brand-border/50"
+                                 >
+                                   <p className="text-xs text-brand-text-muted leading-relaxed font-sans">
+                                     {milestone.description}
+                                   </p>
+
+                                   {/* Tip */}
+                                   <div className="p-3 bg-brand-gold/5 border border-brand-gold/15 rounded-lg flex items-start gap-2">
+                                     <Info className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />
+                                     <p className="text-[10px] text-brand-text/85 leading-relaxed">
+                                       <span className="font-bold text-brand-gold">Pro Tip: </span>
+                                       {milestone.tip}
+                                     </p>
+                                   </div>
+
+                                   {/* Penalty warning */}
+                                   <div className="p-3 compliance-penalty-card border rounded-lg">
+                                     <div className="flex items-center gap-1.5 mb-1.5">
+                                       <AlertCircle className="w-3 h-3 text-red-400" />
+                                       <span className="text-[9px] uppercase font-mono tracking-wider font-bold text-red-400">Penalty</span>
+                                     </div>
+                                     <p className="text-[10px] compliance-penalty-text leading-relaxed">
+                                       {milestone.penalty}
+                                     </p>
+                                   </div>
+
+                                   <button
+                                     type="button"
+                                     onClick={(e) => { e.stopPropagation(); setActiveTab("contact"); }}
+                                     className="w-full text-[9px] font-mono uppercase tracking-widest font-bold py-2.5 rounded-lg border border-brand-gold/30 text-brand-gold hover:bg-brand-gold hover:text-black transition-all cursor-pointer"
+                                   >
+                                     Delegate This Task <ArrowRight className="w-3 h-3 inline ml-1" />
+                                   </button>
+                                 </motion.div>
+                               )}
+                             </div>
+                           </motion.div>
+                         </motion.div>
                        );
                      })}
                    </div>
                  </div>
-
-                 {/* Milestone Detail Card View */}
-                 <motion.div
-                   key={selectedMilestone}
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ duration: 0.3 }}
-                   className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 border-t border-brand-border/60 items-stretch"
-                 >
-                   {/* Left details (7 cols) */}
-                   <div className="md:col-span-7 space-y-4 flex flex-col justify-between">
-                     <div className="space-y-3">
-                       <span className="text-[9px] uppercase font-mono bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-2 py-0.5 rounded font-bold">
-                         {roadmapMilestones[selectedMilestone].form}
-                       </span>
-                       <h4 className="text-lg font-medium text-brand-text serif">
-                         {roadmapMilestones[selectedMilestone].title}
-                       </h4>
-                       <p className="text-xs text-brand-text-muted leading-relaxed font-sans">
-                         {roadmapMilestones[selectedMilestone].description}
-                       </p>
-                     </div>
-
-                     {/* Helpful tip box */}
-                     <div className="p-3.5 bg-brand-gold/5 border border-brand-gold/15 rounded-xl flex items-start gap-2.5">
-                       <Info className="w-4 h-4 text-brand-gold shrink-0 mt-0.5" />
-                       <p className="text-[10px] text-brand-text/90 leading-relaxed">
-                         <span className="font-bold text-brand-gold">Pro Tip: </span>
-                         {roadmapMilestones[selectedMilestone].tip}
-                       </p>
-                     </div>
-                   </div>
-
-                   {/* Right Penalty Alert box (5 cols) */}
-                   <div className="md:col-span-5 compliance-penalty-card border rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                     <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 blur-2xl rounded-full" />
-                     
-                     <div className="space-y-3 relative z-10">
-                       <div className="flex items-center gap-2 text-red-400">
-                         <AlertCircle className="w-4 h-4" />
-                         <span className="text-[10px] uppercase font-mono tracking-wider font-bold">Penalty Warning</span>
-                       </div>
-                       <p className="text-[11px] compliance-penalty-text leading-relaxed font-sans">
-                         {roadmapMilestones[selectedMilestone].penalty}
-                       </p>
-                     </div>
-
-                     <button
-                       type="button"
-                       onClick={() => setActiveTab("contact")}
-                       className="w-full compliance-penalty-btn border font-mono uppercase tracking-widest text-[9px] py-2.5 rounded transition-all cursor-pointer font-bold duration-300 mt-4"
-                     >
-                       Delegate Compliance Task <ArrowRight className="w-3 h-3 inline-block ml-1" />
-                     </button>
-                   </div>
-                 </motion.div>
                </div>
 
               {/* Live Calendars Tracker Search */}
@@ -634,7 +729,7 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
             
             {/* Column 1: Brand Info */}
-            <div className="md:col-span-4 space-y-5">
+            <div className="md:col-span-3 space-y-5">
               <div className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={() => handleServiceClick("pvt-ltd")}>
                 <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
                   <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
@@ -654,12 +749,12 @@ export default function App() {
             </div>
 
             {/* Column 2: Our Services */}
-            <div className="md:col-span-4 space-y-4">
+            <div className="md:col-span-3 space-y-4">
               <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
                 Our Services
               </h4>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs font-sans">
-                <div className="space-y-2.5">
+              <div className="grid grid-cols-1 gap-y-2.5 text-xs font-sans">
+                <div className="space-y-2.5 flex flex-col items-start">
                   <div 
                     onClick={() => handleServiceClick("pvt-ltd")}
                     className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
@@ -678,32 +773,55 @@ export default function App() {
                   >
                     Section 8 NGO / Foundation
                   </div>
-                </div>
-                <div className="space-y-2.5">
                   <div 
                     onClick={() => handleServiceClick("llp")}
                     className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
                   >
                     Limited Liability Partnership
                   </div>
-                  <div 
-                    onClick={() => handleServiceClick("partnership")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
+                  <a
+                    href="/faq"
+                    onClick={(e) => { e.preventDefault(); setActiveTab("faq"); }}
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
                   >
-                    Partnership Firm
-                  </div>
-                  <div 
-                    onClick={() => handleServiceClick("virtual-cfo")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
-                  >
-                    Virtual CFO Services
-                  </div>
+                    Answer Hub (FAQ)
+                  </a>
                 </div>
               </div>
             </div>
 
-            {/* Column 3: Security & Trust */}
-            <div className="md:col-span-4 space-y-4">
+            {/* Column 3: Service Locations */}
+            <div className="md:col-span-3 space-y-4">
+              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
+                Service Locations
+              </h4>
+              <div className="space-y-2.5 text-xs font-sans flex flex-col items-start">
+                <a 
+                  href="/company-registration-bangalore"
+                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-bangalore"); }}
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                >
+                  Company Registration in Bangalore
+                </a>
+                <a 
+                  href="/company-registration-mumbai"
+                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-mumbai"); }}
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                >
+                  Company Registration in Mumbai
+                </a>
+                <a 
+                  href="/company-registration-delhi"
+                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-delhi"); }}
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                >
+                  Company Registration in Delhi NCR
+                </a>
+              </div>
+            </div>
+
+            {/* Column 4: Security & Trust */}
+            <div className="md:col-span-3 space-y-4">
               <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
                 Security & Trust
               </h4>

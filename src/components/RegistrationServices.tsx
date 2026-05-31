@@ -671,6 +671,9 @@ export default function RegistrationServices({
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [savedServices, setSavedServices] = useState<string[]>([]);
+  const [showAllServices, setShowAllServices] = useState(false);
+  const [formShake, setFormShake] = useState(false);
+  const [nameBlurred, setNameBlurred] = useState(false);
   const [latestBlog, setLatestBlog] = useState<any>(null);
 
   // Fetch featured insight
@@ -709,10 +712,16 @@ export default function RegistrationServices({
 
   const handleCheckName = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!checkName.trim()) return;
+    if (!checkName.trim()) {
+      setFormShake(true);
+      setNameBlurred(true);
+      setTimeout(() => setFormShake(false), 500);
+      return;
+    }
 
     setIsCheckingName(true);
-    setCheckReport(null); // Clear previous reports to show active deep-search state
+    setCheckReport(null);
+    setNameBlurred(false);
     
     // Simulate a highly premium deep-database check for 1.5 seconds
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -894,54 +903,64 @@ export default function RegistrationServices({
               </div>
               
               {/* Search form controls */}
-              <form onSubmit={handleCheckName} className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end">
+              <form onSubmit={handleCheckName} className={`grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end ${formShake ? "form-shake" : ""}`}>
                 {/* Business name input */}
-                <div className="md:col-span-5 space-y-1.5 text-left">
-                  <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono flex items-center gap-1.5 pl-1">
-                    <Lock className="w-3 h-3 text-brand-gold" /> Proposed Business Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Acme Tech"
-                    value={checkName}
-                    onChange={(e) => setCheckName(e.target.value)}
-                    className="w-full premium-advisor-input hover:border-brand-gold/40 focus:border-brand-gold rounded-xl px-4 py-3 text-xs outline-none transition-all placeholder:text-brand-text-muted/50 font-sans"
-                  />
+                <div className="md:col-span-5 text-left relative">
+                  <div className="floating-label-group relative">
+                    <input
+                      type="text"
+                      placeholder=" "
+                      value={checkName}
+                      onChange={(e) => setCheckName(e.target.value)}
+                      onBlur={() => setNameBlurred(true)}
+                      onFocus={() => setNameBlurred(false)}
+                      className={`w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 text-xs outline-none transition-all font-sans pr-10 ${
+                        nameBlurred && !checkName.trim() ? "!border-[#C74A4A]" : ""
+                      }`}
+                    />
+                    <label className="flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-brand-gold" /> Proposed Business Name
+                    </label>
+                    {checkName.trim().length >= 2 && (
+                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="7" fill="#2C8C5A" opacity="0.15"/>
+                        <path d="M5 8l2 2 4-4" stroke="#2C8C5A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  {nameBlurred && !checkName.trim() && (
+                    <span className="input-error-tooltip show">Business name is required</span>
+                  )}
                 </div>
                 
                 {/* Entity structure select */}
-                <div className="md:col-span-3 space-y-1.5 text-left">
-                  <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono pl-1">
-                    Entity Type
-                  </label>
-                  <div className="relative">
+                <div className="md:col-span-3 text-left">
+                  <div className="floating-label-group relative">
                     <select
                       value={calcEntity}
                       onChange={(e) => {
                         setCalcEntity(e.target.value);
                         setSelectedEntityId(e.target.value);
                       }}
-                      className="w-full premium-advisor-input focus:border-brand-gold rounded-xl px-4 py-3 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
+                      className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
                     >
                       <option value="pvt-ltd">Private Limited Company</option>
                       <option value="llp">Limited Liability Partnership</option>
                       <option value="opc">One Person Company</option>
                       <option value="partnership">Partnership Firm</option>
                     </select>
-                    <ChevronRight className="absolute right-3.5 top-3.5 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
+                    <label>Entity Type</label>
+                    <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
                   </div>
                 </div>
                 
                 {/* Industry/Sector select */}
-                <div className="md:col-span-3 space-y-1.5 text-left">
-                  <label className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold font-mono pl-1">
-                    Industry
-                  </label>
-                  <div className="relative">
+                <div className="md:col-span-3 text-left">
+                  <div className="floating-label-group relative">
                     <select
                       value={checkIndustry}
                       onChange={(e) => setCheckIndustry(e.target.value)}
-                      className="w-full premium-advisor-input focus:border-brand-gold rounded-xl px-4 py-3 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
+                      className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
                     >
                       <option value="Manufacturing">Manufacturing</option>
                       <option value="Technology & Software Services">Technology & Software Services</option>
@@ -949,7 +968,8 @@ export default function RegistrationServices({
                       <option value="Finance & Consulting Services">Finance & Consulting Services</option>
                       <option value="Healthcare & Pharma">Healthcare & Pharma</option>
                     </select>
-                    <ChevronRight className="absolute right-3.5 top-3.5 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
+                    <label>Industry</label>
+                    <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
                   </div>
                 </div>
                 
@@ -1141,6 +1161,7 @@ export default function RegistrationServices({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
               {activeCatalog
                 .filter((s) => activeCategory === "all" || s.category === activeCategory)
+                .slice(0, showAllServices ? undefined : 6)
                 .map((service, index) => {
                   const isSaved = savedServices.includes(service.id);
                   return (
@@ -1250,6 +1271,26 @@ export default function RegistrationServices({
                   );
                 })}
             </div>
+
+            {/* View All / Show Less toggle */}
+            {activeCatalog.filter((s) => activeCategory === "all" || s.category === activeCategory).length > 6 && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center pt-4"
+              >
+                <button
+                  onClick={() => setShowAllServices(!showAllServices)}
+                  className="flex items-center gap-2 px-6 py-3 border border-brand-gold/40 hover:border-brand-gold hover:bg-brand-gold/10 text-brand-gold font-mono uppercase tracking-widest text-[10px] font-bold rounded-xl transition-all duration-150 fast-transition cursor-pointer"
+                >
+                  {showAllServices ? (
+                    <>Show Less</>
+                  ) : (
+                    <>View All Services <ArrowRight className="w-3.5 h-3.5" /></>
+                  )}
+                </button>
+              </motion.div>
+            )}
           </div>
         </>
       ) : (

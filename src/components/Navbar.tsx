@@ -21,7 +21,8 @@ import {
   ChevronDown,
   Sparkles,
   ClipboardCheck,
-  Award
+  Award,
+  HelpCircle
 } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
 import type { Lang } from "../lib/i18n";
@@ -235,12 +236,12 @@ export default function Navbar({
             >
               <button
                 className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu flex items-center gap-1 cursor-pointer outline-none ${
-                  isDropdownActive(["blog", "testimonials"])
+                  isDropdownActive(["blog", "testimonials", "faq"])
                     ? isLightMode ? "text-[#111827]" : "text-brand-gold"
                     : "text-brand-text-muted hover:text-brand-gold"
                 }`}
               >
-                {isDropdownActive(["blog", "testimonials"]) && (
+                {isDropdownActive(["blog", "testimonials", "faq"]) && (
                   <motion.div
                     layoutId="navActivePill"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
@@ -267,6 +268,7 @@ export default function Navbar({
                   >
                     {[
                       { tab: "blog", icon: BookOpen, title: "Knowledge Base", desc: "Expert statutory articles" },
+                      { tab: "faq", icon: HelpCircle, title: "Answer Hub", desc: "Filing & compliance Q&A" },
                       { tab: "testimonials", icon: MessageSquare, title: "Client Reflections", desc: "Founder feedback & reviews" }
                     ].map((sub) => (
                       <a
@@ -443,6 +445,7 @@ export default function Navbar({
             <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Insights</span>
             {[
               { tab: "blog", icon: BookOpen, label: "Knowledge Base Articles" },
+              { tab: "faq", icon: HelpCircle, label: "Answer Hub" },
               { tab: "testimonials", icon: MessageSquare, label: "Client Reflections" }
             ].map(({ tab, icon: Icon, label }) => (
               <a
