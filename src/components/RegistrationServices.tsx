@@ -657,15 +657,14 @@ export default function RegistrationServices({
                 <span className="text-brand-gold font-bold">#</span> Premium Legal-Tech Platform
               </div>
               
-              {/* Title */}
               <h1 className="text-4xl sm:text-6xl font-light text-white tracking-tight leading-tight serif">
-                Make Private Limited <br />
-                Firm <span className="text-brand-gold italic font-normal font-serif">within Rs 999*</span>
+                Architecting India's <br />
+                Finest Entity <span className="text-brand-gold italic font-normal font-serif">Within ₹999*</span>
               </h1>
               
               {/* Subtitle */}
               <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed max-w-xl">
-                Premium consultancy services for registration, statutory compliance, and integrated firm management. Trusted by 2,000+ founders.
+                A state-of-the-art legal-tech environment where premium company formation meets absolute CA-backed compliance. Trusted by 2,000+ ambitious startup founders.
               </p>
               
               {/* Action Buttons */}
@@ -916,7 +915,7 @@ export default function RegistrationServices({
           </motion.div>
 
           {/* Category Pills Navigation & Services Cards Grid */}
-          <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto pt-6 text-left">
+          <div id="service-catalog-section" className="flex flex-col gap-6 w-full max-w-5xl mx-auto pt-6 text-left">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-brand-border/60 pb-4 gap-4">
               <div>
                 <h2 className="font-serif text-2xl font-bold tracking-tight text-brand-text">Browse by Service Type</h2>
