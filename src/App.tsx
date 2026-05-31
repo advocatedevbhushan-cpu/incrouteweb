@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Breadcrumb from "./components/Breadcrumb";
+import ScrollToTop from "./components/ScrollToTop";
 import RegistrationServices from "./components/RegistrationServices";
 import { motion, AnimatePresence } from "motion/react";
 import NameFeasibilityChecker from "./components/NameFeasibilityChecker";
@@ -162,6 +163,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative">
+      <ScrollToTop />
       {/* Executive Backdrop Pattern Layers */}
       <div className="executive-glow-1" />
       <div className="executive-glow-2" />

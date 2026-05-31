@@ -7,6 +7,11 @@ import { LanguageProvider } from './lib/LanguageContext';
 import { initAmbientCanvas } from './lib/ambient-canvas';
 import { initProgressBar } from './lib/progress-bar';
 
+// Disable browser's automatic scroll restoration (root cause of the bug)
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
 // Initialize premium motion layers
 initProgressBar();
 initAmbientCanvas();
