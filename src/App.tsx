@@ -871,6 +871,22 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Floating CTA */}
+      <div className="mobile-floating-cta">
+        <button
+          onClick={() => setActiveTab("services")}
+          className="bg-[#2B5B84] text-white font-mono uppercase tracking-widest"
+        >
+          Start Registration
+        </button>
+        <button
+          onClick={() => setActiveTab("contact")}
+          className="bg-brand-gold text-black font-mono uppercase tracking-widest"
+        >
+          Request Callback
+        </button>
+      </div>
     </div>
   );
 }

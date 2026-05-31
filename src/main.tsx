@@ -12,6 +12,11 @@ if ("scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
+// Mobile optimization verification
+if (window.innerWidth <= 640) {
+  console.log("📱 Incroute mobile optimizations loaded");
+}
+
 // Initialize premium motion layers
 initProgressBar();
 initAmbientCanvas();

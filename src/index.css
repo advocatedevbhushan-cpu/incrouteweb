@@ -587,3 +587,271 @@ input:not(:focus):not(:placeholder-shown):invalid {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE OPTIMIZATION — Best-in-class mobile experience
+   ═══════════════════════════════════════════════════════ */
+
+/* Global box-sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Remove iOS tap highlight, replace with subtle gold */
+* {
+  -webkit-tap-highlight-color: rgba(199, 168, 107, 0.1);
+}
+
+/* Touch action on buttons — eliminate 300ms delay */
+button, a, [role="button"], input[type="submit"] {
+  touch-action: manipulation;
+}
+
+/* Responsive images globally */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Font smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Smooth touch scrolling for overflow containers */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ═══ HOVER ONLY ON DEVICES THAT SUPPORT IT ═══ */
+@media (hover: none) {
+  .premium-card:hover {
+    transform: none !important;
+    box-shadow: var(--elevation-1) !important;
+    border-color: inherit !important;
+  }
+  .premium-service-card:hover {
+    border-color: inherit !important;
+    box-shadow: var(--elevation-1) !important;
+  }
+  button:hover:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+/* Active state for touch feedback */
+@media (hover: none) {
+  button:active:not(:disabled),
+  a:active,
+  [role="button"]:active {
+    transform: scale(0.97) !important;
+    opacity: 0.9;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+}
+
+/* ═══ PHONE BREAKPOINT (max-width: 640px) ═══ */
+@media (max-width: 640px) {
+  /* Reduce body padding */
+  main {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1.5rem !important;
+  }
+
+  /* Typography scaling */
+  h1, .text-4xl, .text-5xl {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+  h2, .text-3xl {
+    font-size: 1.5rem !important;
+  }
+  h3, .text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  /* Ensure minimum font size for inputs (prevents iOS zoom) */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Stack grids to single column */
+  .grid-cols-2,
+  .sm\:grid-cols-2,
+  .md\:grid-cols-2,
+  .lg\:grid-cols-3,
+  .lg\:grid-cols-4,
+  .lg\:grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Full-width cards */
+  .premium-card,
+  .premium-service-card,
+  .premium-advisor-card {
+    border-radius: 12px;
+  }
+
+  /* Minimum touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Increase button padding */
+  button {
+    padding: 12px 16px;
+  }
+
+  /* Navbar height */
+  nav .h-16 {
+    height: 56px !important;
+  }
+
+  /* Hero section */
+  .premium-hero-card {
+    padding: 1.5rem !important;
+    border-radius: 16px !important;
+    min-height: auto !important;
+  }
+
+  /* Tables scroll horizontally */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Modal full-width on mobile */
+  .fixed.inset-0 > div {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 1rem auto !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Breadcrumb smaller */
+  nav[aria-label="Breadcrumb"] {
+    padding: 0.5rem 1rem;
+  }
+
+  /* Remove side margins that cause overflow */
+  .max-w-5xl, .max-w-6xl, .max-w-7xl {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Footer stacking */
+  footer .grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ═══ TABLET PORTRAIT (max-width: 768px) ═══ */
+@media (max-width: 768px) {
+  /* Two-column grids become single */
+  .md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce container padding */
+  .sm\:p-8, .sm\:p-10, .sm\:p-12 {
+    padding: 1.25rem !important;
+  }
+
+  /* Advisor card form — stack inputs */
+  .md\:grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+  .md\:col-span-5,
+  .md\:col-span-3,
+  .md\:col-span-1,
+  .md\:col-span-7,
+  .md\:col-span-4,
+  .md\:col-span-8 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ═══ TABLET LANDSCAPE (max-width: 1024px) ═══ */
+@media (max-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .lg\:grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+  .lg\:col-span-4,
+  .lg\:col-span-5,
+  .lg\:col-span-7,
+  .lg\:col-span-8 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ═══ FLOATING MOBILE CTA ═══ */
+@media (max-width: 640px) {
+  .mobile-floating-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    padding: 12px 16px;
+    background: var(--color-brand-bg);
+    border-top: 1px solid var(--color-brand-border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    gap: 8px;
+  }
+  .mobile-floating-cta button {
+    flex: 1;
+    font-size: 12px;
+    padding: 14px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  /* Add bottom padding to body so CTA doesn't overlap content */
+  body {
+    padding-bottom: 72px;
+  }
+}
+
+@media (min-width: 641px) {
+  .mobile-floating-cta {
+    display: none !important;
+  }
+}
+
+/* ═══ DISABLE CUSTOM CURSOR ON TOUCH ═══ */
+@media (pointer: coarse) {
+  [style*="position: fixed"][style*="border-radius: 50%"][style*="pointer-events: none"] {
+    display: none !important;
+  }
+}
+
+/* ═══ FONT DISPLAY SWAP ═══ */
+@font-face {
+  font-display: swap;
+}
+
+/* Mobile verification log */
+@media (max-width: 640px) {
+  html::after {
+    content: "";
+    /* Mobile optimizations loaded */
+  }
+}
