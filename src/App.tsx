@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Breadcrumb from "./components/Breadcrumb";
 import RegistrationServices from "./components/RegistrationServices";
 import { motion, AnimatePresence } from "motion/react";
 import NameFeasibilityChecker from "./components/NameFeasibilityChecker";
@@ -18,6 +20,7 @@ import { initAuth } from "./lib/firebase";
 import ContactFormWidget from "./components/ContactFormWidget";
 import LocalCityLanding from "./components/LocalCityLanding";
 import AnswerHub from "./components/AnswerHub";
+import { TAB_TO_ROUTE } from "./lib/routes";
 import { 
   Sparkles, 
   Search, 
@@ -39,32 +42,44 @@ import {
 } from "lucide-react";
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Reverse map: route path → tab name
+  const ROUTE_TO_TAB: Record<string, string> = {};
+  for (const [tab, route] of Object.entries(TAB_TO_ROUTE)) {
+    ROUTE_TO_TAB[route] = tab;
+  }
+
   const getTabFromPath = (): string => {
-    const path = window.location.pathname.replace(/^\//, "");
-    if (!path) return "services";
-    return path;
+    const path = location.pathname;
+    // Exact match
+    if (ROUTE_TO_TAB[path]) return ROUTE_TO_TAB[path];
+    // Try with trailing slash
+    if (ROUTE_TO_TAB[path + "/"]) return ROUTE_TO_TAB[path + "/"];
+    // Try without trailing slash
+    if (ROUTE_TO_TAB[path.replace(/\/$/, "")]) return ROUTE_TO_TAB[path.replace(/\/$/, "")];
+    // Default
+    if (path === "/" || path === "") return "services";
+    // Fallback: use first segment
+    const seg = path.split("/").filter(Boolean)[0];
+    return seg || "services";
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getTabFromPath);
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
-    const newPath = tab === "services" ? "/" : `/${tab}`;
-    if (window.location.pathname !== newPath) {
-      window.history.pushState(null, "", newPath);
+    const route = TAB_TO_ROUTE[tab] || `/${tab}/`;
+    if (location.pathname !== route) {
+      navigate(route);
     }
   };
 
-  // Sync state on browser back/forward buttons
+  // Sync tab state when URL changes (browser back/forward)
   useEffect(() => {
-    const handlePopState = () => {
-      setActiveTabState(getTabFromPath());
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
+    setActiveTabState(getTabFromPath());
+  }, [location.pathname]);
 
   // Roadmap State
   const [selectedMilestone, setSelectedMilestone] = useState(0);
@@ -157,6 +172,9 @@ export default function App() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
       />
+
+      {/* Breadcrumb */}
+      <Breadcrumb />
 
       {/* Main Container Wrapper */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full overflow-hidden">
