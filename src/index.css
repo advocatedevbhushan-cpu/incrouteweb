@@ -855,3 +855,41 @@ html, body {
     /* Mobile optimizations loaded */
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   SCROLL-SNAP COMPLIANCE TIMELINE
+   ═══════════════════════════════════════════════════════ */
+.timeline-snap-container {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-gold) var(--color-brand-bg-lighter);
+}
+
+.timeline-snap-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.timeline-snap-container::-webkit-scrollbar-track {
+  background: var(--color-brand-bg-lighter);
+  border-radius: 2px;
+}
+
+.timeline-snap-container::-webkit-scrollbar-thumb {
+  background: var(--color-brand-gold);
+  border-radius: 2px;
+}
+
+.timeline-milestone {
+  scroll-snap-stop: always;
+}
+
+@media (max-width: 640px) {
+  .timeline-snap-container {
+    height: 80vh !important;
+    border-radius: 12px;
+  }
+  .timeline-milestone {
+    min-height: 80vh !important;
+    padding: 1.5rem 1rem !important;
+  }
+}

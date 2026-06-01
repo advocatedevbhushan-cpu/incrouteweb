@@ -489,8 +489,8 @@ export default function App() {
                 </p>
               </div>
 
-               {/* Premium Scroll-Driven Parallax Timeline */}
-               <div className="max-w-5xl mx-auto space-y-8">
+               {/* Scroll-Snap Compliance Timeline */}
+               <div className="max-w-5xl mx-auto space-y-6">
                  <div className="text-center space-y-3">
                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
                      First-Year Statutory Roadmap
@@ -499,138 +499,122 @@ export default function App() {
                      Post-Incorporation <span className="text-brand-gold italic font-normal">Compliance Timeline.</span>
                    </h3>
                    <p className="text-xs text-brand-text-muted font-sans max-w-lg mx-auto leading-relaxed">
-                     Critical milestones every founder must complete after incorporation — miss one and face compounding penalties.
+                     Scroll through each critical milestone. Miss one and face compounding penalties.
                    </p>
                  </div>
 
-                 {/* 3D Perspective Timeline */}
-                 <div className="relative" style={{ perspective: "1200px" }}>
-                   {/* Central vertical line */}
-                   <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-brand-gold/60 via-brand-gold/30 to-transparent -translate-x-1/2 hidden md:block" />
+                 {/* Scroll-snap container */}
+                 <div className="timeline-snap-container relative rounded-2xl border border-brand-border overflow-hidden" style={{ height: "75vh", overflowY: "auto", scrollSnapType: "y mandatory", WebkitOverflowScrolling: "touch" }}>
+                   {/* Progress indicator */}
+                   <div className="sticky top-4 right-4 z-30 flex justify-end pr-4 pointer-events-none">
+                     <div className="bg-brand-bg-lighter/90 backdrop-blur-sm border border-brand-border rounded-full px-3 py-1.5 text-[9px] font-mono text-brand-gold font-bold">
+                       Scroll ↓
+                     </div>
+                   </div>
 
-                   <div className="space-y-0 md:space-y-0">
-                     {roadmapMilestones.map((milestone, idx) => {
-                       const isLeft = idx % 2 === 0;
-                       const isActive = selectedMilestone === idx;
-                       return (
-                         <motion.div
-                           key={idx}
-                           initial={{ opacity: 0, y: 40, rotateX: -8 }}
-                           animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                           transition={{ duration: 0.6, delay: idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                           className={`relative flex items-start md:items-center gap-4 md:gap-0 py-4 md:py-6 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"}`}
-                           style={{ transformStyle: "preserve-3d" }}
-                         >
-                           {/* Timeline node */}
-                           <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 z-20">
-                             <motion.button
-                               onClick={() => setSelectedMilestone(idx)}
-                               whileHover={{ scale: 1.3 }}
-                               whileTap={{ scale: 0.9 }}
-                               className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-mono font-bold transition-all duration-300 cursor-pointer shadow-lg ${
-                                 isActive
-                                   ? "bg-brand-gold text-black border-brand-gold shadow-brand-gold/30"
-                                   : idx < selectedMilestone
-                                   ? "bg-brand-gold/20 text-brand-gold border-brand-gold/50"
-                                   : "bg-brand-bg-lighter text-brand-text-muted border-brand-border hover:border-brand-gold/50"
-                               }`}
-                             >
-                               {idx + 1}
-                             </motion.button>
+                   {roadmapMilestones.map((milestone, idx) => (
+                     <div
+                       key={idx}
+                       className="timeline-milestone"
+                       style={{ scrollSnapAlign: "start", minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.5rem" }}
+                     >
+                       <motion.div
+                         initial={{ opacity: 0, y: 30 }}
+                         whileInView={{ opacity: 1, y: 0 }}
+                         viewport={{ once: true, amount: 0.6 }}
+                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                         className="w-full max-w-2xl mx-auto space-y-6"
+                       >
+                         {/* Large background number */}
+                         <div className="relative">
+                           <span className="absolute -top-8 -left-2 text-[120px] font-bold text-brand-gold/5 font-serif leading-none select-none pointer-events-none">
+                             {idx + 1}
+                           </span>
+                         </div>
+
+                         {/* Card */}
+                         <div className="relative bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-5 shadow-lg">
+                           {/* Badge */}
+                           <div className="flex items-center justify-between">
+                             <span className="text-[9px] font-mono uppercase tracking-widest font-bold px-3 py-1.5 rounded-full bg-brand-gold/10 text-brand-gold border border-brand-gold/20">
+                               {milestone.days}
+                             </span>
+                             <span className="text-[9px] font-mono text-brand-text-muted">
+                               Step {idx + 1} of {roadmapMilestones.length}
+                             </span>
                            </div>
 
-                           {/* Content card */}
+                           {/* Title & Form */}
                            <motion.div
-                             onClick={() => setSelectedMilestone(idx)}
-                             whileHover={{ scale: 1.02, rotateY: isLeft ? 2 : -2 }}
-                             className={`ml-14 md:ml-0 md:w-[calc(50%-3rem)] cursor-pointer transition-all duration-300 ${
-                               isLeft ? "md:mr-auto md:pr-8" : "md:ml-auto md:pl-8"
-                             }`}
-                             style={{ transformStyle: "preserve-3d" }}
+                             initial={{ opacity: 0, y: 10 }}
+                             whileInView={{ opacity: 1, y: 0 }}
+                             viewport={{ once: true }}
+                             transition={{ delay: 0.1, duration: 0.4 }}
                            >
-                             <div className={`p-5 rounded-2xl border transition-all duration-300 ${
-                               isActive
-                                 ? "bg-brand-bg-lighter border-brand-gold shadow-lg shadow-brand-gold/10"
-                                 : "bg-brand-bg-lighter/50 border-brand-border hover:border-brand-gold/40"
-                             }`}>
-                               {/* Days badge */}
-                               <div className="flex items-center justify-between mb-3">
-                                 <span className={`text-[9px] font-mono uppercase tracking-widest font-bold px-2.5 py-1 rounded-full border ${
-                                   isActive
-                                     ? "bg-brand-gold/15 text-brand-gold border-brand-gold/30"
-                                     : "bg-brand-bg text-brand-text-muted border-brand-border"
-                                 }`}>
-                                   {milestone.days}
-                                 </span>
-                                 {isActive && (
-                                   <motion.div
-                                     initial={{ scale: 0 }}
-                                     animate={{ scale: 1 }}
-                                     className="w-2 h-2 rounded-full bg-brand-gold animate-pulse"
-                                   />
-                                 )}
-                               </div>
-
-                               {/* Title */}
-                               <h4 className={`text-sm font-semibold mb-2 transition-colors ${
-                                 isActive ? "text-brand-gold" : "text-brand-text"
-                               }`}>
-                                 {milestone.title}
-                               </h4>
-
-                               {/* Form tag */}
-                               <p className="text-[10px] text-brand-text-muted font-mono leading-relaxed mb-3">
-                                 {milestone.form}
-                               </p>
-
-                               {/* Expandable detail panel */}
-                               {isActive && (
-                                 <motion.div
-                                   initial={{ opacity: 0, height: 0 }}
-                                   animate={{ opacity: 1, height: "auto" }}
-                                   exit={{ opacity: 0, height: 0 }}
-                                   transition={{ duration: 0.3 }}
-                                   className="space-y-3 pt-3 border-t border-brand-border/50"
-                                 >
-                                   <p className="text-xs text-brand-text-muted leading-relaxed font-sans">
-                                     {milestone.description}
-                                   </p>
-
-                                   {/* Tip */}
-                                   <div className="p-3 bg-brand-gold/5 border border-brand-gold/15 rounded-lg flex items-start gap-2">
-                                     <Info className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />
-                                     <p className="text-[10px] text-brand-text/85 leading-relaxed">
-                                       <span className="font-bold text-brand-gold">Pro Tip: </span>
-                                       {milestone.tip}
-                                     </p>
-                                   </div>
-
-                                   {/* Penalty warning */}
-                                   <div className="p-3 compliance-penalty-card border rounded-lg">
-                                     <div className="flex items-center gap-1.5 mb-1.5">
-                                       <AlertCircle className="w-3 h-3 text-red-400" />
-                                       <span className="text-[9px] uppercase font-mono tracking-wider font-bold text-red-400">Penalty</span>
-                                     </div>
-                                     <p className="text-[10px] compliance-penalty-text leading-relaxed">
-                                       {milestone.penalty}
-                                     </p>
-                                   </div>
-
-                                   <button
-                                     type="button"
-                                     onClick={(e) => { e.stopPropagation(); setActiveTab("contact"); }}
-                                     className="w-full text-[9px] font-mono uppercase tracking-widest font-bold py-2.5 rounded-lg border border-brand-gold/30 text-brand-gold hover:bg-brand-gold hover:text-black transition-all cursor-pointer"
-                                   >
-                                     Delegate This Task <ArrowRight className="w-3 h-3 inline ml-1" />
-                                   </button>
-                                 </motion.div>
-                               )}
-                             </div>
+                             <h4 className="text-xl font-semibold text-brand-text mb-2">{milestone.title}</h4>
+                             <p className="text-[10px] font-mono text-brand-gold uppercase tracking-widest">{milestone.form}</p>
                            </motion.div>
-                         </motion.div>
-                       );
-                     })}
-                   </div>
+
+                           {/* Description */}
+                           <motion.p
+                             initial={{ opacity: 0 }}
+                             whileInView={{ opacity: 1 }}
+                             viewport={{ once: true }}
+                             transition={{ delay: 0.15, duration: 0.4 }}
+                             className="text-sm text-brand-text-muted leading-relaxed"
+                           >
+                             {milestone.description}
+                           </motion.p>
+
+                           {/* Tip */}
+                           <motion.div
+                             initial={{ opacity: 0, x: -10 }}
+                             whileInView={{ opacity: 1, x: 0 }}
+                             viewport={{ once: true }}
+                             transition={{ delay: 0.2, duration: 0.4 }}
+                             className="p-4 bg-brand-gold/5 border border-brand-gold/15 rounded-xl flex items-start gap-3"
+                           >
+                             <Info className="w-4 h-4 text-brand-gold shrink-0 mt-0.5" />
+                             <p className="text-xs text-brand-text/85 leading-relaxed">
+                               <span className="font-bold text-brand-gold">Pro Tip: </span>
+                               {milestone.tip}
+                             </p>
+                           </motion.div>
+
+                           {/* Penalty */}
+                           <motion.div
+                             initial={{ opacity: 0, x: 10 }}
+                             whileInView={{ opacity: 1, x: 0 }}
+                             viewport={{ once: true }}
+                             transition={{ delay: 0.25, duration: 0.4 }}
+                             className="p-4 compliance-penalty-card border rounded-xl"
+                           >
+                             <div className="flex items-center gap-2 mb-2">
+                               <AlertCircle className="w-4 h-4 text-red-400" />
+                               <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-red-400">Penalty Warning</span>
+                             </div>
+                             <p className="text-xs compliance-penalty-text leading-relaxed">
+                               {milestone.penalty}
+                             </p>
+                           </motion.div>
+
+                           {/* CTA Button */}
+                           <motion.button
+                             initial={{ opacity: 0, y: 10 }}
+                             whileInView={{ opacity: 1, y: 0 }}
+                             viewport={{ once: true }}
+                             transition={{ delay: 0.3, duration: 0.4 }}
+                             type="button"
+                             onClick={() => setActiveTab("contact")}
+                             className="w-full text-xs font-mono uppercase tracking-widest font-bold py-4 rounded-xl border border-brand-gold/30 text-brand-gold hover:bg-brand-gold hover:text-black transition-all cursor-pointer"
+                             style={{ minHeight: "44px" }}
+                           >
+                             Delegate This Task <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
+                           </motion.button>
+                         </div>
+                       </motion.div>
+                     </div>
+                   ))}
                  </div>
                </div>
 
