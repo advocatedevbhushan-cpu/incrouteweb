@@ -162,6 +162,30 @@ export default function App() {
     fetchCalendar();
   }, []);
 
+  // Intersection Observer for timeline scroll tracking
+  useEffect(() => {
+    if (activeTab !== "compliance") return;
+    const timer = setTimeout(() => {
+      const container = document.getElementById("timeline-snap-box");
+      if (!container) return;
+      const milestones = container.querySelectorAll(".timeline-milestone");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const idx = Number((entry.target as HTMLElement).dataset.idx);
+              if (!isNaN(idx)) setSelectedMilestone(idx);
+            }
+          });
+        },
+        { root: container, threshold: 0.6 }
+      );
+      milestones.forEach((m) => observer.observe(m));
+      return () => observer.disconnect();
+    }, 300); // Wait for DOM to render
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative">
       <ScrollToTop />
@@ -504,19 +528,38 @@ export default function App() {
                  </div>
 
                  {/* Scroll-snap container */}
-                 <div className="timeline-snap-container relative rounded-2xl border border-brand-border overflow-hidden" style={{ height: "75vh", overflowY: "auto", scrollSnapType: "y mandatory", WebkitOverflowScrolling: "touch" }}>
-                   {/* Progress indicator */}
-                   <div className="sticky top-4 right-4 z-30 flex justify-end pr-4 pointer-events-none">
-                     <div className="bg-brand-bg-lighter/90 backdrop-blur-sm border border-brand-border rounded-full px-3 py-1.5 text-[9px] font-mono text-brand-gold font-bold">
-                       Scroll ↓
+                 <div
+                   id="timeline-snap-box"
+                   className="timeline-snap-container relative rounded-2xl border border-brand-border overflow-hidden"
+                   style={{ height: "80vh", overflowY: "scroll", scrollSnapType: "y mandatory", WebkitOverflowScrolling: "touch", scrollBehavior: "smooth" }}
+                 >
+                   {/* Fixed step indicator dots */}
+                   <div className="sticky top-4 z-30 flex justify-center pointer-events-none">
+                     <div className="bg-brand-bg-lighter/90 backdrop-blur-sm border border-brand-border rounded-full px-4 py-2 flex items-center gap-3 pointer-events-auto">
+                       {roadmapMilestones.map((_, idx) => (
+                         <div
+                           key={idx}
+                           className={`transition-all duration-300 rounded-full ${
+                             selectedMilestone === idx
+                               ? "w-6 h-2.5 bg-brand-gold"
+                               : idx < selectedMilestone
+                               ? "w-2.5 h-2.5 bg-brand-gold/40"
+                               : "w-2.5 h-2.5 bg-brand-border"
+                           }`}
+                         />
+                       ))}
+                       <span className="text-[9px] font-mono text-brand-text-muted ml-2">
+                         {selectedMilestone + 1}/{roadmapMilestones.length}
+                       </span>
                      </div>
                    </div>
 
                    {roadmapMilestones.map((milestone, idx) => (
                      <div
                        key={idx}
+                       data-idx={idx}
                        className="timeline-milestone"
-                       style={{ scrollSnapAlign: "start", minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.5rem" }}
+                       style={{ scrollSnapAlign: "start", minHeight: "80vh", height: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.5rem" }}
                      >
                        <motion.div
                          initial={{ opacity: 0, y: 30 }}

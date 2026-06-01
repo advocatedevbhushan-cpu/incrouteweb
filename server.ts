@@ -1361,6 +1361,23 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     });
 
     app.use(vite.middlewares);
+
+    // SPA fallback for dev mode — serve index.html for all non-API, non-asset routes
+    app.use("*", async (req, res, next) => {
+      // Skip API routes and static assets
+      if (req.originalUrl.startsWith("/api/") || req.originalUrl.includes(".")) {
+        return next();
+      }
+      try {
+        const templatePath = path.join(process.cwd(), "index.html");
+        let template = fs.readFileSync(templatePath, "utf-8");
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     console.log(`Vite HMR configured to ws://localhost:${hmrPort}`);
   } else {
     const distPath = path.join(process.cwd(), "dist");

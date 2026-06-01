@@ -885,11 +885,12 @@ html, body {
 
 @media (max-width: 640px) {
   .timeline-snap-container {
-    height: 80vh !important;
+    height: 85vh !important;
     border-radius: 12px;
   }
   .timeline-milestone {
-    min-height: 80vh !important;
+    min-height: 85vh !important;
+    height: 85vh !important;
     padding: 1.5rem 1rem !important;
   }
 }
