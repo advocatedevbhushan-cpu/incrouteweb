@@ -14,15 +14,15 @@
   --color-brand-gold-hover: #E5C687;   /* Bright Gold — hover */
   --color-brand-blue: #2B5B84;         /* Deep Trust Blue — primary actions */
   --color-brand-blue-hover: #1E405E;   /* Darker blue — button hover */
-  --color-brand-dark: #0F1114;          /* Deepest background */
-  --color-brand-bg: #0F1114;            /* Main background */
-  --color-brand-bg-darker: #0A0C0E;    /* Footer */
-  --color-brand-bg-lighter: #181B1F;   /* Cards, surfaces */
-  --color-brand-border: #262A30;       /* Borders */
+  --color-brand-dark: #12151C;          /* Softened Midnight Slate */
+  --color-brand-bg: #12151C;            /* Warm Midnight Slate Canvas */
+  --color-brand-bg-darker: #0A0D12;    /* Soft Dark Footer */
+  --color-brand-bg-lighter: #1C202A;   /* Softened Surface Navy-Slate */
+  --color-brand-border: rgba(255, 255, 255, 0.08); /* Sophisticated Translucent Border */
   --color-brand-text: #F0EDE8;         /* Warm off-white text */
   --color-brand-text-muted: #9A9DA3;   /* Secondary text */
-  --color-brand-card: rgba(24, 27, 31, 0.85);
-  --color-brand-input-bg: #141619;
+  --color-brand-card: rgba(28, 32, 42, 0.85);
+  --color-brand-input-bg: #161A22;
   --color-success: #2C8C5A;
   --color-error: #C74A4A;
 
@@ -150,7 +150,7 @@ a, button, input, select, textarea {
   left: -10%;
   width: 55vw;
   height: 55vw;
-  background: radial-gradient(circle, rgba(199, 168, 107, 0.05) 0%, rgba(199, 168, 107, 0.02) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(199, 168, 107, 0.09) 0%, rgba(199, 168, 107, 0.035) 45%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
@@ -163,7 +163,7 @@ a, button, input, select, textarea {
   right: -10%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(43, 91, 132, 0.04) 0%, rgba(199, 168, 107, 0.015) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(43, 91, 132, 0.08) 0%, rgba(199, 168, 107, 0.025) 45%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
@@ -199,7 +199,7 @@ a, button, input, select, textarea {
 
 /* Service Cards — gold border on hover */
 .premium-service-card {
-  background-color: #181B1F;
+  background-color: var(--color-brand-bg-lighter);
   border: 1px solid transparent;
 }
 .premium-service-card:hover {
@@ -218,8 +218,8 @@ a, button, input, select, textarea {
 
 /* Card header — deep charcoal in dark, trust blue in light */
 .card-header-bg {
-  background-color: #141720;
-  border-bottom: 1px solid #262A30;
+  background-color: #161A24;
+  border-bottom: 1px solid var(--color-brand-border);
 }
 .light .card-header-bg {
   background-color: #1B3A5C;
@@ -228,8 +228,8 @@ a, button, input, select, textarea {
 
 /* Hero & Advisor Cards */
 .premium-hero-card {
-  background: linear-gradient(155deg, #141820 0%, #1A1E26 50%, #16191F 100%);
-  border-color: #262A30;
+  background: linear-gradient(155deg, #161A24 0%, #1F2432 50%, #1B1F2A 100%);
+  border-color: var(--color-brand-border);
 }
 .light .premium-hero-card {
   background: linear-gradient(145deg, #1B3A5C 0%, #152D48 100%);
@@ -245,8 +245,8 @@ a, button, input, select, textarea {
 }
 
 .premium-advisor-card {
-  background-color: #181B1F;
-  border-color: #262A30;
+  background-color: var(--color-brand-bg-lighter);
+  border-color: var(--color-brand-border);
   color: var(--color-brand-text);
 }
 .light .premium-advisor-card {
@@ -257,8 +257,8 @@ a, button, input, select, textarea {
 }
 
 .premium-advisor-input {
-  background-color: #121418;
-  border-color: #2A2D31;
+  background-color: #151820;
+  border-color: var(--color-brand-border);
   color: #EDEDED;
 }
 .premium-advisor-input:focus {
