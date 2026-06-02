@@ -1113,7 +1113,7 @@ export default function RegistrationServices({
             {/* Expert Covered Badge (Bottom Right) */}
             <div 
               onClick={() => setShowTrustModal(true)}
-              className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 z-10 block cursor-pointer group"
+              className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 z-10 hidden md:block cursor-pointer group"
             >
               <div className="flex items-center gap-3.5 bg-black/60 backdrop-blur-md border border-white/10 group-hover:border-brand-gold/50 px-4 py-2.5 rounded-xl transition-all duration-300 transform group-hover:scale-[1.02] shadow-lg shadow-black/30">
                 <div className="text-right flex flex-col justify-center">
