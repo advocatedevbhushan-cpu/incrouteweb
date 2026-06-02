@@ -757,13 +757,19 @@ export default function App() {
       {/* Mobile Floating CTA */}
       <div className="mobile-floating-cta">
         <button
-          onClick={() => setActiveTab("services")}
+          onClick={() => {
+            setActiveTab("services");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="bg-[#2B5B84] text-white font-mono uppercase tracking-widest"
         >
           Start Registration
         </button>
         <button
-          onClick={() => setActiveTab("contact")}
+          onClick={() => {
+            setActiveTab("contact");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="bg-brand-gold text-black font-mono uppercase tracking-widest"
         >
           Request Callback
