@@ -50,8 +50,8 @@
   --color-brand-bg-darker: #EAE4D3;     /* Richer Sand-Creme Accent */
   --color-brand-bg-lighter: #FCFAF5;    /* Premium Milk-Creme Cards */
   --color-brand-border: #E0D8C3;        /* Soft Champagne Sand Border */
-  --color-brand-text: #2E281C;          /* Soft Warm Espresso Bronze Text (Luxury Editorial) */
-  --color-brand-text-muted: #7A705C;    /* Soft Muted Bronze-Grey Text */
+  --color-brand-text: #16130D;          /* High-Contrast Luxury Espresso Black (Highly Readable) */
+  --color-brand-text-muted: #524A3B;    /* Deep Bronze Charcoal Muted Text (Stands Out Clearly) */
   --color-brand-card: rgba(252, 250, 245, 0.98);
   --color-brand-input-bg: #FCFAF5;
   --elevation-1: 0 1px 3px rgba(46, 40, 28, 0.04), 0 1px 2px rgba(46, 40, 28, 0.02);
