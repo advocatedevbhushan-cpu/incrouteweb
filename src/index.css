@@ -39,25 +39,25 @@
 
 .light {
   /* ═══════════════════════════════════════════════════════
-     LIGHT MODE — Warm White + Navy & Gold accents
+     LIGHT MODE — Luxury Champagne Creme & Espresso Bronze
      ═══════════════════════════════════════════════════════ */
-  --color-brand-gold: #C7A86B;
-  --color-brand-gold-hover: #B8954F;
-  --color-brand-blue: #1B3A5C;
-  --color-brand-blue-hover: #142D48;
-  --color-brand-dark: #FAFBFC;
-  --color-brand-bg: #FAFBFC;            /* Warm off-white */
-  --color-brand-bg-darker: #F0F2F5;
-  --color-brand-bg-lighter: #FFFFFF;   /* White cards */
-  --color-brand-border: #E2E5EA;       /* Soft borders */
-  --color-brand-text: #1A1F2E;         /* Deep navy text */
-  --color-brand-text-muted: #5B6370;   /* Secondary */
-  --color-brand-card: rgba(255, 255, 255, 0.98);
-  --color-brand-input-bg: #FFFFFF;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --elevation-2: 0 4px 14px rgba(0, 0, 0, 0.06);
-  --elevation-3: 0 8px 28px rgba(0, 0, 0, 0.08);
-  --gold-glow: 0 0 12px rgba(199, 168, 107, 0.1);
+  --color-brand-gold: #C7A86B;          /* Refined Gold */
+  --color-brand-gold-hover: #B8954F;    /* Rich Gold Hover */
+  --color-brand-blue: #1B3A5C;          /* Deep Trust Navy */
+  --color-brand-blue-hover: #142D48;    /* Dark Navy Hover */
+  --color-brand-dark: #F4F0E6;          /* Editorial Warm Cream Background */
+  --color-brand-bg: #F4F0E6;            /* Warm Creme Canvas background */
+  --color-brand-bg-darker: #EAE4D3;     /* Richer Sand-Creme Accent */
+  --color-brand-bg-lighter: #FCFAF5;    /* Premium Milk-Creme Cards */
+  --color-brand-border: #E0D8C3;        /* Soft Champagne Sand Border */
+  --color-brand-text: #2E281C;          /* Soft Warm Espresso Bronze Text (Luxury Editorial) */
+  --color-brand-text-muted: #7A705C;    /* Soft Muted Bronze-Grey Text */
+  --color-brand-card: rgba(252, 250, 245, 0.98);
+  --color-brand-input-bg: #FCFAF5;
+  --elevation-1: 0 1px 3px rgba(46, 40, 28, 0.04), 0 1px 2px rgba(46, 40, 28, 0.02);
+  --elevation-2: 0 4px 14px rgba(46, 40, 28, 0.05);
+  --elevation-3: 0 8px 28px rgba(46, 40, 28, 0.08);
+  --gold-glow: 0 0 12px rgba(199, 168, 107, 0.08);
 }
 
 @theme {
@@ -207,7 +207,7 @@ a, button, input, select, textarea {
   box-shadow: var(--elevation-2), var(--gold-glow);
 }
 .light .premium-service-card {
-  background-color: #FFFFFF;
+  background-color: var(--color-brand-bg-lighter);
   border: 1px solid transparent;
   box-shadow: var(--elevation-1);
 }
@@ -250,8 +250,8 @@ a, button, input, select, textarea {
   color: var(--color-brand-text);
 }
 .light .premium-advisor-card {
-  background-color: #FFFFFF;
-  border-color: #DDE1E6;
+  background-color: var(--color-brand-bg-lighter);
+  border-color: var(--color-brand-border);
   color: #1A1C1E;
   box-shadow: var(--elevation-2);
 }
@@ -266,8 +266,8 @@ a, button, input, select, textarea {
   box-shadow: 0 0 0 2px rgba(199, 168, 107, 0.12);
 }
 .light .premium-advisor-input {
-  background-color: #F4F6F9;
-  border-color: #DDE1E6;
+  background-color: var(--color-brand-bg);
+  border-color: var(--color-brand-border);
   color: #1A1C1E;
 }
 .light .premium-advisor-input:focus {
