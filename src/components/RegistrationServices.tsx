@@ -1230,10 +1230,16 @@ export default function RegistrationServices({
                                 {service.badge}
                               </span>
                             )}
-                            <div className="font-serif text-3xl font-bold text-brand-gold leading-none">
-                              {service.pricing}
+                            <div className="font-serif text-xl font-bold text-brand-gold leading-snug">
+                              {service.name}
                             </div>
-                            <div className="text-[10px] text-slate-300 font-sans uppercase tracking-wider mt-1">Estimated Rate</div>
+                            <div className="text-[10px] text-slate-300 font-sans uppercase tracking-wider mt-1">
+                              {service.category === "private-corporate" ? "Private Corporate Entity" :
+                               service.category === "alternative-entity" ? "Alternative Entity Structure" :
+                               service.category === "compliance" ? "Compliance & Statutory" :
+                               service.category === "enterprise-growth" ? "Enterprise & Growth Service" :
+                               "Business Entity"}
+                            </div>
                           </div>
                           
                           {/* Heart item toggle */}
