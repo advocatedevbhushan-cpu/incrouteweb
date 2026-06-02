@@ -1050,6 +1050,29 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
   // Rich Structured JSON-LD schemas for Search Engine optimization & organic rich snippets
   const schemas: Record<string, any> = {
+    "/services": {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Corporate Registration & Compliance",
+      "provider": {
+        "@type": "Organization",
+        "name": "INCroute",
+        "url": "https://incroute.com"
+      },
+      "areaServed": { "@type": "Country", "name": "India" },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Registration Services",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Private Limited Company Registration" }, "price": "999", "priceCurrency": "INR" },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "LLP Registration" }, "price": "1499", "priceCurrency": "INR" },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "One Person Company Registration" }, "price": "1299", "priceCurrency": "INR" },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Partnership Firm Registration" }, "price": "799", "priceCurrency": "INR" },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "GST & Tax Registration" }, "price": "499", "priceCurrency": "INR" }
+        ]
+      },
+      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "20", "bestRating": "5" }
+    },
     "/": {
       "@context": "https://schema.org",
       "@type": "Organization",
