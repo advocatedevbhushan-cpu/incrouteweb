@@ -1410,22 +1410,7 @@ export default function RegistrationServices({
                             </div>
                           </div>
                           
-                          {/* Heart item toggle */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isSaved) {
-                                  setSavedServices(savedServices.filter(id => id !== service.id));
-                              } else {
-                                  setSavedServices([...savedServices, service.id]);
-                              }
-                            }}
-                                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all duration-150 fast-transition border border-white/10 cursor-pointer"
-                                  aria-label="Save service to favorites"
-                          >
-                                  <Heart className={`w-4 h-4 transition-colors ${isSaved ? "fill-red-500 text-red-500" : "text-white"}`} />
-                          </button>
+
                         </div>
 
                         {/* Metadata timeline details */}
@@ -1514,20 +1499,7 @@ export default function RegistrationServices({
                 <ArrowLeft className="w-4 h-4 text-brand-text-muted" /> Back to Services
               </button>
               
-              <button
-                onClick={() => {
-                  const isSaved = savedServices.includes(selectedEntity.id);
-                  if (isSaved) {
-                    setSavedServices(savedServices.filter(id => id !== selectedEntity.id));
-                  } else {
-                    setSavedServices([...savedServices, selectedEntity.id]);
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-bg-lighter border border-brand-border text-brand-text-muted hover:text-brand-text text-xs font-semibold cursor-pointer shadow-sm hover:shadow transition-all"
-              >
-                <Heart className={`w-4 h-4 transition-colors ${savedServices.includes(selectedEntity.id) ? "fill-red-500 text-red-500 border-red-500" : "text-brand-text-muted"}`} /> 
-                {savedServices.includes(selectedEntity.id) ? "Saved Service" : "Save Service"}
-              </button>
+
             </div>
 
             {/* Animated Premium Dark Header Banner for Detail View */}
