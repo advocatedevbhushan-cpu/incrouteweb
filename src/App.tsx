@@ -18,6 +18,7 @@ const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
 const EntityComparison = lazy(() => import("./components/EntityComparison"));
 const ServiceImpactDashboard = lazy(() => import("./components/ServiceImpactDashboard"));
 const ComplianceFlowchart = lazy(() => import("./components/ComplianceFlowchart"));
+const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
 import ContactFormWidget from "./components/ContactFormWidget";
@@ -163,30 +164,6 @@ export default function App() {
     }
     fetchCalendar();
   }, []);
-
-  // Intersection Observer for timeline scroll tracking
-  useEffect(() => {
-    if (activeTab !== "compliance") return;
-    const timer = setTimeout(() => {
-      const container = document.getElementById("timeline-snap-box");
-      if (!container) return;
-      const milestones = container.querySelectorAll(".timeline-milestone");
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const idx = Number((entry.target as HTMLElement).dataset.idx);
-              if (!isNaN(idx)) setSelectedMilestone(idx);
-            }
-          });
-        },
-        { root: container, threshold: 0.6 }
-      );
-      milestones.forEach((m) => observer.observe(m));
-      return () => observer.disconnect();
-    }, 300); // Wait for DOM to render
-    return () => clearTimeout(timer);
-  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative">
@@ -516,153 +493,11 @@ export default function App() {
                 </p>
               </div>
 
-               {/* Scroll-Snap Compliance Timeline */}
-               <div className="max-w-5xl mx-auto space-y-6">
-                 <div className="text-center space-y-3">
-                   <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
-                     First-Year Statutory Roadmap
-                   </div>
-                   <h3 className="text-2xl sm:text-3xl font-light text-brand-text serif">
-                     Post-Incorporation <span className="text-brand-gold italic font-normal">Compliance Timeline.</span>
-                   </h3>
-                   <p className="text-xs text-brand-text-muted font-sans max-w-lg mx-auto leading-relaxed">
-                     Scroll through each critical milestone. Miss one and face compounding penalties.
-                   </p>
-                 </div>
-
-                 {/* Scroll-snap container */}
-                 <div
-                   id="timeline-snap-box"
-                   className="timeline-snap-container relative rounded-2xl border border-brand-border overflow-hidden"
-                   style={{ height: "80vh", overflowY: "scroll", scrollSnapType: "y mandatory", WebkitOverflowScrolling: "touch", scrollBehavior: "smooth" }}
-                 >
-                   {/* Fixed step indicator dots */}
-                   <div className="sticky top-4 z-30 flex justify-center pointer-events-none">
-                     <div className="bg-brand-bg-lighter/90 backdrop-blur-sm border border-brand-border rounded-full px-4 py-2 flex items-center gap-3 pointer-events-auto">
-                       {roadmapMilestones.map((_, idx) => (
-                         <div
-                           key={idx}
-                           className={`transition-all duration-300 rounded-full ${
-                             selectedMilestone === idx
-                               ? "w-6 h-2.5 bg-brand-gold"
-                               : idx < selectedMilestone
-                               ? "w-2.5 h-2.5 bg-brand-gold/40"
-                               : "w-2.5 h-2.5 bg-brand-border"
-                           }`}
-                         />
-                       ))}
-                       <span className="text-[9px] font-mono text-brand-text-muted ml-2">
-                         {selectedMilestone + 1}/{roadmapMilestones.length}
-                       </span>
-                     </div>
-                   </div>
-
-                   {roadmapMilestones.map((milestone, idx) => (
-                     <div
-                       key={idx}
-                       data-idx={idx}
-                       className="timeline-milestone"
-                       style={{ scrollSnapAlign: "start", minHeight: "80vh", height: "80vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.5rem" }}
-                     >
-                       <motion.div
-                         initial={{ opacity: 0, y: 30 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         viewport={{ once: true, amount: 0.6 }}
-                         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                         className="w-full max-w-2xl mx-auto space-y-6"
-                       >
-                         {/* Large background number */}
-                         <div className="relative">
-                           <span className="absolute -top-8 -left-2 text-[120px] font-bold text-brand-gold/5 font-serif leading-none select-none pointer-events-none">
-                             {idx + 1}
-                           </span>
-                         </div>
-
-                         {/* Card */}
-                         <div className="relative bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-5 shadow-lg">
-                           {/* Badge */}
-                           <div className="flex items-center justify-between">
-                             <span className="text-[9px] font-mono uppercase tracking-widest font-bold px-3 py-1.5 rounded-full bg-brand-gold/10 text-brand-gold border border-brand-gold/20">
-                               {milestone.days}
-                             </span>
-                             <span className="text-[9px] font-mono text-brand-text-muted">
-                               Step {idx + 1} of {roadmapMilestones.length}
-                             </span>
-                           </div>
-
-                           {/* Title & Form */}
-                           <motion.div
-                             initial={{ opacity: 0, y: 10 }}
-                             whileInView={{ opacity: 1, y: 0 }}
-                             viewport={{ once: true }}
-                             transition={{ delay: 0.1, duration: 0.4 }}
-                           >
-                             <h4 className="text-xl font-semibold text-brand-text mb-2">{milestone.title}</h4>
-                             <p className="text-[10px] font-mono text-brand-gold uppercase tracking-widest">{milestone.form}</p>
-                           </motion.div>
-
-                           {/* Description */}
-                           <motion.p
-                             initial={{ opacity: 0 }}
-                             whileInView={{ opacity: 1 }}
-                             viewport={{ once: true }}
-                             transition={{ delay: 0.15, duration: 0.4 }}
-                             className="text-sm text-brand-text-muted leading-relaxed"
-                           >
-                             {milestone.description}
-                           </motion.p>
-
-                           {/* Tip */}
-                           <motion.div
-                             initial={{ opacity: 0, x: -10 }}
-                             whileInView={{ opacity: 1, x: 0 }}
-                             viewport={{ once: true }}
-                             transition={{ delay: 0.2, duration: 0.4 }}
-                             className="p-4 bg-brand-gold/5 border border-brand-gold/15 rounded-xl flex items-start gap-3"
-                           >
-                             <Info className="w-4 h-4 text-brand-gold shrink-0 mt-0.5" />
-                             <p className="text-xs text-brand-text/85 leading-relaxed">
-                               <span className="font-bold text-brand-gold">Pro Tip: </span>
-                               {milestone.tip}
-                             </p>
-                           </motion.div>
-
-                           {/* Penalty */}
-                           <motion.div
-                             initial={{ opacity: 0, x: 10 }}
-                             whileInView={{ opacity: 1, x: 0 }}
-                             viewport={{ once: true }}
-                             transition={{ delay: 0.25, duration: 0.4 }}
-                             className="p-4 compliance-penalty-card border rounded-xl"
-                           >
-                             <div className="flex items-center gap-2 mb-2">
-                               <AlertCircle className="w-4 h-4 text-red-400" />
-                               <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-red-400">Penalty Warning</span>
-                             </div>
-                             <p className="text-xs compliance-penalty-text leading-relaxed">
-                               {milestone.penalty}
-                             </p>
-                           </motion.div>
-
-                           {/* CTA Button */}
-                           <motion.button
-                             initial={{ opacity: 0, y: 10 }}
-                             whileInView={{ opacity: 1, y: 0 }}
-                             viewport={{ once: true }}
-                             transition={{ delay: 0.3, duration: 0.4 }}
-                             type="button"
-                             onClick={() => setActiveTab("contact")}
-                             className="w-full text-xs font-mono uppercase tracking-widest font-bold py-4 rounded-xl border border-brand-gold/30 text-brand-gold hover:bg-brand-gold hover:text-black transition-all cursor-pointer"
-                             style={{ minHeight: "44px" }}
-                           >
-                             Delegate This Task <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
-                           </motion.button>
-                         </div>
-                       </motion.div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
+               {/* Premium Pinned Compliance Timeline */}
+               <PinnedTimeline
+                 milestones={roadmapMilestones}
+                 onDelegate={() => setActiveTab("contact")}
+               />
 
               {/* Live Calendars Tracker Search */}
               <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-6">
