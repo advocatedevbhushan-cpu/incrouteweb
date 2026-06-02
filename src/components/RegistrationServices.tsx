@@ -834,14 +834,114 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full premium-hero-card border rounded-3xl p-8 sm:p-12 pb-16 sm:pb-24 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[420px]"
+            className="relative w-full premium-hero-card border rounded-3xl p-8 sm:p-12 pb-16 sm:pb-24 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[480px]"
           >
             {/* Subtle decorative glow backdrops */}
             <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-gold/10 blur-[80px] rounded-full pointer-events-none" />
             <div className="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(#1e2d5a_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
             
-            <div className="space-y-5 sm:space-y-6 relative z-10 max-w-3xl text-left">
+            {/* India Map Background — right side */}
+            <div className="absolute top-0 right-0 w-[55%] h-full pointer-events-none z-[5] hidden sm:block overflow-hidden">
+              {/* Left fade so map doesn't overlap text */}
+              <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#141820] to-transparent z-[1]" />
+              
+              {/* Glowing dot grid representing India's geography */}
+              <svg viewBox="0 0 400 500" className="w-full h-full opacity-70" preserveAspectRatio="xMidYMid meet">
+                {/* Connection lines */}
+                <g stroke="#C7A86B" strokeWidth="0.3" opacity="0.3">
+                  <line x1="200" y1="80" x2="250" y2="120" />
+                  <line x1="250" y1="120" x2="280" y2="160" />
+                  <line x1="280" y1="160" x2="300" y2="200" />
+                  <line x1="300" y1="200" x2="290" y2="260" />
+                  <line x1="290" y1="260" x2="260" y2="320" />
+                  <line x1="260" y1="320" x2="230" y2="380" />
+                  <line x1="200" y1="80" x2="160" y2="120" />
+                  <line x1="160" y1="120" x2="140" y2="180" />
+                  <line x1="140" y1="180" x2="120" y2="240" />
+                  <line x1="120" y1="240" x2="150" y2="300" />
+                  <line x1="150" y1="300" x2="180" y2="360" />
+                  <line x1="180" y1="360" x2="230" y2="380" />
+                  <line x1="250" y1="120" x2="320" y2="140" />
+                  <line x1="320" y1="140" x2="340" y2="180" />
+                  <line x1="340" y1="180" x2="330" y2="220" />
+                  <line x1="160" y1="120" x2="120" y2="140" />
+                  <line x1="120" y1="140" x2="100" y2="180" />
+                  <line x1="100" y1="180" x2="90" y2="220" />
+                  <line x1="280" y1="160" x2="320" y2="180" />
+                  <line x1="140" y1="180" x2="180" y2="200" />
+                  <line x1="180" y1="200" x2="220" y2="220" />
+                  <line x1="220" y1="220" x2="260" y2="240" />
+                  <line x1="260" y1="240" x2="290" y2="260" />
+                  <line x1="150" y1="300" x2="200" y2="280" />
+                  <line x1="200" y1="280" x2="240" y2="300" />
+                  <line x1="240" y1="300" x2="260" y2="320" />
+                </g>
+                
+                {/* City dots — major Indian cities */}
+                <g fill="#C7A86B">
+                  {/* Delhi */}
+                  <circle cx="200" cy="80" r="4" opacity="0.9"><animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/></circle>
+                  {/* Mumbai */}
+                  <circle cx="120" cy="240" r="4" opacity="0.9"><animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/></circle>
+                  {/* Bangalore */}
+                  <circle cx="180" cy="360" r="4" opacity="0.9"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.8s" repeatCount="indefinite"/></circle>
+                  {/* Chennai */}
+                  <circle cx="260" cy="320" r="3.5" opacity="0.8"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="3.2s" repeatCount="indefinite"/></circle>
+                  {/* Kolkata */}
+                  <circle cx="320" cy="140" r="3.5" opacity="0.8"><animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.7s" repeatCount="indefinite"/></circle>
+                  {/* Hyderabad */}
+                  <circle cx="200" cy="280" r="3.5" opacity="0.8"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="3s" repeatCount="indefinite"/></circle>
+                  {/* Pune */}
+                  <circle cx="140" cy="260" r="3" opacity="0.7"/>
+                  {/* Ahmedabad */}
+                  <circle cx="100" cy="180" r="3" opacity="0.7"/>
+                  {/* Jaipur */}
+                  <circle cx="160" cy="120" r="3" opacity="0.7"/>
+                  {/* Lucknow */}
+                  <circle cx="250" cy="120" r="3" opacity="0.7"/>
+                  {/* Chandigarh */}
+                  <circle cx="185" cy="60" r="2.5" opacity="0.6"/>
+                  {/* Goa */}
+                  <circle cx="130" cy="310" r="2.5" opacity="0.6"/>
+                  {/* Kochi */}
+                  <circle cx="160" cy="390" r="2.5" opacity="0.6"/>
+                  {/* Bhopal */}
+                  <circle cx="180" cy="200" r="2.5" opacity="0.6"/>
+                  {/* Nagpur */}
+                  <circle cx="220" cy="220" r="2.5" opacity="0.6"/>
+                  {/* Visakhapatnam */}
+                  <circle cx="280" cy="260" r="2.5" opacity="0.6"/>
+                  {/* Patna */}
+                  <circle cx="290" cy="120" r="2.5" opacity="0.5"/>
+                  {/* Indore */}
+                  <circle cx="150" cy="200" r="2" opacity="0.5"/>
+                  {/* Surat */}
+                  <circle cx="105" cy="210" r="2" opacity="0.5"/>
+                </g>
+                
+                {/* Glow rings on major cities */}
+                <g fill="none" stroke="#C7A86B" strokeWidth="0.5">
+                  <circle cx="200" cy="80" r="8" opacity="0.3"><animate attributeName="r" values="6;12;6" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/></circle>
+                  <circle cx="120" cy="240" r="8" opacity="0.3"><animate attributeName="r" values="6;11;6" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.1;0.3" dur="3.5s" repeatCount="indefinite"/></circle>
+                  <circle cx="180" cy="360" r="8" opacity="0.3"><animate attributeName="r" values="6;10;6" dur="3.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.1;0.3" dur="3.8s" repeatCount="indefinite"/></circle>
+                </g>
+
+                {/* City labels */}
+                <g fill="#9A9DA3" fontSize="7" fontFamily="monospace">
+                  <text x="210" y="76">Delhi NCR</text>
+                  <text x="130" y="237">Mumbai</text>
+                  <text x="190" y="357">Bangalore</text>
+                  <text x="270" y="317">Chennai</text>
+                  <text x="325" y="137">Kolkata</text>
+                  <text x="210" y="277">Hyderabad</text>
+                  <text x="75" y="177">Ahmedabad</text>
+                  <text x="130" y="390">Kochi</text>
+                </g>
+              </svg>
+            </div>
+            
+            <div className="space-y-5 sm:space-y-6 relative z-10 max-w-xl text-left">
               {/* Badge */}
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/25 uppercase tracking-widest font-mono">
                 <span className="text-brand-gold font-bold">#</span> Premium Legal-Tech Platform
@@ -853,7 +953,7 @@ export default function RegistrationServices({
               </h1>
               
               {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed max-w-xl">
+              <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed max-w-lg">
                 A state-of-the-art legal-tech environment where premium company formation meets absolute CA-backed compliance. Trusted by 2,000+ ambitious startup founders.
               </p>
               
@@ -896,7 +996,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-2 sm:px-6 mt-[-20px] sm:mt-[-35px] pb-6"
+            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[-20px] sm:mt-[-35px] pb-6"
           >
             <div className="premium-advisor-card border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5">
               {/* Header */}
@@ -1083,7 +1183,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-5xl mx-auto px-2 sm:px-6 pb-6"
+            className="max-w-5xl mx-auto px-4 sm:px-6 pb-6"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <motion.div 
@@ -1197,7 +1297,7 @@ export default function RegistrationServices({
             </div>
 
             {/* Dynamic Service Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
               {activeCatalog
                 .filter((s) => activeCategory === "all" || s.category === activeCategory)
                 .slice(0, showAllServices ? undefined : 6)
@@ -1274,12 +1374,6 @@ export default function RegistrationServices({
                       {/* Card Body details */}
                       <div className="p-5 flex flex-col flex-grow justify-between space-y-4 text-left">
                         <div className="space-y-1.5">
-                          <span className="text-[9px] uppercase tracking-wider font-extrabold text-brand-gold bg-brand-gold/10 border border-brand-gold/20 px-2 py-0.5 rounded font-mono">
-                            {service.category.replace("-", " ")}
-                          </span>
-                          <h3 className="font-serif text-[17px] font-bold text-brand-text leading-snug group-hover:text-brand-gold transition-colors duration-150 fast-transition mt-1">
-                            {service.name}
-                          </h3>
                           <p className="text-xs text-brand-text-muted leading-relaxed font-sans font-light">
                             {service.description}
                           </p>

@@ -183,6 +183,13 @@ export default function App() {
       <div className="executive-glow-2" />
       <div className="executive-grid" />
 
+      {/* Decorative gold star — bottom right */}
+      <div className="fixed bottom-24 right-6 z-0 pointer-events-none opacity-20 hidden md:block">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+          <path d="M40 0L44.5 35.5L80 40L44.5 44.5L40 80L35.5 44.5L0 40L35.5 35.5L40 0Z" fill="#C7A86B" />
+        </svg>
+      </div>
+
       {/* Navbar segment */}
       <Navbar 
         activeTab={activeTab} 
@@ -193,7 +200,7 @@ export default function App() {
       <Breadcrumb />
 
       {/* Main Container Wrapper */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full overflow-hidden">
+      <main className="flex-1 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full overflow-hidden">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" /></div>}>
         <AnimatePresence mode="wait">
           {activeTab === "services" && (
@@ -627,7 +634,7 @@ export default function App() {
 
       {/* Footer segment */}
       <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-12 md:py-16 text-brand-text-muted mt-auto transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
             
             {/* Column 1: Brand Info */}

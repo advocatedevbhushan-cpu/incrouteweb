@@ -14,15 +14,15 @@
   --color-brand-gold-hover: #E5C687;   /* Bright Gold — hover */
   --color-brand-blue: #2B5B84;         /* Deep Trust Blue — primary actions */
   --color-brand-blue-hover: #1E405E;   /* Darker blue — button hover */
-  --color-brand-dark: #121418;          /* Deepest Charcoal */
-  --color-brand-bg: #121418;            /* Main background */
-  --color-brand-bg-darker: #0D0F11;    /* Footer */
-  --color-brand-bg-lighter: #1A1C1E;   /* Cards, surfaces */
-  --color-brand-border: #2A2D31;       /* Borders */
-  --color-brand-text: #EDEDED;         /* Primary text */
-  --color-brand-text-muted: #A0A3A8;   /* Secondary text */
-  --color-brand-card: rgba(26, 28, 30, 0.7);
-  --color-brand-input-bg: #16181A;
+  --color-brand-dark: #0F1114;          /* Deepest background */
+  --color-brand-bg: #0F1114;            /* Main background */
+  --color-brand-bg-darker: #0A0C0E;    /* Footer */
+  --color-brand-bg-lighter: #181B1F;   /* Cards, surfaces */
+  --color-brand-border: #262A30;       /* Borders */
+  --color-brand-text: #F0EDE8;         /* Warm off-white text */
+  --color-brand-text-muted: #9A9DA3;   /* Secondary text */
+  --color-brand-card: rgba(24, 27, 31, 0.85);
+  --color-brand-input-bg: #141619;
   --color-success: #2C8C5A;
   --color-error: #C74A4A;
 
@@ -39,25 +39,25 @@
 
 .light {
   /* ═══════════════════════════════════════════════════════
-     LIGHT MODE — Cool Off-White + Same Gold/Blue accents
+     LIGHT MODE — Warm White + Navy & Gold accents
      ═══════════════════════════════════════════════════════ */
   --color-brand-gold: #C7A86B;
-  --color-brand-gold-hover: #DDBD87;
-  --color-brand-blue: #2B5B84;
-  --color-brand-blue-hover: #1E405E;
-  --color-brand-dark: #F4F6F9;
-  --color-brand-bg: #F4F6F9;            /* Cool off-white */
-  --color-brand-bg-darker: #E8ECF0;
+  --color-brand-gold-hover: #B8954F;
+  --color-brand-blue: #1B3A5C;
+  --color-brand-blue-hover: #142D48;
+  --color-brand-dark: #FAFBFC;
+  --color-brand-bg: #FAFBFC;            /* Warm off-white */
+  --color-brand-bg-darker: #F0F2F5;
   --color-brand-bg-lighter: #FFFFFF;   /* White cards */
-  --color-brand-border: #DDE1E6;       /* Soft borders */
-  --color-brand-text: #1A1C1E;         /* Rich charcoal text */
-  --color-brand-text-muted: #5E6268;   /* Secondary */
-  --color-brand-card: rgba(255, 255, 255, 0.95);
+  --color-brand-border: #E2E5EA;       /* Soft borders */
+  --color-brand-text: #1A1F2E;         /* Deep navy text */
+  --color-brand-text-muted: #5B6370;   /* Secondary */
+  --color-brand-card: rgba(255, 255, 255, 0.98);
   --color-brand-input-bg: #FFFFFF;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.07);
-  --gold-glow: 0 0 10px rgba(199, 168, 107, 0.08);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 4px 14px rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 8px 28px rgba(0, 0, 0, 0.08);
+  --gold-glow: 0 0 12px rgba(199, 168, 107, 0.1);
 }
 
 @theme {
@@ -146,28 +146,28 @@ a, button, input, select, textarea {
    ═══════════════════════════════════════════════════════ */
 .executive-glow-1 {
   position: fixed;
-  top: -20%;
-  left: -15%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(199, 168, 107, 0.025) 0%, transparent 70%);
+  top: -15%;
+  left: -10%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(circle, rgba(199, 168, 107, 0.05) 0%, rgba(199, 168, 107, 0.02) 40%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
-  filter: blur(60px);
+  filter: blur(80px);
 }
 
 .executive-glow-2 {
   position: fixed;
-  bottom: -20%;
-  right: -15%;
-  width: 55vw;
-  height: 55vw;
-  background: radial-gradient(circle, rgba(43, 91, 132, 0.025) 0%, transparent 70%);
+  bottom: -15%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(43, 91, 132, 0.04) 0%, rgba(199, 168, 107, 0.015) 40%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
-  filter: blur(60px);
+  filter: blur(80px);
 }
 
 .light .executive-glow-1 {
@@ -199,7 +199,7 @@ a, button, input, select, textarea {
 
 /* Service Cards — gold border on hover */
 .premium-service-card {
-  background-color: #1A1C1E;
+  background-color: #181B1F;
   border: 1px solid transparent;
 }
 .premium-service-card:hover {
@@ -218,27 +218,27 @@ a, button, input, select, textarea {
 
 /* Card header — deep charcoal in dark, trust blue in light */
 .card-header-bg {
-  background-color: #16181A;
-  border-bottom: 1px solid #2A2D31;
+  background-color: #141720;
+  border-bottom: 1px solid #262A30;
 }
 .light .card-header-bg {
-  background-color: #2B5B84;
+  background-color: #1B3A5C;
   border-bottom: none;
 }
 
 /* Hero & Advisor Cards */
 .premium-hero-card {
-  background: linear-gradient(145deg, #121418 0%, #1A1C1E 100%);
-  border-color: #2A2D31;
+  background: linear-gradient(155deg, #141820 0%, #1A1E26 50%, #16191F 100%);
+  border-color: #262A30;
 }
 .light .premium-hero-card {
-  background: linear-gradient(145deg, #2B5B84 0%, #1E405E 100%);
-  border-color: #2B5B84;
+  background: linear-gradient(145deg, #1B3A5C 0%, #152D48 100%);
+  border-color: #1B3A5C;
 }
 
 .premium-advisor-card {
-  background-color: #1A1C1E;
-  border-color: #2A2D31;
+  background-color: #181B1F;
+  border-color: #262A30;
   color: var(--color-brand-text);
 }
 .light .premium-advisor-card {
@@ -304,7 +304,7 @@ a, button, input, select, textarea {
    ═══════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-brand-bg); }
-::-webkit-scrollbar-thumb { background: #2A2D31; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #262A30; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #C7A86B; }
 .light ::-webkit-scrollbar-thumb { background: #DDE1E6; }
 .light ::-webkit-scrollbar-thumb:hover { background: #C7A86B; }
@@ -661,8 +661,8 @@ html, body {
 @media (max-width: 640px) {
   /* Reduce body padding */
   main {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
     padding-top: 1.5rem !important;
   }
 
@@ -809,26 +809,28 @@ html, body {
     left: 0;
     right: 0;
     z-index: 90;
-    padding: 12px 16px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--color-brand-bg);
     border-top: 1px solid var(--color-brand-border);
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
   }
   .mobile-floating-cta button {
     flex: 1;
-    font-size: 11px;
-    padding: 14px 10px;
+    font-size: 10px;
+    padding: 13px 8px;
     border-radius: 10px;
     font-weight: 700;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   /* Add bottom padding to body so CTA doesn't overlap content */
   body {
-    padding-bottom: 80px;
+    padding-bottom: 72px;
   }
 }
 
