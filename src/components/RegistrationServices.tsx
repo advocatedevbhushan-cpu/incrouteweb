@@ -1612,7 +1612,7 @@ export default function RegistrationServices({
                 <div className="space-y-2 pt-3 border-t border-brand-border/60">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-brand-text-muted font-sans">Professional Fee</span>
-                    <span className="font-serif font-bold text-brand-text">₹{pricing.professionalFee}</span>
+                    <span className="font-serif font-bold text-brand-text italic text-[11px]">As per consultation</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-brand-text-muted font-sans">Government & Stamp Duties</span>
