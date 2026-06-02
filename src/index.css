@@ -533,7 +533,7 @@ input:not(:focus):not(:placeholder-shown):invalid {
 
 .floating-label-group input:focus ~ label,
 .floating-label-group input:not(:placeholder-shown) ~ label,
-.floating-label-group select:focus ~ label,
+.floating-label-group select ~ label,
 .floating-label-group textarea:focus ~ label,
 .floating-label-group textarea:not(:placeholder-shown) ~ label {
   top: 0.45rem;

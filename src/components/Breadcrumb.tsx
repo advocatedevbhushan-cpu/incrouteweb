@@ -45,8 +45,8 @@ export default function Breadcrumb() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Visible breadcrumb */}
-      <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      {/* Visible breadcrumb — visually hidden but kept for SEO schema */}
+      <nav aria-label="Breadcrumb" className="sr-only">
         <ol className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest flex-wrap">
           {items.map((item, idx) => {
             const isLast = idx === items.length - 1;

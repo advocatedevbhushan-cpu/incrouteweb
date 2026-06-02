@@ -896,7 +896,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-2 sm:px-6 mt-[-35px] sm:mt-[-55px] pb-6"
+            className="relative max-w-5xl mx-auto z-20 px-2 sm:px-6 mt-[-20px] sm:mt-[-35px] pb-6"
           >
             <div className="premium-advisor-card border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5">
               {/* Header */}
@@ -967,11 +967,44 @@ export default function RegistrationServices({
                       onChange={(e) => setCheckIndustry(e.target.value)}
                       className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
                     >
-                      <option value="Manufacturing">Manufacturing</option>
                       <option value="Technology & Software Services">Technology & Software Services</option>
                       <option value="E-Commerce & Retail">E-Commerce & Retail</option>
                       <option value="Finance & Consulting Services">Finance & Consulting Services</option>
                       <option value="Healthcare & Pharma">Healthcare & Pharma</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                      <option value="Education & EdTech">Education & EdTech</option>
+                      <option value="Real Estate & Construction">Real Estate & Construction</option>
+                      <option value="Food & Beverages">Food & Beverages</option>
+                      <option value="Agriculture & Agritech">Agriculture & Agritech</option>
+                      <option value="Logistics & Transportation">Logistics & Transportation</option>
+                      <option value="Media & Entertainment">Media & Entertainment</option>
+                      <option value="Travel & Hospitality">Travel & Hospitality</option>
+                      <option value="Textile & Apparel">Textile & Apparel</option>
+                      <option value="Automotive">Automotive</option>
+                      <option value="Energy & Renewable Resources">Energy & Renewable Resources</option>
+                      <option value="Banking & Financial Services">Banking & Financial Services</option>
+                      <option value="Insurance">Insurance</option>
+                      <option value="Telecommunications">Telecommunications</option>
+                      <option value="Legal Services">Legal Services</option>
+                      <option value="Advertising & Marketing">Advertising & Marketing</option>
+                      <option value="Sports & Fitness">Sports & Fitness</option>
+                      <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                      <option value="Environmental & Waste Management">Environmental & Waste Management</option>
+                      <option value="Mining & Metals">Mining & Metals</option>
+                      <option value="Aerospace & Defence">Aerospace & Defence</option>
+                      <option value="Blockchain & Web3">Blockchain & Web3</option>
+                      <option value="Artificial Intelligence & ML">Artificial Intelligence & ML</option>
+                      <option value="Gaming & Esports">Gaming & Esports</option>
+                      <option value="Event Management">Event Management</option>
+                      <option value="Interior Design & Architecture">Interior Design & Architecture</option>
+                      <option value="Import & Export Trading">Import & Export Trading</option>
+                      <option value="Printing & Packaging">Printing & Packaging</option>
+                      <option value="Security Services">Security Services</option>
+                      <option value="Non-Profit & Social Enterprise">Non-Profit & Social Enterprise</option>
+                      <option value="Chemicals & Petrochemicals">Chemicals & Petrochemicals</option>
+                      <option value="Jewellery & Precious Metals">Jewellery & Precious Metals</option>
+                      <option value="Freelancing & Professional Services">Freelancing & Professional Services</option>
+                      <option value="Other">Other</option>
                     </select>
                     <label htmlFor="industry-select">Industry</label>
                     <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
