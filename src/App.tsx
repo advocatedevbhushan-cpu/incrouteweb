@@ -627,7 +627,7 @@ export default function App() {
 
       {/* Footer segment */}
       <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-12 md:py-16 text-brand-text-muted mt-auto transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
             
             {/* Column 1: Brand Info */}
@@ -760,6 +760,10 @@ export default function App() {
           onClick={() => {
             setActiveTab("services");
             window.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => {
+              const el = document.getElementById("service-catalog-section");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }, 300);
           }}
           className="bg-[#2B5B84] text-white font-mono uppercase tracking-widest"
         >
@@ -773,6 +777,24 @@ export default function App() {
           className="bg-brand-gold text-black font-mono uppercase tracking-widest"
         >
           Request Callback
+        </button>
+      </div>
+
+      {/* Desktop Floating CTA — bottom right */}
+      <div className="desktop-floating-cta">
+        <button
+          onClick={() => {
+            setActiveTab("services");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => {
+              const el = document.getElementById("service-catalog-section");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }, 300);
+          }}
+          className="bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] font-bold px-5 py-3 rounded-lg shadow-lg shadow-brand-gold/20 transition-all duration-200 flex items-center gap-2 cursor-pointer"
+        >
+          <Scale className="w-3.5 h-3.5" />
+          Start Registration
         </button>
       </div>
     </div>

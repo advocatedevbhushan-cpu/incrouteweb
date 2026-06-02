@@ -838,6 +838,33 @@ html, body {
   }
 }
 
+/* ═══ DESKTOP FLOATING CTA ═══ */
+.desktop-floating-cta {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .desktop-floating-cta {
+    display: block;
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 80;
+    animation: fadeSlideUp 0.5s ease-out;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ═══ DISABLE CUSTOM CURSOR ON TOUCH ═══ */
 @media (pointer: coarse) {
   [style*="position: fixed"][style*="border-radius: 50%"][style*="pointer-events: none"] {
