@@ -1501,11 +1501,13 @@ export default function RegistrationServices({
               <div className="lg:col-span-5 bg-brand-bg-lighter border border-brand-border rounded-3xl p-6 space-y-6 flex flex-col justify-between shadow-xl">
                 {/* Price Display header */}
                 <div className="flex justify-between items-center border-b border-brand-border pb-4">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl sm:text-5xl font-serif font-bold text-brand-text leading-none">
-                      ₹{pricing.professionalFee}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-serif font-bold text-brand-text leading-none">
+                      Professional Fees
                     </span>
-                    <span className="text-xs text-brand-text-muted font-sans italic ml-1">base fee*</span>
+                    <span className="text-[10px] text-brand-text-muted font-sans leading-relaxed">
+                      Calculated based on entity type, directors & capital
+                    </span>
                   </div>
                   <span className="bg-[#E8F3EB] text-[#3B6E4C] font-mono font-bold text-[9px] px-2.5 py-1 rounded-md tracking-wider uppercase">
                     {selectedEntity.timeline.replace("Working Days", "WORKING DAYS").replace("–", "-")}
@@ -1609,15 +1611,13 @@ export default function RegistrationServices({
                 {/* Ledger */}
                 <div className="space-y-2 pt-3 border-t border-brand-border/60">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-brand-text-muted font-sans">Base Formation Fee</span>
+                    <span className="text-brand-text-muted font-sans">Professional Fee</span>
                     <span className="font-serif font-bold text-brand-text">₹{pricing.professionalFee}</span>
                   </div>
-                  {calcDirectors > (calcEntity === "opc" ? 1 : 2) && (
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-brand-text-muted font-sans">Extra Directors Fee</span>
-                      <span className="font-serif font-bold text-brand-text">+₹{pricing.govFee - (calcEntity === "opc" ? 1200 : 1500)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-brand-text-muted font-sans">Government & Stamp Duties</span>
+                    <span className="font-serif font-bold text-brand-text">₹{pricing.govFee}</span>
+                  </div>
                   {pricing.addOnFee > 0 && (
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-brand-text-muted font-sans">Add-ons Total</span>
@@ -1628,7 +1628,10 @@ export default function RegistrationServices({
 
                 {/* Estimated total and onboard button */}
                 <div className="border-t border-brand-border/60 pt-3 flex justify-between items-center">
-                  <span className="text-sm font-serif font-extrabold text-brand-text">Estimated Total</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-serif font-extrabold text-brand-text">Estimated Total</span>
+                    <span className="text-[9px] text-brand-text-muted font-sans">*Final quote after consultation</span>
+                  </div>
                   <span className="text-2.5xl font-serif font-bold text-[#c5a880]">
                     ₹{pricing.total}
                   </span>
