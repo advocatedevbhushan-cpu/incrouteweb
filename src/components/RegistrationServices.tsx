@@ -910,6 +910,7 @@ export default function RegistrationServices({
                 <div className="md:col-span-5 text-left relative">
                   <div className="floating-label-group relative">
                     <input
+                      id="proposed-business-name"
                       type="text"
                       placeholder=" "
                       value={checkName}
@@ -920,7 +921,7 @@ export default function RegistrationServices({
                         nameBlurred && !checkName.trim() ? "!border-[#C74A4A]" : ""
                       }`}
                     />
-                    <label className="flex items-center gap-1.5">
+                    <label htmlFor="proposed-business-name" className="flex items-center gap-1.5">
                       <Lock className="w-3 h-3 text-brand-gold" /> Proposed Business Name
                     </label>
                     {checkName.trim().length >= 2 && (
@@ -939,6 +940,7 @@ export default function RegistrationServices({
                 <div className="md:col-span-3 text-left">
                   <div className="floating-label-group relative">
                     <select
+                      id="entity-type-select"
                       value={calcEntity}
                       onChange={(e) => {
                         setCalcEntity(e.target.value);
@@ -951,7 +953,7 @@ export default function RegistrationServices({
                       <option value="opc">One Person Company</option>
                       <option value="partnership">Partnership Firm</option>
                     </select>
-                    <label>Entity Type</label>
+                    <label htmlFor="entity-type-select">Entity Type</label>
                     <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
                   </div>
                 </div>
@@ -960,6 +962,7 @@ export default function RegistrationServices({
                 <div className="md:col-span-3 text-left">
                   <div className="floating-label-group relative">
                     <select
+                      id="industry-select"
                       value={checkIndustry}
                       onChange={(e) => setCheckIndustry(e.target.value)}
                       className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
@@ -970,7 +973,7 @@ export default function RegistrationServices({
                       <option value="Finance & Consulting Services">Finance & Consulting Services</option>
                       <option value="Healthcare & Pharma">Healthcare & Pharma</option>
                     </select>
-                    <label>Industry</label>
+                    <label htmlFor="industry-select">Industry</label>
                     <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
                   </div>
                 </div>
@@ -980,6 +983,7 @@ export default function RegistrationServices({
                   <button
                     type="submit"
                     disabled={isCheckingName}
+                    aria-label="Check name availability"
                     className="w-full h-11 bg-brand-gold hover:bg-black text-black hover:text-white rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-brand-gold/10 font-bold"
                   >
                     {isCheckingName ? (
@@ -1211,6 +1215,7 @@ export default function RegistrationServices({
                               }
                             }}
                                   className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all duration-150 fast-transition border border-white/10 cursor-pointer"
+                                  aria-label="Save service to favorites"
                           >
                                   <Heart className={`w-4 h-4 transition-colors ${isSaved ? "fill-red-500 text-red-500" : "text-white"}`} />
                           </button>

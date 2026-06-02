@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Breadcrumb from "./components/Breadcrumb";
 import ScrollToTop from "./components/ScrollToTop";
 import RegistrationServices from "./components/RegistrationServices";
 import { motion, AnimatePresence } from "motion/react";
-import NameFeasibilityChecker from "./components/NameFeasibilityChecker";
-import BlogPage from "./components/BlogPage";
-import AboutPage from "./components/AboutPage";
-import ServiceCatalogInsights from "./components/ServiceCatalogInsights";
-import StatutoryTools from "./components/StatutoryTools";
-import AnimatedTimeline from "./components/AnimatedTimeline";
-import EntityComparison from "./components/EntityComparison";
-import ServiceImpactDashboard from "./components/ServiceImpactDashboard";
-import ComplianceFlowchart from "./components/ComplianceFlowchart";
-import TestimonialsSection from "./components/TestimonialsSection";
-import TestimonialCarousel from "./components/TestimonialCarousel";
 import { ComplianceEvent } from "./types";
 import { initAuth } from "./lib/firebase";
+
+// Code-split non-critical components (loaded after initial render)
+const NameFeasibilityChecker = lazy(() => import("./components/NameFeasibilityChecker"));
+const BlogPage = lazy(() => import("./components/BlogPage"));
+const AboutPage = lazy(() => import("./components/AboutPage"));
+const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
+const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
+const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
+const EntityComparison = lazy(() => import("./components/EntityComparison"));
+const ServiceImpactDashboard = lazy(() => import("./components/ServiceImpactDashboard"));
+const ComplianceFlowchart = lazy(() => import("./components/ComplianceFlowchart"));
+const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
+const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
 import ContactFormWidget from "./components/ContactFormWidget";
 import LocalCityLanding from "./components/LocalCityLanding";
 import AnswerHub from "./components/AnswerHub";
@@ -205,6 +207,7 @@ export default function App() {
 
       {/* Main Container Wrapper */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full overflow-hidden">
+        <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" /></div>}>
         <AnimatePresence mode="wait">
           {activeTab === "services" && (
             <motion.div
@@ -774,6 +777,7 @@ export default function App() {
             <NotFoundPage />
           )}
         </AnimatePresence>
+        </Suspense>
       </main>
 
       {/* Footer segment */}
@@ -896,7 +900,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="text-[10px] font-mono tracking-wider uppercase text-brand-text-muted/65 pt-2 select-none">
+              <div className="text-[10px] font-mono tracking-wider uppercase text-brand-text-muted pt-2 select-none">
                 © {new Date().getFullYear()} INCROUTE. ALL RIGHTS RESERVED.
               </div>
             </div>
