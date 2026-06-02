@@ -634,12 +634,12 @@ export default function App() {
 
       {/* Footer segment */}
       <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-12 md:py-16 text-brand-text-muted mt-auto transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+        <div className="max-w-7xl mx-auto px-7 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 text-center md:text-left">
             
             {/* Column 1: Brand Info */}
             <div className="md:col-span-3 space-y-5">
-              <div className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={() => handleServiceClick("pvt-ltd")}>
+              <div className="flex items-center gap-2.5 cursor-pointer font-sans justify-center md:justify-start" onClick={() => handleServiceClick("pvt-ltd")}>
                 <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
                   <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
                 </div>
@@ -663,7 +663,7 @@ export default function App() {
                 Our Services
               </h4>
               <div className="grid grid-cols-1 gap-y-2.5 text-xs font-sans">
-                <div className="space-y-2.5 flex flex-col items-start">
+                <div className="space-y-2.5 flex flex-col items-center md:items-start">
                   <div 
                     onClick={() => handleServiceClick("pvt-ltd")}
                     className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
@@ -704,7 +704,7 @@ export default function App() {
               <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
                 Service Locations
               </h4>
-              <div className="space-y-2.5 text-xs font-sans flex flex-col items-start">
+              <div className="space-y-2.5 text-xs font-sans flex flex-col items-center md:items-start">
                 <a 
                   href="/company-registration-bangalore"
                   onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-bangalore"); }}
@@ -738,7 +738,7 @@ export default function App() {
                 All filings are handled by registered advocates and chartered accountants. Your data is protected with TLS 1.3 encryption and 256-bit SSL.
               </p>
               
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-1 justify-center md:justify-start">
                 {/* TLS Pill */}
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[10px] font-semibold text-green-600 dark:text-green-400">
                   <ShieldCheck className="w-3.5 h-3.5" />

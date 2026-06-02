@@ -236,6 +236,14 @@ a, button, input, select, textarea {
   border-color: #1B3A5C;
 }
 
+/* Hero map fade — matches hero card background */
+.hero-map-fade {
+  background: linear-gradient(to right, #16191F 0%, rgba(22, 25, 31, 0.8) 40%, transparent 100%);
+}
+.light .hero-map-fade {
+  background: linear-gradient(to right, #1B3A5C 0%, rgba(27, 58, 92, 0.8) 40%, transparent 100%);
+}
+
 .premium-advisor-card {
   background-color: #181B1F;
   border-color: #262A30;
@@ -661,8 +669,8 @@ html, body {
 @media (max-width: 640px) {
   /* Reduce body padding */
   main {
-    padding-left: 1.25rem !important;
-    padding-right: 1.25rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
     padding-top: 1.5rem !important;
   }
 
