@@ -820,8 +820,9 @@ export default function BlogPage() {
               {filteredPosts.map((post, idx) => {
                 const postTags = inferTags(post);
                 return (
-                <motion.div 
+                <motion.a 
                   key={post.id}
+                  href={`/blog/${post.slug}/`}
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -829,8 +830,11 @@ export default function BlogPage() {
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
                   whileHover={{ y: -6, scale: 1.015, boxShadow: "0 20px 40px -15px rgba(158,137,106,0.15)" }}
                   whileTap={{ scale: 0.985 }}
-                  onClick={() => handleSelectPost(post)}
-                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden group cursor-pointer flex flex-col justify-between premium-card"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSelectPost(post);
+                  }}
+                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden group cursor-pointer flex flex-col justify-between premium-card block"
                 >
                   <div className="space-y-4">
                     {/* Hover Scaling Image Container */}
@@ -952,7 +956,7 @@ export default function BlogPage() {
                       {t("blog_read") as string} <BookOpen className="w-3 h-3" />
                     </span>
                   </div>
-                </motion.div>
+                </motion.a>
                 );
               })}
             </motion.div>
