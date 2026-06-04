@@ -733,13 +733,87 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   }
 
+  // Helpers for Firestore REST API
+  function toFirestoreValue(val: any): any {
+    if (val === null || val === undefined) return { nullValue: null };
+    if (typeof val === "string") return { stringValue: val };
+    if (typeof val === "number") return { integerValue: val.toString() };
+    if (typeof val === "boolean") return { booleanValue: val };
+    if (Array.isArray(val)) {
+      return {
+        arrayValue: {
+          values: val.map(toFirestoreValue)
+        }
+      };
+    }
+    return { stringValue: JSON.stringify(val) };
+  }
+
+  function toFirestoreFields(obj: any): any {
+    const fields: any = {};
+    for (const key in obj) {
+      if (obj[key] !== undefined && key !== "id") {
+        fields[key] = toFirestoreValue(obj[key]);
+      }
+    }
+    return { fields };
+  }
+
   // Blog endpoints
-  app.get("/api/blog/posts", (req, res) => {
+  app.get("/api/blog/posts", async (req, res) => {
     const token = req.query.token || req.headers["x-admin-token"];
+
+    let posts: any[] = [];
+    try {
+      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data: any = await response.json();
+        const firestoreDocs = data.documents || [];
+        posts = firestoreDocs.map(parseFirestoreDocument);
+      } else {
+        console.error(`🔴 Firestore REST API returned status ${response.status}`);
+      }
+    } catch (err: any) {
+      console.error("🔴 Failed to fetch blogs from Firestore REST API:", err.message);
+    }
+
+    // Self-healing migration if Firestore is empty
+    if (posts.length === 0) {
+      console.log("🟢 Firestore blogs collection is empty. Seeding default blogs...");
+      const seedPosts = defaultBlogs.map((b: any) => ({
+        ...b,
+        slug: generateSlug(b.title),
+        status: "published",
+        metaDescription: b.subtitle || "",
+        views: b.views || 0
+      }));
+
+      for (const post of seedPosts) {
+        try {
+          const payload = toFirestoreFields(post);
+          await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${post.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        } catch (e: any) {
+          console.error(`Failed to write seed post ${post.id}:`, e.message);
+        }
+      }
+      posts = seedPosts;
+    }
+
+    // Sort posts by date descending
+    posts.sort((a, b) => b.date.localeCompare(a.date));
+
+    // Update fallback cache
+    blogPosts = posts;
+
     if (token === "admin-session-secure-token") {
-      res.json({ success: true, count: blogPosts.length, posts: blogPosts });
+      res.json({ success: true, count: posts.length, posts });
     } else {
-      const published = blogPosts.filter((p) => p.status === "published");
+      const published = posts.filter((p) => p.status === "published");
       res.json({ success: true, count: published.length, posts: published });
     }
   });
@@ -754,7 +828,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   });
 
-  app.post("/api/blog/posts", (req, res) => {
+  app.post("/api/blog/posts", async (req, res) => {
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
     if (token !== "admin-session-secure-token") {
@@ -767,7 +841,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     const newId = `blog-${Date.now()}`;
     const newPost = {
-      id: newId,
       title,
       subtitle: subtitle || "",
       content,
@@ -777,31 +850,49 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       tags: Array.isArray(tags) ? tags : [],
       views: 0,
       slug: generateSlug(title),
-      status: status || "draft",
+      status: status || "published",
       metaDescription: metaDescription || subtitle || ""
     };
 
     // Ensure unique slug
+    let posts: any[] = [];
+    try {
+      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data: any = await response.json();
+        posts = (data.documents || []).map(parseFirestoreDocument);
+      }
+    } catch (e) {}
+
     let originalSlug = newPost.slug;
     let count = 1;
-    while (blogPosts.some(p => p.slug === newPost.slug)) {
+    while (posts.some(p => p.slug === newPost.slug)) {
       newPost.slug = `${originalSlug}-${count}`;
       count++;
     }
 
-    blogPosts.unshift(newPost);
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
-      console.log(`🟢 PERSISTED NEW BLOG POST TO DISK: ${newId}`);
+      const payload = toFirestoreFields(newPost);
+      const writeRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${newId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!writeRes.ok) {
+        throw new Error(`Firestore PATCH returned status ${writeRes.status}`);
+      }
+      console.log(`🟢 PERSISTED NEW BLOG POST TO FIRESTORE: ${newId}`);
     } catch (err: any) {
       console.error("Failed to persist blog post:", err.message);
+      return res.status(500).json({ success: false, error: "Failed to persist to database: " + err.message });
     }
 
-    res.json({ success: true, message: "Blog post saved successfully!", post: newPost });
+    res.json({ success: true, message: "Blog post saved successfully!", post: { id: newId, ...newPost } });
   });
 
   // Admin Edit Blog Post
-  app.post("/api/blog/posts/:id/edit", (req, res) => {
+  app.post("/api/blog/posts/:id/edit", async (req, res) => {
     const { id } = req.params;
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
@@ -809,43 +900,63 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       return res.status(403).json({ success: false, error: "Unauthorized access." });
     }
 
-    const postIndex = blogPosts.findIndex((p) => p.id === id);
-    if (postIndex === -1) {
+    let existingPost: any = null;
+    let posts: any[] = [];
+    try {
+      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data: any = await response.json();
+        posts = (data.documents || []).map(parseFirestoreDocument);
+        existingPost = posts.find((p) => p.id === id);
+      }
+    } catch (e) {}
+
+    if (!existingPost) {
       return res.status(404).json({ success: false, error: "Blog post not found." });
     }
 
-    const post = blogPosts[postIndex];
-    if (title && title !== post.title) {
-      post.title = title;
-      post.slug = generateSlug(title);
+    const updatedPost = { ...existingPost };
+    if (title && title !== existingPost.title) {
+      updatedPost.title = title;
+      updatedPost.slug = generateSlug(title);
       // Ensure unique slug
-      let originalSlug = post.slug;
+      let originalSlug = updatedPost.slug;
       let count = 1;
-      while (blogPosts.some((p) => p.slug === post.slug && p.id !== id)) {
-        post.slug = `${originalSlug}-${count}`;
+      while (posts.some((p) => p.slug === updatedPost.slug && p.id !== id)) {
+        updatedPost.slug = `${originalSlug}-${count}`;
         count++;
       }
     }
-    if (subtitle !== undefined) post.subtitle = subtitle;
-    if (content !== undefined) post.content = content;
-    if (image !== undefined) post.image = image;
-    if (author !== undefined) post.author = author;
-    if (tags !== undefined) post.tags = Array.isArray(tags) ? tags : [];
-    if (status !== undefined) post.status = status;
-    if (metaDescription !== undefined) post.metaDescription = metaDescription;
+    if (subtitle !== undefined) updatedPost.subtitle = subtitle;
+    if (content !== undefined) updatedPost.content = content;
+    if (image !== undefined) updatedPost.image = image;
+    if (author !== undefined) updatedPost.author = author;
+    if (tags !== undefined) updatedPost.tags = Array.isArray(tags) ? tags : [];
+    if (status !== undefined) updatedPost.status = status;
+    if (metaDescription !== undefined) updatedPost.metaDescription = metaDescription;
 
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
-      console.log(`🟢 PERSISTED EDITED BLOG POST TO DISK: ${id}`);
+      const payload = toFirestoreFields(updatedPost);
+      const writeRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!writeRes.ok) {
+        throw new Error(`Firestore PATCH returned status ${writeRes.status}`);
+      }
+      console.log(`🟢 PERSISTED EDITED BLOG POST TO FIRESTORE: ${id}`);
     } catch (err: any) {
       console.error("Failed to persist edited blog post:", err.message);
+      return res.status(500).json({ success: false, error: "Failed to persist edit: " + err.message });
     }
 
-    res.json({ success: true, message: "Blog post updated successfully!", post });
+    res.json({ success: true, message: "Blog post updated successfully!", post: updatedPost });
   });
 
   // Toggle/Update blog status
-  app.post("/api/blog/posts/:id/status", (req, res) => {
+  app.post("/api/blog/posts/:id/status", async (req, res) => {
     const { id } = req.params;
     const { token, status } = req.body;
 
@@ -853,46 +964,73 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       return res.status(403).json({ success: false, error: "Unauthorized access." });
     }
 
-    const post = blogPosts.find((p) => p.id === id);
-    if (!post) {
-      return res.status(404).json({ success: false, error: "Blog post not found." });
-    }
-
-    if (status === "draft" || status === "ready" || status === "published") {
-      post.status = status;
-    } else {
+    if (status !== "draft" && status !== "ready" && status !== "published") {
       return res.status(400).json({ success: false, error: "Invalid status value." });
     }
 
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+      const payload = { fields: { status: { stringValue: status } } };
+      const patchUrl = `https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}?updateMask.fieldPaths=status`;
+      const patchRes = await fetch(patchUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!patchRes.ok) {
+        throw new Error(`Firestore PATCH status returned ${patchRes.status}`);
+      }
       console.log(`🟢 BLOG POST STATUS UPDATED: ${id} to ${status}`);
     } catch (err: any) {
-      console.error("Failed to save updated status to disk:", err.message);
+      console.error("Failed to update status in Firestore:", err.message);
+      return res.status(500).json({ success: false, error: "Failed to update status: " + err.message });
     }
 
-    res.json({ success: true, post });
-  });
-
-  app.post("/api/blog/posts/:id/view", (req, res) => {
-    const { id } = req.params;
-    const post = blogPosts.find((p) => p.id === id);
-    if (!post) {
-      return res.status(404).json({ success: false, error: "Blog post not found." });
-    }
-
-    post.views = (post.views || 0) + 1;
-
+    let post: any = { id, status };
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
-    } catch (err: any) {
-      console.error("Failed to save view count to disk:", err.message);
-    }
+      const getRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`);
+      if (getRes.ok) {
+        post = parseFirestoreDocument(await getRes.json());
+      }
+    } catch (e) {}
 
     res.json({ success: true, post });
   });
 
-  app.delete("/api/blog/posts/:id", (req, res) => {
+  app.post("/api/blog/posts/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    let views = 1;
+    try {
+      const getRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`);
+      if (getRes.ok) {
+        const docObj = await getRes.json();
+        const parsed = parseFirestoreDocument(docObj);
+        views = (parsed.views || 0) + 1;
+      }
+
+      const payload = { fields: { views: { integerValue: views.toString() } } };
+      const patchUrl = `https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}?updateMask.fieldPaths=views`;
+      await fetch(patchUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } catch (err: any) {
+      console.error("Failed to increment views in Firestore:", err.message);
+    }
+
+    let post: any = { id, views };
+    try {
+      const getRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`);
+      if (getRes.ok) {
+        post = parseFirestoreDocument(await getRes.json());
+      }
+    } catch (e) {}
+
+    res.json({ success: true, post });
+  });
+
+  app.delete("/api/blog/posts/:id", async (req, res) => {
     const { id } = req.params;
     const { token } = req.body;
 
@@ -900,20 +1038,20 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       return res.status(403).json({ success: false, error: "Unauthorized access." });
     }
 
-    const index = blogPosts.findIndex((p) => p.id === id);
-    if (index === -1) {
-      return res.status(404).json({ success: false, error: "Blog post not found." });
-    }
-
-    const deleted = blogPosts.splice(index, 1);
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
-      console.log(`🟢 DELETED BLOG POST FROM DISK: ${id}`);
+      const deleteRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`, {
+        method: "DELETE"
+      });
+      if (!deleteRes.ok) {
+        throw new Error(`Firestore DELETE returned status ${deleteRes.status}`);
+      }
+      console.log(`🟢 DELETED BLOG POST FROM FIRESTORE: ${id}`);
     } catch (err: any) {
-      console.error("Failed to sync deletions to disk:", err.message);
+      console.error("Failed to delete blog post from Firestore:", err.message);
+      return res.status(500).json({ success: false, error: "Failed to delete: " + err.message });
     }
 
-    res.json({ success: true, message: "Blog post deleted successfully!", post: deleted[0] });
+    res.json({ success: true, message: "Blog post deleted successfully!" });
   });
 
   // Testimonials Persistent JSON Datastore
