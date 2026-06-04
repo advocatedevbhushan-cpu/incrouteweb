@@ -10,6 +10,18 @@ import {
 import { useLang } from "../lib/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { db } from "../lib/firebase";
+import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc, increment } from "firebase/firestore";
+
+// Helper to generate slug
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 
 // Predefined tag taxonomy for filtering
 const BLOG_TAGS = ["GST", "ROC", "LLP", "Pvt Ltd", "Startup India", "Compliance", "TDS", "OPC", "Trademark"] as const;
@@ -43,7 +55,7 @@ export default function BlogPage() {
   // Edit Blog States
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [newMetaDescription, setNewMetaDescription] = useState("");
-  const [newStatus, setNewStatus] = useState<"draft" | "ready" | "published">("draft");
+  const [newStatus, setNewStatus] = useState<"draft" | "ready" | "published">("published");
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +105,9 @@ export default function BlogPage() {
   // Filtered posts derived from search + tag
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
+      if (!isAdmin && post.status !== "published") {
+        return false;
+      }
       const matchesSearch =
         !searchQuery ||
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,7 +116,7 @@ export default function BlogPage() {
       const matchesTag = !activeTag || inferTags(post).includes(activeTag);
       return matchesSearch && matchesTag;
     });
-  }, [posts, searchQuery, activeTag]);
+  }, [posts, searchQuery, activeTag, isAdmin]);
 
   // Recent posts for sidebar suggestions (excluding currently selected post)
   const recentPosts = useMemo(() => {
@@ -203,14 +218,46 @@ export default function BlogPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = sessionStorage.getItem("admin_token") || "";
-      const res = await fetch(`/api/blog/posts?token=${token}`);
-      const data = await res.json();
-      if (data.success) {
-        setPosts(data.posts);
-      } else {
-        setError(data.error || "Failed to load blog posts.");
+      // 1. Fetch posts from Firestore
+      const querySnapshot = await getDocs(collection(db, "blogs"));
+      let fetchedPosts: BlogPost[] = [];
+      querySnapshot.forEach((docSnap) => {
+        fetchedPosts.push({ id: docSnap.id, ...docSnap.data() } as BlogPost);
+      });
+
+      // 2. Self-Healing check: if Firestore is empty, seed from local JSON
+      if (fetchedPosts.length === 0) {
+        console.log("Firestore blogs collection is empty. Migrating seed data...");
+        const res = await fetch("/api/blog/posts");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.posts) && data.posts.length > 0) {
+          const seeds: BlogPost[] = data.posts;
+          for (const post of seeds) {
+            await setDoc(doc(db, "blogs", post.id), {
+              title: post.title,
+              subtitle: post.subtitle || "",
+              content: post.content,
+              image: post.image || "",
+              date: post.date || new Date().toISOString().split("T")[0],
+              author: post.author || "D Bhushan",
+              views: post.views || 0,
+              slug: post.slug || generateSlug(post.title),
+              status: post.status || "published",
+              metaDescription: post.metaDescription || post.subtitle || ""
+            });
+          }
+          // Fetch again after seeding
+          const healingSnapshot = await getDocs(collection(db, "blogs"));
+          fetchedPosts = [];
+          healingSnapshot.forEach((docSnap) => {
+            fetchedPosts.push({ id: docSnap.id, ...docSnap.data() } as BlogPost);
+          });
+        }
       }
+
+      // Sort posts by date descending
+      fetchedPosts.sort((a, b) => b.date.localeCompare(a.date));
+      setPosts(fetchedPosts);
     } catch (err: any) {
       console.error("Fetch blog posts error:", err);
       setError("Unable to connect to service. Verify server connection.");
@@ -223,12 +270,19 @@ export default function BlogPage() {
     setSelectedPost(post);
     navigate(`/blog/${post.slug}/`);
     try {
-      const res = await fetch(`/api/blog/posts/${post.id}/view`, { method: "POST" });
-      const data = await res.json();
-      if (data.success && data.post) {
-        setSelectedPost(data.post);
-        setPosts((prev) => prev.map((p) => p.id === post.id ? data.post : p));
-      }
+      await updateDoc(doc(db, "blogs", post.id), {
+        views: increment(1)
+      });
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === post.id) {
+            const updated = { ...p, views: (p.views || 0) + 1 };
+            setSelectedPost(updated);
+            return updated;
+          }
+          return p;
+        })
+      );
     } catch (err) {
       console.error("Failed to increment view count:", err);
     }
@@ -236,23 +290,27 @@ export default function BlogPage() {
 
   const handleUpdateStatus = async (id: string, status: "draft" | "ready" | "published") => {
     const token = sessionStorage.getItem("admin_token");
+    if (token !== "admin-session-secure-token") {
+      alert("Unauthorized access.");
+      return;
+    }
     try {
-      const res = await fetch(`/api/blog/posts/${id}/status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, status })
-      });
-      const data = await res.json();
-      if (data.success && data.post) {
-        setPosts((prev) => prev.map((p) => p.id === id ? data.post : p));
-        if (selectedPost?.id === id) {
-          setSelectedPost(data.post);
-        }
-      } else {
-        alert(data.error || "Failed to update status.");
-      }
-    } catch (err) {
+      await updateDoc(doc(db, "blogs", id), { status });
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === id) {
+            const updated = { ...p, status };
+            if (selectedPost?.id === id) {
+              setSelectedPost(updated);
+            }
+            return updated;
+          }
+          return p;
+        })
+      );
+    } catch (err: any) {
       console.error("Failed to update status:", err);
+      alert("Failed to update status: " + err.message);
     }
   };
 
@@ -359,54 +417,67 @@ export default function BlogPage() {
     setPublishError(null);
 
     const token = sessionStorage.getItem("admin_token");
-    const blogPayload = {
-      title: newTitle.trim(),
-      subtitle: newSubtitle.trim(),
-      content: newContent,
-      image: newImage || IMAGE_PRESETS[0].url,
-      author: newAuthor.trim(),
-      tags: selectedTags,
-      token,
-      status: newStatus,
-      metaDescription: newMetaDescription.trim()
-    };
+    if (token !== "admin-session-secure-token") {
+      setPublishError("Unauthorized access.");
+      setPublishing(false);
+      return;
+    }
 
     try {
-      const url = editingPost ? `/api/blog/posts/${editingPost.id}/edit` : "/api/blog/posts";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(blogPayload)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        if (editingPost) {
-          setPosts((prev) => prev.map((p) => p.id === editingPost.id ? data.post : p));
-          if (selectedPost?.id === editingPost.id) {
-            setSelectedPost(data.post);
-          }
-        } else {
-          setPosts((prev) => [data.post, ...prev]);
-        }
-        setShowCreateModal(false);
-        setEditingPost(null);
-        // Reset all fields
-        setNewTitle("");
-        setNewSubtitle("");
-        setNewContent("");
-        setNewImage("");
-        setImagePreview(null);
-        setSelectedTags([]);
-        setNewMetaDescription("");
-        setNewStatus("draft");
-        setEditorMode("write");
-        setHistory([""]);
-        setHistoryIndex(0);
-      } else {
-        setPublishError(data.error || "Error compiling editorial document.");
+      const id = editingPost ? editingPost.id : `blog-${Date.now()}`;
+      let slug = generateSlug(newTitle.trim());
+
+      let originalSlug = slug;
+      let count = 1;
+      while (posts.some((p) => p.slug === slug && p.id !== id)) {
+        slug = `${originalSlug}-${count}`;
+        count++;
       }
-    } catch (err) {
-      setPublishError("Failed publishing document to secure network.");
+
+      const postPayload = {
+        title: newTitle.trim(),
+        subtitle: newSubtitle.trim(),
+        content: newContent,
+        image: newImage || IMAGE_PRESETS[0].url,
+        date: editingPost ? editingPost.date : new Date().toISOString().split("T")[0],
+        author: newAuthor.trim(),
+        tags: selectedTags,
+        views: editingPost ? (editingPost.views || 0) : 0,
+        slug,
+        status: newStatus,
+        metaDescription: newMetaDescription.trim()
+      };
+
+      await setDoc(doc(db, "blogs", id), postPayload);
+
+      const savedPost: BlogPost = { id, ...postPayload };
+
+      if (editingPost) {
+        setPosts((prev) => prev.map((p) => p.id === editingPost.id ? savedPost : p));
+        if (selectedPost?.id === editingPost.id) {
+          setSelectedPost(savedPost);
+        }
+      } else {
+        setPosts((prev) => [savedPost, ...prev]);
+      }
+
+      setShowCreateModal(false);
+      setEditingPost(null);
+      // Reset all fields
+      setNewTitle("");
+      setNewSubtitle("");
+      setNewContent("");
+      setNewImage("");
+      setImagePreview(null);
+      setSelectedTags([]);
+      setNewMetaDescription("");
+      setNewStatus("published");
+      setEditorMode("write");
+      setHistory([""]);
+      setHistoryIndex(0);
+    } catch (err: any) {
+      console.error("Firestore publish error:", err);
+      setPublishError("Failed publishing document to secure network: " + err.message);
     } finally {
       setPublishing(false);
     }
@@ -418,23 +489,20 @@ export default function BlogPage() {
     if (!window.confirm("Are you sure you want to permanently delete this corporate article?")) return;
 
     const token = sessionStorage.getItem("admin_token");
+    if (token !== "admin-session-secure-token") {
+      alert("Unauthorized access.");
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/blog/posts/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setPosts((prev) => prev.filter((p) => p.id !== id));
-        if (selectedPost?.id === id) {
-          setSelectedPost(null);
-        }
-      } else {
-        alert(data.error || "Failed to remove post.");
+      await deleteDoc(doc(db, "blogs", id));
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      if (selectedPost?.id === id) {
+        setSelectedPost(null);
       }
-    } catch (err) {
-      alert("Failed sync with blog registry deletion channel.");
+    } catch (err: any) {
+      console.error("Firestore delete error:", err);
+      alert("Failed sync with blog registry deletion channel: " + err.message);
     }
   };
 
@@ -628,7 +696,7 @@ export default function BlogPage() {
                     setImagePreview(null);
                     setSelectedTags([]);
                     setNewMetaDescription("");
-                    setNewStatus("draft");
+                    setNewStatus("published");
                     setHistory([""]);
                     setHistoryIndex(0);
                     setShowCreateModal(true);

@@ -1477,10 +1477,63 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     return transformed;
   }
 
+  // Helper to parse Firestore REST API JSON structure
+  function parseFirestoreDocument(doc: any): any {
+    const fields = doc.fields || {};
+    const result: any = {};
+    const nameParts = doc.name ? doc.name.split("/") : [];
+    result.id = nameParts[nameParts.length - 1] || "";
+
+    for (const key in fields) {
+      const valObj = fields[key];
+      if (valObj && typeof valObj === "object") {
+        if ("stringValue" in valObj) {
+          result[key] = valObj.stringValue;
+        } else if ("integerValue" in valObj) {
+          result[key] = parseInt(valObj.integerValue, 10);
+        } else if ("doubleValue" in valObj) {
+          result[key] = parseFloat(valObj.doubleValue);
+        } else if ("booleanValue" in valObj) {
+          result[key] = valObj.booleanValue;
+        } else if ("arrayValue" in valObj) {
+          const values = valObj.arrayValue.values || [];
+          result[key] = values.map((v: any) => {
+            if ("stringValue" in v) return v.stringValue;
+            if ("integerValue" in v) return parseInt(v.integerValue, 10);
+            return JSON.stringify(v);
+          });
+        } else {
+          result[key] = valObj;
+        }
+      }
+    }
+    return result;
+  }
+
   // Dynamic Blog Post Route Handler for SEO crawler support
   const handleBlogPostRoute = async (req: any, res: any, next: any, isDev: boolean, vite?: any) => {
     const { slug } = req.params;
-    const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
+
+    let post: any = null;
+    try {
+      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
+      const response = await fetch(firestoreUrl);
+      if (response.ok) {
+        const data: any = await response.json();
+        const firestoreDocs = data.documents || [];
+        const parsedPosts = firestoreDocs.map(parseFirestoreDocument);
+        post = parsedPosts.find((p: any) => p.slug === slug && p.status === "published");
+      } else {
+        console.error(`🔴 Firestore REST API returned status ${response.status}`);
+      }
+    } catch (err: any) {
+      console.error("🔴 Failed to fetch blog post from Firestore REST API:", err.message);
+    }
+
+    if (!post) {
+      post = blogPosts.find((p) => p.slug === slug && p.status === "published");
+    }
+
     if (!post) {
       return next(); // Fallback to standard client router or 404
     }
