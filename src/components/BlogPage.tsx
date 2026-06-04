@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
 import { motion, AnimatePresence } from "motion/react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Predefined tag taxonomy for filtering
 const BLOG_TAGS = ["GST", "ROC", "LLP", "Pvt Ltd", "Startup India", "Compliance", "TDS", "OPC", "Trademark"] as const;
@@ -32,10 +33,17 @@ const IMAGE_PRESETS = [
 
 export default function BlogPage() {
   const { t } = useLang();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Edit Blog States
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [newMetaDescription, setNewMetaDescription] = useState("");
+  const [newStatus, setNewStatus] = useState<"draft" | "ready" | "published">("draft");
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,7 +186,8 @@ export default function BlogPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/blog/posts");
+      const token = sessionStorage.getItem("admin_token") || "";
+      const res = await fetch(`/api/blog/posts?token=${token}`);
       const data = await res.json();
       if (data.success) {
         setPosts(data.posts);
@@ -195,6 +204,7 @@ export default function BlogPage() {
 
   const handleSelectPost = async (post: BlogPost) => {
     setSelectedPost(post);
+    navigate(`/blog/${post.slug}/`);
     try {
       const res = await fetch(`/api/blog/posts/${post.id}/view`, { method: "POST" });
       const data = await res.json();
@@ -206,6 +216,48 @@ export default function BlogPage() {
       console.error("Failed to increment view count:", err);
     }
   };
+
+  const handleUpdateStatus = async (id: string, status: "draft" | "ready" | "published") => {
+    const token = sessionStorage.getItem("admin_token");
+    try {
+      const res = await fetch(`/api/blog/posts/${id}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, status })
+      });
+      const data = await res.json();
+      if (data.success && data.post) {
+        setPosts((prev) => prev.map((p) => p.id === id ? data.post : p));
+        if (selectedPost?.id === id) {
+          setSelectedPost(data.post);
+        }
+      } else {
+        alert(data.error || "Failed to update status.");
+      }
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    }
+  };
+
+  // Synchronize dynamic URL path parameters with detail selectedPost state
+  useEffect(() => {
+    if (posts.length === 0) return;
+    const match = location.pathname.match(/^\/blog\/([^/]+)/);
+    const slug = match ? match[1] : null;
+
+    if (slug) {
+      const found = posts.find((p) => p.slug === slug);
+      if (found) {
+        if (!selectedPost || selectedPost.slug !== found.slug) {
+          setSelectedPost(found);
+        }
+      } else {
+        setSelectedPost(null);
+      }
+    } else {
+      setSelectedPost(null);
+    }
+  }, [location.pathname, posts]);
 
   // Handle Admin Auth
   const handleLogin = async (e: React.FormEvent) => {
@@ -224,6 +276,7 @@ export default function BlogPage() {
         setIsAdmin(true);
         setShowLoginModal(false);
         setAdminPassword("");
+        fetchPosts();
       } else {
         setLoginError(data.error || "Unauthorized administrative attempt.");
       }
@@ -237,6 +290,7 @@ export default function BlogPage() {
   const handleLogout = () => {
     sessionStorage.removeItem("admin_token");
     setIsAdmin(false);
+    fetchPosts();
   };
 
   // File to Base64 encoder
@@ -295,19 +349,30 @@ export default function BlogPage() {
       image: newImage || IMAGE_PRESETS[0].url,
       author: newAuthor.trim(),
       tags: selectedTags,
-      token
+      token,
+      status: newStatus,
+      metaDescription: newMetaDescription.trim()
     };
 
     try {
-      const res = await fetch("/api/blog/posts", {
+      const url = editingPost ? `/api/blog/posts/${editingPost.id}/edit` : "/api/blog/posts";
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(blogPayload)
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setPosts((prev) => [data.post, ...prev]);
+        if (editingPost) {
+          setPosts((prev) => prev.map((p) => p.id === editingPost.id ? data.post : p));
+          if (selectedPost?.id === editingPost.id) {
+            setSelectedPost(data.post);
+          }
+        } else {
+          setPosts((prev) => [data.post, ...prev]);
+        }
         setShowCreateModal(false);
+        setEditingPost(null);
         // Reset all fields
         setNewTitle("");
         setNewSubtitle("");
@@ -315,6 +380,8 @@ export default function BlogPage() {
         setNewImage("");
         setImagePreview(null);
         setSelectedTags([]);
+        setNewMetaDescription("");
+        setNewStatus("draft");
         setEditorMode("write");
         setHistory([""]);
         setHistoryIndex(0);
@@ -534,7 +601,21 @@ export default function BlogPage() {
                   <Unlock className="w-3.5 h-3.5" /> {t("blog_admin_active") as string}
                 </div>
                 <button 
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => {
+                    setEditingPost(null);
+                    setNewTitle("");
+                    setNewSubtitle("");
+                    setNewContent("");
+                    setNewAuthor("D Bhushan");
+                    setNewImage("");
+                    setImagePreview(null);
+                    setSelectedTags([]);
+                    setNewMetaDescription("");
+                    setNewStatus("draft");
+                    setHistory([""]);
+                    setHistoryIndex(0);
+                    setShowCreateModal(true);
+                  }}
                   className="bg-brand-gold text-black border border-brand-gold text-[10px] font-mono uppercase font-bold tracking-widest px-3 py-1.5 rounded-lg transition-colors cursor-pointer hover:bg-transparent hover:text-brand-gold"
                 >
                   <Plus className="w-3.5 h-3.5 inline mr-1" /> {t("blog_new_post") as string}
@@ -621,7 +702,7 @@ export default function BlogPage() {
           <div className="absolute top-0 right-0 w-36 h-36 bg-brand-gold/5 blur-3xl rounded-full" />
           
           <button 
-            onClick={() => setSelectedPost(null)}
+            onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
             className="flex items-center gap-2 text-brand-text-muted hover:text-brand-gold font-mono uppercase tracking-widest text-[10px] pb-2 cursor-pointer transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> {t("blog_back") as string}
@@ -633,7 +714,7 @@ export default function BlogPage() {
           </div>
 
           <div className="space-y-4 border-b border-brand-border pb-5">
-            <h2 className="text-2xl sm:text-4xl font-light text-brand-text leading-tight serif">{selectedPost.title}</h2>
+            <h2 style={{ fontSize: "1.5rem" }} className="font-light text-brand-text leading-tight serif">{selectedPost.title}</h2>
             <p className="text-sm sm:text-base text-brand-text-muted/80 font-sans italic">{selectedPost.subtitle}</p>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-brand-text-muted/75 font-mono uppercase tracking-wider pt-2">
@@ -660,19 +741,42 @@ export default function BlogPage() {
           {/* Bottom Action Footer */}
           <div className="border-t border-brand-border pt-6 mt-6 flex justify-between items-center text-xs">
             <button 
-              onClick={() => setSelectedPost(null)}
+              onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
               className="bg-brand-bg text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/35 font-mono uppercase tracking-widest text-[10px] px-4 py-2.5 rounded transition-all duration-150 fast-transition snappy-press cursor-pointer font-bold"
             >
               {t("blog_close") as string}
             </button>
             
             {isAdmin && (
-              <button 
-                onClick={(e) => handleDeletePost(e, selectedPost.id)}
-                className="text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-500 font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5 inline mr-1" /> {t("blog_delete") as string}
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    const post = selectedPost;
+                    setEditingPost(post);
+                    setNewTitle(post.title);
+                    setNewSubtitle(post.subtitle);
+                    setNewContent(post.content);
+                    setNewAuthor(post.author);
+                    setNewImage(post.image);
+                    setImagePreview(post.image);
+                    setSelectedTags(post.tags || []);
+                    setNewMetaDescription(post.metaDescription || "");
+                    setNewStatus(post.status || "draft");
+                    setHistory([post.content]);
+                    setHistoryIndex(0);
+                    setShowCreateModal(true);
+                  }}
+                  className="text-brand-gold hover:text-white border border-brand-gold/45 hover:border-brand-gold font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5 inline mr-1" /> Edit
+                </button>
+                <button 
+                  onClick={(e) => handleDeletePost(e, selectedPost.id)}
+                  className="text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-500 font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 inline mr-1" /> {t("blog_delete") as string}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -737,13 +841,74 @@ export default function BlogPage() {
                         alt={post.title} 
                       />
                       {isAdmin && (
-                        <button 
-                          onClick={(e) => handleDeletePost(e, post.id)}
-                          className="absolute top-3 right-3 p-2 bg-black/75 hover:bg-red-500 border border-brand-border/40 hover:border-red-600 text-brand-text hover:text-black rounded-lg transition-colors z-10 shrink-0"
-                          title="Purge Document"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
+                          <span className={`text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${
+                            post.status === "published"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+                              : post.status === "ready"
+                              ? "bg-amber-500/10 text-amber-400 border-amber-500/25"
+                              : "bg-slate-500/10 text-slate-400 border-slate-500/25"
+                          }`}>
+                            {post.status}
+                          </span>
+                          {post.status === "draft" && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await handleUpdateStatus(post.id, "ready");
+                              }}
+                              className="bg-brand-gold text-black border border-brand-gold text-[8px] font-mono uppercase font-bold tracking-widest px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                              title="Unlock post to make it ready to publish"
+                            >
+                              <Unlock className="w-2.5 h-2.5 inline mr-0.5" /> Unlock
+                            </button>
+                          )}
+                          {post.status === "ready" && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await handleUpdateStatus(post.id, "published");
+                              }}
+                              className="bg-brand-gold text-black border border-brand-gold text-[8px] font-mono uppercase font-bold tracking-widest px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                              title="Publish post to live website"
+                            >
+                              <BookOpen className="w-2.5 h-2.5 inline mr-0.5" /> Publish
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {isAdmin && (
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingPost(post);
+                              setNewTitle(post.title);
+                              setNewSubtitle(post.subtitle);
+                              setNewContent(post.content);
+                              setNewAuthor(post.author);
+                              setNewImage(post.image);
+                              setImagePreview(post.image);
+                              setSelectedTags(post.tags || []);
+                              setNewMetaDescription(post.metaDescription || "");
+                              setNewStatus(post.status || "draft");
+                              setHistory([post.content]);
+                              setHistoryIndex(0);
+                              setShowCreateModal(true);
+                            }}
+                            className="p-2 bg-black/75 hover:bg-brand-gold border border-brand-border/40 hover:border-brand-gold text-brand-text hover:text-black rounded-lg transition-colors shrink-0"
+                            title="Edit Document"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={(e) => handleDeletePost(e, post.id)}
+                            className="p-2 bg-black/75 hover:bg-red-500 border border-brand-border/40 hover:border-red-600 text-brand-text hover:text-black rounded-lg transition-colors shrink-0"
+                            title="Purge Document"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -1170,6 +1335,33 @@ export default function BlogPage() {
                       +
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Grid: Meta Description and Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold">7. SEO Meta Description</label>
+                  <input 
+                    type="text" 
+                    value={newMetaDescription}
+                    onChange={(e) => setNewMetaDescription(e.target.value)}
+                    placeholder="Short SEO-optimized description for search engines..." 
+                    className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 font-sans"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase font-mono tracking-widest text-[#9E896A] font-bold">8. Publication Lifecycle Status</label>
+                  <select 
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as any)}
+                    className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold cursor-pointer font-sans"
+                  >
+                    <option value="draft" className="bg-brand-bg text-brand-text">Draft (Locked)</option>
+                    <option value="ready" className="bg-brand-bg text-brand-text">Ready to Publish (Unlocked)</option>
+                    <option value="published" className="bg-brand-bg text-brand-text">Published (Live/SEO Subdirectory)</option>
+                  </select>
                 </div>
               </div>
 

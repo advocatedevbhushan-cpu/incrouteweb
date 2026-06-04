@@ -676,17 +676,55 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   ];
 
+  // Helper to generate slug
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
   // Load persisted blog posts from disk
+  let needsMigrationSave = false;
   if (fs.existsSync(BLOG_FILE)) {
     try {
       blogPosts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
       console.log(`🟢 LOADED PERSISTED BLOG POSTS: ${blogPosts.length} posts`);
+      blogPosts.forEach((post: any) => {
+        if (!post.slug) {
+          post.slug = generateSlug(post.title);
+          needsMigrationSave = true;
+        }
+        if (!post.status) {
+          post.status = "published";
+          needsMigrationSave = true;
+        }
+        if (!post.metaDescription) {
+          post.metaDescription = post.subtitle || "";
+          needsMigrationSave = true;
+        }
+      });
+      if (needsMigrationSave) {
+        fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+        console.log(`🟢 MIGRATED BLOG DATABASE WITH SLUGS AND STATUS`);
+      }
     } catch (err: any) {
       console.error("Failed to read persisted blog posts:", err.message);
-      blogPosts = defaultBlogs;
+      blogPosts = defaultBlogs.map((b: any) => ({
+        ...b,
+        slug: generateSlug(b.title),
+        status: "published",
+        metaDescription: b.subtitle || ""
+      }));
     }
   } else {
-    blogPosts = defaultBlogs;
+    blogPosts = defaultBlogs.map((b: any) => ({
+      ...b,
+      slug: generateSlug(b.title),
+      status: "published",
+      metaDescription: b.subtitle || ""
+    }));
     try {
       fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
       console.log(`🟢 INITIALIZED SEED BLOG POSTS ON DISK`);
@@ -697,7 +735,13 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
   // Blog endpoints
   app.get("/api/blog/posts", (req, res) => {
-    res.json({ success: true, count: blogPosts.length, posts: blogPosts });
+    const token = req.query.token || req.headers["x-admin-token"];
+    if (token === "admin-session-secure-token") {
+      res.json({ success: true, count: blogPosts.length, posts: blogPosts });
+    } else {
+      const published = blogPosts.filter((p) => p.status === "published");
+      res.json({ success: true, count: published.length, posts: published });
+    }
   });
 
   app.post("/api/admin/login", (req, res) => {
@@ -711,7 +755,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   app.post("/api/blog/posts", (req, res) => {
-    const { title, subtitle, content, image, author, tags, token } = req.body;
+    const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
     if (token !== "admin-session-secure-token") {
       return res.status(403).json({ success: false, error: "Unauthorized access." });
@@ -731,8 +775,19 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       date: new Date().toISOString().split("T")[0],
       author: author || "D Bhushan",
       tags: Array.isArray(tags) ? tags : [],
-      views: 0
+      views: 0,
+      slug: generateSlug(title),
+      status: status || "draft",
+      metaDescription: metaDescription || subtitle || ""
     };
+
+    // Ensure unique slug
+    let originalSlug = newPost.slug;
+    let count = 1;
+    while (blogPosts.some(p => p.slug === newPost.slug)) {
+      newPost.slug = `${originalSlug}-${count}`;
+      count++;
+    }
 
     blogPosts.unshift(newPost);
     try {
@@ -742,7 +797,81 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       console.error("Failed to persist blog post:", err.message);
     }
 
-    res.json({ success: true, message: "Blog post published successfully!", post: newPost });
+    res.json({ success: true, message: "Blog post saved successfully!", post: newPost });
+  });
+
+  // Admin Edit Blog Post
+  app.post("/api/blog/posts/:id/edit", (req, res) => {
+    const { id } = req.params;
+    const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
+
+    if (token !== "admin-session-secure-token") {
+      return res.status(403).json({ success: false, error: "Unauthorized access." });
+    }
+
+    const postIndex = blogPosts.findIndex((p) => p.id === id);
+    if (postIndex === -1) {
+      return res.status(404).json({ success: false, error: "Blog post not found." });
+    }
+
+    const post = blogPosts[postIndex];
+    if (title && title !== post.title) {
+      post.title = title;
+      post.slug = generateSlug(title);
+      // Ensure unique slug
+      let originalSlug = post.slug;
+      let count = 1;
+      while (blogPosts.some((p) => p.slug === post.slug && p.id !== id)) {
+        post.slug = `${originalSlug}-${count}`;
+        count++;
+      }
+    }
+    if (subtitle !== undefined) post.subtitle = subtitle;
+    if (content !== undefined) post.content = content;
+    if (image !== undefined) post.image = image;
+    if (author !== undefined) post.author = author;
+    if (tags !== undefined) post.tags = Array.isArray(tags) ? tags : [];
+    if (status !== undefined) post.status = status;
+    if (metaDescription !== undefined) post.metaDescription = metaDescription;
+
+    try {
+      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+      console.log(`🟢 PERSISTED EDITED BLOG POST TO DISK: ${id}`);
+    } catch (err: any) {
+      console.error("Failed to persist edited blog post:", err.message);
+    }
+
+    res.json({ success: true, message: "Blog post updated successfully!", post });
+  });
+
+  // Toggle/Update blog status
+  app.post("/api/blog/posts/:id/status", (req, res) => {
+    const { id } = req.params;
+    const { token, status } = req.body;
+
+    if (token !== "admin-session-secure-token") {
+      return res.status(403).json({ success: false, error: "Unauthorized access." });
+    }
+
+    const post = blogPosts.find((p) => p.id === id);
+    if (!post) {
+      return res.status(404).json({ success: false, error: "Blog post not found." });
+    }
+
+    if (status === "draft" || status === "ready" || status === "published") {
+      post.status = status;
+    } else {
+      return res.status(400).json({ success: false, error: "Invalid status value." });
+    }
+
+    try {
+      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+      console.log(`🟢 BLOG POST STATUS UPDATED: ${id} to ${status}`);
+    } catch (err: any) {
+      console.error("Failed to save updated status to disk:", err.message);
+    }
+
+    res.json({ success: true, post });
   });
 
   app.post("/api/blog/posts/:id/view", (req, res) => {
@@ -1348,6 +1477,115 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     return transformed;
   }
 
+  // Dynamic Blog Post Route Handler for SEO crawler support
+  const handleBlogPostRoute = async (req: any, res: any, next: any, isDev: boolean, vite?: any) => {
+    const { slug } = req.params;
+    const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
+    if (!post) {
+      return next(); // Fallback to standard client router or 404
+    }
+
+    try {
+      const templatePath = isDev 
+        ? path.join(process.cwd(), "index.html")
+        : path.join(process.cwd(), "dist", "index.html");
+
+      if (!fs.existsSync(templatePath)) {
+        return next();
+      }
+
+      let template = fs.readFileSync(templatePath, "utf-8");
+      if (isDev && vite) {
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+      }
+
+      // Generate dynamic SEO profile for this blog post
+      const profile = {
+        title: `${post.title} | INCroute Blog`,
+        description: post.metaDescription || post.subtitle || "Statutory compliance and company incorporation insights.",
+        keywords: Array.isArray(post.tags) ? post.tags.join(", ") : "compliance, company registration, ROC, GST"
+      };
+
+      // Replace <title>
+      let transformed = template.replace(/<title>.*?<\/title>/gi, `<title>${profile.title}</title>`);
+      
+      // Replace or inject description
+      const descMeta = `<meta name="description" content="${profile.description}" />`;
+      if (transformed.includes('name="description"')) {
+        transformed = transformed.replace(/<meta name="description" content=".*?" \/>/gi, descMeta);
+      } else {
+        transformed = transformed.replace("</head>", `  ${descMeta}\n</head>`);
+      }
+
+      // Replace or inject keywords
+      const keywordsMeta = `<meta name="keywords" content="${profile.keywords}" />`;
+      if (transformed.includes('name="keywords"')) {
+        transformed = transformed.replace(/<meta name="keywords" content=".*?" \/>/gi, keywordsMeta);
+      } else {
+        transformed = transformed.replace("</head>", `  ${keywordsMeta}\n</head>`);
+      }
+
+      // OpenGraph OG Title & Description
+      const ogTitle = `<meta property="og:title" content="${profile.title}" />`;
+      const ogDesc = `<meta property="og:description" content="${profile.description}" />`;
+      const ogImage = `<meta property="og:image" content="${post.image}" />`;
+      
+      if (transformed.includes('property="og:title"')) {
+        transformed = transformed.replace(/<meta property="og:title" content=".*?" \/>/gi, ogTitle);
+      } else {
+        transformed = transformed.replace("</head>", `  ${ogTitle}\n</head>`);
+      }
+
+      if (transformed.includes('property="og:description"')) {
+        transformed = transformed.replace(/<meta property="og:description" content=".*?" \/>/gi, ogDesc);
+      } else {
+        transformed = transformed.replace("</head>", `  ${ogDesc}\n</head>`);
+      }
+
+      if (transformed.includes('property="og:image"')) {
+        transformed = transformed.replace(/<meta property="og:image" content=".*?" \/>/gi, ogImage);
+      } else {
+        transformed = transformed.replace("</head>", `  ${ogImage}\n</head>`);
+      }
+
+      // Dynamic Canonical Link Tag
+      const canonicalUrl = `https://incroute.com/blog/${slug}`;
+      const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`;
+      transformed = transformed.replace(/<link rel="canonical" href=".*?" \/>/gi, "");
+      transformed = transformed.replace("</head>", `  ${canonicalTag}\n</head>`);
+
+      // Dynamic JSON-LD Schema Markup
+      const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": post.title,
+        "description": post.subtitle,
+        "image": post.image,
+        "author": {
+          "@type": "Person",
+          "name": post.author
+        },
+        "datePublished": post.date,
+        "publisher": {
+          "@type": "Organization",
+          "name": "INCroute",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://incroute.com/incroute_logo.png"
+          }
+        }
+      };
+      const schemaTag = `<script type="application/ld+json">\n${JSON.stringify(schemaData, null, 2)}\n</script>`;
+      transformed = transformed.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/gi, "");
+      transformed = transformed.replace("</head>", `  ${schemaTag}\n</head>`);
+
+      res.status(200).set({ "Content-Type": "text/html" }).end(transformed);
+    } catch (err: any) {
+      console.error("Vite blog index transform error:", err.message);
+      next(err);
+    }
+  };
+
   // SEO sitemappable page routes
   const seoRoutes = Object.keys(seoProfiles);
 
@@ -1364,6 +1602,11 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         },
       },
       appType: "custom",
+    });
+
+    // Intercept blog post routes
+    app.get(["/blog/:slug", "/blog/:slug/"], async (req, res, next) => {
+      await handleBlogPostRoute(req, res, next, true, vite);
     });
 
     // Intercept SEO routes dynamically in development
@@ -1404,6 +1647,11 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     console.log(`Vite HMR configured to ws://localhost:${hmrPort}`);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+
+    // Intercept blog post routes
+    app.get(["/blog/:slug", "/blog/:slug/"], (req, res, next) => {
+      handleBlogPostRoute(req, res, next, false);
+    });
 
     // Intercept SEO routes dynamically in production
     app.get(seoRoutes, (req, res, next) => {

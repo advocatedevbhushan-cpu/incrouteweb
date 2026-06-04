@@ -43,7 +43,9 @@ import {
   Info,
   Scale,
   ShieldCheck,
-  Check
+  Check,
+  X,
+  UserCheck
 } from "lucide-react";
 
 export default function App() {
@@ -72,6 +74,7 @@ export default function App() {
   };
 
   const [activeTab, setActiveTabState] = useState<string>(getTabFromPath);
+  const [showExpertModal, setShowExpertModal] = useState<boolean>(false);
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
@@ -787,22 +790,57 @@ export default function App() {
       </div>
 
       {/* Desktop Floating CTA — bottom right */}
-      <div className="desktop-floating-cta">
-        <button
-          onClick={() => {
-            setActiveTab("services");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            setTimeout(() => {
-              const el = document.getElementById("service-catalog-section");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }, 300);
-          }}
-          className="bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] font-bold px-5 py-3 rounded-lg shadow-lg shadow-brand-gold/20 transition-all duration-200 flex items-center gap-2 cursor-pointer"
-        >
-          <Scale className="w-3.5 h-3.5" />
-          Start Registration
-        </button>
-      </div>
+      {activeTab === "services" && (
+        <div className="desktop-floating-cta">
+          <button
+            onClick={() => setShowExpertModal(true)}
+            className="bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] font-bold px-5 py-3 rounded-lg shadow-lg shadow-brand-gold/20 transition-all duration-200 flex items-center gap-2 cursor-pointer"
+          >
+            <Scale className="w-3.5 h-3.5" />
+            Connect with our Expert
+          </button>
+        </div>
+      )}
+
+      {/* Expert Consultation Modal Overlay */}
+      <AnimatePresence>
+        {showExpertModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative premium-card my-8"
+            >
+              <button
+                onClick={() => setShowExpertModal(false)}
+                className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 border-b border-brand-border pb-4">
+                <div className="p-2 bg-brand-gold/10 text-brand-gold border border-brand-gold/25 rounded-lg">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-light text-brand-text font-serif">Connect with our Expert</h3>
+                  <p className="text-[9px] text-brand-text-muted font-mono tracking-widest uppercase mt-0.5 font-bold">Direct Statutory & Incorporation Consultation</p>
+                </div>
+              </div>
+
+              <div className="max-h-[70vh] overflow-y-auto pr-1">
+                <ContactFormWidget />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

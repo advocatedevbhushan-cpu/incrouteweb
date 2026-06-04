@@ -65,6 +65,9 @@ export interface BlogPost {
   author: string;
   views: number;
   tags?: string[];
+  slug: string;
+  status: "draft" | "ready" | "published";
+  metaDescription?: string;
 }
 
 export interface NameCheckHistoryEntry {
