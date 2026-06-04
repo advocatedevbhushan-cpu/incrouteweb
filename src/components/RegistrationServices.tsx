@@ -354,10 +354,6 @@ const IndiaMap = React.memo(({ hoveredCity, setHoveredCity }: IndiaMapProps) => 
             <div className="bg-black/90 backdrop-blur-md border border-[#C7A86B]/60 p-2.5 rounded-xl shadow-2xl text-left space-y-1">
               <p className="text-[10px] text-white font-bold tracking-wide">{CITY_STATS[hoveredCity].name}</p>
               <p className="text-[7.5px] text-[#C7A86B] font-mono tracking-wider uppercase font-semibold">{CITY_STATS[hoveredCity].tag}</p>
-              <div className="flex items-center gap-1.5 pt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[7.5px] text-slate-300 font-sans font-medium">{CITY_STATS[hoveredCity].activeCAs}</span>
-              </div>
               <p className="text-[7.5px] text-emerald-400 font-semibold font-sans">✓ {CITY_STATS[hoveredCity].success} Rate</p>
             </div>
           </foreignObject>
