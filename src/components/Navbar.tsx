@@ -79,8 +79,8 @@ export default function Navbar({
           
           {/* Logo Brand */}
           <a href="/" className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={(e) => handleNavClick(e, "services")}>
-            <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
-              <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
+            <div className="w-9 h-9 bg-brand-dark rounded-lg border border-brand-border overflow-hidden flex items-center justify-center">
+              <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
             </div>
             <div className="flex flex-col select-none">
               <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">

@@ -499,7 +499,7 @@ export default function App() {
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
-                  <img src="/ashoka_lion_gold.png" className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black" alt="Emblem" />
+                  <img src="/incroute_logo.png" className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black" alt="INCroute Logo" />
                   Static Statutory Calendars
                 </div>
                 <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
@@ -637,11 +637,10 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-7 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 text-center md:text-left">
             
-            {/* Column 1: Brand Info */}
             <div className="md:col-span-3 space-y-5">
               <div className="flex items-center gap-2.5 cursor-pointer font-sans justify-center md:justify-start" onClick={() => handleServiceClick("pvt-ltd")}>
-                <div className="p-2 bg-brand-dark rounded-lg border border-brand-border text-brand-gold flex items-center justify-center">
-                  <Scale className="w-5 h-5 text-brand-gold stroke-[2]" />
+                <div className="w-9 h-9 bg-brand-dark rounded-lg border border-brand-border overflow-hidden flex items-center justify-center">
+                  <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
                 </div>
                 <div className="flex flex-col select-none">
                   <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">

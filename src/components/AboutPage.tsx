@@ -235,7 +235,7 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
               <h4 className="text-sm font-bold text-brand-text">Continuous Fortune‑500 Exposure</h4>
             </div>
             <ul className="space-y-2 text-xs text-brand-text-muted font-sans">
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Trained under and continues to consult with CAs auditing Fortune 500 firms</li>
+              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Partners with senior financial officials to deliver audit and advisory services for Fortune 500 enterprises.</li>
               <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Direct pipeline to updates from large‑scale corporate compliance desks</li>
             </ul>
           </div>

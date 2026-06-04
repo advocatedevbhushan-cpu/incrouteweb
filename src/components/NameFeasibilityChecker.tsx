@@ -222,7 +222,7 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
       <div className="text-center max-w-3xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
           <img
-            src="/ashoka_lion_gold.png"
+            src="/incroute_logo.png"
             className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black"
             alt="Emblem"
           />

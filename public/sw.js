@@ -2,7 +2,7 @@
 const CACHE_NAME = "incroute-v1";
 const STATIC_ASSETS = [
   "/",
-  "/ashoka_lion_gold.png",
+  "/incroute_logo.png",
 ];
 
 // Install — cache core assets
