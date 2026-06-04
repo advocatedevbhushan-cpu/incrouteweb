@@ -103,6 +103,23 @@ export default function BlogPage() {
     });
   }, [posts, searchQuery, activeTag]);
 
+  // Recent posts for sidebar suggestions (excluding currently selected post)
+  const recentPosts = useMemo(() => {
+    if (!selectedPost) return [];
+    return posts
+      .filter((p) => p.id !== selectedPost.id && p.status === "published")
+      .slice(0, 3);
+  }, [posts, selectedPost]);
+
+  // Most viewed posts for sidebar suggestions (excluding currently selected post)
+  const mostViewedPosts = useMemo(() => {
+    if (!selectedPost) return [];
+    return [...posts]
+      .filter((p) => p.id !== selectedPost.id && p.status === "published")
+      .sort((a, b) => (b.views || 0) - (a.views || 0))
+      .slice(0, 3);
+  }, [posts, selectedPost]);
+
   // Push to undo history whenever content changes
   const pushHistory = useCallback((val: string) => {
     setHistory(prev => {
@@ -697,87 +714,169 @@ export default function BlogPage() {
 
       {/* Main Content Pane */}
       {selectedPost ? (
-        /* Full Article Detailed Reader */
-        <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-10 space-y-6 max-w-4xl mx-auto shadow-2xl relative overflow-hidden premium-card">
-          <div className="absolute top-0 right-0 w-36 h-36 bg-brand-gold/5 blur-3xl rounded-full" />
-          
-          <button 
-            onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
-            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-gold font-mono uppercase tracking-widest text-[10px] pb-2 cursor-pointer transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> {t("blog_back") as string}
-          </button>
+        /* 2-Column Full Width Blog Detail Layout */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-7xl mx-auto w-full px-1">
+          {/* Main Article Column */}
+          <div className="lg:col-span-8 bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-10 space-y-6 shadow-2xl relative overflow-hidden premium-card">
+            <div className="absolute top-0 right-0 w-36 h-36 bg-brand-gold/5 blur-3xl rounded-full" />
+            
+            <button 
+              onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
+              className="flex items-center gap-2 text-brand-text-muted hover:text-brand-gold font-mono uppercase tracking-widest text-[10px] pb-2 cursor-pointer transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> {t("blog_back") as string}
+            </button>
 
-          {/* Banner Image */}
-          <div className="w-full h-[220px] sm:h-[350px] rounded-xl overflow-hidden border border-brand-border/60 shadow-inner relative">
-            <img loading="lazy" src={selectedPost.image} className="w-full h-full object-cover" alt={selectedPost.title} />
-          </div>
+            {/* Banner Image */}
+            <div className="w-full h-[220px] sm:h-[350px] rounded-xl overflow-hidden border border-brand-border/60 shadow-inner relative">
+              <img loading="lazy" src={selectedPost.image} className="w-full h-full object-cover" alt={selectedPost.title} />
+            </div>
 
-          <div className="space-y-4 border-b border-brand-border pb-5">
-            <h2 style={{ fontSize: "1.5rem" }} className="font-light text-brand-text leading-tight serif">{selectedPost.title}</h2>
-            <p className="text-sm sm:text-base text-brand-text-muted/80 font-sans italic">{selectedPost.subtitle}</p>
+            <div className="space-y-4 border-b border-brand-border pb-5">
+              <h2 style={{ fontSize: "1.5rem" }} className="font-light text-brand-text leading-tight serif">{selectedPost.title}</h2>
+              <p className="text-sm sm:text-base text-brand-text-muted/80 font-sans italic">{selectedPost.subtitle}</p>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-brand-text-muted/75 font-mono uppercase tracking-wider pt-2">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.date}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-brand-text-muted/75 font-mono uppercase tracking-wider pt-2">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.date}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.author}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.views || 0} Views
+                </div>
+                <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-2 py-0.5 rounded">
+                  {t("blog_verified") as string}
+                </span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.author}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-brand-gold" /> {selectedPost.views || 0} Views
-              </div>
-              <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-2 py-0.5 rounded">
-                {t("blog_verified") as string}
-              </span>
+            </div>
+
+            {/* Render parsed light Markdown */}
+            <div className="prose prose-invert max-w-none py-2">
+              {renderContent(selectedPost.content)}
+            </div>
+
+            {/* Bottom Action Footer */}
+            <div className="border-t border-brand-border pt-6 mt-6 flex justify-between items-center text-xs">
+              <button 
+                onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
+                className="bg-brand-bg text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/35 font-mono uppercase tracking-widest text-[10px] px-4 py-2.5 rounded transition-all duration-150 fast-transition snappy-press cursor-pointer font-bold"
+              >
+                {t("blog_close") as string}
+              </button>
+              
+              {isAdmin && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => {
+                      const post = selectedPost;
+                      setEditingPost(post);
+                      setNewTitle(post.title);
+                      setNewSubtitle(post.subtitle);
+                      setNewContent(post.content);
+                      setNewAuthor(post.author);
+                      setNewImage(post.image);
+                      setImagePreview(post.image);
+                      setSelectedTags(post.tags || []);
+                      setNewMetaDescription(post.metaDescription || "");
+                      setNewStatus(post.status || "draft");
+                      setHistory([post.content]);
+                      setHistoryIndex(0);
+                      setShowCreateModal(true);
+                    }}
+                    className="text-brand-gold hover:text-white border border-brand-gold/45 hover:border-brand-gold font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer font-bold"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 inline mr-1" /> Edit
+                  </button>
+                  <button 
+                    onClick={(e) => handleDeletePost(e, selectedPost.id)}
+                    className="text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-500 font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer font-bold"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 inline mr-1" /> {t("blog_delete") as string}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Render parsed light Markdown */}
-          <div className="prose prose-invert max-w-none py-2">
-            {renderContent(selectedPost.content)}
-          </div>
-
-          {/* Bottom Action Footer */}
-          <div className="border-t border-brand-border pt-6 mt-6 flex justify-between items-center text-xs">
-            <button 
-              onClick={() => { setSelectedPost(null); navigate("/blog/"); }}
-              className="bg-brand-bg text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/35 font-mono uppercase tracking-widest text-[10px] px-4 py-2.5 rounded transition-all duration-150 fast-transition snappy-press cursor-pointer font-bold"
-            >
-              {t("blog_close") as string}
-            </button>
+          {/* Sidebar Suggestions Column */}
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
             
-            {isAdmin && (
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => {
-                    const post = selectedPost;
-                    setEditingPost(post);
-                    setNewTitle(post.title);
-                    setNewSubtitle(post.subtitle);
-                    setNewContent(post.content);
-                    setNewAuthor(post.author);
-                    setNewImage(post.image);
-                    setImagePreview(post.image);
-                    setSelectedTags(post.tags || []);
-                    setNewMetaDescription(post.metaDescription || "");
-                    setNewStatus(post.status || "draft");
-                    setHistory([post.content]);
-                    setHistoryIndex(0);
-                    setShowCreateModal(true);
-                  }}
-                  className="text-brand-gold hover:text-white border border-brand-gold/45 hover:border-brand-gold font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
-                >
-                  <Edit3 className="w-3.5 h-3.5 inline mr-1" /> Edit
-                </button>
-                <button 
-                  onClick={(e) => handleDeletePost(e, selectedPost.id)}
-                  className="text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-500 font-mono uppercase tracking-widest text-[10px] px-3.5 py-2.5 rounded transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5 inline mr-1" /> {t("blog_delete") as string}
-                </button>
+            {/* Recent Publications Widget */}
+            <div className="bg-brand-bg-lighter border border-brand-border/60 rounded-2xl p-5 space-y-4 premium-card shadow-lg">
+              <div className="flex items-center gap-2 border-b border-brand-border/40 pb-3">
+                <Sparkles className="w-4 h-4 text-brand-gold" />
+                <h4 className="text-sm font-semibold text-brand-text font-serif">Recent Publications</h4>
               </div>
-            )}
+              <div className="space-y-4">
+                {recentPosts.map((p) => (
+                  <a
+                    key={p.id}
+                    href={`/blog/${p.slug}/`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSelectPost(p);
+                    }}
+                    className="flex gap-3 group hover:text-brand-gold transition-colors block"
+                  >
+                    <div className="w-16 h-12 rounded-lg overflow-hidden border border-brand-border/60 shrink-0">
+                      <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt={p.title} />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <h5 className="text-xs font-semibold text-brand-text group-hover:text-brand-gold line-clamp-2 leading-snug">
+                        {p.title}
+                      </h5>
+                      <p className="text-[9px] font-mono text-brand-text-muted uppercase">
+                        {p.date}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+                {recentPosts.length === 0 && (
+                  <p className="text-xs text-brand-text-muted italic">No recent posts found.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Most Viewed Widget */}
+            <div className="bg-brand-bg-lighter border border-brand-border/60 rounded-2xl p-5 space-y-4 premium-card shadow-lg">
+              <div className="flex items-center gap-2 border-b border-brand-border/40 pb-3">
+                <Eye className="w-4 h-4 text-brand-gold" />
+                <h4 className="text-sm font-semibold text-brand-text font-serif">Trending Articles</h4>
+              </div>
+              <div className="space-y-4">
+                {mostViewedPosts.map((p) => (
+                  <a
+                    key={p.id}
+                    href={`/blog/${p.slug}/`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSelectPost(p);
+                    }}
+                    className="flex gap-3 group hover:text-brand-gold transition-colors block"
+                  >
+                    <div className="w-16 h-12 rounded-lg overflow-hidden border border-brand-border/60 shrink-0">
+                      <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt={p.title} />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <h5 className="text-xs font-semibold text-brand-text group-hover:text-brand-gold line-clamp-2 leading-snug">
+                        {p.title}
+                      </h5>
+                      <div className="flex items-center gap-2 text-[9px] font-mono text-brand-text-muted">
+                        <span>{p.date}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-0.5"><Eye className="w-2.5 h-2.5 text-brand-gold/75" /> {p.views || 0}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+                {mostViewedPosts.length === 0 && (
+                  <p className="text-xs text-brand-text-muted italic">No trending posts found.</p>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       ) : (
@@ -1046,7 +1145,7 @@ export default function BlogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
           >
             <motion.div 
               initial={{ scale: 0.93, y: 15, opacity: 0 }}
