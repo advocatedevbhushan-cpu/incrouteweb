@@ -25,7 +25,7 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
   ];
 
   const stats = [
-    { icon: Building2, value: "Fortune 500", label: "CA Network" },
+    { icon: Building2, value: "Enterprise", label: "CA Mentored" },
     { icon: Sparkles, value: "20+", label: "Founders Served" },
     { icon: Shield, value: "Startup India", label: "Recognized" },
     { icon: Star, value: "4.9★", label: "Client Rating" },
@@ -133,13 +133,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
 
             <div className="space-y-5 text-sm text-brand-text-muted font-sans leading-relaxed">
               <p>
-                <strong className="text-brand-text">D Bhushan works shoulder‑to‑shoulder with a select network of Chartered Accountants and legal advisors who regularly audit and structure compliance for Fortune 500 enterprises.</strong> This live collaboration brings Fortune‑grade rigour, precision, and foresight to every startup that partners with Incroute.
+                <strong className="text-brand-text">D Bhushan works alongside senior Chartered Accountants and legal advisors who advise on large-scale corporate compliance.</strong> This collaboration infuses our startup services with the strategic mindset and rigorous standards usually reserved for major enterprises.
               </p>
               <p>
-                After formal legal training, D Bhushan joined a practice led by a CA whose clients include multiple Fortune 500 firms. In that environment, he gained hands‑on exposure to large‑scale corporate audits, cross‑border compliance, and strategic financial advisory. Today, he continues to consult with those same Fortune‑500‑facing professionals — ensuring that Incroute's document templates, compliance checklists, and filing strategies meet the highest institutional standards.
+                After formal legal training, D Bhushan gained mentorship within a practice serving clients with complex, high-stakes corporate compliance needs. Working in that environment helped cultivate a strategic mindset and a disciplined approach to entity structuring and corporate filings. Today, he continues to leverage these learnings, ensuring that Incroute's document templates, compliance checklists, and filing strategies adhere to high professional standards.
               </p>
               <p>
-                <strong className="text-brand-gold">Mission:</strong> Incroute was founded in 2026 to democratise Fortune‑grade compliance. We believe every Indian entrepreneur deserves access to the same quality of legal architecture used by global enterprises — delivered with transparency, speed, and local expertise.
+                <strong className="text-brand-gold">Mission:</strong> Incroute was founded in 2026 to democratise institutional-grade compliance. We believe every Indian entrepreneur deserves access to the same quality of legal discipline used by growing enterprises — delivered with transparency, speed, and local expertise.
               </p>
             </div>
           </div>
@@ -154,22 +154,22 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
                 "D Bhushan's grasp of compliance detail is rare. His work reflects the depth and precision we expect from top‑tier firms handling institutional clients."
               </p>
               <p className="text-[10px] font-mono uppercase tracking-widest text-brand-text-muted">
-                — Senior CA Partner, Fortune 500 Audit Practice
+                — Senior CA Partner, Corporate Practice
               </p>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* ═══ FORTUNE 500 COLLABORATION SECTION ═══ */}
+      {/* ═══ ENTERPRISE-GRADE STRATEGY SECTION ═══ */}
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
             <TrendingUp className="w-3 h-3" /> Quality Assurance
           </div>
           <h2 className="text-2xl sm:text-3xl font-light text-brand-text serif">
-            How Fortune 500 Expertise{" "}
-            <span className="text-brand-gold italic font-normal">Flows to Your Startup.</span>
+            Bringing Enterprise-Grade Strategy{" "}
+            <span className="text-brand-gold italic font-normal">To Your Startup.</span>
           </h2>
         </div>
 
@@ -177,18 +177,18 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
           {[
             {
               icon: RefreshCw,
-              title: "Live Advisory Loop",
-              desc: "Our core team regularly exchanges notes with practicing CAs who handle Fortune 500 audits. Their insights shape our templates and checklists.",
+              title: "Professional Mentorship",
+              desc: "Our approach is informed by senior CAs who advise established companies. Their insights help shape our compliance strategies and structures.",
             },
             {
               icon: Target,
-              title: "Fortune‑Grade Benchmarks",
-              desc: "We don't just meet ROC minimums — we apply audit‑ready documentation standards used by multinationals.",
+              title: "High-Standard Benchmarks",
+              desc: "We don't just meet registrar minimums — we aim for robust, audit-ready documentation suited for long-term growth.",
             },
             {
               icon: Zap,
-              title: "Continuous Updates",
-              desc: "Every change in MCA, GST, or SEBI regulation is cross‑verified through our Fortune‑500‑connected network before being pushed to your dashboard.",
+              title: "Strategic Foresight",
+              desc: "We monitor updates in MCA, GST, and SEBI regulations with the same discipline applied by larger corporations, translating complexity into clear actions.",
             },
           ].map((card, idx) => (
             <motion.div
@@ -232,24 +232,11 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
           <div className="bg-brand-bg-lighter border border-brand-gold/20 rounded-2xl p-6 space-y-3">
             <div className="flex items-center gap-2.5">
               <Building2 className="w-4 h-4 text-brand-gold" />
-              <h4 className="text-sm font-bold text-brand-text">Continuous Fortune‑500 Exposure</h4>
+              <h4 className="text-sm font-bold text-brand-text">Mentorship from Corporate Professionals</h4>
             </div>
             <ul className="space-y-2 text-xs text-brand-text-muted font-sans">
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Partners with senior financial officials to deliver audit and advisory services for Fortune 500 enterprises.</li>
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Direct pipeline to updates from large‑scale corporate compliance desks</li>
-            </ul>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <Star className="w-4 h-4 text-brand-gold" />
-              <h4 className="text-sm font-bold text-brand-text">Official Recognitions</h4>
-            </div>
-            <ul className="space-y-2 text-xs text-brand-text-muted font-sans">
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Bar Council of India — Enrolled Advocate (2025)</li>
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Startup India — Recognized Facilitator</li>
-              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />MCA V3 Certified Filing Intermediary</li>
+              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Collaborates with senior compliance specialists and financial advisors to incorporate best practices.</li>
+              <li className="flex items-start gap-2"><Award className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />Fosters a strategic mindset focused on robust compliance frameworks for high-growth startups.</li>
             </ul>
           </div>
         </div>
@@ -257,10 +244,9 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
 
       {/* ═══ TRUST BAR ═══ */}
       <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { label: "Fortune 500 Trained", sub: "CA Network Access" },
-            { label: "Startup India", sub: "Recognized Facilitator" },
+            { label: "Enterprise Mindset", sub: "Mentored Approach" },
             { label: "20+ Founders", sub: "Successfully Served" },
             { label: "CA Backed", sub: "Every Filing Reviewed" },
           ].map((badge, idx) => (

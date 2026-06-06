@@ -1381,7 +1381,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     },
     "/about": {
       title: "Meet the Corporate Expert - D Bhushan | INCroute",
-      description: "Learn about D Bhushan, the founder and principal legal advisor behind INCroute. Experience startup legal architecture and Fortune 500 audit-backed corporate compliance.",
+      description: "Learn about D Bhushan, the founder and principal legal advisor behind INCroute. Experience startup legal architecture and corporate compliance informed by professional CA mentorship.",
       keywords: "D Bhushan, INCroute founder, corporate law consultant, startup legal architecture"
     },
     "/blog": {
@@ -1507,7 +1507,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           "name": "INCroute",
           "url": "https://incroute.com"
         },
-        "description": "D Bhushan is a practicing corporate lawyer and compliance strategist trained under a CA with Fortune 500 audit experience."
+        "description": "D Bhushan is a practicing corporate lawyer and compliance strategist trained under a CA with senior corporate audit experience."
       }
     },
     "/contact": {
