@@ -22,6 +22,7 @@ const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
 import ContactFormWidget from "./components/ContactFormWidget";
+import ExpertModal from "./components/ExpertModal";
 import LocalCityLanding from "./components/LocalCityLanding";
 import AnswerHub from "./components/AnswerHub";
 import NotFoundPage from "./components/NotFoundPage";
@@ -326,7 +327,7 @@ export default function App() {
           {/* Insights Blog Section */}
           {activeTab === "blog" && (
             <motion.div
-              key="blog"
+              key={location.pathname}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}

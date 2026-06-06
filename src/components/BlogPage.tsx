@@ -54,8 +54,8 @@ export default function BlogPage() {
   const [newMetaDescription, setNewMetaDescription] = useState("");
   const [newStatus, setNewStatus] = useState<"draft" | "ready" | "published">("published");
 
-  // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTag, setActiveTag] = useState<BlogTag | null>(null);
 
   // Admin States
@@ -99,6 +99,13 @@ export default function BlogPage() {
     }
   }, []);
 
+  // Debounce search input (200ms)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 200);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
   // Filtered posts derived from search + tag
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -106,14 +113,14 @@ export default function BlogPage() {
         return false;
       }
       const matchesSearch =
-        !searchQuery ||
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchQuery.toLowerCase());
+        !debouncedSearch ||
+        post.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        post.subtitle.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        post.content.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesTag = !activeTag || inferTags(post).includes(activeTag);
       return matchesSearch && matchesTag;
     });
-  }, [posts, searchQuery, activeTag, isAdmin]);
+  }, [posts, debouncedSearch, activeTag, isAdmin]);
 
   // Recent posts for sidebar suggestions (excluding currently selected post)
   const recentPosts = useMemo(() => {
@@ -244,6 +251,11 @@ export default function BlogPage() {
     } catch (err) {
       console.error("Failed to increment view count:", err);
     }
+  };
+  // Click handler for Most Viewed list items
+  const handleMostViewedClick = (postId: string) => {
+    const post = posts.find((p) => p.id === postId);
+    if (post) handleSelectPost(post);
   };
 
   const handleUpdateStatus = async (id: string, status: "draft" | "ready" | "published") => {

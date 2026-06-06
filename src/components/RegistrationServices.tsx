@@ -342,22 +342,7 @@ const IndiaMap = React.memo(({ hoveredCity, setHoveredCity }: IndiaMapProps) => 
           <text x="245" y="458" fill={hoveredCity === "hyderabad" ? "#E5C687" : "#9A9DA3"}>Hyderabad</text>
         </g>
 
-        {/* Interactive Tooltip Card overlay via foreignObject */}
-        {hoveredCity && CITY_STATS[hoveredCity] && (
-          <foreignObject 
-            x={CITY_STATS[hoveredCity].x > 300 ? CITY_STATS[hoveredCity].x - 170 : CITY_STATS[hoveredCity].x + 12} 
-            y={CITY_STATS[hoveredCity].y - 50} 
-            width="155" 
-            height="90" 
-            className="pointer-events-none z-50 transition-all duration-300"
-          >
-            <div className="bg-black/90 backdrop-blur-md border border-[#C7A86B]/60 p-2.5 rounded-xl shadow-2xl text-left space-y-1">
-              <p className="text-[10px] text-white font-bold tracking-wide">{CITY_STATS[hoveredCity].name}</p>
-              <p className="text-[7.5px] text-[#C7A86B] font-mono tracking-wider uppercase font-semibold">{CITY_STATS[hoveredCity].tag}</p>
-              <p className="text-[7.5px] text-emerald-400 font-semibold font-sans">✓ {CITY_STATS[hoveredCity].success} Rate</p>
-            </div>
-          </foreignObject>
-        )}
+        {/* Tooltip removed as per user request */}
       </svg>
     </div>
   );
