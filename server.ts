@@ -19,8 +19,6 @@ const ai = new GoogleGenAI({
   },
 });
 
-// Dynamic In-Memory Database for demonstration/tracking consistency
-
 // Active compliance calendar list for reference or audit tasks
 let complianceCalendar = [
   { id: "1", service: "GST Filing", description: "Monthly GSTR-1 & GSTR-3B filings", dueDate: "11th and 20th of every month", type: "taxation", downloadUrl: "https://www.gst.gov.in/" },
@@ -36,6 +34,11 @@ async function startServer() {
   // Basic Middlewares
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  // API Route - Compliance Calendar listing
+  app.get("/api/compliance/calendar", (req, res) => {
+    res.json({ success: true, calendar: complianceCalendar });
+  });
 
   // HTTPS redirect (production only)
   if (process.env.NODE_ENV === "production") {

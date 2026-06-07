@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: any logged-in user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: check if current user is admin or partner
+    function isAdminOrPartner() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['partner', 'admin'];
+    }
+
+    // Users collection — logged-in users can read any profile
+    // Users can only write their own profile (or admin/partner can update any)
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdminOrPartner());
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdminOrPartner());
+      allow delete: if isAdminOrPartner();
+    }
+
+    // Documents collection — customers manage their own files, admin/partners can read all
+    match /documents/{docId} {
+      // Customer: read/write own documents
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid && resource.data.status == 'pending';
+
+      // Admin/Partner: can read all documents and update status fields
+      allow read: if isAdminOrPartner();
+      allow update: if isAdminOrPartner();
+    }
+  }
+}

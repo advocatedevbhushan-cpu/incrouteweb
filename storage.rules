@@ -1,0 +1,36 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper checks if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper checks if user has partner role profile in firestore
+    function isPartner() {
+      return isAuthenticated() && 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'partner';
+    }
+
+    match /customers/{userId}/{fileName} {
+      // Customer: can read, write, delete inside their own path directory folder only
+      allow read, write, delete: if isAuthenticated() && request.auth.uid == userId;
+
+      // Partner: can read any file in customer folders for downloading and review purposes
+      allow read: if isPartner();
+
+      // Enforce file size limit of 2 MB and check allowed Mime Types on creation/update
+      allow write: if isAuthenticated() && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024 // 2 MB size limit
+        && (
+          request.resource.contentType == 'application/pdf' ||
+          request.resource.contentType == 'image/jpeg' ||
+          request.resource.contentType == 'image/jpg' ||
+          request.resource.contentType == 'image/png' ||
+          request.resource.contentType == 'application/msword' ||
+          request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        );
+    }
+  }
+}

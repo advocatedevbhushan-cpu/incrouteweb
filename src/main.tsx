@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import './index.css';
 import { LanguageProvider } from './lib/LanguageContext';
+import { AuthProvider } from './lib/AuthContext';
 import { initAmbientCanvas } from './lib/ambient-canvas';
 import { initProgressBar } from './lib/progress-bar';
 
@@ -31,9 +32,12 @@ initAmbientCanvas();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <LanguageProvider>
-        <App />
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );
+

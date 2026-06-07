@@ -6,12 +6,16 @@ import ScrollToTop from "./components/ScrollToTop";
 import RegistrationServices from "./components/RegistrationServices";
 import { motion, AnimatePresence } from "motion/react";
 import { ComplianceEvent } from "./types";
-import { initAuth } from "./lib/firebase";
 
 // Code-split non-critical components (loaded after initial render)
 const NameFeasibilityChecker = lazy(() => import("./components/NameFeasibilityChecker"));
 const BlogPage = lazy(() => import("./components/BlogPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
+const AuthPortal = lazy(() => import("./components/AuthPortal"));
+const Login = lazy(() => import("./components/Login"));
+const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
+const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
+const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
 const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
 const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
@@ -22,11 +26,11 @@ const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
 import ContactFormWidget from "./components/ContactFormWidget";
-import ExpertModal from "./components/ExpertModal";
 import LocalCityLanding from "./components/LocalCityLanding";
 import AnswerHub from "./components/AnswerHub";
 import NotFoundPage from "./components/NotFoundPage";
 import { TAB_TO_ROUTE } from "./lib/routes";
+import { useAuth } from "./lib/AuthContext";
 import { 
   Sparkles, 
   Search, 
@@ -52,6 +56,9 @@ import {
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
+
+
 
   // Reverse map: route path → tab name
   const ROUTE_TO_TAB: Record<string, string> = {};
@@ -59,22 +66,34 @@ export default function App() {
     ROUTE_TO_TAB[route] = tab;
   }
 
-  const getTabFromPath = (): string => {
+  const getTabFromPath = (): { tab: string; params: Record<string, string> } => {
     const path = location.pathname;
-    // Exact match
-    if (ROUTE_TO_TAB[path]) return ROUTE_TO_TAB[path];
-    // Try with trailing slash
-    if (ROUTE_TO_TAB[path + "/"]) return ROUTE_TO_TAB[path + "/"];
-    // Try without trailing slash
-    if (ROUTE_TO_TAB[path.replace(/\/$/, "")]) return ROUTE_TO_TAB[path.replace(/\/$/, "")];
-    // Default
-    if (path === "/" || path === "") return "services";
-    // Fallback: use first segment
-    const seg = path.split("/").filter(Boolean)[0];
-    return seg || "services";
+
+    // Check dynamic customer details route first
+    const partnerCustomerMatch = path.match(/^\/dashboard\/partner\/customer\/([^/]+)\/?$/);
+    if (partnerCustomerMatch) {
+      return { tab: "dashboard-partner-customer-detail", params: { id: partnerCustomerMatch[1] } };
+    }
+
+    let matchedTab = "services";
+    if (ROUTE_TO_TAB[path]) {
+      matchedTab = ROUTE_TO_TAB[path];
+    } else if (ROUTE_TO_TAB[path + "/"]) {
+      matchedTab = ROUTE_TO_TAB[path + "/"];
+    } else if (ROUTE_TO_TAB[path.replace(/\/$/, "")]) {
+      matchedTab = ROUTE_TO_TAB[path.replace(/\/$/, "")];
+    } else if (path === "/" || path === "") {
+      matchedTab = "services";
+    } else {
+      const seg = path.split("/").filter(Boolean)[0];
+      matchedTab = seg || "services";
+    }
+
+    return { tab: matchedTab, params: {} };
   };
 
-  const [activeTab, setActiveTabState] = useState<string>(getTabFromPath);
+  const [activeTab, setActiveTabState] = useState<string>(() => getTabFromPath().tab);
+  const [routeParams, setRouteParams] = useState<Record<string, string>>(() => getTabFromPath().params);
   const [showExpertModal, setShowExpertModal] = useState<boolean>(false);
 
   const setActiveTab = (tab: string) => {
@@ -87,8 +106,51 @@ export default function App() {
 
   // Sync tab state when URL changes (browser back/forward)
   useEffect(() => {
-    setActiveTabState(getTabFromPath());
+    const { tab, params } = getTabFromPath();
+    setActiveTabState(tab);
+    setRouteParams(params);
   }, [location.pathname]);
+
+  // Route guarding and role redirection checking
+  useEffect(() => {
+    if (loading) return;
+
+    // Wait until profile is fetched if a user is logged in
+    if (user && !profile) return;
+
+    const currentTab = getTabFromPath().tab;
+    const isDashboardRoute = [
+      "dashboard-customer",
+      "dashboard-partner",
+      "dashboard-partner-customer-detail"
+    ].includes(currentTab);
+
+    if (!user) {
+      if (isDashboardRoute) {
+        navigate("/login");
+      }
+    } else {
+      // Wait for profile to load before redirecting — avoid premature redirects
+      if (!profile) return;
+
+      // Redirect authenticated user away from login pages
+      if (currentTab === "login" || currentTab === "auth") {
+        if (profile.role === "partner" || profile.role === "admin") {
+          navigate("/dashboard/partner");
+        } else {
+          navigate("/dashboard/customer");
+        }
+      } 
+      // Force correct role routing for dashboards
+      else if (currentTab === "dashboard-customer" && profile.role !== "customer") {
+        navigate("/dashboard/partner");
+      } 
+      else if ((currentTab === "dashboard-partner" || currentTab === "dashboard-partner-customer-detail") && profile.role === "customer") {
+        navigate("/dashboard/customer");
+      }
+    }
+  }, [user, profile, loading, location.pathname]);
+
 
   // Roadmap State
   const [selectedMilestone, setSelectedMilestone] = useState(0);
@@ -147,9 +209,6 @@ export default function App() {
   const [filterType, setFilterType] = useState<string>("all");
   const [calendarSearch, setCalendarSearch] = useState<string>("");
 
-  useEffect(() => {
-    initAuth();
-  }, []);
 
   // Fetch compliance calendar events
   useEffect(() => {
@@ -178,6 +237,27 @@ export default function App() {
     }
     fetchCalendar();
   }, []);
+
+  // Loading screen rendered after all hooks (avoids React hooks rules violation)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center gap-6 relative">
+        <div className="executive-glow-1" />
+        <div className="executive-glow-2" />
+        <div className="executive-grid" />
+        <div className="relative z-10 flex flex-col items-center gap-5">
+          <div className="flex items-center gap-2.5">
+            <img src="/incroute_logo.png" alt="Legiscorp" className="w-8 h-8 rounded-full object-cover border border-brand-gold/40" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <span className="text-lg font-light font-serif text-brand-text tracking-widest">
+              Legis<span className="text-brand-gold">corp</span>
+            </span>
+          </div>
+          <div className="w-10 h-10 border-2 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin" />
+          <p className="text-[11px] font-mono text-brand-text-muted uppercase tracking-widest">Loading portal&hellip;</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative">
@@ -628,8 +708,68 @@ export default function App() {
             </motion.div>
           )}
 
+          {activeTab === "auth" && (
+            <motion.div
+              key="auth"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AuthPortal />
+            </motion.div>
+          )}
+
+          {activeTab === "login" && (
+            <motion.div
+              key="login"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Login />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-customer" && (
+            <motion.div
+              key="dashboard-customer"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <CustomerDashboard />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-partner" && (
+            <motion.div
+              key="dashboard-partner"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <PartnerDashboard />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-partner-customer-detail" && (
+            <motion.div
+              key="dashboard-partner-customer-detail"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <PartnerCustomerDetail customerId={routeParams.id} />
+            </motion.div>
+          )}
+
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>

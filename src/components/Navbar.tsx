@@ -27,6 +27,7 @@ import {
 import { useLang } from "../lib/LanguageContext";
 import type { Lang } from "../lib/i18n";
 import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "../lib/AuthContext";
 
 interface NavbarProps {
   activeTab: string;
@@ -43,6 +44,7 @@ export default function Navbar({
 
   // Active Dropdowns State for hover triggers on desktop
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
+  const { user: currentUser, profile, logoutUser } = useAuth();
 
   const handleNavClick = (e: React.MouseEvent, tab: string) => {
     e.preventDefault();
@@ -330,6 +332,67 @@ export default function Navbar({
               );
             })}
 
+            {/* Portal Action */}
+            {currentUser ? (
+              profile ? (
+                <div className="flex items-center gap-2 ml-2">
+                  {profile.role === "customer" ? (
+                    <a
+                      href="/dashboard/customer"
+                      onClick={(e) => handleNavClick(e, "dashboard-customer")}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ${
+                        activeTab === "dashboard-customer"
+                          ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
+                          : "text-brand-text-muted hover:text-brand-gold border border-transparent"
+                      }`}
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      Dashboard
+                    </a>
+                  ) : (
+                    <a
+                      href="/dashboard/partner"
+                      onClick={(e) => handleNavClick(e, "dashboard-partner")}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ${
+                        activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail"
+                          ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
+                          : "text-brand-text-muted hover:text-brand-gold border border-transparent"
+                      }`}
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      Partner Portal
+                    </a>
+                  )}
+                  <button
+                    onClick={async () => {
+                      await logoutUser();
+                      setActiveTab("services");
+                    }}
+                    className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 border border-red-500/20 text-xs font-semibold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center ml-2 px-4 py-1.5">
+                  <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
+                </div>
+              )
+            ) : (
+              <a
+                href="/login"
+                onClick={(e) => handleNavClick(e, "login")}
+                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ml-2 ${
+                  activeTab === "login"
+                    ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
+                    : "bg-brand-gold text-black hover:bg-white hover:text-black shadow-md shadow-brand-gold/10"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                Sign In
+              </a>
+            )}
+
             {/* Language Toggle */}
             <button
               onClick={toggleLang}
@@ -481,6 +544,67 @@ export default function Navbar({
                 {label}
               </a>
             ))}
+          </div>
+
+          {/* Account/Portal Category */}
+          <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
+            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Account</span>
+            {currentUser ? (
+              profile ? (
+                <>
+                  {profile.role === "customer" ? (
+                    <a
+                      href="/dashboard/customer"
+                      onClick={(e) => { handleNavClick(e, "dashboard-customer"); setMobileMenuOpen(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                        activeTab === "dashboard-customer" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                      }`}
+                    >
+                      <Building2 className="w-4 h-4 text-brand-text-muted" />
+                      Dashboard
+                    </a>
+                  ) : (
+                    <a
+                      href="/dashboard/partner"
+                      onClick={(e) => { handleNavClick(e, "dashboard-partner"); setMobileMenuOpen(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                        activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                      }`}
+                    >
+                      <Building2 className="w-4 h-4 text-brand-text-muted" />
+                      Partner Portal
+                    </a>
+                  )}
+                  <button
+                    onClick={async () => {
+                      await logoutUser();
+                      setActiveTab("services");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-red-500" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <div className="w-full pl-3 py-3 flex items-center gap-3">
+                  <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] text-brand-text-muted font-mono uppercase">Retrieving Profile...</span>
+                </div>
+              )
+            ) : (
+              <a
+                href="/login"
+                onClick={(e) => { handleNavClick(e, "login"); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                  activeTab === "login" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                }`}
+              >
+                <Building2 className="w-4 h-4 text-brand-text-muted" />
+                Sign In
+              </a>
+            )}
           </div>
         </div>
       )}

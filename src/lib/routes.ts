@@ -19,6 +19,11 @@ export const ROUTES = {
   comparison: "/tools/entity-comparison/",
   impact: "/tools/impact-dashboard/",
   flowchart: "/compliance/flowchart/",
+  auth: "/auth/",
+  login: "/login",
+  dashboardCustomer: "/dashboard/customer",
+  dashboardPartner: "/dashboard/partner",
+  dashboardPartnerCustomerDetail: (id: string) => `/dashboard/partner/customer/${id}`,
 } as const;
 
 // Map old tab names to new routes (for migration)
@@ -36,6 +41,11 @@ export const TAB_TO_ROUTE: Record<string, string> = {
   impact: ROUTES.impact,
   flowchart: ROUTES.flowchart,
   testimonials: "/testimonials/",
+  auth: ROUTES.auth,
+  login: ROUTES.login,
+  "dashboard-customer": ROUTES.dashboardCustomer,
+  "dashboard-partner": ROUTES.dashboardPartner,
+  "dashboard-partner-customer-detail": "/dashboard/partner/customer/:id",
 };
 
 // Breadcrumb label map
@@ -55,4 +65,10 @@ export const ROUTE_LABELS: Record<string, string> = {
   "/knowledge-hub/": "Knowledge Hub",
   "/compliance/flowchart/": "Compliance Flowchart",
   "/testimonials/": "Testimonials",
+  "/auth/": "Portal",
+  "/login": "Sign In",
+  "/dashboard/customer": "Customer Workspace",
+  "/dashboard/partner": "Partner Index",
+  "/dashboard/partner/customer/": "Customer File Review",
 };
+
