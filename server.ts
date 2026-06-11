@@ -76,6 +76,12 @@ async function startServer() {
     }
   }
 
+  // Fallback to the default Google Form URI if not set
+  if (!contactFormUri) {
+    contactFormUri = "https://docs.google.com/forms/d/e/1FAIpQLSf_I-0yjXKhV_oJDi2KMpzSrFUnqZF3p_MQJ5oo28dOQ-_0yA/viewform";
+    console.log(`🟢 USING FALLBACK GOOGLE FORM URI: ${contactFormUri}`);
+  }
+
   // Config endpoints
   app.get("/api/config/contact-form", (req, res) => {
     res.json({ success: true, uri: contactFormUri });
