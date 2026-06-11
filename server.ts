@@ -810,6 +810,23 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           }
         }
         posts = seedPosts;
+      } else {
+        // Merge with local cache to avoid losing posts that only exist locally
+        try {
+          if (fs.existsSync(BLOG_FILE)) {
+            const localPosts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+            if (Array.isArray(localPosts)) {
+              const firestoreIds = new Set(posts.map((p) => p.id));
+              const localOnlyPosts = localPosts.filter((p) => p && p.id && !firestoreIds.has(p.id));
+              if (localOnlyPosts.length > 0) {
+                console.log(`🟢 MERGING ${localOnlyPosts.length} LOCAL-ONLY BLOG POSTS INTO FIRESTORE LIST`);
+                posts = [...localOnlyPosts, ...posts];
+              }
+            }
+          }
+        } catch (err: any) {
+          console.error("Failed to merge local blog posts during Firestore sync:", err.message);
+        }
       }
       
       // Update local cache file on disk

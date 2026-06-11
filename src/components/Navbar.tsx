@@ -45,6 +45,7 @@ export default function Navbar({
   // Active Dropdowns State for hover triggers on desktop
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const { user: currentUser, profile, logoutUser } = useAuth();
+  const SHOW_SIGN_OPTION = false; // Hide Sign In option from website without deleting code
 
   const handleNavClick = (e: React.MouseEvent, tab: string) => {
     e.preventDefault();
@@ -333,7 +334,7 @@ export default function Navbar({
             })}
 
             {/* Portal Action */}
-            {currentUser ? (
+            {SHOW_SIGN_OPTION && (currentUser ? (
               profile ? (
                 <div className="flex items-center gap-2 ml-2">
                   {profile.role === "customer" ? (
@@ -391,7 +392,7 @@ export default function Navbar({
                 <Building2 className="w-3.5 h-3.5" />
                 Sign In
               </a>
-            )}
+            ))}
 
             {/* Language Toggle */}
             <button
@@ -547,65 +548,67 @@ export default function Navbar({
           </div>
 
           {/* Account/Portal Category */}
-          <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Account</span>
-            {currentUser ? (
-              profile ? (
-                <>
-                  {profile.role === "customer" ? (
-                    <a
-                      href="/dashboard/customer"
-                      onClick={(e) => { handleNavClick(e, "dashboard-customer"); setMobileMenuOpen(false); }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                        activeTab === "dashboard-customer" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                      }`}
+          {SHOW_SIGN_OPTION && (
+            <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
+              <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Account</span>
+              {currentUser ? (
+                profile ? (
+                  <>
+                    {profile.role === "customer" ? (
+                      <a
+                        href="/dashboard/customer"
+                        onClick={(e) => { handleNavClick(e, "dashboard-customer"); setMobileMenuOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                          activeTab === "dashboard-customer" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                        }`}
+                      >
+                        <Building2 className="w-4 h-4 text-brand-text-muted" />
+                        Dashboard
+                      </a>
+                    ) : (
+                      <a
+                        href="/dashboard/partner"
+                        onClick={(e) => { handleNavClick(e, "dashboard-partner"); setMobileMenuOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                          activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                        }`}
+                      >
+                        <Building2 className="w-4 h-4 text-brand-text-muted" />
+                        Partner Portal
+                      </a>
+                    )}
+                    <button
+                      onClick={async () => {
+                        await logoutUser();
+                        setActiveTab("services");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer text-red-500 hover:bg-red-500/10 transition-colors"
                     >
-                      <Building2 className="w-4 h-4 text-brand-text-muted" />
-                      Dashboard
-                    </a>
-                  ) : (
-                    <a
-                      href="/dashboard/partner"
-                      onClick={(e) => { handleNavClick(e, "dashboard-partner"); setMobileMenuOpen(false); }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                        activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                      }`}
-                    >
-                      <Building2 className="w-4 h-4 text-brand-text-muted" />
-                      Partner Portal
-                    </a>
-                  )}
-                  <button
-                    onClick={async () => {
-                      await logoutUser();
-                      setActiveTab("services");
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer text-red-500 hover:bg-red-500/10 transition-colors"
-                  >
-                    <X className="w-4 h-4 text-red-500" />
-                    Sign Out
-                  </button>
-                </>
+                      <X className="w-4 h-4 text-red-500" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <div className="w-full pl-3 py-3 flex items-center gap-3">
+                    <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] text-brand-text-muted font-mono uppercase">Retrieving Profile...</span>
+                  </div>
+                )
               ) : (
-                <div className="w-full pl-3 py-3 flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[10px] text-brand-text-muted font-mono uppercase">Retrieving Profile...</span>
-                </div>
-              )
-            ) : (
-              <a
-                href="/login"
-                onClick={(e) => { handleNavClick(e, "login"); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                  activeTab === "login" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                }`}
-              >
-                <Building2 className="w-4 h-4 text-brand-text-muted" />
-                Sign In
-              </a>
-            )}
-          </div>
+                <a
+                  href="/login"
+                  onClick={(e) => { handleNavClick(e, "login"); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
+                    activeTab === "login" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-brand-text-muted" />
+                  Sign In
+                </a>
+              )}
+            </div>
+          )}
         </div>
       )}
     </nav>

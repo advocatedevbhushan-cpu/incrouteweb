@@ -92,6 +92,15 @@ export default function BlogPage() {
 
   // Load Posts and Check Auth Session on mount
   useEffect(() => {
+    const cachedPosts = localStorage.getItem("incroute_blog_posts");
+    if (cachedPosts) {
+      try {
+        setPosts(JSON.parse(cachedPosts));
+        setLoading(false);
+      } catch (e) {
+        console.error("Failed to parse cached blog posts from localStorage:", e);
+      }
+    }
     fetchPosts();
     const savedToken = sessionStorage.getItem("admin_token");
     if (savedToken === "admin-session-secure-token") {
@@ -219,7 +228,10 @@ export default function BlogPage() {
   ];
 
   const fetchPosts = async () => {
-    setLoading(true);
+    // Only show full loading spinner if we have no cached posts
+    if (posts.length === 0) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const token = sessionStorage.getItem("admin_token") || "";
@@ -227,6 +239,7 @@ export default function BlogPage() {
       const data = await res.json();
       if (data.success) {
         setPosts(data.posts);
+        localStorage.setItem("incroute_blog_posts", JSON.stringify(data.posts));
       } else {
         setError(data.error || "Failed to load blog posts.");
       }
@@ -268,7 +281,9 @@ export default function BlogPage() {
       });
       const data = await res.json();
       if (data.success && data.post) {
-        setPosts((prev) => prev.map((p) => p.id === id ? data.post : p));
+        const updatedPosts = posts.map((p) => p.id === id ? data.post : p);
+        setPosts(updatedPosts);
+        localStorage.setItem("incroute_blog_posts", JSON.stringify(updatedPosts));
         if (selectedPost?.id === id) {
           setSelectedPost(data.post);
         }
@@ -404,14 +419,18 @@ export default function BlogPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        let updatedPosts = [];
         if (editingPost) {
-          setPosts((prev) => prev.map((p) => p.id === editingPost.id ? data.post : p));
+          updatedPosts = posts.map((p) => p.id === editingPost.id ? data.post : p);
+          setPosts(updatedPosts);
           if (selectedPost?.id === editingPost.id) {
             setSelectedPost(data.post);
           }
         } else {
-          setPosts((prev) => [data.post, ...prev]);
+          updatedPosts = [data.post, ...posts];
+          setPosts(updatedPosts);
         }
+        localStorage.setItem("incroute_blog_posts", JSON.stringify(updatedPosts));
         setShowCreateModal(false);
         setEditingPost(null);
         // Reset all fields
@@ -450,7 +469,9 @@ export default function BlogPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setPosts((prev) => prev.filter((p) => p.id !== id));
+        const updatedPosts = posts.filter((p) => p.id !== id);
+        setPosts(updatedPosts);
+        localStorage.setItem("incroute_blog_posts", JSON.stringify(updatedPosts));
         if (selectedPost?.id === id) {
           setSelectedPost(null);
         }

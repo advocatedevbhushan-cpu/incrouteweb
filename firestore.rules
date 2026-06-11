@@ -33,5 +33,10 @@ service cloud.firestore {
       allow read: if isAdminOrPartner();
       allow update: if isAdminOrPartner();
     }
+
+    // Blogs collection — public read/write for dynamic editorial insights sync
+    match /blogs/{blogId} {
+      allow read, write: if true;
+    }
   }
 }
