@@ -196,6 +196,43 @@ async function startServer() {
     }
   });
 
+  // Browser-accessible endpoint to generate activation token
+  app.get("/api/admin/generate-activation-key", (req, res) => {
+    const { password } = req.query;
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+    
+    if (!password || password !== adminPassword) {
+      return res.status(401).json({ success: false, error: "Unauthorized access: Invalid admin password." });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    loadDeviceConfig();
+    deviceConfig.activationKey = {
+      key: token,
+      expires: expires
+    };
+
+    try {
+      fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2), "utf-8");
+      return res.send(`
+        <html>
+          <body style="background:#030303;color:#fff;font-family:sans-serif;padding:40px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:80vh;">
+            <div style="border:1px solid rgba(212,175,55,0.2);padding:40px;max-width:500px;margin:0 auto;border-radius:16px;background:#0d0d0d;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+              <img src="/incroute_logo.png" style="width:60px;height:60px;border-radius:50%;border:2px solid #d4af37;margin-bottom:20px;" />
+              <h2 style="color:#d4af37;margin-top:0;">Secure Token Generated</h2>
+              <p style="color:rgba(255,255,255,0.6);font-size:14px;line-height:1.6;">A temporary cryptographic activation key has been successfully created and registered on this server. Click the button below to whitelist this PC.</p>
+              <a href="/admin-setup?key=${token}" style="color:#000;background:#d4af37;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin-top:20px;text-transform:uppercase;font-size:12px;letter-spacing:0.05em;">Whitelist This PC</a>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   app.get("/admin-setup", (req, res) => {
     const { key } = req.query;
     loadDeviceConfig();
