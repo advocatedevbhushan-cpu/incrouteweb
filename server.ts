@@ -109,16 +109,25 @@ async function startServer() {
 
   if (isEmailConfigured) {
     try {
+      const smtpPort = Number(process.env.SMTP_PORT) || 465;
       emailTransporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 465,
-        secure: Number(process.env.SMTP_PORT) === 465,
+        port: smtpPort,
+        secure: smtpPort === 465,
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS
         }
       });
-      console.log("🟢 SMTP Notification Transporter initialized.");
+      
+      // Verify connection configuration immediately
+      emailTransporter.verify((error) => {
+        if (error) {
+          console.error("🔴 SMTP connection verification failed:", error.message);
+        } else {
+          console.log("🟢 SMTP server is ready to send notifications.");
+        }
+      });
     } catch (mailErr: any) {
       console.error("🔴 Failed to initialize SMTP Notification Transporter:", mailErr.message);
     }
@@ -1288,7 +1297,24 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       console.warn("Failed to load local views cache map:", e.message);
     }
 
-    console.log("🟢 Fetching latest blogs from GitHub and merging local view counts...");
+    // Load latest view counts from MySQL database if configured
+    const dbPostsViews = new Map<string, number>();
+    if (dbPool) {
+      try {
+        const [rows]: any = await dbPool.query("SELECT post_id, views FROM blog_views");
+        if (Array.isArray(rows)) {
+          rows.forEach((row: any) => {
+            if (row && row.post_id) {
+              dbPostsViews.set(row.post_id, Number(row.views) || 0);
+            }
+          });
+        }
+      } catch (dbErr: any) {
+        console.error("🔴 Failed to fetch view counts from MySQL:", dbErr.message);
+      }
+    }
+
+    console.log("🟢 Fetching latest blogs from GitHub and merging local/DB view counts...");
     let fetchedFromGitHub = false;
     try {
       const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/blog-posts.json";
@@ -1297,12 +1323,13 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         const content = await response.text();
         const parsedPosts = parseBlogPostsContent(content);
         if (parsedPosts.length > 0) {
-          // Merge local views over the GitHub views
+          // Merge local and MySQL views over the GitHub views
           posts = parsedPosts.map((p) => {
+            const dbViews = dbPostsViews.get(p.id) || 0;
             const localViews = localPostsViews.get(p.id) || 0;
             return {
               ...p,
-              views: Math.max(localViews, Number(p.views) || 0)
+              views: Math.max(dbViews, localViews, Number(p.views) || 0)
             };
           });
           fetchedFromGitHub = true;
@@ -1346,6 +1373,17 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         }));
       }
     }
+
+    // Final pass to merge database & local views for all loaded posts (covers fallback/in-memory posts)
+    posts = posts.map((p) => {
+      if (!p || !p.id) return p;
+      const dbViews = dbPostsViews.get(p.id) || 0;
+      const localViews = localPostsViews.get(p.id) || 0;
+      return {
+        ...p,
+        views: Math.max(dbViews, localViews, Number(p.views) || 0)
+      };
+    });
 
     // Sort posts by date descending
     posts.sort((a, b) => b.date.localeCompare(a.date));
@@ -1556,10 +1594,8 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       return res.status(404).json({ success: false, error: "Blog post not found." });
     }
 
-    const views = (posts[postIndex].views || 0) + 1;
-    posts[postIndex].views = views;
-
-    // Increment view count in MySQL database if configured
+    // Increment view count in MySQL database first if configured, and query the latest count
+    let dbViews = 0;
     if (dbPool) {
       try {
         await dbPool.query(
@@ -1567,10 +1603,19 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           [id]
         );
         console.log(`🟢 Incremented views for blog ${id} in MySQL.`);
+
+        const [rows]: any = await dbPool.query("SELECT views FROM blog_views WHERE post_id = ?", [id]);
+        if (Array.isArray(rows) && rows.length > 0) {
+          dbViews = Number(rows[0].views) || 0;
+        }
       } catch (dbErr: any) {
-        console.error("🔴 Failed to increment view in MySQL:", dbErr.message);
+        console.error("🔴 Failed to write/query views in MySQL:", dbErr.message);
       }
     }
+
+    const localViews = (posts[postIndex].views || 0) + 1;
+    const finalViews = Math.max(dbViews, localViews);
+    posts[postIndex].views = finalViews;
 
     // Always save local disk cache
     try {
