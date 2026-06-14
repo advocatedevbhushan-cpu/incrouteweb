@@ -25,6 +25,10 @@
     </style>
   </head>
   <body>
+    <!-- Enable manual initialization to ensure custom formats are registered before CMS starts -->
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
     <!-- Decap CMS main library script -->
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
     <script>
@@ -47,6 +51,9 @@
           }
         }
       });
+      
+      // Initialize the CMS manually after registering custom formats
+      CMS.init();
     </script>
   </body>
 </html>

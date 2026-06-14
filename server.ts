@@ -1016,11 +1016,28 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       .replace(/(^-|-$)/g, "");
   };
 
+  // Helper to parse blog posts content (handles flat array and wrapped object formats)
+  const parseBlogPostsContent = (content: string): any[] => {
+    try {
+      const data = JSON.parse(content);
+      if (Array.isArray(data)) {
+        return data;
+      }
+      if (data && Array.isArray(data.posts)) {
+        return data.posts;
+      }
+      return [];
+    } catch (e: any) {
+      console.error("Failed to parse blog posts content:", e.message);
+      return [];
+    }
+  };
+
   // Load persisted blog posts from disk
   let needsMigrationSave = false;
   if (fs.existsSync(BLOG_FILE)) {
     try {
-      blogPosts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+      blogPosts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       console.log(`🟢 LOADED PERSISTED BLOG POSTS: ${blogPosts.length} posts`);
       blogPosts.forEach((post: any) => {
         if (!post.slug) {
@@ -1140,7 +1157,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         // Merge with local cache to avoid losing posts that only exist locally
         try {
           if (fs.existsSync(BLOG_FILE)) {
-            const localPosts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+            const localPosts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
             if (Array.isArray(localPosts)) {
               const firestoreIds = new Set(posts.map((p) => p.id));
               const localOnlyPosts = localPosts.filter((p) => p && p.id && !firestoreIds.has(p.id));
@@ -1162,13 +1179,49 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         console.error("Failed to write blog cache to disk:", err.message);
       }
     } else {
-      // Fallback to local JSON cache file
-      console.log("🟢 Firestore unavailable. Loading blogs from local disk cache...");
-      if (fs.existsSync(BLOG_FILE)) {
-        try {
-          posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
-        } catch (err: any) {
-          console.error("Failed to read local blog file, using in-memory or seed default:", err.message);
+      // Fallback to GitHub raw repo fetch, then local JSON cache file
+      console.log("🟢 Firestore unavailable. Attempting to fetch latest blogs from GitHub...");
+      let fetchedFromGitHub = false;
+      try {
+        const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/blog-posts.json";
+        const response = await fetch(githubUrl);
+        if (response.ok) {
+          const content = await response.text();
+          const parsedPosts = parseBlogPostsContent(content);
+          if (parsedPosts.length > 0) {
+            posts = parsedPosts;
+            fetchedFromGitHub = true;
+            console.log(`🟢 Successfully synchronized ${posts.length} blogs from GitHub`);
+            // Cache locally
+            try {
+              fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+            } catch (err: any) {
+              console.error("Failed to write blog cache to disk:", err.message);
+            }
+          }
+        } else {
+          console.error(`🔴 GitHub raw fetch returned status ${response.status}`);
+        }
+      } catch (err: any) {
+        console.error("🔴 Failed to fetch blogs from GitHub:", err.message);
+      }
+
+      if (!fetchedFromGitHub) {
+        console.log("🟢 Firestore & GitHub raw fetch unavailable. Loading blogs from local disk cache...");
+        if (fs.existsSync(BLOG_FILE)) {
+          try {
+            posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
+          } catch (err: any) {
+            console.error("Failed to read local blog file, using in-memory or seed default:", err.message);
+            posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
+              ...b,
+              slug: generateSlug(b.title),
+              status: "published",
+              metaDescription: b.subtitle || "",
+              views: b.views || 0
+            }));
+          }
+        } else {
           posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
             ...b,
             slug: generateSlug(b.title),
@@ -1177,14 +1230,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
             views: b.views || 0
           }));
         }
-      } else {
-        posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
-          ...b,
-          slug: generateSlug(b.title),
-          status: "published",
-          metaDescription: b.subtitle || "",
-          views: b.views || 0
-        }));
       }
     }
 
@@ -1243,7 +1288,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     if (fs.existsSync(BLOG_FILE)) {
       try {
-        posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+        posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       } catch (e) {
         posts = blogPosts;
       }
@@ -1258,25 +1303,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       count++;
     }
 
-    // Try to persist to Firestore
-    let savedToFirestore = false;
-    try {
-      const payload = toFirestoreFields(newPost);
-      const writeRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${newId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (writeRes.ok) {
-        console.log(`🟢 PERSISTED NEW BLOG POST TO FIRESTORE: ${newId}`);
-        savedToFirestore = true;
-      } else {
-        console.warn(`⚠️ Firestore PATCH returned status ${writeRes.status} on creation. Falling back to local storage.`);
-      }
-    } catch (err: any) {
-      console.warn("⚠️ Failed to persist blog post to Firestore:", err.message);
-    }
-
     // Always save locally to make sure it persists locally
     posts.unshift(newPost);
     try {
@@ -1288,7 +1314,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     res.json({ 
       success: true, 
-      message: savedToFirestore ? "Blog post saved successfully!" : "Blog post saved to local database fallback (Cloud API disabled).", 
+      message: "Blog post saved successfully!", 
       post: newPost 
     });
   });
@@ -1305,7 +1331,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     if (fs.existsSync(BLOG_FILE)) {
       try {
-        posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+        posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       } catch (e) {
         posts = blogPosts;
       }
@@ -1339,25 +1365,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     if (status !== undefined) updatedPost.status = status;
     if (metaDescription !== undefined) updatedPost.metaDescription = metaDescription;
 
-    // Try to update Firestore
-    let savedToFirestore = false;
-    try {
-      const payload = toFirestoreFields(updatedPost);
-      const writeRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (writeRes.ok) {
-        console.log(`🟢 PERSISTED EDITED BLOG POST TO FIRESTORE: ${id}`);
-        savedToFirestore = true;
-      } else {
-        console.warn(`⚠️ Firestore PATCH returned status ${writeRes.status} for edit. Falling back to local storage.`);
-      }
-    } catch (err: any) {
-      console.warn("Failed to persist edited blog post to Firestore:", err.message);
-    }
-
     // Always update local cache file
     posts[existingPostIndex] = updatedPost;
     try {
@@ -1369,7 +1376,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     res.json({ 
       success: true, 
-      message: savedToFirestore ? "Blog post updated successfully!" : "Blog post updated in local database fallback (Cloud API disabled).", 
+      message: "Blog post updated successfully!", 
       post: updatedPost 
     });
   });
@@ -1390,7 +1397,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     if (fs.existsSync(BLOG_FILE)) {
       try {
-        posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+        posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       } catch (e) {
         posts = blogPosts;
       }
@@ -1404,24 +1411,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
 
     posts[postIndex].status = status;
-
-    // Try to update Firestore status
-    try {
-      const payload = { fields: { status: { stringValue: status } } };
-      const patchUrl = `https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}?updateMask.fieldPaths=status`;
-      const patchRes = await fetch(patchUrl, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (patchRes.ok) {
-        console.log(`🟢 BLOG POST STATUS UPDATED IN FIRESTORE: ${id} to ${status}`);
-      } else {
-        console.warn(`⚠️ Firestore PATCH status returned ${patchRes.status} for status change. Falling back to local storage.`);
-      }
-    } catch (err: any) {
-      console.warn("Failed to update status in Firestore:", err.message);
-    }
 
     // Always update local disk cache
     try {
@@ -1440,7 +1429,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     if (fs.existsSync(BLOG_FILE)) {
       try {
-        posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+        posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       } catch (e) {
         posts = blogPosts;
       }
@@ -1455,24 +1444,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     const views = (posts[postIndex].views || 0) + 1;
     posts[postIndex].views = views;
-
-    // Try to increment views in Firestore
-    try {
-      const payload = { fields: { views: { integerValue: views.toString() } } };
-      const patchUrl = `https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}?updateMask.fieldPaths=views`;
-      const patchRes = await fetch(patchUrl, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (patchRes.ok) {
-        console.log(`🟢 INCREMENTED VIEWS IN FIRESTORE: ${id} to ${views}`);
-      } else {
-        console.warn(`⚠️ Firestore view PATCH returned ${patchRes.status}`);
-      }
-    } catch (err: any) {
-      console.warn("Failed to increment views in Firestore:", err.message);
-    }
 
     // Always save local disk cache
     try {
@@ -1496,7 +1467,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     if (fs.existsSync(BLOG_FILE)) {
       try {
-        posts = JSON.parse(fs.readFileSync(BLOG_FILE, "utf-8"));
+        posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       } catch (e) {
         posts = blogPosts;
       }
@@ -1510,20 +1481,6 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
 
     posts.splice(postIndex, 1);
-
-    // Try to delete from Firestore
-    try {
-      const deleteRes = await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${id}`, {
-        method: "DELETE"
-      });
-      if (deleteRes.ok) {
-        console.log(`🟢 DELETED BLOG POST FROM FIRESTORE: ${id}`);
-      } else {
-        console.warn(`⚠️ Firestore DELETE returned status ${deleteRes.status}. Falling back to local storage.`);
-      }
-    } catch (err: any) {
-      console.warn("Failed to delete blog post from Firestore:", err.message);
-    }
 
     // Always save local disk cache
     try {
