@@ -1,5 +1,5 @@
 // Incroute Service Worker — Cache static assets for offline fallback
-const CACHE_NAME = "incroute-v1";
+const CACHE_NAME = "incroute-v2";
 const STATIC_ASSETS = [
   "/",
   "/incroute_logo.png",
