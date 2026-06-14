@@ -147,24 +147,24 @@ async function startServer() {
           <table style="width:100%;border-collapse:collapse;margin:20px 0;">
             <tr>
               <td style="padding:8px 0;color:#d4af37;font-weight:bold;width:120px;">Lead ID:</td>
-              <td style="padding:8px 0;color:#fff;">\${submission.id}</td>
+              <td style="padding:8px 0;color:#fff;">${submission.id}</td>
             </tr>
             <tr>
               <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Full Name:</td>
-              <td style="padding:8px 0;color:#fff;">\${submission.name}</td>
+              <td style="padding:8px 0;color:#fff;">${submission.name}</td>
             </tr>
             <tr>
               <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Email:</td>
-              <td style="padding:8px 0;color:#fff;"><a href="mailto:\${submission.email}" style="color:#d4af37;text-decoration:none;">\${submission.email}</a></td>
+              <td style="padding:8px 0;color:#fff;"><a href="mailto:${submission.email}" style="color:#d4af37;text-decoration:none;">${submission.email}</a></td>
             </tr>
             <tr>
               <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Phone:</td>
-              <td style="padding:8px 0;color:#fff;">\${submission.phone || "N/A"}</td>
+              <td style="padding:8px 0;color:#fff;">${submission.phone || "N/A"}</td>
             </tr>
           </table>
           <div style="background:#151515;border-radius:6px;padding:16px;margin-top:20px;">
             <strong style="color:#d4af37;display:block;margin-bottom:8px;">Message:</strong>
-            <p style="margin:0;color:#ccc;line-height:1.6;font-size:14px;white-space:pre-wrap;">\${submission.message}</p>
+            <p style="margin:0;color:#ccc;line-height:1.6;font-size:14px;white-space:pre-wrap;">${submission.message}</p>
           </div>
           <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:30px;text-align:center;">This is an automated notification from incroute.com</p>
         </div>
@@ -173,7 +173,7 @@ async function startServer() {
 
     try {
       await emailTransporter.sendMail(mailOptions);
-      console.log(\`✉️ Notification email sent to \${process.env.NOTIFICATION_TO} for lead \${submission.id}\`);
+      console.log(`✉️ Notification email sent to ${process.env.NOTIFICATION_TO} for lead ${submission.id}`);
     } catch (err: any) {
       console.error("🔴 Failed to send lead notification email:", err.message);
     }
