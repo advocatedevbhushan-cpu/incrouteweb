@@ -1,0 +1,40 @@
+backend:
+  name: github
+  repo: advocatedevbhushan-cpu/incrouteweb
+  branch: main
+  site_domain: incroute.com
+
+local_backend: true
+
+media_folder: "public/blog-images"
+public_folder: "/blog-images"
+
+collections:
+  - name: "blogs"
+    label: "Blogs"
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "blog-posts.json"
+        label: "Blog Posts"
+        name: "blog_posts"
+        format: "json-array"
+        fields:
+          - name: "posts"
+            label: "Blog Posts List"
+            label_singular: "Blog Post"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+              - { label: "Content", name: "content", widget: "markdown" }
+              - { label: "Image", name: "image", widget: "image", default: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800" }
+              - { label: "Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "Author", name: "author", widget: "string", default: "D Bhushan" }
+              - { label: "Views", name: "views", widget: "number", value_type: "int", default: 0 }
+              - { label: "Slug", name: "slug", widget: "string" }
+              - { label: "Status", name: "status", widget: "select", options: ["draft", "ready", "published"], default: "published" }
+              - { label: "Meta Description", name: "metaDescription", widget: "string", required: false }

@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -34,6 +35,195 @@ async function startServer() {
   // Basic Middlewares
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  // --- Cryptographic Device Locking & Administration Security System ---
+  const DEVICE_CONFIG_FILE = path.join(process.cwd(), "device-config.json");
+  let deviceConfig: {
+    activationKey?: { key: string; expires: string };
+    registeredPublicKey?: string;
+  } = {};
+
+  function loadDeviceConfig() {
+    if (fs.existsSync(DEVICE_CONFIG_FILE)) {
+      try {
+        deviceConfig = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf-8"));
+      } catch (e: any) {
+        console.error("⚠️ Failed to parse device-config.json:", e.message);
+      }
+    }
+  }
+  loadDeviceConfig();
+
+  // Active validation sessions & challenges
+  const activeSessions = new Set<string>();
+  const activeChallenges = new Map<string, { timestamp: number; expires: number }>();
+
+  // Periodically sweep expired challenges
+  setInterval(() => {
+    const now = Date.now();
+    for (const [challenge, data] of activeChallenges.entries()) {
+      if (data.expires < now) {
+        activeChallenges.delete(challenge);
+      }
+    }
+  }, 5 * 60 * 1000);
+
+  // Cookie extraction utility
+  function getCookie(req: any, name: string): string | null {
+    const cookies = req.headers.cookie;
+    if (!cookies) return null;
+    const parts = cookies.split(";");
+    for (const part of parts) {
+      const [key, val] = part.trim().split("=");
+      if (key === name) return decodeURIComponent(val);
+    }
+    return null;
+  }
+
+  // Device whitelisting verification middleware
+  function deviceLockMiddleware(req: any, res: any, next: any) {
+    const sessionToken = getCookie(req, "admin_device_session");
+    if (sessionToken && activeSessions.has(sessionToken)) {
+      return next();
+    }
+    
+    // Serve the challenge verification gate for direct admin page requests
+    if (req.path === "/admin" || req.path === "/admin/" || req.path === "/admin/index.html") {
+      return res.sendFile(path.join(process.cwd(), "admin-portal/gate.html"));
+    }
+    
+    // Obfuscate CMS configuration and assets
+    if (req.path.startsWith("/admin/")) {
+      return res.status(404).end();
+    }
+
+    // Block backend write operations
+    return res.status(403).json({ success: false, error: "Access denied: Unauthorized hardware device." });
+  }
+
+  // --- Device Lock APIs ---
+  app.get("/api/admin/challenge", (req, res) => {
+    const challenge = crypto.randomBytes(32).toString("hex");
+    const expires = Date.now() + 60 * 1000;
+    activeChallenges.set(challenge, { timestamp: Date.now(), expires });
+    res.json({ success: true, challenge, timestamp: Date.now() });
+  });
+
+  app.post("/api/admin/verify-device", (req, res) => {
+    const { signature, challenge, timestamp } = req.body;
+    
+    if (!signature || !challenge || !timestamp) {
+      return res.status(400).json({ success: false, error: "Missing verification parameters." });
+    }
+
+    const storedChallenge = activeChallenges.get(challenge);
+    if (!storedChallenge || storedChallenge.expires < Date.now()) {
+      return res.status(403).json({ success: false, error: "Challenge invalid or expired." });
+    }
+
+    if (Math.abs(Date.now() - Number(timestamp)) > 60 * 1000) {
+      return res.status(403).json({ success: false, error: "Challenge verification timeout." });
+    }
+
+    loadDeviceConfig();
+    if (!deviceConfig.registeredPublicKey) {
+      return res.status(403).json({ success: false, error: "Device is not registered." });
+    }
+
+    try {
+      const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${deviceConfig.registeredPublicKey.match(/.{1,64}/g)?.join("\n")}\n-----END PUBLIC KEY-----`;
+      const pubKey = crypto.createPublicKey({
+        key: pubKeyPem,
+        format: "pem",
+        type: "spki"
+      });
+
+      const verifyData = Buffer.from(challenge + ":" + timestamp);
+      const signatureBytes = Buffer.from(signature, "base64");
+
+      const isVerified = crypto.verify(
+        "RSA-SHA256",
+        verifyData,
+        pubKey,
+        signatureBytes
+      );
+
+      if (isVerified) {
+        const sessionToken = crypto.randomBytes(32).toString("hex");
+        activeSessions.add(sessionToken);
+        activeChallenges.delete(challenge);
+
+        res.cookie("admin_device_session", sessionToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 24 * 60 * 60 * 1000
+        });
+
+        return res.json({ success: true });
+      } else {
+        return res.status(403).json({ success: false, error: "Cryptographic signature check failed." });
+      }
+    } catch (err: any) {
+      console.error("[Crypto Verification Error]:", err.message);
+      return res.status(500).json({ success: false, error: "Internal security engine verification failure." });
+    }
+  });
+
+  app.post("/api/admin/register-device", (req, res) => {
+    const { key, publicKey } = req.body;
+    
+    if (!key || !publicKey) {
+      return res.status(400).json({ success: false, error: "Missing required registration parameters." });
+    }
+
+    loadDeviceConfig();
+    const activeKey = deviceConfig.activationKey;
+    if (!activeKey || activeKey.key !== key || new Date(activeKey.expires).getTime() < Date.now()) {
+      return res.status(400).json({ success: false, error: "Invalid or expired device activation key." });
+    }
+
+    deviceConfig.registeredPublicKey = publicKey;
+    delete deviceConfig.activationKey;
+
+    try {
+      fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2), "utf-8");
+      console.log(`🟢 DEVICE PUBLIC KEY WHITELISTED: ${publicKey.slice(0, 30)}...`);
+      return res.json({ success: true });
+    } catch (err: any) {
+      console.error("Failed to write device config:", err.message);
+      return res.status(500).json({ success: false, error: "Failed to persist device credentials." });
+    }
+  });
+
+  app.get("/admin-setup", (req, res) => {
+    const { key } = req.query;
+    loadDeviceConfig();
+    const activeKey = deviceConfig.activationKey;
+    
+    if (key && activeKey && activeKey.key === key && new Date(activeKey.expires).getTime() > Date.now()) {
+      return res.sendFile(path.join(process.cwd(), "admin-portal/setup.html"));
+    }
+    
+    return res.status(404).end();
+  });
+
+  // Serve the headless Decap CMS static wrapper only if device authenticated
+  app.get(["/admin", "/admin/"], (req, res, next) => {
+    // Exact check to redirect to trailing slash version, preventing loop
+    if (req.path === "/admin") {
+      return res.redirect(301, "/admin/");
+    }
+    next();
+  }, deviceLockMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "admin-portal/index.html"));
+  });
+
+  app.get("/admin/config.yml", deviceLockMiddleware, (req, res) => {
+    res.sendFile(path.join(process.cwd(), "admin-portal/config.yml"));
+  });
+
+
 
   // API Route - Compliance Calendar listing
   app.get("/api/compliance/calendar", (req, res) => {
@@ -892,7 +1082,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   });
 
-  app.post("/api/blog/posts", async (req, res) => {
+  app.post("/api/blog/posts", deviceLockMiddleware, async (req, res) => {
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
     if (token !== "admin-session-secure-token") {
@@ -974,7 +1164,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   // Admin Edit Blog Post
-  app.post("/api/blog/posts/:id/edit", async (req, res) => {
+  app.post("/api/blog/posts/:id/edit", deviceLockMiddleware, async (req, res) => {
     const { id } = req.params;
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
@@ -1055,7 +1245,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   // Toggle/Update blog status
-  app.post("/api/blog/posts/:id/status", async (req, res) => {
+  app.post("/api/blog/posts/:id/status", deviceLockMiddleware, async (req, res) => {
     const { id } = req.params;
     const { token, status } = req.body;
 
@@ -1165,7 +1355,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     res.json({ success: true, post: posts[postIndex] });
   });
 
-  app.delete("/api/blog/posts/:id", async (req, res) => {
+  app.delete("/api/blog/posts/:id", deviceLockMiddleware, async (req, res) => {
     const { id } = req.params;
     const { token } = req.body;
 
