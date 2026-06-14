@@ -1724,8 +1724,52 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   };
 
+  const serviceNameMap: Record<string, string> = {
+    "pvt-ltd": "Private Limited Company (Pvt Ltd)",
+    "llp": "Limited Liability Partnership (LLP)",
+    "opc": "One Person Company (OPC)",
+    "partnership": "Partnership Firm",
+    "section8": "Section 8 Company (NGO)",
+    "public-ltd": "Public Limited Company",
+    "annual-compliance": "Annual Compliances Suite",
+    "gst-tax": "GST & Tax Registration",
+    "virtual-cfo": "Virtual CFO Retainer",
+    "virtual-office": "Virtual Office Address",
+    "terms-privacy": "Terms of Service & Privacy Policy",
+    "msme-registration": "MSME (Udyam) Registration",
+    "fssai-registration": "FSSAI Food License Registration",
+    "return-filing": "Tax & Return Filing Services",
+    "trademark-registration": "Trademark Services Suite",
+    "trademark-objection": "Response to Trademark Objection",
+    "trademark-opposition": "Trademark Opposition Services",
+    "trademark-assignment": "Trademark & IP Assignment",
+    "brand-protection": "Brand Protection & Monitoring",
+    "litigation-assistance": "Corporate Litigation Assistance",
+    "trademark-renewal": "Trademark & License Renewal",
+    "patent-filing": "Patent Drafting & Filing",
+    "iso-certification": "ISO Certification Services"
+  };
+
   function injectSEOMetadata(html: string, route: string): string {
-    const profile = seoProfiles[route] || seoProfiles["/"];
+    let profile = seoProfiles[route];
+    
+    if (!profile) {
+      // Check for dynamic services subroutes e.g., /services/category/service-id
+      const serviceMatch = route.match(/^\/services\/([^/]+)\/([^/]+)\/?$/);
+      if (serviceMatch) {
+        const category = serviceMatch[1].replace("-", " ").replace(/\b\w/g, c => c.toUpperCase());
+        const serviceId = serviceMatch[2];
+        const cleanName = serviceNameMap[serviceId] || serviceId.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase());
+        
+        profile = {
+          title: `${cleanName} Registration & Compliance | INCroute`,
+          description: `Get professional, CA-backed services for ${cleanName} under ${category} category in India. Real-time filing and guaranteed compliance.`,
+          keywords: `${cleanName}, ${category}, company registration, ROC, business filing`
+        };
+      } else {
+        profile = seoProfiles["/"];
+      }
+    }
     
     // Replace <title>
     let transformed = html.replace(/<title>.*?<\/title>/gi, `<title>${profile.title}</title>`);
@@ -1963,7 +2007,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     });
 
     // Intercept SEO routes dynamically in development
-    app.get(seoRoutes, async (req, res, next) => {
+    app.get([...seoRoutes, "/services/:category/:serviceId", "/services/:category/:serviceId/"], async (req, res, next) => {
       try {
         const url = req.originalUrl.split("?")[0];
         const templatePath = path.join(process.cwd(), "index.html");
@@ -2007,7 +2051,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     });
 
     // Intercept SEO routes dynamically in production
-    app.get(seoRoutes, (req, res, next) => {
+    app.get([...seoRoutes, "/services/:category/:serviceId", "/services/:category/:serviceId/"], (req, res, next) => {
       try {
         const url = req.originalUrl.split("?")[0];
         const templatePath = path.join(distPath, "index.html");

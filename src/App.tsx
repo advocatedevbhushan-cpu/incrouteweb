@@ -3,11 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Breadcrumb from "./components/Breadcrumb";
 import ScrollToTop from "./components/ScrollToTop";
-import RegistrationServices from "./components/RegistrationServices";
 import { motion, AnimatePresence } from "motion/react";
 import { ComplianceEvent } from "./types";
 
 // Code-split non-critical components (loaded after initial render)
+const RegistrationServices = lazy(() => import("./components/RegistrationServices"));
 const NameFeasibilityChecker = lazy(() => import("./components/NameFeasibilityChecker"));
 const BlogPage = lazy(() => import("./components/BlogPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
@@ -25,10 +25,10 @@ const ComplianceFlowchart = lazy(() => import("./components/ComplianceFlowchart"
 const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
-import ContactFormWidget from "./components/ContactFormWidget";
-import LocalCityLanding from "./components/LocalCityLanding";
-import AnswerHub from "./components/AnswerHub";
-import NotFoundPage from "./components/NotFoundPage";
+const ContactFormWidget = lazy(() => import("./components/ContactFormWidget"));
+const LocalCityLanding = lazy(() => import("./components/LocalCityLanding"));
+const AnswerHub = lazy(() => import("./components/AnswerHub"));
+const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { useAuth } from "./lib/AuthContext";
 import { 
@@ -104,12 +104,7 @@ export default function App() {
     }
   };
 
-  // Sync tab state when URL changes (browser back/forward)
-  useEffect(() => {
-    const { tab, params } = getTabFromPath();
-    setActiveTabState(tab);
-    setRouteParams(params);
-  }, [location.pathname]);
+  // Pathname sync useEffect relocated below state declarations to avoid reference errors
 
   // Route guarding and role redirection checking
   useEffect(() => {
@@ -194,13 +189,51 @@ export default function App() {
   const [prefilledName, setPrefilledName] = useState<string>("");
   const [prefilledEntityType, setPrefilledEntityType] = useState<string>("");
 
+  // Sync tab state when URL changes (browser back/forward)
+  useEffect(() => {
+    const { tab, params } = getTabFromPath();
+    setActiveTabState(tab);
+    setRouteParams(params);
+
+    // Sync sub-routes: /services/:category/:serviceId/
+    const serviceMatch = location.pathname.match(/^\/services\/([^/]+)\/([^/]+)\/?$/);
+    if (serviceMatch) {
+      setPrefilledEntityType(serviceMatch[2]);
+    } else if (location.pathname === "/" || location.pathname === "/services" || location.pathname === "/services/") {
+      setPrefilledEntityType("");
+    }
+  }, [location.pathname]);
+
+  const SERVICE_CATEGORIES: Record<string, string> = {
+    "pvt-ltd": "private-corporate",
+    "llp": "alternative-entity",
+    "opc": "private-corporate",
+    "partnership": "alternative-entity",
+    "section8": "private-corporate",
+    "public-ltd": "private-corporate",
+    "annual-compliance": "compliance",
+    "gst-tax": "compliance",
+    "virtual-cfo": "enterprise-growth",
+    "virtual-office": "enterprise-growth",
+    "terms-privacy": "legal-ip",
+    "msme-registration": "compliance",
+    "fssai-registration": "compliance",
+    "return-filing": "compliance",
+    "trademark-registration": "legal-ip",
+    "trademark-objection": "legal-ip",
+    "trademark-opposition": "legal-ip",
+    "trademark-assignment": "legal-ip",
+    "brand-protection": "legal-ip",
+    "litigation-assistance": "legal-ip",
+    "trademark-renewal": "legal-ip",
+    "patent-filing": "legal-ip",
+    "iso-certification": "compliance"
+  };
+
   const handleServiceClick = (serviceId: string) => {
-    setActiveTab("services");
-    // Reset first so the useEffect always fires even if same service is clicked again
-    setPrefilledEntityType("");
-    setTimeout(() => {
-      setPrefilledEntityType(serviceId);
-    }, 0);
+    const category = SERVICE_CATEGORIES[serviceId] || "general";
+    navigate(`/services/${category}/${serviceId}/`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Compliance Calendar State

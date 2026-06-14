@@ -4,6 +4,7 @@ import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
 import { useAppNavigate } from "../lib/useAppNavigate";
+import { useNavigate } from "react-router-dom";
 const getTranslatedService = (service: any, lang: string) => {
   if (lang !== "hi") return service;
 
@@ -753,6 +754,474 @@ const serviceCatalog = [
       "Proposed brand registration letter",
       "Director KYC files"
     ]
+  },
+  {
+    id: "terms-privacy",
+    name: "Terms of Service & Privacy Policy",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "3–5 Working Days",
+    minDirectors: "Legal Expert Draft",
+    minDirectorsNumber: "Legal Expert",
+    minCapital: "—",
+    liability: "Risk Mitigated",
+    taxBenefit: "Liability Shield",
+    detailedAbout: "Custom drafting of comprehensive Terms of Service (ToS) and Privacy Policy agreements. Designed specifically for your platform, website, or mobile application, ensuring compliance with global privacy regulations (GDPR, CCPA, IT Act 2000) and protecting your enterprise from customer/user disputes.",
+    keyAdvantages: [
+      "GDPR & CCPA Compliant",
+      "User liability mitigation",
+      "IP ownership protections",
+      "Bespoke dispute resolution terms",
+      "Refund and termination clauses"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "GDPR/CCPA compliant terms & policies tailored for websites/apps.",
+    popular: false,
+    features: [
+      "Bespoke Terms of Service",
+      "Compliant Privacy Policy",
+      "Dispute resolution framework"
+    ],
+    documents: [
+      "Business profile / Website URL",
+      "Details of user data collected",
+      "Payment gateway details",
+      "Existing refund policy notes"
+    ]
+  },
+  {
+    id: "msme-registration",
+    name: "MSME (Udyam) Registration",
+    category: "compliance",
+    pricing: "",
+    timeline: "2–3 Working Days",
+    minDirectors: "Proprietor/Partner",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Govt Scheme Eligible",
+    detailedAbout: "Government-backed Udyam MSME certification for micro, small, and medium enterprises. Registering your enterprise unlocks priority bank lending rates, subsidies on patents and barcodes, concessions on electricity bills, and robust legal protection against delayed business payments from corporate buyers.",
+    keyAdvantages: [
+      "Priority sector bank loans",
+      "Protection from payment delays",
+      "Electricity bill concessions",
+      "Subsidy on patent filings",
+      "Government tender preferences"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Get government-backed Udyam MSME certification to unlock subsidies and loans.",
+    popular: false,
+    features: [
+      "Udyam MSME Registration",
+      "Subsidized bank loan eligibility",
+      "Legal protection from delay fees"
+    ],
+    documents: [
+      "Aadhaar card of promoter",
+      "PAN card of business/owner",
+      "GSTIN (if applicable)",
+      "Bank Account details"
+    ]
+  },
+  {
+    id: "fssai-registration",
+    name: "FSSAI Registration",
+    category: "compliance",
+    pricing: "",
+    timeline: "3–7 Working Days",
+    minDirectors: "Operator/Nominee",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Quality Standard",
+    detailedAbout: "An FSSAI Food Safety License is legally mandatory for any food business operator (FBO) in India dealing in manufacturing, processing, packaging, storage, transportation, retail, distribution, or restaurant/kitchen food safety operations.",
+    keyAdvantages: [
+      "Legally mandatory food safety license",
+      "Consumer trust & brand validation",
+      "FSSAI logo usage on packaging",
+      "Safety & hygiene standard certification",
+      "Legal protection from food audits"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Legally mandatory FSSAI food license for retail, kitchen, and preparation setups.",
+    popular: false,
+    features: [
+      "FSSAI Food License registration",
+      "Quality validation certificate",
+      "FSSAI logo usage legal rights"
+    ],
+    documents: [
+      "PAN & Aadhaar of operator",
+      "Electricity bill of kitchen/office",
+      "NOC from property landlord",
+      "List of food categories to deal in"
+    ]
+  },
+  {
+    id: "return-filing",
+    name: "Return Filing Services",
+    category: "compliance",
+    pricing: "",
+    timeline: "Ongoing Support",
+    minDirectors: "CA Lead Account",
+    minDirectorsNumber: "CA Lead",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Input Credit Claim",
+    detailedAbout: "Ongoing GST returns (GSTR-1, GSTR-3B) and corporate/partnership Income Tax Return (ITR) filings managed by dedicated Chartered Accountants. Ensures maximum utilization of Input Tax Credits (ITC), clean tax reconciliation, and full compliance with Central Excise and GST Departments.",
+    keyAdvantages: [
+      "Accurate ITR filing",
+      "GST input tax credit claims",
+      "Zero penalty compliance",
+      "TDS filing and reconciliation",
+      "Tax assessment defense support"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Expert GSTR-1/3B filings, ITR, and TDS returns led by CAs.",
+    popular: false,
+    features: [
+      "Income Tax returns (ITR)",
+      "GST monthly filings",
+      "TDS quarterly returns"
+    ],
+    documents: [
+      "Bank statements for the financial year",
+      "Purchase and Sales invoices logs",
+      "Previous year's tax returns",
+      "GST login credentials"
+    ]
+  },
+  {
+    id: "trademark-registration",
+    name: "Trademark Services Suite",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "2–3 Working Days (Filing)",
+    minDirectors: "IP Attorney Lead",
+    minDirectorsNumber: "IP Attorney",
+    minCapital: "—",
+    liability: "IP Shielded",
+    taxBenefit: "Intangible Asset",
+    detailedAbout: "Comprehensive brand protection including deep Trademark Search, Opinion Letters on registrability, official Class filing, and drafting replies to Office Actions. Our registered IP attorneys ensure your brand name, logo, or slogan secures absolute exclusivity and legal protection in India.",
+    keyAdvantages: [
+      "Brand name & logo exclusivity",
+      "Deep conflict search reports",
+      "Attorney Opinion letters",
+      "Official TM Journal filing",
+      "Office action replies coordination"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Exclusivity for your brand name & logo with expert legal opinions.",
+    popular: false,
+    features: [
+      "Trademark Search & Opinion",
+      "Class filing & TM Application",
+      "Office Action response drafting"
+    ],
+    documents: [
+      "Proposed logo (JPEG/PNG/SVG)",
+      "Brand name description",
+      "User affidavit (if already using)",
+      "Power of Attorney for TM agent"
+    ]
+  },
+  {
+    id: "trademark-objection",
+    name: "Response to TM Objection",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "3–5 Working Days",
+    minDirectors: "IP Attorney Lead",
+    minDirectorsNumber: "IP Attorney",
+    minCapital: "—",
+    liability: "IP Defense",
+    taxBenefit: "Asset Salvage",
+    detailedAbout: "Professional drafting of legal replies to trademark objections raised by the Registrar of Trademarks under Section 9 or Section 11 of the Trade Marks Act 1999. Our IP attorneys prepare a robust legal defense using relevant case laws and prior user evidence to secure brand registration.",
+    keyAdvantages: [
+      "Strong case law defenses",
+      "Trademark application salvage",
+      "Evidentiary affidavit drafting",
+      "Objection status tracking",
+      "Expert hearing prep if needed"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Defend Section 9 or Section 11 objections with case-law backings.",
+    popular: false,
+    features: [
+      "Section 9 & 11 legal analysis",
+      "Response drafting & submission",
+      "Affidavit of user preparation"
+    ],
+    documents: [
+      "Trademark application number",
+      "Examination report from registrar",
+      "Proof of brand usage (invoices, ads)",
+      "Bona fide usage documents"
+    ]
+  },
+  {
+    id: "trademark-opposition",
+    name: "Trademark Opposition",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "7–10 Working Days",
+    minDirectors: "Litigation Attorney",
+    minDirectorsNumber: "IP Litigator",
+    minCapital: "—",
+    liability: "IP Defense",
+    taxBenefit: "Equity Shield",
+    detailedAbout: "Filing or defending Trademark Oppositions before the Trademark Registry. When a third party opposes your published trademark or a competitor tries to register a confusingly similar brand, our litigation attorneys draft the Notice of Opposition (TM-O) or Counter-Statement (TM-R) to protect your brand equity.",
+    keyAdvantages: [
+      "Competitor registration blocking",
+      "Counter-statement drafting",
+      "Notice of Opposition (TM-O)",
+      "Evidence submission and hearings",
+      "High-stake brand equity defense"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "File TM-O notices or defend your registry status against competitors.",
+    popular: false,
+    features: [
+      "Opposition filing (TM-O)",
+      "Counter-statement defense (TM-R)",
+      "Evidence collection & arguments"
+    ],
+    documents: [
+      "Opposing party application details",
+      "Copy of TM Journal publication",
+      "Prior registration certificates",
+      "Legal power of attorney (POA)"
+    ]
+  },
+  {
+    id: "trademark-assignment",
+    name: "Trademark & IP Assignment",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "5–8 Working Days",
+    minDirectors: "Corporate Counsel",
+    minDirectorsNumber: "Legal Counsel",
+    minCapital: "—",
+    liability: "Asset Secure",
+    taxBenefit: "Capital Gains Structuring",
+    detailedAbout: "Legal drafting and filing of Trademark and Copyright Assignment Deeds to execute the transfer of ownership of intellectual property assets. Ideal for company restructuring, mergers, acquisitions, or individual-to-company asset transfers, ensuring full registry updates (Form TM-P).",
+    keyAdvantages: [
+      "Legal transfer of IP assets",
+      "Assignment Deed drafting",
+      "Form TM-P registry filing",
+      "Copyright transfer validation",
+      "Balance sheet asset structuring"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Draft deeds and update registry ownership (Form TM-P) safely.",
+    popular: false,
+    features: [
+      "IP Assignment Deed drafting",
+      "Registry transfer filings",
+      "Copyright ownership validation"
+    ],
+    documents: [
+      "Original TM/Copyright certificate",
+      "Details of Assignor & Assignee",
+      "Business valuation report (if any)",
+      "Incorporation files of parties"
+    ]
+  },
+  {
+    id: "brand-protection",
+    name: "Brand Protection & Monitoring",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "Ongoing Monitoring",
+    minDirectors: "Brand Protection Lead",
+    minDirectorsNumber: "Protection Lead",
+    minCapital: "—",
+    liability: "IP Infringement Alert",
+    taxBenefit: "Brand Equity Shield",
+    detailedAbout: "Continuous monitoring of the Trademark Journal, company registry, and online marketplaces to detect copycat brands or unauthorized usage of your IP. Includes drafting and serving Cease & Desist notices and taking administrative actions to remove infringing content.",
+    keyAdvantages: [
+      "Trademark Journal weekly scans",
+      "Cease & Desist legal notices",
+      "Marketplace counterfeit removal",
+      "Domain name abuse monitoring",
+      "Proactive infringement prevention"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Scan Trademark Journals and enforce brand rights online proactively.",
+    popular: false,
+    features: [
+      "TM Journal weekly audits",
+      "Cease & Desist drafts",
+      "Marketplace take-down requests"
+    ],
+    documents: [
+      "Active registration certificates",
+      "Logos and slogans list",
+      "Details of suspected infringers",
+      "Domain names portfolio"
+    ]
+  },
+  {
+    id: "litigation-assistance",
+    name: "Litigation Assistance",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "As per Case Schedule",
+    minDirectors: "Senior Advocate Lead",
+    minDirectorsNumber: "Senior Advocate",
+    minCapital: "—",
+    liability: "Legal Defense",
+    taxBenefit: "Fiduciary Shield",
+    detailedAbout: "End-to-end legal support, litigation drafting, case research, and advisory services for commercial, contract, trademark, or shareholder disputes. Led by senior advocates, we prepare plaints, written statements, legal notices, and represent your company's interests before courts and tribunals.",
+    keyAdvantages: [
+      "High-court and NCLT representation",
+      "Commercial contract disputes",
+      "Bespoke legal research & opinion",
+      "Plaints & replies drafting",
+      "Arbitration and settlement audits"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Support for court proceedings, NCLT hearings, and legal notices.",
+    popular: false,
+    features: [
+      "Legal notice & replies drafting",
+      "Tribunal & Court case prep",
+      "Commercial dispute arbitration"
+    ],
+    documents: [
+      "Disputed contract/agreement copy",
+      "Chronology of dispute events",
+      "Past communications / emails",
+      "Existing court notices (if any)"
+    ]
+  },
+  {
+    id: "trademark-renewal",
+    name: "Trademark & License Renewal",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "2–3 Working Days",
+    minDirectors: "Regulatory Officer",
+    minDirectorsNumber: "Regulatory Officer",
+    minCapital: "—",
+    liability: "Ongoing Protection",
+    taxBenefit: "Asset Preservation",
+    detailedAbout: "Timely renewal of trademarks (required every 10 years) and other commercial licenses (FSSAI, ISO, shop act). We file the necessary renewal applications (Form TM-R) with the registry, avoiding expiration, late filing penalties, or loss of proprietary brand rights.",
+    keyAdvantages: [
+      "Trademarks 10-year renewal",
+      "Form TM-R filing coordination",
+      "Commercial license updates",
+      "Status tracking & certificates",
+      "Asset protection continuity"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Renew marks (Form TM-R), FSSAI licenses, and prevent expiry risks.",
+    popular: false,
+    features: [
+      "Form TM-R filing (TM Renewal)",
+      "FSSAI & Shop Act license renewal",
+      "License expiry tracking system"
+    ],
+    documents: [
+      "Original registration certificate",
+      "Application / License number",
+      "Power of attorney documents",
+      "Aadhaar/PAN of license holder"
+    ]
+  },
+  {
+    id: "patent-filing",
+    name: "Patent Drafting & Filing",
+    category: "legal-ip",
+    pricing: "",
+    timeline: "15–25 Working Days",
+    minDirectors: "Patent Agent Lead",
+    minDirectorsNumber: "Patent Agent",
+    minCapital: "—",
+    liability: "IP Monopolized",
+    taxBenefit: "Valuable IP Asset",
+    detailedAbout: "End-to-end patent advisory including Freedom to Operate (FTO) search, patentability analysis, specification drafting (claims, description, drawings), and filing provisional or complete patent applications with the Indian Patent Office.",
+    keyAdvantages: [
+      "Freedom to Operate (FTO) reports",
+      "Patentability search & novelty checks",
+      "Professional specification drafting",
+      "Provisional & Complete applications",
+      "Utility and design patent filings"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Patentability searches, novelty checks, and specification drafting.",
+    popular: false,
+    features: [
+      "Novelty check & FTO search",
+      "Claims & drawing drafting",
+      "IPO filing & prosecution support"
+    ],
+    documents: [
+      "Invention Disclosure Form (IDF)",
+      "Drawings/flowcharts of invention",
+      "Prior art references (if any)",
+      "Power of Attorney for patent agent"
+    ]
+  },
+  {
+    id: "iso-certification",
+    name: "ISO Certification Services",
+    category: "compliance",
+    pricing: "",
+    timeline: "5–7 Working Days",
+    minDirectors: "ISO Lead Auditor",
+    minDirectorsNumber: "Lead Auditor",
+    minCapital: "—",
+    liability: "Quality Assured",
+    taxBenefit: "Global Bid Eligible",
+    detailedAbout: "Provisioning of international ISO certifications (ISO 9001:2015 for Quality Management, ISO 27001 for Information Security, ISO 14001, etc.). We coordinate internal audits, compile mandatory quality manuals, and secure formal audit certifications from accredited bodies.",
+    keyAdvantages: [
+      "ISO 9001 / 27001 / 14001",
+      "Accredited certification bodies",
+      "Audit preparation & support",
+      "Global tender eligibility",
+      "Enterprise quality validation"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Secure ISO 9001 or 27001 quality audit certificates easily.",
+    popular: false,
+    features: [
+      "ISO Audit coordination",
+      "Quality manual compilation",
+      "Accredited ISO Certification"
+    ],
+    documents: [
+      "Company registration certificate",
+      "Scope of business operations",
+      "Organization flow chart",
+      "Standard operating procedures (SOPs)"
+    ]
   }
 ];
 
@@ -875,6 +1344,7 @@ export default function RegistrationServices({
   prefilledEntityType = ""
 }: RegistrationServicesProps) {
   const navigateToTab = useAppNavigate();
+  const navigate = useNavigate();
   const [selectedEntityId, setSelectedEntityId] = useState("pvt-ltd");
   const [viewMode, setViewMode] = useState<"grid" | "detail">("grid");
   const [showOnboardModal, setShowOnboardModal] = useState(false);
@@ -946,7 +1416,13 @@ export default function RegistrationServices({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           name: checkName, 
-          entityType: calcEntity === "pvt-ltd" ? "Private Limited Company" : calcEntity === "llp" ? "Limited Liability Partnership" : calcEntity === "opc" ? "One Person Company" : "Partnership Firm", 
+          entityType: 
+            calcEntity === "pvt-ltd" ? "Private Limited Company" : 
+            calcEntity === "llp" ? "Limited Liability Partnership" : 
+            calcEntity === "opc" ? "One Person Company" : 
+            calcEntity === "section8" ? "Section 8 Company" :
+            calcEntity === "public-ltd" ? "Public Limited Company" :
+            "Partnership Firm", 
           industry: checkIndustry 
         })
       });
@@ -980,10 +1456,41 @@ export default function RegistrationServices({
       setCalcEntity(prefilledEntityType);
       setViewMode("detail");
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      setViewMode("grid");
     }
   }, [prefilledEntityType]);
 
   const getCalculatorPricing = () => {
+    const isIncorporation = ["pvt-ltd", "llp", "opc", "partnership", "section8", "public-ltd"].includes(calcEntity);
+
+    if (!isIncorporation) {
+      const serviceObj = serviceCatalog.find(s => s.id === calcEntity);
+      const rawPricing = serviceObj ? serviceObj.pricing : "";
+      if (!rawPricing) {
+        return {
+          professionalFee: 0,
+          govFee: 0,
+          addOnFee: 0,
+          discount: 0,
+          total: 0,
+          customQuote: true,
+          isMonthly: false
+        };
+      }
+      const numericPrice = parseInt(rawPricing.replace(/[^0-9]/g, ""), 10) || 0;
+      const isMonthly = rawPricing.includes("/mo");
+      return {
+        professionalFee: numericPrice,
+        govFee: 0,
+        addOnFee: 0,
+        discount: 0,
+        total: numericPrice,
+        customQuote: false,
+        isMonthly
+      };
+    }
+
     let professionalFee = 999;
     let baseGovFee = 1500;
     let minDirectors = 2;
@@ -1000,6 +1507,14 @@ export default function RegistrationServices({
       professionalFee = 499;
       baseGovFee = 300;
       minDirectors = 2;
+    } else if (calcEntity === "section8") {
+      professionalFee = 2499;
+      baseGovFee = 2000;
+      minDirectors = 2;
+    } else if (calcEntity === "public-ltd") {
+      professionalFee = 4999;
+      baseGovFee = 5000;
+      minDirectors = 3;
     }
 
     // DIN/DSC Gov fees per Director above minimum
@@ -1029,6 +1544,8 @@ export default function RegistrationServices({
       addOnFee,
       discount,
       total,
+      customQuote: false,
+      isMonthly: false
     };
   };
 
@@ -1036,6 +1553,7 @@ export default function RegistrationServices({
   const activeCatalog = serviceCatalog.map((s) => getTranslatedService(s, lang));
   const pricing = getCalculatorPricing();
   const selectedEntity = activeCatalog.find((e) => e.id === selectedEntityId) || activeCatalog[0];
+  const isIncorporation = ["pvt-ltd", "llp", "opc", "partnership", "section8", "public-ltd"].includes(selectedEntity.id);
 
   return (
     <div className="space-y-12">
@@ -1320,10 +1838,11 @@ export default function RegistrationServices({
             {/* Category Pills Bar */}
             <div className="flex items-center gap-2 overflow-x-auto py-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
               {[
-                { id: "all", label: lang === "hi" ? "सभी सेवाएं" : "All Services", icon: Scale },
+                { id: "all", label: lang === "hi" ? "सभी सेवाएं" : "All Services", icon: Sparkles },
                 { id: "private-corporate", label: lang === "hi" ? "प्राइवेट कॉर्पोरेट" : "Private Corporate", icon: Building2 },
                 { id: "alternative-entity", label: lang === "hi" ? "वैकल्पिक इकाई" : "Alternative Entity", icon: Landmark },
                 { id: "compliance", label: lang === "hi" ? "सालाना कम्प्लायंस" : "Compliance", icon: FileText },
+                { id: "legal-ip", label: lang === "hi" ? "कानूनी और आईपी" : "Legal & IP", icon: Scale },
                 { id: "enterprise-growth", label: lang === "hi" ? "बिजनेस ग्रोथ" : "Enterprise & Growth", icon: TrendingUp }
               ].map((cat) => {
                 const Icon = cat.icon;
@@ -1360,9 +1879,7 @@ export default function RegistrationServices({
                       transition={{ duration: 0.38, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
                       whileHover={{ y: -6, boxShadow: "0 15px 35px -12px rgba(10, 17, 40, 0.15)", borderColor: "rgba(197, 168, 128, 0.4)" }}
                       onClick={() => {
-                        setSelectedEntityId(service.id);
-                        setCalcEntity(service.id);
-                        setViewMode("detail");
+                        navigate(`/services/${service.category}/${service.id}/`);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
                       className="premium-service-card border rounded-3xl overflow-hidden shadow-sm flex flex-col h-full group relative transition-all duration-150 fast-transition premium-card transform-gpu cursor-pointer"
@@ -1386,6 +1903,7 @@ export default function RegistrationServices({
                               {service.category === "private-corporate" ? "Private Corporate Entity" :
                                service.category === "alternative-entity" ? "Alternative Entity Structure" :
                                service.category === "compliance" ? "Compliance & Statutory" :
+                               service.category === "legal-ip" ? "Legal & Intellectual Property" :
                                service.category === "enterprise-growth" ? "Enterprise & Growth Service" :
                                "Business Entity"}
                             </div>
@@ -1474,7 +1992,7 @@ export default function RegistrationServices({
             {/* Header back & save panel */}
             <div className="flex items-center justify-between">
               <button
-                onClick={() => setViewMode("grid")}
+                onClick={() => navigate("/services/")}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-bg-lighter border border-brand-border text-brand-text-muted hover:text-brand-text text-xs font-semibold cursor-pointer shadow-sm hover:shadow transition-all"
               >
                 <ArrowLeft className="w-4 h-4 text-brand-text-muted" /> Back to Services
@@ -1629,126 +2147,138 @@ export default function RegistrationServices({
                   </span>
                 </div>
 
-                {/* Directors slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-1.5 text-brand-text-muted">
-                      <Users className="w-3.5 h-3.5 text-[#c5a880] shrink-0" />
-                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted">
-                        Directors / Partners
-                      </span>
-                    </div>
-                    <span className="font-mono text-brand-text text-xs font-bold">
-                      {calcDirectors} <span className="text-[9px] text-brand-text-muted font-normal">(Min: {calcEntity === "opc" ? 1 : 2})</span>
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={calcEntity === "opc" ? 1 : 2}
-                    max={calcEntity === "opc" ? 1 : 15}
-                    value={calcDirectors}
-                    disabled={calcEntity === "opc"}
-                    onChange={(e) => setCalcDirectors(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-brand-border accent-[#c5a880] rounded-lg appearance-none cursor-pointer focus:outline-none"
-                  />
-                  <div className="flex justify-between items-center text-[9px] text-brand-text-muted font-mono">
-                    <span>{calcEntity === "opc" ? 1 : 2}</span>
-                    <span>{calcEntity === "opc" ? 1 : 15}</span>
-                  </div>
-                </div>
-
-                {/* Capital slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-1.5 text-brand-text-muted">
-                      <Landmark className="w-3.5 h-3.5 text-[#c5a880] shrink-0" />
-                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted">
-                        Share Capital
-                      </span>
-                    </div>
-                    <span className="font-mono text-brand-text text-xs font-bold">
-                      ₹{(calcCapital / 100000).toFixed(1)}L
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={100000}
-                    max={10000000}
-                    step={100000}
-                    value={calcCapital}
-                    onChange={(e) => setCalcCapital(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-brand-border rounded-lg appearance-none cursor-pointer accent-[#c5a880] focus:outline-none"
-                  />
-                  <div className="flex justify-between items-center text-[9px] text-brand-text-muted font-mono">
-                    <span>₹1L</span>
-                    <span>₹1Cr</span>
-                  </div>
-                </div>
-
-                {/* Optional addons checklists */}
-                <div className="space-y-3">
-                  <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted block mb-1">
-                    Optional Add-ons
-                  </span>
-                  <div className="space-y-2">
-                    {[
-                      { key: "gst", name: "GST Registration", price: "+₹499" },
-                      { key: "trademark", name: "Trademark Filing", price: "+₹1,999" },
-                      { key: "startupIndia", name: "Startup India", price: "+₹1,499" },
-                      { key: "virtualOffice", name: "Virtual Office", price: "+₹999/mo" },
-                      { key: "virtualCFO", name: "Virtual CFO", price: "+₹2,999/mo" }
-                    ].map((addon) => (
-                      <div
-                        key={addon.key}
-                        onClick={() =>
-                          setAddOns({
-                            ...addOns,
-                            [addon.key]: !addOns[addon.key as any]
-                          } as any)
-                        }
-                        className="flex items-center justify-between py-1 cursor-pointer transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={addOns[addon.key as any] || false}
-                            onChange={() => {}}
-                            className="rounded border-slate-300 text-[#c5a880] focus:ring-[#c5a880] w-4 h-4 cursor-pointer bg-white"
-                          />
-                          <span className="text-xs font-sans font-medium text-brand-text">{addon.name}</span>
+                {isIncorporation && (
+                  <>
+                    {/* Directors slider */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1.5 text-brand-text-muted">
+                          <Users className="w-3.5 h-3.5 text-[#c5a880] shrink-0" />
+                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted">
+                            Directors / Partners
+                          </span>
                         </div>
-                        <span className="text-xs font-serif font-bold text-[#c5a880]">{addon.price}</span>
+                        <span className="font-mono text-brand-text text-xs font-bold">
+                          {calcDirectors} <span className="text-[9px] text-brand-text-muted font-normal">(Min: {calcEntity === "opc" ? 1 : 2})</span>
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <input
+                        type="range"
+                        min={calcEntity === "opc" ? 1 : 2}
+                        max={calcEntity === "opc" ? 1 : 15}
+                        value={calcDirectors}
+                        disabled={calcEntity === "opc"}
+                        onChange={(e) => setCalcDirectors(parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-brand-border accent-[#c5a880] rounded-lg appearance-none cursor-pointer focus:outline-none"
+                      />
+                      <div className="flex justify-between items-center text-[9px] text-brand-text-muted font-mono">
+                        <span>{calcEntity === "opc" ? 1 : 2}</span>
+                        <span>{calcEntity === "opc" ? 1 : 15}</span>
+                      </div>
+                    </div>
+
+                    {/* Capital slider */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1.5 text-brand-text-muted">
+                          <Landmark className="w-3.5 h-3.5 text-[#c5a880] shrink-0" />
+                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted">
+                            Share Capital
+                          </span>
+                        </div>
+                        <span className="font-mono text-brand-text text-xs font-bold">
+                          ₹{(calcCapital / 100000).toFixed(1)}L
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={100000}
+                        max={10000000}
+                        step={100000}
+                        value={calcCapital}
+                        onChange={(e) => setCalcCapital(parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-brand-border rounded-lg appearance-none cursor-pointer accent-[#c5a880] focus:outline-none"
+                      />
+                      <div className="flex justify-between items-center text-[9px] text-brand-text-muted font-mono">
+                        <span>₹1L</span>
+                        <span>₹1Cr</span>
+                      </div>
+                    </div>
+
+                    {/* Optional addons checklists */}
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-brand-text-muted block mb-1">
+                        Optional Add-ons
+                      </span>
+                      <div className="space-y-2">
+                        {[
+                          { key: "gst", name: "GST Registration", price: "+₹499" },
+                          { key: "trademark", name: "Trademark Filing", price: "+₹1,999" },
+                          { key: "startupIndia", name: "Startup India", price: "+₹1,499" },
+                          { key: "virtualOffice", name: "Virtual Office", price: "+₹999/mo" },
+                          { key: "virtualCFO", name: "Virtual CFO", price: "+₹2,999/mo" }
+                        ].map((addon) => (
+                          <div
+                            key={addon.key}
+                            onClick={() =>
+                              setAddOns({
+                                ...addOns,
+                                [addon.key]: !addOns[addon.key as any]
+                              } as any)
+                            }
+                            className="flex items-center justify-between py-1 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={addOns[addon.key as any] || false}
+                                onChange={() => {}}
+                                className="rounded border-slate-300 text-[#c5a880] focus:ring-[#c5a880] w-4 h-4 cursor-pointer bg-white"
+                              />
+                              <span className="text-xs font-sans font-medium text-brand-text">{addon.name}</span>
+                            </div>
+                            <span className="text-xs font-serif font-bold text-[#c5a880]">{addon.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Ledger */}
-                <div className="space-y-2 pt-3 border-t border-brand-border/60">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-brand-text-muted font-sans">Professional Fee</span>
-                    <span className="font-serif font-bold text-brand-text italic text-[11px]">As per consultation</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-brand-text-muted font-sans">Government & Stamp Duties</span>
-                    <span className="font-serif font-bold text-brand-text">₹{pricing.govFee}</span>
-                  </div>
-                  {pricing.addOnFee > 0 && (
+                {!pricing.customQuote && (
+                  <div className="space-y-2 pt-3 border-t border-brand-border/60">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-brand-text-muted font-sans">Add-ons Total</span>
-                      <span className="font-serif font-bold text-brand-text">+₹{pricing.addOnFee}</span>
+                      <span className="text-brand-text-muted font-sans">Professional Fee</span>
+                      <span className="font-serif font-bold text-brand-text">
+                        ₹{pricing.professionalFee}{pricing.isMonthly ? "/mo" : ""}
+                      </span>
                     </div>
-                  )}
-                </div>
+                    {isIncorporation && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-brand-text-muted font-sans">Government & Stamp Duties</span>
+                        <span className="font-serif font-bold text-brand-text">₹{pricing.govFee}</span>
+                      </div>
+                    )}
+                    {isIncorporation && pricing.addOnFee > 0 && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-brand-text-muted font-sans">Add-ons Total</span>
+                        <span className="font-serif font-bold text-brand-text">+₹{pricing.addOnFee}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Estimated total and onboard button */}
                 <div className="border-t border-brand-border/60 pt-3 flex justify-between items-center">
                   <div className="flex flex-col">
                     <span className="text-sm font-serif font-extrabold text-brand-text">Estimated Total</span>
-                    <span className="text-[9px] text-brand-text-muted font-sans">*Final quote after consultation</span>
+                    <span className="text-[9px] text-brand-text-muted font-sans">
+                      {pricing.customQuote ? "*Pricing depends on requirement details" : "*Final quote after consultation"}
+                    </span>
                   </div>
                   <span className="text-2.5xl font-serif font-bold text-[#c5a880]">
-                    ₹{pricing.total}
+                    {pricing.customQuote ? "Custom Quote" : `₹${pricing.total}${pricing.isMonthly ? "/mo" : ""}`}
                   </span>
                 </div>
 
@@ -1756,7 +2286,8 @@ export default function RegistrationServices({
                   onClick={() => setShowOnboardModal(true)}
                   className="w-full bg-[#0a1128] hover:bg-[#c5a880] text-white hover:text-slate-900 py-3.5 rounded-xl transition-all cursor-pointer font-bold text-sm font-sans tracking-wide shadow-lg shadow-[#0a1128]/10 flex items-center justify-center gap-1.5 duration-300"
                 >
-                  Onboard With This Budget <ChevronRight className="w-4 h-4 ml-1 stroke-[2.5]" />
+                  {pricing.customQuote ? "Request Custom Quote" : "Onboard With This Budget"}{" "}
+                  <ChevronRight className="w-4 h-4 ml-1 stroke-[2.5]" />
                 </button>
 
                 {/* Secure seal */}
@@ -1793,13 +2324,21 @@ export default function RegistrationServices({
                         <Building2 className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-light text-brand-text serif">Start Your Incorporation</h3>
+                        <h3 className="text-lg font-light text-brand-text serif">
+                          {isIncorporation ? "Start Your Incorporation" : "Get Started with INCroute"}
+                        </h3>
                         <p className="text-[9px] text-brand-text-muted font-mono uppercase tracking-widest mt-0.5">{selectedEntity.name} Desk</p>
                       </div>
                     </div>
 
                     <div className="border-t border-brand-border pt-4">
-                      <ContactFormWidget initialMessage={`I would like to onboard and register my business structure as a ${selectedEntity.name}. Directors: ${calcDirectors}, Authorized Share Capital: ₹${calcCapital.toLocaleString()}. Addons: ${Object.keys(addOns).filter(k => addOns[k as any]).join(", ") || "None"}.`} />
+                      <ContactFormWidget 
+                        initialMessage={
+                          isIncorporation 
+                            ? `I would like to onboard and register my business structure as a ${selectedEntity.name}. Directors: ${calcDirectors}, Authorized Share Capital: ₹${calcCapital.toLocaleString()}. Addons: ${Object.keys(addOns).filter(k => addOns[k as any]).join(", ") || "None"}.`
+                            : `I would like to request a custom quote / register for the service: ${selectedEntity.name}.${pricing.customQuote ? "" : ` Estimated Professional Fee: ₹${pricing.total}.`}`
+                        } 
+                      />
                     </div>
                   </div>
                 </div>

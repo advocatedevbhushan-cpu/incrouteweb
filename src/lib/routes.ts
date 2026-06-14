@@ -2,7 +2,7 @@
 export const ROUTES = {
   home: "/",
   services: "/services/",
-  serviceDetail: (slug: string) => `/services/${slug}/`,
+  serviceDetail: (category: string, slug: string) => `/services/${category}/${slug}/`,
   compliance: "/compliance/",
   blog: "/blog/",
   blogPost: (category: string, slug: string) => `/blog/${category}/${slug}/`,

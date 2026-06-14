@@ -251,9 +251,478 @@ const catalog = [
     compliance: ["Address update in ROC records if changed", "GST address amendment if required"],
     clientAdvantage: "Best for remote founders, freelancers, and startups that need a credible registered address for GST, ROC, and bank account opening without renting physical space.",
   },
+  {
+    id: "terms-privacy",
+    name: "Terms of Service & Privacy Policy",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "3–5 Working Days",
+    minCapital: "—",
+    liability: "Risk Mitigated",
+    taxBenefit: "Liability Shield",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: FileText,
+    description: "GDPR/CCPA compliant terms & policies tailored for websites/apps.",
+    about: "Custom drafting of comprehensive Terms of Service (ToS) and Privacy Policy agreements. Designed specifically for your platform, website, or mobile application, ensuring compliance with global privacy regulations (GDDR, CCPA, IT Act 2000) and protecting your enterprise from customer/user disputes.",
+    advantages: [
+      "GDPR & CCPA Compliant framework",
+      "User liability and civil claim mitigation",
+      "Intellectual property ownership protections",
+      "Bespoke dispute resolution terms",
+      "Refund and account termination clauses"
+    ],
+    documents: [
+      "Business profile / Website or app URL",
+      "Details of user data collected",
+      "Payment gateway integration details",
+      "Existing refund policy notes"
+    ],
+    compliance: [
+      "Annual terms of service review",
+      "Privacy policy updates on data capture shifts",
+      "GDPR/CCPA audit alignment"
+    ],
+    clientAdvantage: "Protects website owners and SaaS startups from legal claims, limits liability, and complies with international privacy laws automatically."
+  },
+  {
+    id: "msme-registration",
+    name: "MSME (Udyam) Registration",
+    category: "Compliance",
+    categoryColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    pricing: "Custom Quote",
+    timeline: "2–3 Working Days",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Govt Scheme Eligible",
+    badge: "",
+    badgeColor: "",
+    rating: 4.9,
+    icon: Award,
+    description: "Get government-backed Udyam MSME certification to unlock subsidies and loans.",
+    about: "Government-backed Udyam MSME certification for micro, small, and medium enterprises. Registering your enterprise unlocks priority bank lending rates, subsidies on patents and barcodes, concessions on electricity bills, and robust legal protection against delayed business payments from corporate buyers.",
+    advantages: [
+      "Priority sector bank loans under MSME credit schemes",
+      "Robust legal protection from enterprise payment delays",
+      "Concessions on commercial electricity bills",
+      "Subsidies on patent and barcode filings",
+      "Priority status for government tenders"
+    ],
+    documents: [
+      "Aadhaar card of promoter",
+      "PAN card of business or owner",
+      "GSTIN (if applicable)",
+      "Active Bank Account details"
+    ],
+    compliance: [
+      "Annual MSME updates if investments change",
+      "Company registration link alignment",
+      "Tax return synchronization"
+    ],
+    clientAdvantage: "Unlocks government priority banking benefits and provides legal safety nets from commercial payment defaults."
+  },
+  {
+    id: "fssai-registration",
+    name: "FSSAI Registration",
+    category: "Compliance",
+    categoryColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    pricing: "Custom Quote",
+    timeline: "3–7 Working Days",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Quality Standard",
+    badge: "",
+    badgeColor: "",
+    rating: 4.8,
+    icon: CheckCircle2,
+    description: "Legally mandatory FSSAI food license for retail, kitchen, and preparation setups.",
+    about: "An FSSAI Food Safety License is legally mandatory for any food business operator (FBO) in India dealing in manufacturing, processing, packaging, storage, transportation, retail, distribution, or restaurant/kitchen food safety operations.",
+    advantages: [
+      "Legally mandatory food safety license compliance",
+      "Builds high consumer trust & brand validation",
+      "Authorization for official FSSAI logo usage",
+      "Quality standards validation certificate",
+      "Protects food businesses from registry audits"
+    ],
+    documents: [
+      "PAN & Aadhaar card of the operator",
+      "Electricity bill of commercial kitchen/office",
+      "NOC from registered property landlord",
+      "List of food categories and ingredients used"
+    ],
+    compliance: [
+      "FSSAI license renewal (1 to 5 years tenure)",
+      "Maintaining clean sanitary condition standards",
+      "Support for official safety auditor checks"
+    ],
+    clientAdvantage: "Legally registers your food business, avoiding heavy penal fees and showcasing verified safety standards to your customers."
+  },
+  {
+    id: "return-filing",
+    name: "Return Filing Services",
+    category: "Compliance",
+    categoryColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    pricing: "Custom Quote",
+    timeline: "Ongoing Support",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Input Credit Claim",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: FileText,
+    description: "Expert GSTR-1/3B filings, ITR, and TDS returns led by CAs.",
+    about: "Ongoing GST returns (GSTR-1, GSTR-3B) and corporate/partnership Income Tax Return (ITR) filings managed by dedicated Chartered Accountants. Ensures maximum utilization of Input Tax Credits (ITC), clean tax reconciliation, and full compliance with Central Excise and GST Departments.",
+    advantages: [
+      "Accurate ITR filing under active tax brackets",
+      "GST input tax credit claims maximized",
+      "Zero penalty compliance on delayed filings",
+      "TDS filing and quarterly reconciliation",
+      "Tax assessment defense support by CAs"
+    ],
+    documents: [
+      "Bank statements for the financial year",
+      "Purchase and Sales invoices logs",
+      "Previous year's tax returns",
+      "GST login credentials"
+    ],
+    compliance: [
+      "Monthly GST returns (GSTR-1 & 3B)",
+      "Quarterly TDS filings",
+      "Annual ITR filing",
+      "GST audit representation if threshold met"
+    ],
+    clientAdvantage: "Offloads complex tax filings to expert CAs, maximizes input tax savings, and prevents expensive tax notices."
+  },
+  {
+    id: "trademark-registration",
+    name: "Trademark Services Suite",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "2–3 Working Days (Filing)",
+    minCapital: "—",
+    liability: "IP Shielded",
+    taxBenefit: "Intangible Asset",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: Shield,
+    description: "Exclusivity for your brand name & logo with expert legal opinions.",
+    about: "Comprehensive brand protection including deep Trademark Search, Opinion Letters on registrability, official Class filing, and drafting replies to Office Actions. Our registered IP attorneys ensure your brand name, logo, or slogan secures absolute exclusivity and legal protection in India.",
+    advantages: [
+      "Brand name & logo absolute exclusivity",
+      "Deep conflict search reports across classes",
+      "Attorney Opinion letters on registry issues",
+      "Official TM Journal filing",
+      "Office action replies coordination"
+    ],
+    documents: [
+      "Proposed logo (JPEG/PNG/SVG format)",
+      "Brand name description",
+      "User affidavit (if already in use)",
+      "Power of Attorney for TM agent authorization"
+    ],
+    compliance: [
+      "Monitoring TM journal for oppositions",
+      "Replying to examination reports in 30 days",
+      "TM renewal every 10 years"
+    ],
+    clientAdvantage: "Legally secures your brand name and logo exclusivity, preventing competitors from copying your identity."
+  },
+  {
+    id: "trademark-objection",
+    name: "Response to TM Objection",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "3–5 Working Days",
+    minCapital: "—",
+    liability: "IP Defense",
+    taxBenefit: "Asset Salvage",
+    badge: "",
+    badgeColor: "",
+    rating: 4.8,
+    icon: Scale,
+    description: "Defend Section 9 or Section 11 objections with case-law backings.",
+    about: "Professional drafting of legal replies to trademark objections raised by the Registrar of Trademarks under Section 9 or Section 11 of the Trade Marks Act 1999. Our IP attorneys prepare a robust legal defense using relevant case laws and prior user evidence to secure brand registration.",
+    advantages: [
+      "Strong case law defenses and briefs",
+      "Trademark application salvage",
+      "Evidentiary affidavit drafting for user date",
+      "Objection status tracking",
+      "Expert hearing preparation if required"
+    ],
+    documents: [
+      "Trademark application number",
+      "Official Examination report from registrar",
+      "Proof of brand usage (invoices, ads, domain)",
+      "Bona fide usage documents"
+    ],
+    compliance: [
+      "Submission within 30 days of report",
+      "Hearing attendance if scheduled by registrar",
+      "Affidavit execution"
+    ],
+    clientAdvantage: "Saves your trademark application from abandonment and defends your brand rights in front of the registry."
+  },
+  {
+    id: "trademark-opposition",
+    name: "Trademark Opposition",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "7–10 Working Days",
+    minCapital: "—",
+    liability: "IP Defense",
+    taxBenefit: "Equity Shield",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: Scale,
+    description: "File TM-O notices or defend your registry status against competitors.",
+    about: "Filing or defending Trademark Oppositions before the Trademark Registry. When a third party opposes your published trademark or a competitor tries to register a confusingly similar brand, our litigation attorneys draft the Notice of Opposition (TM-O) or Counter-Statement (TM-R) to protect your brand equity.",
+    advantages: [
+      "Competitor registration blocking via TM-O",
+      "Counter-statement drafting (TM-R)",
+      "Notice of Opposition preparation",
+      "Evidence submission and hearing defenses",
+      "High-stake brand equity defense"
+    ],
+    documents: [
+      "Opposing party application details",
+      "Copy of TM Journal publication",
+      "Prior registration certificates",
+      "Legal power of attorney (POA)"
+    ],
+    compliance: [
+      "Opposition within 4 months of TM Journal publication",
+      "Counter-statement within 2 months of notice receipt",
+      "Evidence leading within prescribed statutory timelines"
+    ],
+    clientAdvantage: "Blocks copycats from registering similar marks or defends your published trademark from malicious opposition."
+  },
+  {
+    id: "trademark-assignment",
+    name: "Trademark & IP Assignment",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "5–8 Working Days",
+    minCapital: "—",
+    liability: "Asset Secure",
+    taxBenefit: "Capital Gains Structuring",
+    badge: "",
+    badgeColor: "",
+    rating: 4.8,
+    icon: Shield,
+    description: "Draft deeds and update registry ownership (Form TM-P) safely.",
+    about: "Legal drafting and filing of Trademark and Copyright Assignment Deeds to execute the transfer of ownership of intellectual property assets. Ideal for company restructuring, mergers, acquisitions, or individual-to-company asset transfers, ensuring full registry updates (Form TM-P).",
+    advantages: [
+      "Legal transfer of IP assets rights",
+      "Assignment Deed drafting by experts",
+      "Form TM-P registry filing",
+      "Copyright transfer validation",
+      "Balance sheet asset structuring"
+    ],
+    documents: [
+      "Original TM/Copyright certificate",
+      "Details of Assignor & Assignee",
+      "Business valuation report (if any)",
+      "Incorporation files of parties"
+    ],
+    compliance: [
+      "Form TM-P filing with the TM Registry",
+      "Stamp duty payment on deed transfer",
+      "Company board resolutions recording the asset transfer"
+    ],
+    clientAdvantage: "Legally transfers intellectual property ownership between entities, ensuring complete title protection and balance sheet entry."
+  },
+  {
+    id: "brand-protection",
+    name: "Brand Protection & Monitoring",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "Ongoing Monitoring",
+    minCapital: "—",
+    liability: "IP Infringement Alert",
+    taxBenefit: "Brand Equity Shield",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: Shield,
+    description: "Scan Trademark Journals and enforce brand rights online proactively.",
+    about: "Continuous monitoring of the Trademark Journal, company registry, and online marketplaces to detect copycat brands or unauthorized usage of your IP. Includes drafting and serving Cease & Desist notices and taking administrative actions to remove infringing content.",
+    advantages: [
+      "Trademark Journal weekly scans and alerts",
+      "Cease & Desist legal notices served",
+      "Marketplace counterfeit removal actions",
+      "Domain name abuse monitoring",
+      "Proactive infringement prevention"
+    ],
+    documents: [
+      "Active registration certificates",
+      "Logos and slogans list",
+      "Details of suspected infringers",
+      "Domain names portfolio"
+    ],
+    compliance: [
+      "Weekly TM Journal scanning",
+      "Quarterly marketplace audits",
+      "Timely filing of cease and desist alerts"
+    ],
+    clientAdvantage: "Identifies copycat brand filings early so you can oppose them before they get registered, and keeps marketplaces clean of counterfeits."
+  },
+  {
+    id: "litigation-assistance",
+    name: "Litigation Assistance",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "As per Case Schedule",
+    minCapital: "—",
+    liability: "Legal Defense",
+    taxBenefit: "Fiduciary Shield",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: Scale,
+    description: "Support for court proceedings, NCLT hearings, and legal notices.",
+    about: "End-to-end legal support, litigation drafting, case research, and advisory services for commercial, contract, trademark, or shareholder disputes. Led by senior advocates, we prepare plaints, written statements, legal notices, and represent your company's interests before courts and tribunals.",
+    advantages: [
+      "High-court and NCLT representation",
+      "Commercial contract disputes advocacy",
+      "Bespoke legal research & opinion briefs",
+      "Plaints & replies drafting",
+      "Arbitration and settlement audits"
+    ],
+    documents: [
+      "Disputed contract/agreement copy",
+      "Chronology of dispute events",
+      "Past communications / emails",
+      "Existing court notices (if any)"
+    ],
+    compliance: [
+      "Court filing timelines",
+      "Summons responses tracking",
+      "Advocate briefing schedules"
+    ],
+    clientAdvantage: "Secures premium corporate representation and robust drafting for contract, registry, or marketplace legal disputes."
+  },
+  {
+    id: "trademark-renewal",
+    name: "Trademark & License Renewal",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "2–3 Working Days",
+    minCapital: "—",
+    liability: "Ongoing Protection",
+    taxBenefit: "Asset Preservation",
+    badge: "",
+    badgeColor: "",
+    rating: 4.9,
+    icon: Clock,
+    description: "Renew marks (Form TM-R), FSSAI licenses, and prevent expiry risks.",
+    about: "Timely renewal of trademarks (required every 10 years) and other commercial licenses (FSSAI, ISO, shop act). We file the necessary renewal applications (Form TM-R) with the registry, avoiding expiration, late filing penalties, or loss of proprietary brand rights.",
+    advantages: [
+      "Trademarks 10-year renewal filing",
+      "Form TM-R filing coordination with registry",
+      "Commercial license status checks",
+      "Status tracking & certificates retrieval",
+      "Asset protection continuity"
+    ],
+    documents: [
+      "Original registration certificate copy",
+      "Application / License number",
+      "Power of attorney documents",
+      "Aadhaar/PAN of license holder"
+    ],
+    compliance: [
+      "Form TM-R filing within 6 months before expiry",
+      "FSSAI renewal annually or multi-year",
+      "SLA updates tracking"
+    ],
+    clientAdvantage: "Prevents your trademark or licenses from expiring, avoiding heavy restoration fees or brand hijacking by competitors."
+  },
+  {
+    id: "patent-filing",
+    name: "Patent Drafting & Filing",
+    category: "Legal & IP",
+    categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+    pricing: "Custom Quote",
+    timeline: "15–25 Working Days",
+    minCapital: "—",
+    liability: "IP Monopolized",
+    taxBenefit: "Valuable IP Asset",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: Award,
+    description: "Patentability searches, novelty checks, and specification drafting.",
+    about: "End-to-end patent advisory including Freedom to Operate (FTO) search, patentability analysis, specification drafting (claims, description, drawings), and filing provisional or complete patent applications with the Indian Patent Office.",
+    advantages: [
+      "Freedom to Operate (FTO) reports",
+      "Patentability search & novelty checks",
+      "Professional specification drafting",
+      "Provisional & Complete applications filing",
+      "Utility and design patent filings"
+    ],
+    documents: [
+      "Invention Disclosure Form (IDF)",
+      "Drawings/flowcharts of invention",
+      "Prior art references (if any)",
+      "Power of Attorney for patent agent"
+    ],
+    compliance: [
+      "Response to First Examination Report (FER) within 6 months",
+      "Patent maintenance fee annually after grant",
+      "Form 27 working statement filing annually"
+    ],
+    clientAdvantage: "Legally secures proprietary technology/designs, granting you a 20-year monopoly and highly valuable balance sheet IP assets."
+  },
+  {
+    id: "iso-certification",
+    name: "ISO Certification Services",
+    category: "Compliance",
+    categoryColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    pricing: "Custom Quote",
+    timeline: "5–7 Working Days",
+    minCapital: "—",
+    liability: "Quality Assured",
+    taxBenefit: "Global Bid Eligible",
+    badge: "",
+    badgeColor: "",
+    rating: 5,
+    icon: CheckCircle2,
+    description: "Secure ISO 9001 or 27001 quality audit certificates easily.",
+    about: "Provisioning of international ISO certifications (ISO 9001:2015 for Quality Management, ISO 27001 for Information Security, ISO 14001, etc.). We coordinate internal audits, compile mandatory quality manuals, and secure formal audit certifications from accredited bodies.",
+    advantages: [
+      "ISO 9001 / 27001 / 14001 certification path",
+      "Accredited certification bodies coordination",
+      "Audit preparation & checklist support",
+      "Global tender eligibility",
+      "Enterprise quality validation"
+    ],
+    documents: [
+      "Company registration certificate",
+      "Scope of business operations document",
+      "Organization flow chart",
+      "Standard operating procedures (SOPs)"
+    ],
+    compliance: [
+      "Annual surveillance audits",
+      "ISO manual updates on workflow changes",
+      "Three-year renewal recertification"
+    ],
+    clientAdvantage: "Qualifies your company for large government/international tenders and validates operational safety and quality to global enterprise clients."
+  }
 ];
 
-const categoryFilters = ["All", "Incorporation", "Compliance", "Advisory"] as const;
+const categoryFilters = ["All", "Incorporation", "Compliance", "Advisory", "Legal & IP"] as const;
 type CategoryFilter = typeof categoryFilters[number];
 
 const advantageSpectrum = [
