@@ -300,17 +300,27 @@ async function startServer() {
 
       const token = data.access_token;
       
-      // Handshake token back to Decap CMS opener window
       res.send(`
         <html>
           <body>
             <script>
-              const message = "authorization:github:success:" + JSON.stringify({
-                token: "${token}",
-                provider: "github"
-              });
-              window.opener.postMessage(message, "*");
-              window.close();
+              (function() {
+                if (!window.opener) {
+                  console.error("No window.opener found.");
+                  return;
+                }
+                function receiveMessage(e) {
+                  const message = "authorization:github:success:" + JSON.stringify({
+                    token: "${token}",
+                    provider: "github"
+                  });
+                  window.opener.postMessage(message, e.origin);
+                  window.close();
+                }
+                window.addEventListener("message", receiveMessage, false);
+                // Signal opener that popup is ready
+                window.opener.postMessage("authorizing:github", "*");
+              })()
             </script>
             <p style="font-family:sans-serif;text-align:center;padding:20px;color:#d4af37;">Authenticating CMS administrative portal. Closing authentication window...</p>
           </body>
