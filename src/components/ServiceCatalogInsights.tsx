@@ -984,6 +984,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: idx * 0.07 }}
+              whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 30 } }}
               className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-3 hover:border-brand-gold/30 transition-colors group premium-card"
             >
               <div className="p-2.5 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-brand-gold w-fit group-hover:bg-brand-gold group-hover:text-black transition-colors">

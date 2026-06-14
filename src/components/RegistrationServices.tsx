@@ -3,8 +3,11 @@ import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milest
 import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
+import ScrollReveal, { ScrollRevealItem } from "./ScrollReveal";
 import { useAppNavigate } from "../lib/useAppNavigate";
 import { useNavigate } from "react-router-dom";
+import LogoTicker from "./LogoTicker";
+
 const getTranslatedService = (service: any, lang: string) => {
   if (lang !== "hi") return service;
 
@@ -1819,9 +1822,15 @@ export default function RegistrationServices({
             </div>
           </motion.div>
 
+          {/* Infinite logo scrolling marquee */}
+          <LogoTicker />
+
           {/* Category Pills Navigation & Services Cards Grid */}
           <div id="service-catalog-section" className="flex flex-col gap-6 w-full max-w-5xl mx-auto pt-6 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-brand-border/60 pb-4 gap-4">
+            <ScrollReveal 
+              variant="fade-up" 
+              className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-brand-border/60 pb-4 gap-4"
+            >
               <div>
                 <h2 className="font-serif text-2xl font-bold tracking-tight text-brand-text">
                   {lang === "hi" ? "सेवा प्रकार के अनुसार खोजें" : "Browse by Service Type"}
@@ -1833,10 +1842,14 @@ export default function RegistrationServices({
               <span className="text-[10px] uppercase font-mono tracking-widest text-[#9E896A] font-bold bg-brand-gold/10 border border-brand-gold/20 px-3 py-1 rounded-full">
                 {activeCatalog.filter(s => activeCategory === "all" || s.category === activeCategory).length} {lang === "hi" ? "सेवाएं उपलब्ध" : "services available"}
               </span>
-            </div>
+            </ScrollReveal>
 
             {/* Category Pills Bar */}
-            <div className="flex items-center gap-2 overflow-x-auto py-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+            <ScrollReveal 
+              variant="fade-up" 
+              delay={0.1}
+              className="flex items-center gap-2 overflow-x-auto py-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none"
+            >
               {[
                 { id: "all", label: lang === "hi" ? "सभी सेवाएं" : "All Services", icon: Sparkles },
                 { id: "private-corporate", label: lang === "hi" ? "प्राइवेट कॉर्पोरेट" : "Private Corporate", icon: Building2 },
@@ -1862,22 +1875,24 @@ export default function RegistrationServices({
                   </button>
                 );
               })}
-            </div>
+            </ScrollReveal>
 
             {/* Dynamic Service Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+            <ScrollReveal
+              variant="fade"
+              staggerChildren={0.05}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4"
+            >
               {activeCatalog
                 .filter((s) => activeCategory === "all" || s.category === activeCategory)
                 .slice(0, showAllServices ? undefined : 6)
                 .map((service, index) => {
                   const isSaved = savedServices.includes(service.id);
                   return (
-                    <motion.div
+                    <ScrollRevealItem
                       key={service.id}
-                      initial={{ opacity: 0, y: 18, scale: 0.995 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.38, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-                      whileHover={{ y: -6, boxShadow: "0 15px 35px -12px rgba(10, 17, 40, 0.15)", borderColor: "rgba(197, 168, 128, 0.4)" }}
+                      variant="fade-up"
+                      whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 30 } }}
                       onClick={() => {
                         navigate(`/services/${service.category}/${service.id}/`);
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1959,10 +1974,10 @@ export default function RegistrationServices({
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </ScrollRevealItem>
                   );
                 })}
-            </div>
+            </ScrollReveal>
 
             {/* View All / Show Less toggle */}
             {activeCatalog.filter((s) => activeCategory === "all" || s.category === activeCategory).length > 6 && (
@@ -2038,25 +2053,36 @@ export default function RegistrationServices({
             </motion.div>
 
             {/* Quick Specs Cards row (4 boxes) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+            <ScrollReveal 
+              variant="fade" 
+              staggerChildren={0.06} 
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2"
+            >
               {[
                 { label: "MIN DIRECTORS", val: selectedEntity.minDirectorsNumber || "2" },
                 { label: "MIN CAPITAL", val: selectedEntity.minCapital || "₹1 Lakh" },
                 { label: "LIABILITY", val: selectedEntity.liability || "Limited" },
                 { label: "TAX BENEFIT", val: selectedEntity.taxBenefit || "Startup India" }
               ].map((spec, idx) => (
-                <div key={idx} className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-4 text-center shadow-sm">
+                <ScrollRevealItem 
+                  key={idx} 
+                  variant="fade-up"
+                  className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-4 text-center shadow-sm"
+                >
                   <span className="text-[8px] font-mono tracking-widest text-brand-text-muted font-bold block mb-1.5">{spec.label}</span>
                   <span className="text-base font-serif italic text-brand-text font-bold leading-none block">{spec.val}</span>
-                </div>
+                </ScrollRevealItem>
               ))}
-            </div>
+            </ScrollReveal>
 
             {/* Detailed Two-Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
               
               {/* Left Column (col-span-7) */}
-              <div className="lg:col-span-7 space-y-8 flex flex-col justify-between">
+              <ScrollReveal 
+                variant="fade-right"
+                className="lg:col-span-7 space-y-8 flex flex-col justify-between"
+              >
                 {/* About Paragraph */}
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold font-serif text-brand-text tracking-wide">About This Service</h3>
@@ -2128,10 +2154,13 @@ export default function RegistrationServices({
                     </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
 
               {/* Right Column: Dynamic Cost Calculator (col-span-5) */}
-              <div className="lg:col-span-5 bg-brand-bg-lighter border border-brand-border rounded-3xl p-6 space-y-6 flex flex-col justify-between shadow-xl">
+              <ScrollReveal 
+                variant="fade-left"
+                className="lg:col-span-5 bg-brand-bg-lighter border border-brand-border rounded-3xl p-6 space-y-6 flex flex-col justify-between shadow-xl"
+              >
                 {/* Price Display header */}
                 <div className="flex justify-between items-center border-b border-brand-border pb-4">
                   <div className="flex flex-col gap-1">
@@ -2295,7 +2324,7 @@ export default function RegistrationServices({
                   <ShieldCheck className="w-3.5 h-3.5 text-[#3B6E4C] shrink-0" />
                   <span>TLS 1.3 Encrypted · 256-bit SSL</span>
                 </div>
-              </div>
+              </ScrollReveal>
             </div>
 
             {/* Centered Glassmorphic Intake Form Modal */}

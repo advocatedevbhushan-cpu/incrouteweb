@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import ScrollReveal, { ScrollRevealItem } from "./ScrollReveal";
 import { useAppNavigate } from "../lib/useAppNavigate";
 import { 
   HelpCircle, 
@@ -284,7 +285,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
     <div className="space-y-12 text-left max-w-5xl mx-auto">
       
       {/* Search Hub Header */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
+      <ScrollReveal variant="fade-up" className="text-center max-w-3xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
           <Sparkles className="w-3.5 h-3.5" /> Expert Knowledge Base
         </div>
@@ -294,10 +295,14 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
         <p className="text-xs text-brand-text-muted font-sans max-w-xl mx-auto leading-relaxed">
           Instant answers to your registration, compliance, and filing questions — structured for clarity and backed by expert legal insight.
         </p>
-      </div>
+      </ScrollReveal>
 
       {/* Interactive Search Tool */}
-      <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+      <ScrollReveal 
+        variant="fade-up" 
+        delay={0.1}
+        className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative"
+      >
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-3xl rounded-full" />
         
         {/* Search Bar Input */}
@@ -328,15 +333,20 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
             </button>
           ))}
         </div>
-      </div>
+      </ScrollReveal>
 
       {/* Accordion FAQ Loop */}
-      <div className="space-y-4">
+      <ScrollReveal 
+        variant="fade" 
+        staggerChildren={0.06}
+        className="space-y-4"
+      >
         {filteredFaqs.map((faq) => {
           const isExpanded = expandedId === faq.id;
           return (
-            <div 
+            <ScrollRevealItem 
               key={faq.id} 
+              variant="fade-up"
               className={`bg-brand-bg-lighter border rounded-2xl transition-all duration-300 overflow-hidden ${
                 isExpanded ? "border-brand-gold/45 shadow-lg shadow-brand-gold/5" : "border-brand-border hover:border-brand-border-hover"
               }`}
@@ -391,7 +401,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </ScrollRevealItem>
           );
         })}
 
@@ -400,7 +410,7 @@ export default function AnswerHub({ setActiveTab }: AnswerHubProps) {
             No dynamic advisory answers match your query. Try a general term like "Pvt Ltd" or "documents".
           </div>
         )}
-      </div>
+      </ScrollReveal>
 
     </div>
   );

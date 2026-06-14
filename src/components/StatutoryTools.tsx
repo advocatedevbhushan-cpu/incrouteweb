@@ -313,7 +313,7 @@ Founder A Signature                     Founder B Signature`;
       <AnimatePresence mode="wait">
         {/* ═══ CALCULATOR TAB ═══ */}
         {activeTab === "calculator" && (
-          <motion.div key="calc" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.35 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-5xl mx-auto">
+          <motion.div key="calc" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-5xl mx-auto">
             {/* Left: Configuration (7 cols) */}
             <div className="lg:col-span-7 bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-6">
               <div className="border-b border-brand-border pb-3">
@@ -397,7 +397,7 @@ Founder A Signature                     Founder B Signature`;
 
         {/* ═══ GENERATOR TAB ═══ */}
         {activeTab === "generator" && (
-          <motion.div key="gen" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.35 }} className="max-w-6xl mx-auto">
+          <motion.div key="gen" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Left: Form Panel (5 cols) */}
               <div className="lg:col-span-5 space-y-5">
@@ -570,6 +570,7 @@ Founder A Signature                     Founder B Signature`;
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className="bg-brand-bg-lighter border-2 border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative"
           >
             <button onClick={() => setShowPremiumModal(false)} className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer">
@@ -616,7 +617,7 @@ Founder A Signature                     Founder B Signature`;
       {/* Success Toast */}
       <AnimatePresence>
         {premiumSuccess && (
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="fixed bottom-6 right-6 z-[200] max-w-sm bg-emerald-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3">
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed bottom-6 right-6 z-[200] max-w-sm bg-emerald-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="text-xs font-bold">✅ Request Received!</p>

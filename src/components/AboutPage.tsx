@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
+import ScrollReveal, { ScrollRevealItem } from "./ScrollReveal";
 import {
   Award, BookOpen, Briefcase, CheckCircle2, Mail, Phone, Scale,
   Shield, Star, TrendingUp, Users, ArrowRight, Sparkles, Building2,
@@ -34,10 +35,8 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
   return (
     <div className="space-y-20">
       {/* ═══ HERO SECTION ═══ */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      <ScrollReveal
+        variant="fade-up"
         className="text-center max-w-3xl mx-auto space-y-4"
       >
         <div className="inline-flex items-center gap-2.5 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
@@ -52,15 +51,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
         <p className="text-sm text-brand-text-muted font-sans leading-relaxed max-w-2xl mx-auto">
           Bringing Fortune‑grade rigour, precision, and foresight to every startup that partners with Incroute.
         </p>
-      </motion.div>
+      </ScrollReveal>
 
       {/* ═══ TWO-COLUMN BIO ═══ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start max-w-6xl mx-auto">
         {/* Left: Profile Card */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+        <ScrollReveal
+          variant="fade-right"
           className="lg:col-span-4 space-y-5"
         >
           <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-8 text-center space-y-5 relative overflow-hidden group">
@@ -99,28 +96,29 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <ScrollReveal 
+            variant="fade" 
+            staggerChildren={0.05} 
+            delay={0.1}
+            className="grid grid-cols-2 gap-3"
+          >
             {stats.map((stat, idx) => (
-              <motion.div
+              <ScrollRevealItem
                 key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.35, delay: 0.2 + idx * 0.07 }}
+                variant="zoom"
                 className="bg-brand-bg-lighter border border-brand-border rounded-xl p-4 text-center space-y-1 hover:border-brand-gold/40 transition-colors"
               >
                 <stat.icon className="w-4 h-4 text-brand-gold mx-auto" />
                 <div className="text-sm font-bold text-brand-text">{stat.value}</div>
                 <div className="text-[8px] font-mono uppercase tracking-wider text-brand-text-muted">{stat.label}</div>
-              </motion.div>
+              </ScrollRevealItem>
             ))}
-          </div>
-        </motion.div>
+          </ScrollReveal>
+        </ScrollReveal>
 
         {/* Right: Narrative */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
+        <ScrollReveal
+          variant="fade-left"
           className="lg:col-span-8 space-y-6"
         >
           <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-8 space-y-6">
@@ -158,12 +156,12 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
               </p>
             </div>
           </div>
-        </motion.div>
+        </ScrollReveal>
       </div>
 
       {/* ═══ ENTERPRISE-GRADE STRATEGY SECTION ═══ */}
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center space-y-3">
+        <ScrollReveal variant="fade-up" className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
             <TrendingUp className="w-3 h-3" /> Quality Assurance
           </div>
@@ -171,9 +169,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
             Bringing Enterprise-Grade Strategy{" "}
             <span className="text-brand-gold italic font-normal">To Your Startup.</span>
           </h2>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <ScrollReveal 
+          variant="fade"
+          staggerChildren={0.06}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
           {[
             {
               icon: RefreshCw,
@@ -191,11 +193,10 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
               desc: "We monitor updates in MCA, GST, and SEBI regulations with the same discipline applied by larger corporations, translating complexity into clear actions.",
             },
           ].map((card, idx) => (
-            <motion.div
+            <ScrollRevealItem
               key={idx}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 + idx * 0.08 }}
+              variant="fade-up"
+              whileHover={{ scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 30 } }}
               className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-4 hover:border-brand-gold/40 transition-all duration-200 group"
             >
               <div className="p-3 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-brand-gold w-fit group-hover:bg-brand-gold group-hover:text-black transition-colors">
@@ -203,13 +204,13 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
               </div>
               <h4 className="text-sm font-bold text-brand-text">{card.title}</h4>
               <p className="text-xs text-brand-text-muted leading-relaxed font-sans">{card.desc}</p>
-            </motion.div>
+            </ScrollRevealItem>
           ))}
-        </div>
+        </ScrollReveal>
       </div>
 
       {/* ═══ EXPERTISE & CREDENTIALS ═══ */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <ScrollReveal variant="fade-up" className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Expertise */}
         <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-2.5 border-b border-brand-border pb-3">
@@ -240,35 +241,35 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
             </ul>
           </div>
         </div>
-      </div>
+      </ScrollReveal>
 
       {/* ═══ TRUST BAR ═══ */}
       <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ScrollReveal 
+          variant="fade"
+          staggerChildren={0.05}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        >
           {[
             { label: "Enterprise Mindset", sub: "Mentored Approach" },
             { label: "20+ Founders", sub: "Successfully Served" },
             { label: "CA Backed", sub: "Every Filing Reviewed" },
           ].map((badge, idx) => (
-            <motion.div
+            <ScrollRevealItem
               key={idx}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + idx * 0.06 }}
+              variant="fade-up"
               className="bg-brand-bg-lighter border border-brand-border rounded-xl p-4 text-center hover:border-brand-gold/40 transition-colors"
             >
               <p className="text-xs font-bold text-brand-gold">{badge.label}</p>
               <p className="text-[9px] text-brand-text-muted font-mono uppercase tracking-wider mt-1">{badge.sub}</p>
-            </motion.div>
+            </ScrollRevealItem>
           ))}
-        </div>
+        </ScrollReveal>
       </div>
 
       {/* ═══ CTA BANNER ═══ */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.2 }}
+      <ScrollReveal
+        variant="zoom"
         className="max-w-4xl mx-auto premium-hero-card border rounded-2xl p-10 text-center space-y-6 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-48 h-48 bg-brand-gold/5 blur-3xl rounded-full pointer-events-none" />
@@ -296,7 +297,7 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
             </button>
           </div>
         </div>
-      </motion.div>
+      </ScrollReveal>
     </div>
   );
 }

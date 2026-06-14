@@ -112,15 +112,13 @@
     border-radius: 16px;
     background-clip: padding-box;
     box-shadow: var(--elevation-1);
-    border: 1px solid transparent;
+    border: 1px solid var(--color-brand-border);
     transition: transform var(--motion-duration-fast) var(--motion-ease-snappy),
-                box-shadow var(--motion-duration-medium) ease,
-                border-color var(--motion-duration-fast) ease;
+                opacity var(--motion-duration-fast) ease;
+    will-change: transform, opacity;
   }
   .premium-card:hover {
-    transform: translateY(-4px) scale(1.005);
-    box-shadow: var(--elevation-3);
-    border-color: #C7A86B;
+    transform: translateY(-4px) scale(1.02);
   }
 }
 
@@ -200,20 +198,21 @@ a, button, input, select, textarea {
 /* Service Cards — gold border on hover */
 .premium-service-card {
   background-color: var(--color-brand-bg-lighter);
-  border: 1px solid transparent;
+  border: 1px solid var(--color-brand-border);
+  transition: transform var(--motion-duration-fast) var(--motion-ease-snappy),
+              opacity var(--motion-duration-fast) ease;
+  will-change: transform, opacity;
 }
 .premium-service-card:hover {
-  border-color: #C7A86B;
-  box-shadow: var(--elevation-2), var(--gold-glow);
+  transform: translateY(-4px) scale(1.02);
 }
 .light .premium-service-card {
   background-color: var(--color-brand-bg-lighter);
-  border: 1px solid transparent;
+  border: 1px solid var(--color-brand-border);
   box-shadow: var(--elevation-1);
 }
 .light .premium-service-card:hover {
-  border-color: #C7A86B;
-  box-shadow: var(--elevation-2), var(--gold-glow);
+  transform: translateY(-4px) scale(1.02);
 }
 
 /* Card header — deep charcoal in dark, trust blue in light */
@@ -377,8 +376,6 @@ main {
 .premium-card:hover,
 .premium-service-card:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--elevation-3), var(--gold-glow);
-  border-color: #C7A86B;
 }
 
 /* Buttons — subtle scale + brighten */
@@ -933,3 +930,42 @@ html, body {
     padding: 1.5rem 1rem !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   LOGO TICKER (CSS INFINITE MARQUEE)
+   ═══════════════════════════════════════════════════════ */
+@keyframes ticker-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.logo-ticker-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 2.5rem 0;
+  display: flex;
+  align-items: center;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.logo-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+.logo-ticker-item {
+  flex-shrink: 0;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
