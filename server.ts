@@ -5,6 +5,8 @@ import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import mysql from "mysql2/promise";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -35,6 +37,147 @@ async function startServer() {
   // Basic Middlewares
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  // --- MySQL Connection Pool Setup ---
+  let dbPool: mysql.Pool | null = null;
+  const isDbConfigured = !!(
+    process.env.DB_HOST &&
+    process.env.DB_USER &&
+    process.env.DB_NAME
+  );
+
+  if (isDbConfigured) {
+    try {
+      dbPool = mysql.createPool({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+      });
+      console.log("🟢 MySQL Database Pool Initialized.");
+      
+      // Auto-create database tables
+      (async () => {
+        try {
+          const conn = await dbPool!.getConnection();
+          console.log("🟢 Connected to MySQL Server.");
+          
+          // Create blog views table
+          await conn.query(`
+            CREATE TABLE IF NOT EXISTS blog_views (
+              post_id VARCHAR(255) PRIMARY KEY,
+              views INT DEFAULT 0
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+          `);
+          
+          // Create contact submissions table
+          await conn.query(`
+            CREATE TABLE IF NOT EXISTS contact_submissions (
+              id VARCHAR(255) PRIMARY KEY,
+              name VARCHAR(255),
+              email VARCHAR(255),
+              phone VARCHAR(50),
+              message TEXT,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+          `);
+          
+          console.log("🟢 MySQL Database Tables Verified/Created.");
+          conn.release();
+        } catch (dbErr: any) {
+          console.error("🔴 Failed to initialize MySQL tables:", dbErr.message);
+        }
+      })();
+    } catch (poolErr: any) {
+      console.error("🔴 Failed to create MySQL Pool:", poolErr.message);
+    }
+  } else {
+    console.warn("⚠️ MySQL environment credentials not found. Falling back to JSON file storage.");
+  }
+
+  // --- Nodemailer Email Notification Setup ---
+  let emailTransporter: nodemailer.Transporter | null = null;
+  const isEmailConfigured = !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS &&
+    process.env.NOTIFICATION_TO
+  );
+
+  if (isEmailConfigured) {
+    try {
+      emailTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+      console.log("🟢 SMTP Notification Transporter initialized.");
+    } catch (mailErr: any) {
+      console.error("🔴 Failed to initialize SMTP Notification Transporter:", mailErr.message);
+    }
+  } else {
+    console.warn("⚠️ SMTP credentials not found. Lead email notifications will be skipped.");
+  }
+
+  // Helper to send lead notifications
+  const sendLeadNotification = async (submission: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+  }) => {
+    if (!emailTransporter || !process.env.NOTIFICATION_TO) return;
+    
+    const mailOptions = {
+      from: `"Incroute Notifications" <${process.env.SMTP_USER}>`,
+      to: process.env.NOTIFICATION_TO,
+      subject: `🏆 New Lead Submission: ${submission.name}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border:1px solid #d4af37;border-radius:12px;padding:24px;background:#0d0d0d;color:#fff;">
+          <h2 style="color:#d4af37;margin-top:0;border-bottom:1px solid rgba(212,175,55,0.2);padding-bottom:12px;">New Contact Lead</h2>
+          <p>A user has filled out the contact form on your website.</p>
+          <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+            <tr>
+              <td style="padding:8px 0;color:#d4af37;font-weight:bold;width:120px;">Lead ID:</td>
+              <td style="padding:8px 0;color:#fff;">\${submission.id}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Full Name:</td>
+              <td style="padding:8px 0;color:#fff;">\${submission.name}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Email:</td>
+              <td style="padding:8px 0;color:#fff;"><a href="mailto:\${submission.email}" style="color:#d4af37;text-decoration:none;">\${submission.email}</a></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#d4af37;font-weight:bold;">Phone:</td>
+              <td style="padding:8px 0;color:#fff;">\${submission.phone || "N/A"}</td>
+            </tr>
+          </table>
+          <div style="background:#151515;border-radius:6px;padding:16px;margin-top:20px;">
+            <strong style="color:#d4af37;display:block;margin-bottom:8px;">Message:</strong>
+            <p style="margin:0;color:#ccc;line-height:1.6;font-size:14px;white-space:pre-wrap;">\${submission.message}</p>
+          </div>
+          <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:30px;text-align:center;">This is an automated notification from incroute.com</p>
+        </div>
+      `
+    };
+
+    try {
+      await emailTransporter.sendMail(mailOptions);
+      console.log(\`✉️ Notification email sent to \${process.env.NOTIFICATION_TO} for lead \${submission.id}\`);
+    } catch (err: any) {
+      console.error("🔴 Failed to send lead notification email:", err.message);
+    }
+  };
 
   // --- Cryptographic Device Locking & Administration Security System ---
   const DEVICE_CONFIG_FILE = path.join(process.cwd(), "device-config.json");
@@ -452,6 +595,19 @@ app.post("/api/contact", async (req, res) => {
   // Store in memory list
   contactSubmissions.push(newSubmission);
 
+  // Persist to MySQL if configured
+  if (dbPool) {
+    try {
+      await dbPool.query(
+        "INSERT INTO contact_submissions (id, name, email, phone, message) VALUES (?, ?, ?, ?, ?)",
+        [newSubmission.id, name, email, phone || null, message]
+      );
+      console.log(`🟢 Persisted new lead ${newSubmission.id} to MySQL database.`);
+    } catch (dbErr: any) {
+      console.error("🔴 Failed to write lead to MySQL:", dbErr.message);
+    }
+  }
+
   // Persist immediately to local JSON file
   try {
     fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(contactSubmissions, null, 2), "utf-8");
@@ -459,6 +615,9 @@ app.post("/api/contact", async (req, res) => {
   } catch (err: any) {
     console.error("Failed to persist submission to disk:", err.message);
   }
+
+  // Trigger email notification in background
+  sendLeadNotification(newSubmission);
 
   // Log to server console so user understands where it goes
   console.log("\n---- NEW CONTACT SUBMISSION ----");
@@ -1112,116 +1271,63 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     const token = req.query.token || req.headers["x-admin-token"];
 
     let posts: any[] = [];
-    let fetchedFromFirestore = false;
+    
+    // First, load the local cache views map so we don't lose view counts when syncing from GitHub
+    const localPostsViews = new Map<string, number>();
     try {
-      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
-      const response = await fetch(firestoreUrl);
-      if (response.ok) {
-        const data: any = await response.json();
-        const firestoreDocs = data.documents || [];
-        posts = firestoreDocs.map(parseFirestoreDocument);
-        fetchedFromFirestore = true;
-      } else {
-        console.error(`🔴 Firestore REST API returned status ${response.status}`);
+      if (fs.existsSync(BLOG_FILE)) {
+        const localContent = fs.readFileSync(BLOG_FILE, "utf-8");
+        const localPosts = parseBlogPostsContent(localContent);
+        localPosts.forEach((p) => {
+          if (p && p.id) {
+            localPostsViews.set(p.id, Number(p.views) || 0);
+          }
+        });
       }
-    } catch (err: any) {
-      console.error("🔴 Failed to fetch blogs from Firestore REST API:", err.message);
+    } catch (e: any) {
+      console.warn("Failed to load local views cache map:", e.message);
     }
 
-    if (fetchedFromFirestore) {
-      // Self-healing migration if Firestore is empty
-      if (posts.length === 0) {
-        console.log("🟢 Firestore blogs collection is empty. Seeding default blogs...");
-        const seedPosts = defaultBlogs.map((b: any) => ({
-          ...b,
-          slug: generateSlug(b.title),
-          status: "published",
-          metaDescription: b.subtitle || "",
-          views: b.views || 0
-        }));
-
-        for (const post of seedPosts) {
+    console.log("🟢 Fetching latest blogs from GitHub and merging local view counts...");
+    let fetchedFromGitHub = false;
+    try {
+      const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/blog-posts.json";
+      const response = await fetch(githubUrl);
+      if (response.ok) {
+        const content = await response.text();
+        const parsedPosts = parseBlogPostsContent(content);
+        if (parsedPosts.length > 0) {
+          // Merge local views over the GitHub views
+          posts = parsedPosts.map((p) => {
+            const localViews = localPostsViews.get(p.id) || 0;
+            return {
+              ...p,
+              views: Math.max(localViews, Number(p.views) || 0)
+            };
+          });
+          fetchedFromGitHub = true;
+          console.log(`🟢 Successfully synchronized ${posts.length} blogs from GitHub with view counts preserved.`);
+          // Save to local cache
           try {
-            const payload = toFirestoreFields(post);
-            await fetch(`https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs/${post.id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-          } catch (e: any) {
-            console.error(`Failed to write seed post ${post.id}:`, e.message);
-          }
-        }
-        posts = seedPosts;
-      } else {
-        // Merge with local cache to avoid losing posts that only exist locally
-        try {
-          if (fs.existsSync(BLOG_FILE)) {
-            const localPosts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
-            if (Array.isArray(localPosts)) {
-              const firestoreIds = new Set(posts.map((p) => p.id));
-              const localOnlyPosts = localPosts.filter((p) => p && p.id && !firestoreIds.has(p.id));
-              if (localOnlyPosts.length > 0) {
-                console.log(`🟢 MERGING ${localOnlyPosts.length} LOCAL-ONLY BLOG POSTS INTO FIRESTORE LIST`);
-                posts = [...localOnlyPosts, ...posts];
-              }
-            }
-          }
-        } catch (err: any) {
-          console.error("Failed to merge local blog posts during Firestore sync:", err.message);
-        }
-      }
-      
-      // Update local cache file on disk
-      try {
-        fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
-      } catch (err: any) {
-        console.error("Failed to write blog cache to disk:", err.message);
-      }
-    } else {
-      // Fallback to GitHub raw repo fetch, then local JSON cache file
-      console.log("🟢 Firestore unavailable. Attempting to fetch latest blogs from GitHub...");
-      let fetchedFromGitHub = false;
-      try {
-        const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/blog-posts.json";
-        const response = await fetch(githubUrl);
-        if (response.ok) {
-          const content = await response.text();
-          const parsedPosts = parseBlogPostsContent(content);
-          if (parsedPosts.length > 0) {
-            posts = parsedPosts;
-            fetchedFromGitHub = true;
-            console.log(`🟢 Successfully synchronized ${posts.length} blogs from GitHub`);
-            // Cache locally
-            try {
-              fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
-            } catch (err: any) {
-              console.error("Failed to write blog cache to disk:", err.message);
-            }
-          }
-        } else {
-          console.error(`🔴 GitHub raw fetch returned status ${response.status}`);
-        }
-      } catch (err: any) {
-        console.error("🔴 Failed to fetch blogs from GitHub:", err.message);
-      }
-
-      if (!fetchedFromGitHub) {
-        console.log("🟢 Firestore & GitHub raw fetch unavailable. Loading blogs from local disk cache...");
-        if (fs.existsSync(BLOG_FILE)) {
-          try {
-            posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
+            fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
           } catch (err: any) {
-            console.error("Failed to read local blog file, using in-memory or seed default:", err.message);
-            posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
-              ...b,
-              slug: generateSlug(b.title),
-              status: "published",
-              metaDescription: b.subtitle || "",
-              views: b.views || 0
-            }));
+            console.error("Failed to write blog cache to disk:", err.message);
           }
-        } else {
+        }
+      } else {
+        console.error(`🔴 GitHub raw fetch returned status ${response.status}`);
+      }
+    } catch (err: any) {
+      console.error("🔴 Failed to fetch blogs from GitHub:", err.message);
+    }
+
+    if (!fetchedFromGitHub) {
+      console.log("🟢 GitHub raw fetch unavailable. Loading blogs from local disk cache...");
+      if (fs.existsSync(BLOG_FILE)) {
+        try {
+          posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
+        } catch (err: any) {
+          console.error("Failed to read local blog file, using in-memory or seed default:", err.message);
           posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
             ...b,
             slug: generateSlug(b.title),
@@ -1230,6 +1336,14 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
             views: b.views || 0
           }));
         }
+      } else {
+        posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
+          ...b,
+          slug: generateSlug(b.title),
+          status: "published",
+          metaDescription: b.subtitle || "",
+          views: b.views || 0
+        }));
       }
     }
 
@@ -1444,6 +1558,19 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     const views = (posts[postIndex].views || 0) + 1;
     posts[postIndex].views = views;
+
+    // Increment view count in MySQL database if configured
+    if (dbPool) {
+      try {
+        await dbPool.query(
+          "INSERT INTO blog_views (post_id, views) VALUES (?, 1) ON DUPLICATE KEY UPDATE views = views + 1",
+          [id]
+        );
+        console.log(`🟢 Incremented views for blog ${id} in MySQL.`);
+      } catch (dbErr: any) {
+        console.error("🔴 Failed to increment view in MySQL:", dbErr.message);
+      }
+    }
 
     // Always save local disk cache
     try {
