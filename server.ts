@@ -305,12 +305,11 @@ async function startServer() {
         <html>
           <body>
             <script>
-              const message = {
-                authorizing: true,
-                provider: "github",
-                token: "${token}"
-              };
-              window.opener.postMessage(JSON.stringify(message), window.location.origin);
+              const message = "authorization:github:success:" + JSON.stringify({
+                token: "${token}",
+                provider: "github"
+              });
+              window.opener.postMessage(message, window.location.origin);
               window.close();
             </script>
             <p style="font-family:sans-serif;text-align:center;padding:20px;color:#d4af37;">Authenticating CMS administrative portal. Closing authentication window...</p>
