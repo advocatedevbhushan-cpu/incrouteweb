@@ -309,7 +309,7 @@ async function startServer() {
                 token: "${token}",
                 provider: "github"
               });
-              window.opener.postMessage(message, window.location.origin);
+              window.opener.postMessage(message, "*");
               window.close();
             </script>
             <p style="font-family:sans-serif;text-align:center;padding:20px;color:#d4af37;">Authenticating CMS administrative portal. Closing authentication window...</p>
