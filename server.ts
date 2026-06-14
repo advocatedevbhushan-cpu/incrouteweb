@@ -256,8 +256,92 @@ async function startServer() {
     res.sendFile(path.join(process.cwd(), "admin-portal/index.html"));
   });
 
+  // --- GitHub OAuth Provider for self-hosted Decap CMS ---
+  app.get("/api/auth", (req, res) => {
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    if (!clientId) {
+      return res.status(500).send("GitHub Client ID (GITHUB_CLIENT_ID) not configured in environment.");
+    }
+    const protocol = req.secure || req.headers["x-forwarded-proto"] === "https" ? "https" : "http";
+    const hostUrl = `${protocol}://${req.headers.host}`;
+    const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo&redirect_uri=${encodeURIComponent(
+      hostUrl + "/api/auth/callback"
+    )}`;
+    res.redirect(redirectUrl);
+  });
+
+  app.get("/api/auth/callback", async (req, res) => {
+    const { code } = req.query;
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+    if (!code) {
+      return res.status(400).send("Missing authorization code.");
+    }
+
+    try {
+      const response = await fetch("https://github.com/login/oauth/access_token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        return res.status(400).send(`GitHub OAuth Error: ${data.error_description || data.error}`);
+      }
+
+      const token = data.access_token;
+      
+      // Handshake token back to Decap CMS opener window
+      res.send(`
+        <html>
+          <body>
+            <script>
+              const message = {
+                authorizing: true,
+                provider: "github",
+                token: "${token}"
+              };
+              window.opener.postMessage(JSON.stringify(message), window.location.origin);
+              window.close();
+            </script>
+            <p style="font-family:sans-serif;text-align:center;padding:20px;color:#d4af37;">Authenticating CMS administrative portal. Closing authentication window...</p>
+          </body>
+        </html>
+      `);
+    } catch (err: any) {
+      console.error("OAuth token exchange failed:", err.message);
+      res.status(500).send("Authentication token exchange failed.");
+    }
+  });
+
   app.get("/admin/config.yml", deviceLockMiddleware, (req, res) => {
-    res.sendFile(path.join(process.cwd(), "admin-portal/config.yml"));
+    try {
+      const configPath = path.join(process.cwd(), "admin-portal/config.yml");
+      let configContent = fs.readFileSync(configPath, "utf-8");
+      
+      const protocol = req.secure || req.headers["x-forwarded-proto"] === "https" ? "https" : "http";
+      const hostUrl = `${protocol}://${req.headers.host}`;
+      
+      // Inject base_url and auth_endpoint parameters for Decap CMS GitHub integration
+      configContent = configContent.replace(
+        "name: github",
+        `name: github\n  base_url: ${hostUrl}\n  auth_endpoint: api/auth`
+      );
+      
+      res.type("yaml").send(configContent);
+    } catch (err: any) {
+      console.error("Failed to dynamically serve CMS config:", err.message);
+      res.status(500).send("Error generating CMS configuration.");
+    }
   });
 
 
