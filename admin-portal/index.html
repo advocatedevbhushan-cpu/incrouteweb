@@ -33,8 +33,7 @@
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
     <script>
       // Register custom format for parsing and saving flat JSON arrays
-      CMS.registerFormat('json-array', {
-        label: 'JSON Array',
+      CMS.registerCustomFormat('json-array', 'json', {
         toFile: function(obj) {
           // Serialize the posts list back into a clean flat array
           var posts = obj.posts || [];
