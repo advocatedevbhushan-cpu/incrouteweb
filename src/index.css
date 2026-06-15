@@ -969,3 +969,66 @@ html, body {
   justify-content: center;
 }
 
+/* ═══════════════════════════════════════════════════════
+   GPU-ACCELERATED MAP ANIMATIONS (Optimized CPU/Compositor)
+   ═══════════════════════════════════════════════════════ */
+
+/* Neon lasers stroke animations */
+@keyframes laser-flow-1 {
+  from { stroke-dashoffset: 165; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes laser-flow-2 {
+  from { stroke-dashoffset: 110; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes laser-flow-3 {
+  from { stroke-dashoffset: 135; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes laser-flow-4 {
+  from { stroke-dashoffset: 165; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes laser-flow-5 {
+  from { stroke-dashoffset: 110; }
+  to { stroke-dashoffset: 0; }
+}
+
+.neon-laser-1 { animation: laser-flow-1 3.5s linear infinite; }
+.neon-laser-2 { animation: laser-flow-2 2.4s linear infinite; }
+.neon-laser-3 { animation: laser-flow-3 3.0s linear infinite; }
+.neon-laser-4 { animation: laser-flow-4 4.0s linear infinite; }
+.neon-laser-5 { animation: laser-flow-5 2.8s linear infinite; }
+
+/* Active Pulsing Hover Ring */
+@keyframes active-pulse {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.75);
+    opacity: 0.6;
+  }
+}
+.city-pulse-circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: active-pulse 2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Passive Pulsing City Points */
+@keyframes passive-opacity-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.8; }
+}
+.city-passive-pulse {
+  animation: passive-opacity-pulse 2.5s ease-in-out infinite;
+}
+

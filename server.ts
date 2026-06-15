@@ -104,7 +104,7 @@ async function startServer() {
     process.env.SMTP_HOST &&
     process.env.SMTP_USER &&
     process.env.SMTP_PASS &&
-    process.env.NOTIFICATION_TO
+    (process.env.NOTIFICATION_TO || process.env.NOTIFICATION_TO_SECONDARY)
   );
 
   if (isEmailConfigured) {
@@ -143,11 +143,21 @@ async function startServer() {
     phone?: string;
     message: string;
   }) => {
-    if (!emailTransporter || !process.env.NOTIFICATION_TO) return;
+    if (!emailTransporter) return;
+    
+    const recipients: string[] = [];
+    if (process.env.NOTIFICATION_TO) {
+      recipients.push(process.env.NOTIFICATION_TO);
+    }
+    if (process.env.NOTIFICATION_TO_SECONDARY) {
+      recipients.push(process.env.NOTIFICATION_TO_SECONDARY);
+    }
+
+    if (recipients.length === 0) return;
     
     const mailOptions = {
       from: `"Incroute Notifications" <${process.env.SMTP_USER}>`,
-      to: process.env.NOTIFICATION_TO,
+      to: recipients.join(", "),
       subject: `🏆 New Lead Submission: ${submission.name}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border:1px solid #d4af37;border-radius:12px;padding:24px;background:#0d0d0d;color:#fff;">
@@ -182,7 +192,7 @@ async function startServer() {
 
     try {
       await emailTransporter.sendMail(mailOptions);
-      console.log(`✉️ Notification email sent to ${process.env.NOTIFICATION_TO} for lead ${submission.id}`);
+      console.log(`✉️ Notification email sent to ${recipients.join(", ")} for lead ${submission.id}`);
     } catch (err: any) {
       console.error("🔴 Failed to send lead notification email:", err.message);
     }

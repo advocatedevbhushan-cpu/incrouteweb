@@ -21,7 +21,7 @@ const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
 const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
 const EntityComparison = lazy(() => import("./components/EntityComparison"));
 const ServiceImpactDashboard = lazy(() => import("./components/ServiceImpactDashboard"));
-import ComplianceFlowchart from "./components/ComplianceFlowchart";
+const ComplianceFlowchart = lazy(() => import("./components/ComplianceFlowchart"));
 const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
