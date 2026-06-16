@@ -1194,17 +1194,40 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       .replace(/(^-|-$)/g, "");
   };
 
+  // Helper to sanitize blog posts and ensure critical properties are always present
+  const sanitizeBlogPost = (post: any): any => {
+    if (!post) return post;
+    const title = post.title || "Untitled Post";
+    const slug = post.slug || generateSlug(title);
+    const id = post.id || `blog-${slug}`;
+    return {
+      ...post,
+      id,
+      title,
+      slug,
+      subtitle: post.subtitle || "",
+      content: post.content || "",
+      image: post.image || "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
+      date: post.date || new Date().toISOString().split("T")[0],
+      author: post.author || "D Bhushan",
+      tags: Array.isArray(post.tags) ? post.tags : [],
+      views: Number(post.views) || 0,
+      status: post.status || "published",
+      metaDescription: post.metaDescription || post.subtitle || ""
+    };
+  };
+
   // Helper to parse blog posts content (handles flat array and wrapped object formats)
   const parseBlogPostsContent = (content: string): any[] => {
     try {
       const data = JSON.parse(content);
+      let posts: any[] = [];
       if (Array.isArray(data)) {
-        return data;
+        posts = data;
+      } else if (data && Array.isArray(data.posts)) {
+        posts = data.posts;
       }
-      if (data && Array.isArray(data.posts)) {
-        return data.posts;
-      }
-      return [];
+      return posts.map(sanitizeBlogPost);
     } catch (e: any) {
       console.error("Failed to parse blog posts content:", e.message);
       return [];
@@ -1212,45 +1235,28 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   };
 
   // Load persisted blog posts from disk
-  let needsMigrationSave = false;
   if (fs.existsSync(BLOG_FILE)) {
     try {
       blogPosts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
       console.log(`🟢 LOADED PERSISTED BLOG POSTS: ${blogPosts.length} posts`);
-      blogPosts.forEach((post: any) => {
-        if (!post.slug) {
-          post.slug = generateSlug(post.title);
-          needsMigrationSave = true;
-        }
-        if (!post.status) {
-          post.status = "published";
-          needsMigrationSave = true;
-        }
-        if (!post.metaDescription) {
-          post.metaDescription = post.subtitle || "";
-          needsMigrationSave = true;
-        }
-      });
+      
+      const rawContent = fs.readFileSync(BLOG_FILE, "utf-8");
+      const rawData = JSON.parse(rawContent);
+      const rawList = Array.isArray(rawData) ? rawData : (rawData?.posts || []);
+      const needsMigrationSave = rawList.some((p: any) => 
+        !p.id || !p.slug || p.views === undefined || !p.status || p.metaDescription === undefined
+      );
+
       if (needsMigrationSave) {
         fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
-        console.log(`🟢 MIGRATED BLOG DATABASE WITH SLUGS AND STATUS`);
+        console.log(`🟢 MIGRATED LOCAL BLOG DATABASE WITH SANITIZED ENTRIES`);
       }
     } catch (err: any) {
       console.error("Failed to read persisted blog posts:", err.message);
-      blogPosts = defaultBlogs.map((b: any) => ({
-        ...b,
-        slug: generateSlug(b.title),
-        status: "published",
-        metaDescription: b.subtitle || ""
-      }));
+      blogPosts = defaultBlogs.map(sanitizeBlogPost);
     }
   } else {
-    blogPosts = defaultBlogs.map((b: any) => ({
-      ...b,
-      slug: generateSlug(b.title),
-      status: "published",
-      metaDescription: b.subtitle || ""
-    }));
+    blogPosts = defaultBlogs.map(sanitizeBlogPost);
     try {
       fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
       console.log(`🟢 INITIALIZED SEED BLOG POSTS ON DISK`);
@@ -1365,22 +1371,10 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           posts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
         } catch (err: any) {
           console.error("Failed to read local blog file, using in-memory or seed default:", err.message);
-          posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
-            ...b,
-            slug: generateSlug(b.title),
-            status: "published",
-            metaDescription: b.subtitle || "",
-            views: b.views || 0
-          }));
+          posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map(sanitizeBlogPost);
         }
       } else {
-        posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map((b: any) => ({
-          ...b,
-          slug: generateSlug(b.title),
-          status: "published",
-          metaDescription: b.subtitle || "",
-          views: b.views || 0
-        }));
+        posts = blogPosts.length > 0 ? blogPosts : defaultBlogs.map(sanitizeBlogPost);
       }
     }
 

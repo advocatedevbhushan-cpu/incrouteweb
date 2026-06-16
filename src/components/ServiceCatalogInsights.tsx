@@ -507,7 +507,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Scale,
-    image: "/trademark_defense.png",
+    image: "/trademark_opposition.png",
     description: "File TM-O notices or defend your registry status against competitors.",
     about: "Filing or defending Trademark Oppositions before the Trademark Registry. When a third party opposes your published trademark or a competitor tries to register a confusingly similar brand, our litigation attorneys draft the Notice of Opposition (TM-O) or Counter-Statement (TM-R) to protect your brand equity.",
     advantages: [
@@ -543,7 +543,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: Shield,
-    image: "/trademark_defense.png",
+    image: "/trademark_assignment.png",
     description: "Draft deeds and update registry ownership (Form TM-P) safely.",
     about: "Legal drafting and filing of Trademark and Copyright Assignment Deeds to execute the transfer of ownership of intellectual property assets. Ideal for company restructuring, mergers, acquisitions, or individual-to-company asset transfers, ensuring full registry updates (Form TM-P).",
     advantages: [
@@ -579,7 +579,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Shield,
-    image: "/trademark_defense.png",
+    image: "/brand_protection.png",
     description: "Scan Trademark Journals and enforce brand rights online proactively.",
     about: "Continuous monitoring of the Trademark Journal, company registry, and online marketplaces to detect copycat brands or unauthorized usage of your IP. Includes drafting and serving Cease & Desist notices and taking administrative actions to remove infringing content.",
     advantages: [
@@ -615,7 +615,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Scale,
-    image: "/trademark_defense.png",
+    image: "/litigation_assistance.png",
     description: "Support for court proceedings, NCLT hearings, and legal notices.",
     about: "End-to-end legal support, litigation drafting, case research, and advisory services for commercial, contract, trademark, or shareholder disputes. Led by senior advocates, we prepare plaints, written statements, legal notices, and represent your company's interests before courts and tribunals.",
     advantages: [
@@ -651,7 +651,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.9,
     icon: Clock,
-    image: "/trademark_defense.png",
+    image: "/trademark_renewal.png",
     description: "Renew marks (Form TM-R), FSSAI licenses, and prevent expiry risks.",
     about: "Timely renewal of trademarks (required every 10 years) and other commercial licenses (FSSAI, ISO, shop act). We file the necessary renewal applications (Form TM-R) with the registry, avoiding expiration, late filing penalties, or loss of proprietary brand rights.",
     advantages: [

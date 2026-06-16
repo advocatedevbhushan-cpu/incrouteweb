@@ -825,7 +825,7 @@ export default function App() {
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-sm">
+              <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-sm mx-auto md:mx-0">
                 Premium corporate registration and compliance advisory platform for startups, SMEs, and professionals in India.
               </p>
               <div className="text-[10px] font-mono tracking-widest text-[#9E896A] font-semibold uppercase pt-1">

@@ -251,19 +251,9 @@ export default function BlogPage() {
     }
   };
 
-  const handleSelectPost = async (post: BlogPost) => {
+  const handleSelectPost = (post: BlogPost) => {
     setSelectedPost(post);
     navigate(`/blog/${post.slug}/`);
-    try {
-      const res = await fetch(`/api/blog/posts/${post.id}/view`, { method: "POST" });
-      const data = await res.json();
-      if (data.success && data.post) {
-        setSelectedPost(data.post);
-        setPosts((prev) => prev.map((p) => p.id === post.id ? data.post : p));
-      }
-    } catch (err) {
-      console.error("Failed to increment view count:", err);
-    }
   };
   // Click handler for Most Viewed list items
   const handleMostViewedClick = (postId: string) => {
@@ -314,6 +304,32 @@ export default function BlogPage() {
       setSelectedPost(null);
     }
   }, [location.pathname, posts]);
+
+  // Trigger view count increment when a blog post is viewed
+  const lastIncrementedPostId = useRef<string | null>(null);
+  useEffect(() => {
+    if (selectedPost) {
+      const postId = selectedPost.id;
+      if (lastIncrementedPostId.current === postId) return;
+      lastIncrementedPostId.current = postId;
+
+      const incrementView = async () => {
+        try {
+          const res = await fetch(`/api/blog/posts/${postId}/view`, { method: "POST" });
+          const data = await res.json();
+          if (data.success && data.post) {
+            setSelectedPost(prev => prev && prev.id === postId ? { ...prev, views: data.post.views } : prev);
+            setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, views: data.post.views } : p));
+          }
+        } catch (err) {
+          console.error("Failed to increment view count:", err);
+        }
+      };
+      incrementView();
+    } else {
+      lastIncrementedPostId.current = null;
+    }
+  }, [selectedPost]);
 
   // Handle Admin Auth
   const handleLogin = async (e: React.FormEvent) => {
