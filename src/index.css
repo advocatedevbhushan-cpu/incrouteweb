@@ -1032,3 +1032,12 @@ html, body {
   animation: passive-opacity-pulse 2.5s ease-in-out infinite;
 }
 
+/* Footer text & link alignment overrides on mobile */
+@media (max-width: 640px) {
+  footer a {
+    min-height: auto !important;
+    min-width: auto !important;
+  }
+}
+
+

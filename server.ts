@@ -1864,6 +1864,11 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       description: "Premium end-to-end corporate registration services in India. Register Private Limited, LLP, One Person Company, Partnership, and Section 8 NGO seamlessly.",
       keywords: "Pvt Ltd company registration, LLP registration, OPC registration, NGO Section 8, company setup"
     },
+    "/catalog/": {
+      title: "Interactive Services Directory & Checklists | INCroute",
+      description: "Explore the comprehensive statutory service catalog for Indian startups. Deep-dive into document requirements, legal advantages, and compliance checklists.",
+      keywords: "incorporation checklist, startup documents, compliance catalog, business registration service list"
+    },
     "/about": {
       title: "Meet the Corporate Expert - D Bhushan | INCroute",
       description: "Learn about D Bhushan, the founder and principal legal advisor behind INCroute. Experience startup legal architecture and corporate compliance informed by professional CA mentorship.",
@@ -1874,7 +1879,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       description: "Explore statutory briefs, ROC filing warnings, tax advisory articles, and legal ledger insights managed by corporate advocates and chartered analysts.",
       keywords: "compliance blogs, ROC updates, GST changes, corporate law articles"
     },
-    "/name-checker": {
+    "/tools/name-checker/": {
       title: "AI-Powered Registrar Name Feasibility Auditor | INCroute",
       description: "Audit your proposed brand name against official Registrar (MCA) guidelines. Our dynamic auditor maps trade registry databases instantly for zero-conflict incorporation.",
       keywords: "company name search, MCA name checker, startup brand auditor, business name registry"
@@ -1894,17 +1899,17 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       description: "Get in touch with our senior registrars and compliance specialists. Book your consultation for company registration, annual compliance, or taxation.",
       keywords: "contact INCroute, corporate consultation, talk to CA, hire startup lawyer"
     },
-    "/flowchart": {
+    "/compliance/flowchart/": {
       title: "Interactive Corporate Compliance Flowcharts | INCroute",
       description: "Visualize step-by-step statutory filing timelines and ROC compliance pipelines for Private Limited and LLP setups in India.",
       keywords: "compliance flowchart, ROC timeline, company registration pipeline"
     },
-    "/comparison": {
+    "/tools/entity-comparison/": {
       title: "Corporate Entity Structural Comparisons | INCroute",
-      description: "Compare Private Limited, LLP, OPC, and Partnership structures side-by-side on liability, funding readiness, audit requirements, and compliance costs.",
+      description: "Compare Private Limited, LLP, OPC, Nidhi Company, Public Limited, Partnership, and Sole Proprietorship structures side-by-side on liability, funding readiness, audit requirements, and compliance metrics.",
       keywords: "Pvt Ltd vs LLP, OPC vs Partnership, compare business structures, startup entity type"
     },
-    "/impact": {
+    "/tools/impact-dashboard/": {
       title: "Filing Speeds & Statutory Impact Dashboard | INCroute",
       description: "Track live operational metrics, ROC filing speeds, and statutory SLA timelines managed by our senior corporate desk.",
       keywords: "ROC filing speed, compliance SLA, INCroute dashboard"
@@ -1938,6 +1943,59 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
   // Rich Structured JSON-LD schemas for Search Engine optimization & organic rich snippets
   const schemas: Record<string, any> = {
+    "/tools/entity-comparison/": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "INCroute Corporate Entity Structural Comparison Utility",
+      "operatingSystem": "All",
+      "applicationCategory": "BusinessApplication",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Compare Private Limited, LLP, One Person Company, Nidhi Company, Public Limited, Partnership, and Sole Proprietorship structures in India on statutory metrics.",
+      "provider": {
+        "@type": "Organization",
+        "name": "INCroute",
+        "url": "https://incroute.com"
+      }
+    },
+    "/catalog/": {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "INCroute Service Catalog",
+      "description": "Comprehensive statutory directory listing company registration requirements, compliance obligations, and legal services in India.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "INCroute",
+        "url": "https://incroute.com"
+      }
+    },
+    "/tools/name-checker/": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "INCroute AI-Powered MCA Company Name Feasibility Auditor",
+      "operatingSystem": "All",
+      "applicationCategory": "BusinessApplication",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Verify your proposed company name against Ministry of Corporate Affairs (MCA) trademark and naming guidelines automatically.",
+      "provider": {
+        "@type": "Organization",
+        "name": "INCroute",
+        "url": "https://incroute.com"
+      }
+    },
+    "/compliance/flowchart/": {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "INCroute Interactive Corporate Compliance Flowchart Roadmap",
+      "operatingSystem": "All",
+      "applicationCategory": "BusinessApplication",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Interactive flowchart mapping statutory due dates, ROC calendar timelines, and compliance roadmaps for Indian startups.",
+      "provider": {
+        "@type": "Organization",
+        "name": "INCroute",
+        "url": "https://incroute.com"
+      }
+    },
     "/services": {
       "@context": "https://schema.org",
       "@type": "Service",

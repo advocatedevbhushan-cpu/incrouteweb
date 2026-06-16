@@ -412,6 +412,7 @@ const serviceCatalog = [
     id: "pvt-ltd",
     name: "Private Limited Company",
     category: "private-corporate",
+    image: "/pvt_ltd_corp.png",
     pricing: "₹999*",
     timeline: "7–10 Working Days",
     minDirectors: "2 Directors minimum",
@@ -449,6 +450,7 @@ const serviceCatalog = [
     id: "llp",
     name: "Limited Liability Partnership",
     category: "alternative-entity",
+    image: "/llp_partners.png",
     pricing: "₹1,499*",
     timeline: "10–15 Working Days",
     minDirectors: "2 Partners minimum",
@@ -485,6 +487,7 @@ const serviceCatalog = [
     id: "opc",
     name: "One Person Company",
     category: "private-corporate",
+    image: "/opc_director.png",
     pricing: "₹1,299*",
     timeline: "7–12 Working Days",
     minDirectors: "1 Director minimum",
@@ -521,6 +524,7 @@ const serviceCatalog = [
     id: "partnership",
     name: "Partnership Firm",
     category: "alternative-entity",
+    image: "/partnership_firm.png",
     pricing: "₹799*",
     timeline: "3–5 Working Days",
     minDirectors: "2 Partners minimum",
@@ -557,6 +561,7 @@ const serviceCatalog = [
     id: "section8",
     name: "Section 8 Company (NGO)",
     category: "private-corporate",
+    image: "/section8_ngo.png",
     pricing: "₹2,499*",
     timeline: "15–20 Working Days",
     minDirectors: "2 Directors minimum",
@@ -593,6 +598,7 @@ const serviceCatalog = [
     id: "public-ltd",
     name: "Public Limited Company",
     category: "private-corporate",
+    image: "/pvt_ltd_corp.png",
     pricing: "₹4,999*",
     timeline: "20–25 Working Days",
     minDirectors: "3 Directors minimum",
@@ -629,6 +635,7 @@ const serviceCatalog = [
     id: "annual-compliance",
     name: "Annual Compliances Suite",
     category: "compliance",
+    image: "/annual_compliances.png",
     pricing: "₹2,999*",
     timeline: "Ongoing Support",
     minDirectors: "CA Lead Advisory",
@@ -665,6 +672,7 @@ const serviceCatalog = [
     id: "gst-tax",
     name: "GST & Tax Registration",
     category: "compliance",
+    image: "/gst_tax_registration.png",
     pricing: "₹499*",
     timeline: "3–5 Working Days",
     minDirectors: "CA Lead Advisory",
@@ -701,6 +709,7 @@ const serviceCatalog = [
     id: "virtual-cfo",
     name: "Virtual CFO Retainer",
     category: "enterprise-growth",
+    image: "/virtual_cfo_analytics.png",
     pricing: "₹4,999/mo*",
     timeline: "Monthly Retainer",
     minDirectors: "CA Lead Advisory",
@@ -736,6 +745,7 @@ const serviceCatalog = [
     id: "virtual-office",
     name: "Virtual Office Address",
     category: "enterprise-growth",
+    image: "/virtual_office_workspace.png",
     pricing: "₹999/mo*",
     timeline: "2–3 Working Days",
     minDirectors: "Selected Prime Sites",
@@ -771,6 +781,7 @@ const serviceCatalog = [
     id: "terms-privacy",
     name: "Terms of Service & Privacy Policy",
     category: "legal-ip",
+    image: "/legal_policy_drafting.png",
     pricing: "",
     timeline: "3–5 Working Days",
     minDirectors: "Legal Expert Draft",
@@ -807,6 +818,7 @@ const serviceCatalog = [
     id: "msme-registration",
     name: "MSME (Udyam) Registration",
     category: "compliance",
+    image: "/msme_udyam.png",
     pricing: "",
     timeline: "2–3 Working Days",
     minDirectors: "Proprietor/Partner",
@@ -843,6 +855,7 @@ const serviceCatalog = [
     id: "fssai-registration",
     name: "FSSAI Registration",
     category: "compliance",
+    image: "/fssai_food_safety.png",
     pricing: "",
     timeline: "3–7 Working Days",
     minDirectors: "Operator/Nominee",
@@ -879,6 +892,7 @@ const serviceCatalog = [
     id: "return-filing",
     name: "Return Filing Services",
     category: "compliance",
+    image: "/tax_return_filing.png",
     pricing: "",
     timeline: "Ongoing Support",
     minDirectors: "CA Lead Account",
@@ -915,6 +929,7 @@ const serviceCatalog = [
     id: "trademark-registration",
     name: "Trademark Services Suite",
     category: "legal-ip",
+    image: "/trademark_brand.png",
     pricing: "",
     timeline: "2–3 Working Days (Filing)",
     minDirectors: "IP Attorney Lead",
@@ -951,6 +966,7 @@ const serviceCatalog = [
     id: "trademark-objection",
     name: "Response to TM Objection",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "3–5 Working Days",
     minDirectors: "IP Attorney Lead",
@@ -987,6 +1003,7 @@ const serviceCatalog = [
     id: "trademark-opposition",
     name: "Trademark Opposition",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "7–10 Working Days",
     minDirectors: "Litigation Attorney",
@@ -1023,6 +1040,7 @@ const serviceCatalog = [
     id: "trademark-assignment",
     name: "Trademark & IP Assignment",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "5–8 Working Days",
     minDirectors: "Corporate Counsel",
@@ -1059,6 +1077,7 @@ const serviceCatalog = [
     id: "brand-protection",
     name: "Brand Protection & Monitoring",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "Ongoing Monitoring",
     minDirectors: "Brand Protection Lead",
@@ -1095,6 +1114,7 @@ const serviceCatalog = [
     id: "litigation-assistance",
     name: "Litigation Assistance",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "As per Case Schedule",
     minDirectors: "Senior Advocate Lead",
@@ -1131,6 +1151,7 @@ const serviceCatalog = [
     id: "trademark-renewal",
     name: "Trademark & License Renewal",
     category: "legal-ip",
+    image: "/trademark_defense.png",
     pricing: "",
     timeline: "2–3 Working Days",
     minDirectors: "Regulatory Officer",
@@ -1167,6 +1188,7 @@ const serviceCatalog = [
     id: "patent-filing",
     name: "Patent Drafting & Filing",
     category: "legal-ip",
+    image: "/patent_invention.png",
     pricing: "",
     timeline: "15–25 Working Days",
     minDirectors: "Patent Agent Lead",
@@ -1203,6 +1225,7 @@ const serviceCatalog = [
     id: "iso-certification",
     name: "ISO Certification Services",
     category: "compliance",
+    image: "/iso_certification.png",
     pricing: "",
     timeline: "5–7 Working Days",
     minDirectors: "ISO Lead Auditor",
@@ -1906,6 +1929,16 @@ export default function RegistrationServices({
                       }}
                       className="premium-service-card border rounded-3xl overflow-hidden shadow-sm flex flex-col h-full group relative transition-all duration-150 fast-transition premium-card transform-gpu cursor-pointer"
                     >
+                      {/* Cover Image Header using aspect ratio */}
+                      <div className="relative aspect-[16/9] overflow-hidden border-b border-brand-border bg-slate-950 shrink-0">
+                        <img
+                          src={service.image}
+                          alt={service.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out opacity-90"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-brand-bg-darker via-transparent to-transparent opacity-75" />
+                      </div>
+
                       {/* Card Header section (Deep navy in light mode, obsidian dark in dark mode) */}
                       <div className="relative card-header-bg p-6 shrink-0 text-left">
                         <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -2090,6 +2123,15 @@ export default function RegistrationServices({
                 variant="fade-right"
                 className="lg:col-span-7 space-y-8 flex flex-col justify-between"
               >
+                {/* Service Illustration Cover */}
+                <div className="w-full rounded-2xl border border-brand-border bg-brand-bg-darker overflow-hidden shadow-xl">
+                  <img
+                    src={selectedEntity.image}
+                    alt={selectedEntity.name}
+                    className="w-full h-auto object-contain aspect-video"
+                  />
+                </div>
+
                 {/* About Paragraph */}
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold font-serif text-brand-text tracking-wide">About This Service</h3>

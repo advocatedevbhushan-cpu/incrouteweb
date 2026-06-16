@@ -867,7 +867,7 @@ export default function App() {
                   <a
                     href="/faq"
                     onClick={(e) => { e.preventDefault(); setActiveTab("faq"); }}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
                   >
                     Answer Hub (FAQ)
                   </a>
@@ -884,21 +884,21 @@ export default function App() {
                 <a 
                   href="/company-registration-bangalore"
                   onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-bangalore"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
                 >
                   Company Registration in Bangalore
                 </a>
                 <a 
                   href="/company-registration-mumbai"
                   onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-mumbai"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
                 >
                   Company Registration in Mumbai
                 </a>
                 <a 
                   href="/company-registration-delhi"
                   onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-delhi"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none text-left"
+                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
                 >
                   Company Registration in Delhi NCR
                 </a>
