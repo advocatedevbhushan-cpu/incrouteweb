@@ -757,7 +757,7 @@ const advantageSpectrum = [
   { icon: Award, title: "Regulatory Credibility", desc: "ROC-registered entities carry institutional trust with clients, vendors, and government departments that sole proprietorships cannot match." },
   { icon: FileText, title: "Tax Optimization", desc: "Corporate tax rates, partner remuneration deductions, and input tax credits are structured into your entity from the ground up." },
   { icon: CheckCircle2, title: "Zero Penalty Guarantee", desc: "Our compliance suite ensures all statutory deadlines are tracked and filed on time — eliminating daily compounding ROC penalties." },
-  { icon: Users, title: "Dedicated Expert Assigned", desc: "Every engagement is handled by D Bhushan personally — not outsourced to junior staff or automated pipelines." },
+  { icon: Users, title: "Dedicated Expert Assigned", desc: "Every engagement is handled by a dedicated corporate expert — not outsourced to junior staff or automated pipelines." },
 ];
 
 export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogInsightsProps) {

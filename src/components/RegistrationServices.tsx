@@ -1996,16 +1996,8 @@ export default function RegistrationServices({
                           ))}
                         </div>
 
-                        {/* Footer consultant details */}
-                        <div className="flex items-center justify-between pt-3 border-t border-brand-border/60">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-6 h-6 rounded-full bg-brand-bg-darker text-brand-gold flex items-center justify-center border border-brand-border shadow-sm shrink-0">
-                              <Scale className="w-3.5 h-3.5 text-brand-gold" />
-                            </div>
-                            <span className="text-[10px] text-brand-text-muted font-semibold font-sans">{service.expert}</span>
-                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          </div>
-                          
+                        {/* Footer details */}
+                        <div className="flex items-center justify-end pt-3 border-t border-brand-border/60">
                           {/* View Details action */}
                           <div
                             className="text-xs font-bold text-brand-text hover:text-brand-gold flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-150 fast-transition transform-gpu font-sans"
@@ -2184,9 +2176,9 @@ export default function RegistrationServices({
                     </div>
                     <div>
                       <div className="flex items-center flex-wrap gap-2">
-                        <span className="font-serif text-sm font-bold text-brand-text">{selectedEntity.expert || "D Bhushan"}</span>
+                        <span className="font-serif text-sm font-bold text-brand-text">Incroute Expert</span>
                         <span className="bg-brand-gold/10 text-[#9E896A] border border-[#9E896A]/30 text-[8px] font-extrabold px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">
-                          Super Expert
+                          Verified
                         </span>
                       </div>
                       <p className="text-xs text-brand-text-muted font-sans mt-0.5">

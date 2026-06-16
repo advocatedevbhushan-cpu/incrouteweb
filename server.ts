@@ -1726,124 +1726,31 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   }
 
   // Testimonials public and admin fetch endpoint
-  app.get("/api/testimonials", (req, res) => {
-    const token = req.query.token || req.headers["x-admin-token"];
-    if (token === "admin-session-secure-token") {
-      res.json({ success: true, count: testimonials.length, testimonials });
-    } else {
-      const approvedOnly = testimonials.filter((t) => t.approved === true);
-      res.json({ success: true, count: approvedOnly.length, testimonials: approvedOnly });
-    }
-  });
-
-  // Client submit review (defaults to approved: false)
-  app.post("/api/testimonials", (req, res) => {
-    const { name, designation, entityType: submittedEntity, rating, content } = req.body;
-    if (!name || !content) {
-      return res.status(400).json({ success: false, error: "Name and content review are required fields." });
-    }
-
-    const newTestimonial = {
-      id: `test-${Date.now()}`,
-      name,
-      designation: designation || "Entrepreneur",
-      entityType: submittedEntity || "Private Limited",
-      rating: Number(rating) || 5,
-      content,
-      approved: false, // requires admin approval
-      timestamp: new Date().toISOString()
-    };
-
-    testimonials.unshift(newTestimonial);
+  app.get("/api/testimonials", async (req, res) => {
+    // Try to load latest testimonials from GitHub raw
     try {
-      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
-      console.log(`🟢 PERSISTED NEW PENDING TESTIMONIAL TO DISK: ${newTestimonial.id}`);
+      const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/testimonials.json";
+      const response = await fetch(githubUrl);
+      if (response.ok) {
+        const content = await response.text();
+        const parsed = JSON.parse(content);
+        const rawList = Array.isArray(parsed) ? parsed : (parsed?.testimonials || []);
+        if (rawList.length > 0) {
+          testimonials = rawList;
+          console.log(`🟢 Successfully synchronized ${testimonials.length} testimonials from GitHub.`);
+          // Save to local cache
+          try {
+            fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
+          } catch (err: any) {
+            console.error("Failed to write testimonials cache to disk:", err.message);
+          }
+        }
+      }
     } catch (err: any) {
-      console.error("Failed to persist testimonial:", err.message);
+      console.warn("Failed to synchronize testimonials from GitHub raw:", err.message);
     }
 
-    res.json({ success: true, message: "Review submitted successfully! Pending admin clearance.", testimonial: newTestimonial });
-  });
-
-  // Admin Approve / Toggle testimonial approval status
-  app.post("/api/testimonials/:id/approve", (req, res) => {
-    const { id } = req.params;
-    const { token, approved } = req.body;
-
-    if (token !== "admin-session-secure-token") {
-      return res.status(403).json({ success: false, error: "Unauthorized access." });
-    }
-
-    const tIndex = testimonials.findIndex((t) => t.id === id);
-    if (tIndex === -1) {
-      return res.status(404).json({ success: false, error: "Testimonial not found." });
-    }
-
-    testimonials[tIndex].approved = approved !== undefined ? approved : true;
-
-    try {
-      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
-      console.log(`🟢 TESTIMONIAL APPROVAL TOGGLED: ${id} to approved=${testimonials[tIndex].approved}`);
-    } catch (err: any) {
-      console.error("Failed to update approval on disk:", err.message);
-    }
-
-    res.json({ success: true, testimonial: testimonials[tIndex] });
-  });
-
-  // Admin Edit testimonial
-  app.post("/api/testimonials/:id/edit", (req, res) => {
-    const { id } = req.params;
-    const { token, name, designation, entityType: editEntity, rating, content } = req.body;
-
-    if (token !== "admin-session-secure-token") {
-      return res.status(403).json({ success: false, error: "Unauthorized access." });
-    }
-
-    const tIndex = testimonials.findIndex((t) => t.id === id);
-    if (tIndex === -1) {
-      return res.status(404).json({ success: false, error: "Testimonial not found." });
-    }
-
-    if (name) testimonials[tIndex].name = name;
-    if (designation) testimonials[tIndex].designation = designation;
-    if (editEntity) testimonials[tIndex].entityType = editEntity;
-    if (rating) testimonials[tIndex].rating = Number(rating);
-    if (content) testimonials[tIndex].content = content;
-
-    try {
-      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
-      console.log(`🟢 TESTIMONIAL EDITED: ${id}`);
-    } catch (err: any) {
-      console.error("Failed to edit testimonial on disk:", err.message);
-    }
-
-    res.json({ success: true, testimonial: testimonials[tIndex] });
-  });
-
-  // Admin Delete testimonial
-  app.delete("/api/testimonials/:id", (req, res) => {
-    const { id } = req.params;
-    const { token } = req.body;
-
-    if (token !== "admin-session-secure-token") {
-      return res.status(403).json({ success: false, error: "Unauthorized access." });
-    }
-
-    const tIndex = testimonials.findIndex((t) => t.id === id);
-    if (tIndex === -1) {
-      return res.status(404).json({ success: false, error: "Testimonial not found." });
-    }
-
-    const deleted = testimonials.splice(tIndex, 1);
-    try {
-      fs.writeFileSync(TESTIMONIALS_FILE, JSON.stringify(testimonials, null, 2), "utf-8");
-      console.log(`🟢 DELETED TESTIMONIAL FROM DISK: ${id}`);
-    } catch (err: any) {
-      console.error("Failed to delete testimonial from disk:", err.message);
-    }
-
-    res.json({ success: true, message: "Testimonial deleted successfully!", testimonial: deleted[0] });
+    res.json({ success: true, count: testimonials.length, testimonials });
   });
 
   // SEO Metadata profiles for sitemappable pages

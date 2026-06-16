@@ -38,3 +38,29 @@ collections:
               - { label: "Slug", name: "slug", widget: "string" }
               - { label: "Status", name: "status", widget: "select", options: ["draft", "ready", "published"], default: "published" }
               - { label: "Meta Description", name: "metaDescription", widget: "string", required: false }
+
+  - name: "testimonials"
+    label: "Testimonials"
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "testimonials.json"
+        label: "Client Testimonials"
+        name: "client_testimonials"
+        format: "json-array"
+        fields:
+          - name: "testimonials"
+            label: "Testimonials List"
+            label_singular: "Testimonial"
+            widget: "list"
+            summary: "{{fields.name}} - {{fields.entityType}}"
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Client Name", name: "name", widget: "string" }
+              - { label: "Designation", name: "designation", widget: "string" }
+              - { label: "Entity Type", name: "entityType", widget: "string" }
+              - { label: "Rating (1-5)", name: "rating", widget: "number", value_type: "int", default: 5 }
+              - { label: "Content", name: "content", widget: "text" }
+              - { label: "Approved", name: "approved", widget: "boolean", default: true }
+              - { label: "Timestamp", name: "timestamp", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ss.SSSZ" }

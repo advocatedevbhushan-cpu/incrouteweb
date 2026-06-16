@@ -114,11 +114,15 @@
     box-shadow: var(--elevation-1);
     border: 1px solid var(--color-brand-border);
     transition: transform var(--motion-duration-fast) var(--motion-ease-snappy),
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
                 opacity var(--motion-duration-fast) ease;
     will-change: transform, opacity;
   }
   .premium-card:hover {
     transform: translateY(-4px) scale(1.02);
+    border-color: var(--color-brand-gold) !important;
+    box-shadow: 0 10px 25px -5px rgba(199, 168, 107, 0.22), 0 8px 10px -6px rgba(199, 168, 107, 0.22) !important;
   }
 }
 
@@ -200,11 +204,15 @@ a, button, input, select, textarea {
   background-color: var(--color-brand-bg-lighter);
   border: 1px solid var(--color-brand-border);
   transition: transform var(--motion-duration-fast) var(--motion-ease-snappy),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
               opacity var(--motion-duration-fast) ease;
   will-change: transform, opacity;
 }
 .premium-service-card:hover {
   transform: translateY(-4px) scale(1.02);
+  border-color: var(--color-brand-gold) !important;
+  box-shadow: 0 10px 25px -5px rgba(199, 168, 107, 0.22), 0 8px 10px -6px rgba(199, 168, 107, 0.22) !important;
 }
 .light .premium-service-card {
   background-color: var(--color-brand-bg-lighter);
@@ -213,6 +221,8 @@ a, button, input, select, textarea {
 }
 .light .premium-service-card:hover {
   transform: translateY(-4px) scale(1.02);
+  border-color: var(--color-brand-gold) !important;
+  box-shadow: 0 10px 25px -5px rgba(184, 149, 79, 0.18), 0 8px 10px -6px rgba(184, 149, 79, 0.18) !important;
 }
 
 /* Card header — deep charcoal in dark, trust blue in light */
