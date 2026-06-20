@@ -47,7 +47,7 @@ const catalog: ServiceType[] = [
     badgeColor: "bg-brand-gold text-black",
     rating: 5,
     icon: Building2,
-    image: "/pvt_ltd_corp.png",
+    image: "/pvt_ltd_corp.webp",
     description: "The gold standard for startups and growing businesses. Offers limited liability, separate legal entity, and venture capital eligibility.",
     about: "A Private Limited Company (Pvt Ltd) is the most preferred business structure for startups and SMEs in India. Governed by the Companies Act 2013, it provides perpetual succession, credibility with investors, and the ability to raise external capital.",
     advantages: [
@@ -74,7 +74,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Users,
-    image: "/llp_partners.png",
+    image: "/llp_partners.webp",
     description: "Flexibility of a partnership with corporate liability protection. No minimum capital required.",
     about: "An LLP combines the operational flexibility of a partnership with the limited liability of a company. Governed under the LLP Act 2008, it is ideal for professional services, consultancies, and family businesses.",
     advantages: [
@@ -101,7 +101,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: Scale,
-    image: "/opc_director.png",
+    image: "/opc_director.webp",
     description: "Solo founder? Get full corporate protection without a co-founder.",
     about: "OPC allows a single entrepreneur to operate a corporate entity with limited liability. It eliminates personal asset risk while granting corporate tax rates, bank financing, and a nominee director safety net.",
     advantages: [
@@ -128,7 +128,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.5,
     icon: Users,
-    image: "/partnership_firm.png",
+    image: "/partnership_firm.webp",
     description: "Simple, fast, and cost-effective for small businesses and local ventures.",
     about: "A Partnership Firm is structured by a signed deed under the Partnership Act 1932. Partners share mutual agency, liabilities, and profits with minimal reporting and zero ROC compliance requirements.",
     advantages: [
@@ -155,7 +155,7 @@ const catalog: ServiceType[] = [
     badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
     rating: 5,
     icon: Heart,
-    image: "/section8_ngo.png",
+    image: "/section8_ngo.webp",
     description: "Charitable non-profit status with full tax exemptions and donation eligibility.",
     about: "A Section 8 Company promotes charitable objectives — education, art, science, sports, or social welfare. It obtains a special central government license granting 12A & 80G tax exemptions and access to domestic and international donations.",
     advantages: [
@@ -182,7 +182,7 @@ const catalog: ServiceType[] = [
     badgeColor: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
     rating: 5,
     icon: FileText,
-    image: "/annual_compliances.png",
+    image: "/annual_compliances.webp",
     description: "ROC filing, Director KYC, board minutes, and zero-penalty guarantee.",
     about: "Annual Compliances Suite keeps your company in pristine standing with ROC/MCA registries. It coordinates AOC-4, MGT-7, Director KYC updates, statutory balance sheet reconciliations, and board resolution books under dedicated Chartered Accountants.",
     advantages: [
@@ -209,7 +209,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.9,
     icon: Database,
-    image: "/gst_tax_registration.png",
+    image: "/gst_tax_registration.webp",
     description: "GSTIN activation, MSME registration, and PAN/TAN drafting.",
     about: "GST and Statutory Tax Registrations allocate legal tax credentials for business operations. Secures GSTIN profiles, activates MSME certifications, drafts PAN/TAN profiles, and enables smooth inter-state commerce.",
     advantages: [
@@ -236,7 +236,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: TrendingUp,
-    image: "/virtual_cfo_analytics.png",
+    image: "/virtual_cfo_analytics.webp",
     description: "Cash flow modeling, treasury operations, and board performance reports.",
     about: "Virtual CFO Retainer provides institutional-grade corporate finance strategy without executive hiring costs. Structured under senior Chartered Accountants, it models cash flows, designs capital structures, runs audit controls, and prepares investor-ready financials.",
     advantages: [
@@ -263,7 +263,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: Landmark,
-    image: "/virtual_office_workspace.png",
+    image: "/virtual_office_workspace.webp",
     description: "GST & ROC compliant premium addresses with mail handling and on-demand meeting rooms.",
     about: "Virtual Office Address secures a legal corporate headquarters in premium commercial hubs — Bangalore, Mumbai, Delhi, Hyderabad — without office lease overheads. Includes certified NOCs, utility bills for GST/ROC registrations, and physical mail forwarding.",
     advantages: [
@@ -290,7 +290,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: FileText,
-    image: "/legal_policy_drafting.png",
+    image: "/legal_policy_drafting.webp",
     description: "GDPR/CCPA compliant terms & policies tailored for websites/apps.",
     about: "Custom drafting of comprehensive Terms of Service (ToS) and Privacy Policy agreements. Designed specifically for your platform, website, or mobile application, ensuring compliance with global privacy regulations (GDPR, CCPA, IT Act 2000) and protecting your enterprise from customer/user disputes.",
     advantages: [
@@ -326,7 +326,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.9,
     icon: Award,
-    image: "/msme_udyam.png",
+    image: "/msme_udyam.webp",
     description: "Get government-backed Udyam MSME certification to unlock subsidies and loans.",
     about: "Government-backed Udyam MSME certification for micro, small, and medium enterprises. Registering your enterprise unlocks priority bank lending rates, subsidies on patents and barcodes, concessions on electricity bills, and robust legal protection against delayed business payments from corporate buyers.",
     advantages: [
@@ -362,7 +362,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: CheckCircle2,
-    image: "/fssai_food_safety.png",
+    image: "/fssai_food_safety.webp",
     description: "Legally mandatory FSSAI food license for retail, kitchen, and preparation setups.",
     about: "An FSSAI Food Safety License is legally mandatory for any food business operator (FBO) in India dealing in manufacturing, processing, packaging, storage, transportation, retail, distribution, or restaurant/kitchen food safety operations.",
     advantages: [
@@ -398,7 +398,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: FileText,
-    image: "/tax_return_filing.png",
+    image: "/tax_return_filing.webp",
     description: "Expert GSTR-1/3B filings, ITR, and TDS returns led by CAs.",
     about: "Ongoing GST returns (GSTR-1, GSTR-3B) and corporate/partnership Income Tax Return (ITR) filings managed by dedicated Chartered Accountants. Ensures maximum utilization of Input Tax Credits (ITC), clean tax reconciliation, and full compliance with Central Excise and GST Departments.",
     advantages: [
@@ -435,7 +435,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Shield,
-    image: "/trademark_brand.png",
+    image: "/trademark_brand.webp",
     description: "Exclusivity for your brand name & logo with expert legal opinions.",
     about: "Comprehensive brand protection including deep Trademark Search, Opinion Letters on registrability, official Class filing, and drafting replies to Office Actions. Our registered IP attorneys ensure your brand name, logo, or slogan secures absolute exclusivity and legal protection in India.",
     advantages: [
@@ -471,7 +471,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: Scale,
-    image: "/trademark_defense.png",
+    image: "/trademark_defense.webp",
     description: "Defend Section 9 or Section 11 objections with case-law backings.",
     about: "Professional drafting of legal replies to trademark objections raised by the Registrar of Trademarks under Section 9 or Section 11 of the Trade Marks Act 1999. Our IP attorneys prepare a robust legal defense using relevant case laws and prior user evidence to secure brand registration.",
     advantages: [
@@ -507,7 +507,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Scale,
-    image: "/trademark_opposition.png",
+    image: "/trademark_opposition.webp",
     description: "File TM-O notices or defend your registry status against competitors.",
     about: "Filing or defending Trademark Oppositions before the Trademark Registry. When a third party opposes your published trademark or a competitor tries to register a confusingly similar brand, our litigation attorneys draft the Notice of Opposition (TM-O) or Counter-Statement (TM-R) to protect your brand equity.",
     advantages: [
@@ -543,7 +543,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.8,
     icon: Shield,
-    image: "/trademark_assignment.png",
+    image: "/trademark_assignment.webp",
     description: "Draft deeds and update registry ownership (Form TM-P) safely.",
     about: "Legal drafting and filing of Trademark and Copyright Assignment Deeds to execute the transfer of ownership of intellectual property assets. Ideal for company restructuring, mergers, acquisitions, or individual-to-company asset transfers, ensuring full registry updates (Form TM-P).",
     advantages: [
@@ -579,7 +579,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Shield,
-    image: "/brand_protection.png",
+    image: "/brand_protection.webp",
     description: "Scan Trademark Journals and enforce brand rights online proactively.",
     about: "Continuous monitoring of the Trademark Journal, company registry, and online marketplaces to detect copycat brands or unauthorized usage of your IP. Includes drafting and serving Cease & Desist notices and taking administrative actions to remove infringing content.",
     advantages: [
@@ -615,7 +615,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Scale,
-    image: "/litigation_assistance.png",
+    image: "/litigation_assistance.webp",
     description: "Support for court proceedings, NCLT hearings, and legal notices.",
     about: "End-to-end legal support, litigation drafting, case research, and advisory services for commercial, contract, trademark, or shareholder disputes. Led by senior advocates, we prepare plaints, written statements, legal notices, and represent your company's interests before courts and tribunals.",
     advantages: [
@@ -651,7 +651,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 4.9,
     icon: Clock,
-    image: "/trademark_renewal.png",
+    image: "/trademark_renewal.webp",
     description: "Renew marks (Form TM-R), FSSAI licenses, and prevent expiry risks.",
     about: "Timely renewal of trademarks (required every 10 years) and other commercial licenses (FSSAI, ISO, shop act). We file the necessary renewal applications (Form TM-R) with the registry, avoiding expiration, late filing penalties, or loss of proprietary brand rights.",
     advantages: [
@@ -687,7 +687,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: Award,
-    image: "/patent_invention.png",
+    image: "/patent_invention.webp",
     description: "Patentability searches, novelty checks, and specification drafting.",
     about: "End-to-end patent advisory including Freedom to Operate (FTO) search, patentability analysis, specification drafting (claims, description, drawings), and filing provisional or complete patent applications with the Indian Patent Office.",
     advantages: [
@@ -723,7 +723,7 @@ const catalog: ServiceType[] = [
     badgeColor: "",
     rating: 5,
     icon: CheckCircle2,
-    image: "/iso_certification.png",
+    image: "/iso_certification.webp",
     description: "Secure ISO 9001 or 27001 quality audit certificates easily.",
     about: "Provisioning of international ISO certifications (ISO 9001:2015 for Quality Management, ISO 27001 for Information Security, ISO 14001, etc.). We coordinate internal audits, compile mandatory quality manuals, and secure formal audit certifications from accredited bodies.",
     advantages: [

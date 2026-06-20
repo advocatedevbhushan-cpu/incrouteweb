@@ -188,6 +188,7 @@ export default function App() {
   // Prefilled state to pass to RegistrationServices
   const [prefilledName, setPrefilledName] = useState<string>("");
   const [prefilledEntityType, setPrefilledEntityType] = useState<string>("");
+  const [prefilledMessage, setPrefilledMessage] = useState<string>("");
 
   // Sync tab state when URL changes (browser back/forward)
   useEffect(() => {
@@ -280,7 +281,7 @@ export default function App() {
         <div className="executive-grid" />
         <div className="relative z-10 flex flex-col items-center gap-5">
           <div className="flex items-center gap-2.5">
-            <img src="/incroute_logo.png" alt="Legiscorp" className="w-8 h-8 rounded-full object-cover border border-brand-gold/40" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/incroute_logo.webp" alt="Legiscorp" className="w-8 h-8 rounded-full object-cover border border-brand-gold/40" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             <span className="text-lg font-light font-serif text-brand-text tracking-widest">
               Legis<span className="text-brand-gold">corp</span>
             </span>
@@ -366,6 +367,11 @@ export default function App() {
                   setPrefilledEntityType(mappedId);
                   setActiveTab("services");
                 }}
+                onConsultExpert={(brandName, entityType) => {
+                  setPrefilledName(brandName);
+                  setPrefilledMessage(`Hi, I checked my proposed business name "${brandName}" (${entityType}) using the AI Feasibility Advisor and would like to proceed with registration. Please help me with the next steps.`);
+                  setActiveTab("contact");
+                }}
               />
             </motion.div>
           )}
@@ -401,7 +407,7 @@ export default function App() {
                     </h3>
                   </div>
 
-                  <ContactFormWidget />
+                  <ContactFormWidget initialMessage={prefilledMessage} />
                 </div>
 
                 {/* Right Column: Information & Map */}
@@ -616,7 +622,7 @@ export default function App() {
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
-                  <img src="/incroute_logo.png" className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black" alt="INCroute Logo" />
+                  <img src="/incroute_logo.webp" className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black" alt="INCroute Logo" />
                   Static Statutory Calendars
                 </div>
                 <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
@@ -817,7 +823,7 @@ export default function App() {
             <div className="md:col-span-3 space-y-5">
               <div className="flex items-center gap-2.5 cursor-pointer font-sans justify-center md:justify-start" onClick={() => handleServiceClick("pvt-ltd")}>
                 <div className="w-9 h-9 bg-brand-dark rounded-lg border border-brand-border overflow-hidden flex items-center justify-center">
-                  <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
+                  <img src="/incroute_logo.webp" className="w-full h-full object-cover" alt="INCroute Logo" />
                 </div>
                 <div className="flex flex-col select-none">
                   <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">

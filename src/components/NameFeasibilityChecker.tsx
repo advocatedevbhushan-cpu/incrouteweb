@@ -44,6 +44,7 @@ interface NameCheckReport {
 
 interface NameFeasibilityCheckerProps {
   onOnboard?: (name: string, entityType: string) => void;
+  onConsultExpert?: (name: string, entityType: string) => void;
 }
 
 function loadHistory(): NameCheckHistoryEntry[] {
@@ -59,7 +60,7 @@ function saveHistory(entries: NameCheckHistoryEntry[]) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, MAX_HISTORY)));
 }
 
-export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityCheckerProps) {
+export default function NameFeasibilityChecker({ onOnboard, onConsultExpert }: NameFeasibilityCheckerProps) {
   const { t } = useLang();
 
   const [name, setName] = useState("");
@@ -222,7 +223,7 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
       <div className="text-center max-w-3xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
           <img
-            src="/incroute_logo.png"
+            src="/incroute_logo.webp"
             className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black"
             alt="Emblem"
           />
@@ -500,6 +501,22 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-3xl rounded-full" />
 
+              {/* Highlighted AI Disclaimer Box */}
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl text-[10px] leading-relaxed flex items-start gap-2.5 relative z-10">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <strong className="font-bold block text-amber-400 mb-0.5">AI-Powered Advisory Service</strong>
+                  This clearance test is conducted by an AI agent and could contain errors. Please consult our legal experts to confirm guidelines before filing.
+                  <button
+                    type="button"
+                    onClick={() => onConsultExpert && onConsultExpert(name, entityType)}
+                    className="underline text-brand-gold font-semibold hover:text-white mt-1 cursor-pointer block"
+                  >
+                    Consult with our Expert now &rarr;
+                  </button>
+                </div>
+              </div>
+
               {/* Report Header Metadata */}
               <div className="border-b border-brand-border pb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative z-10">
                 <div className="space-y-1">
@@ -609,18 +626,30 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
                         <h4 className="text-[9px] font-medium text-[#9E896A] uppercase tracking-widest font-mono">
                           Registry recommended alternatives
                         </h4>
-                        <span className="text-[8px] text-brand-gold font-mono uppercase">click name to customize</span>
+                        <span className="text-[8px] text-brand-gold font-mono uppercase">Select name to register or customize</span>
                       </div>
-                      <div className="flex flex-wrap gap-2 pt-1">
+                      <div className="space-y-2.5">
                         {report.suggestions.map((sug, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => openSandbox(sug)}
-                            className="text-[10px] font-mono bg-brand-bg hover:bg-brand-gold/10 border border-brand-border hover:border-brand-gold/50 px-3 py-1.5 rounded-lg transition-all cursor-pointer text-brand-text-muted hover:text-brand-text flex items-center gap-1"
-                          >
-                            <span>{sug}</span>
-                            <Sliders className="w-2.5 h-2.5 text-brand-gold/50" />
-                          </button>
+                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-brand-bg border border-brand-border rounded-xl hover:border-brand-gold/20 transition-all duration-150 group">
+                            <span className="text-xs font-mono font-semibold text-brand-text truncate">{sug}</span>
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                              <button
+                                type="button"
+                                onClick={() => openSandbox(sug)}
+                                title="Customize prefix"
+                                className="p-2 text-brand-text-muted hover:text-brand-gold border border-brand-border hover:border-brand-gold/30 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Sliders className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onOnboard && onOnboard(sug, entityType)}
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-brand-gold hover:bg-white text-black font-mono text-[9px] font-bold uppercase rounded-lg transition-all duration-150 cursor-pointer shadow-md shadow-brand-gold/5"
+                              >
+                                Continue & Register <ArrowRight className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>

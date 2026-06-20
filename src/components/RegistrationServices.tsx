@@ -412,7 +412,7 @@ const serviceCatalog = [
     id: "pvt-ltd",
     name: "Private Limited Company",
     category: "private-corporate",
-    image: "/pvt_ltd_corp.png",
+    image: "/pvt_ltd_corp.webp",
     pricing: "₹999*",
     timeline: "7–10 Working Days",
     minDirectors: "2 Directors minimum",
@@ -450,7 +450,7 @@ const serviceCatalog = [
     id: "llp",
     name: "Limited Liability Partnership",
     category: "alternative-entity",
-    image: "/llp_partners.png",
+    image: "/llp_partners.webp",
     pricing: "₹1,499*",
     timeline: "10–15 Working Days",
     minDirectors: "2 Partners minimum",
@@ -487,7 +487,7 @@ const serviceCatalog = [
     id: "opc",
     name: "One Person Company",
     category: "private-corporate",
-    image: "/opc_director.png",
+    image: "/opc_director.webp",
     pricing: "₹1,299*",
     timeline: "7–12 Working Days",
     minDirectors: "1 Director minimum",
@@ -524,7 +524,7 @@ const serviceCatalog = [
     id: "partnership",
     name: "Partnership Firm",
     category: "alternative-entity",
-    image: "/partnership_firm.png",
+    image: "/partnership_firm.webp",
     pricing: "₹799*",
     timeline: "3–5 Working Days",
     minDirectors: "2 Partners minimum",
@@ -561,7 +561,7 @@ const serviceCatalog = [
     id: "section8",
     name: "Section 8 Company (NGO)",
     category: "private-corporate",
-    image: "/section8_ngo.png",
+    image: "/section8_ngo.webp",
     pricing: "₹2,499*",
     timeline: "15–20 Working Days",
     minDirectors: "2 Directors minimum",
@@ -598,7 +598,7 @@ const serviceCatalog = [
     id: "public-ltd",
     name: "Public Limited Company",
     category: "private-corporate",
-    image: "/pvt_ltd_corp.png",
+    image: "/pvt_ltd_corp.webp",
     pricing: "₹4,999*",
     timeline: "20–25 Working Days",
     minDirectors: "3 Directors minimum",
@@ -635,7 +635,7 @@ const serviceCatalog = [
     id: "annual-compliance",
     name: "Annual Compliances Suite",
     category: "compliance",
-    image: "/annual_compliances.png",
+    image: "/annual_compliances.webp",
     pricing: "₹2,999*",
     timeline: "Ongoing Support",
     minDirectors: "CA Lead Advisory",
@@ -672,7 +672,7 @@ const serviceCatalog = [
     id: "gst-tax",
     name: "GST & Tax Registration",
     category: "compliance",
-    image: "/gst_tax_registration.png",
+    image: "/gst_tax_registration.webp",
     pricing: "₹499*",
     timeline: "3–5 Working Days",
     minDirectors: "CA Lead Advisory",
@@ -709,7 +709,7 @@ const serviceCatalog = [
     id: "virtual-cfo",
     name: "Virtual CFO Retainer",
     category: "enterprise-growth",
-    image: "/virtual_cfo_analytics.png",
+    image: "/virtual_cfo_analytics.webp",
     pricing: "₹4,999/mo*",
     timeline: "Monthly Retainer",
     minDirectors: "CA Lead Advisory",
@@ -745,7 +745,7 @@ const serviceCatalog = [
     id: "virtual-office",
     name: "Virtual Office Address",
     category: "enterprise-growth",
-    image: "/virtual_office_workspace.png",
+    image: "/virtual_office_workspace.webp",
     pricing: "₹999/mo*",
     timeline: "2–3 Working Days",
     minDirectors: "Selected Prime Sites",
@@ -781,7 +781,7 @@ const serviceCatalog = [
     id: "terms-privacy",
     name: "Terms of Service & Privacy Policy",
     category: "legal-ip",
-    image: "/legal_policy_drafting.png",
+    image: "/legal_policy_drafting.webp",
     pricing: "",
     timeline: "3–5 Working Days",
     minDirectors: "Legal Expert Draft",
@@ -818,7 +818,7 @@ const serviceCatalog = [
     id: "msme-registration",
     name: "MSME (Udyam) Registration",
     category: "compliance",
-    image: "/msme_udyam.png",
+    image: "/msme_udyam.webp",
     pricing: "",
     timeline: "2–3 Working Days",
     minDirectors: "Proprietor/Partner",
@@ -855,7 +855,7 @@ const serviceCatalog = [
     id: "fssai-registration",
     name: "FSSAI Registration",
     category: "compliance",
-    image: "/fssai_food_safety.png",
+    image: "/fssai_food_safety.webp",
     pricing: "",
     timeline: "3–7 Working Days",
     minDirectors: "Operator/Nominee",
@@ -892,7 +892,7 @@ const serviceCatalog = [
     id: "return-filing",
     name: "Return Filing Services",
     category: "compliance",
-    image: "/tax_return_filing.png",
+    image: "/tax_return_filing.webp",
     pricing: "",
     timeline: "Ongoing Support",
     minDirectors: "CA Lead Account",
@@ -929,7 +929,7 @@ const serviceCatalog = [
     id: "trademark-registration",
     name: "Trademark Services Suite",
     category: "legal-ip",
-    image: "/trademark_brand.png",
+    image: "/trademark_brand.webp",
     pricing: "",
     timeline: "2–3 Working Days (Filing)",
     minDirectors: "IP Attorney Lead",
@@ -966,7 +966,7 @@ const serviceCatalog = [
     id: "trademark-objection",
     name: "Response to TM Objection",
     category: "legal-ip",
-    image: "/trademark_defense.png",
+    image: "/trademark_defense.webp",
     pricing: "",
     timeline: "3–5 Working Days",
     minDirectors: "IP Attorney Lead",
@@ -1003,7 +1003,7 @@ const serviceCatalog = [
     id: "trademark-opposition",
     name: "Trademark Opposition",
     category: "legal-ip",
-    image: "/trademark_opposition.png",
+    image: "/trademark_opposition.webp",
     pricing: "",
     timeline: "7–10 Working Days",
     minDirectors: "Litigation Attorney",
@@ -1040,7 +1040,7 @@ const serviceCatalog = [
     id: "trademark-assignment",
     name: "Trademark & IP Assignment",
     category: "legal-ip",
-    image: "/trademark_assignment.png",
+    image: "/trademark_assignment.webp",
     pricing: "",
     timeline: "5–8 Working Days",
     minDirectors: "Corporate Counsel",
@@ -1077,7 +1077,7 @@ const serviceCatalog = [
     id: "brand-protection",
     name: "Brand Protection & Monitoring",
     category: "legal-ip",
-    image: "/brand_protection.png",
+    image: "/brand_protection.webp",
     pricing: "",
     timeline: "Ongoing Monitoring",
     minDirectors: "Brand Protection Lead",
@@ -1114,7 +1114,7 @@ const serviceCatalog = [
     id: "litigation-assistance",
     name: "Litigation Assistance",
     category: "legal-ip",
-    image: "/litigation_assistance.png",
+    image: "/litigation_assistance.webp",
     pricing: "",
     timeline: "As per Case Schedule",
     minDirectors: "Senior Advocate Lead",
@@ -1151,7 +1151,7 @@ const serviceCatalog = [
     id: "trademark-renewal",
     name: "Trademark & License Renewal",
     category: "legal-ip",
-    image: "/trademark_renewal.png",
+    image: "/trademark_renewal.webp",
     pricing: "",
     timeline: "2–3 Working Days",
     minDirectors: "Regulatory Officer",
@@ -1188,7 +1188,7 @@ const serviceCatalog = [
     id: "patent-filing",
     name: "Patent Drafting & Filing",
     category: "legal-ip",
-    image: "/patent_invention.png",
+    image: "/patent_invention.webp",
     pricing: "",
     timeline: "15–25 Working Days",
     minDirectors: "Patent Agent Lead",
@@ -1225,7 +1225,7 @@ const serviceCatalog = [
     id: "iso-certification",
     name: "ISO Certification Services",
     category: "compliance",
-    image: "/iso_certification.png",
+    image: "/iso_certification.webp",
     pricing: "",
     timeline: "5–7 Working Days",
     minDirectors: "ISO Lead Auditor",
@@ -1806,50 +1806,82 @@ export default function RegistrationServices({
               
               {/* Interactive clearance ledger */}
               {checkReport && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: "easeOut" }}
-                  className="border-t border-brand-border/60 pt-5 grid grid-cols-1 md:grid-cols-3 gap-5"
-                >
-                  <div className="flex flex-col items-center justify-center p-5 bg-brand-bg-lighter rounded-xl border border-brand-border/60 shadow-sm min-h-[120px]">
-                    <span className="text-[8px] uppercase tracking-widest text-[#9E896A] font-bold font-mono mb-1">Suitability Score</span>
-                    <div className="text-center">
-                      <span className="text-4xl font-light text-red-500 font-serif italic block leading-none">
-                        {checkReport.score}
-                      </span>
-                      <span className="text-[9px] text-brand-text-muted font-mono tracking-wider block mt-1">out of 100</span>
+                <div className="space-y-4 border-t border-brand-border/60 pt-5">
+                  {/* Highlighted AI Disclaimer Box */}
+                  <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl text-[10px] leading-relaxed flex items-start gap-2.5 text-left relative z-10">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <strong className="font-bold block text-amber-400 mb-0.5">AI-Powered Advisory Service</strong>
+                      This clearance test is conducted by an AI agent and could contain errors. Please consult our legal experts to confirm guidelines before filing.
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOnboardModal(true);
+                        }}
+                        className="underline text-brand-gold font-semibold hover:text-white mt-1 cursor-pointer block"
+                      >
+                        Consult with our Expert now &rarr;
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="text-left space-y-3 bg-red-50/20 p-4.5 rounded-xl border border-red-500/10">
-                    <span className="text-[8px] uppercase tracking-widest text-red-500 font-bold font-mono flex items-center gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" /> Issues Found
-                    </span>
-                    <ul className="space-y-1.5">
-                      {checkReport.conflicts.map((conf: string, i: number) => (
-                        <li key={i} className="text-xs text-brand-text-muted flex items-start gap-1.5 leading-relaxed font-sans">
-                          <span className="text-red-500 text-sm font-bold leading-none shrink-0 mt-0.5">•</span>
-                          <span>{conf}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="text-left space-y-3 bg-emerald-50/25 p-4.5 rounded-xl border border-emerald-500/10">
-                    <span className="text-[8px] uppercase tracking-widest text-emerald-600 font-bold font-mono flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Suggestions
-                    </span>
-                    <ul className="space-y-1.5">
-                      {checkReport.suggestions.map((sug: string, i: number) => (
-                        <li key={i} className="text-xs text-brand-text font-semibold flex items-center gap-2 font-mono">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          <span>{sug}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: "easeOut" }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-5"
+                  >
+                    <div className="flex flex-col items-center justify-center p-5 bg-brand-bg-lighter rounded-xl border border-brand-border/60 shadow-sm min-h-[120px]">
+                      <span className="text-[8px] uppercase tracking-widest text-[#9E896A] font-bold font-mono mb-1">Suitability Score</span>
+                      <div className="text-center">
+                        <span className="text-4xl font-light text-red-500 font-serif italic block leading-none">
+                          {checkReport.score}
+                        </span>
+                        <span className="text-[9px] text-brand-text-muted font-mono tracking-wider block mt-1">out of 100</span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-left space-y-3 bg-red-50/20 p-4.5 rounded-xl border border-red-500/10">
+                      <span className="text-[8px] uppercase tracking-widest text-red-500 font-bold font-mono flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" /> Issues Found
+                      </span>
+                      <ul className="space-y-1.5">
+                        {checkReport.conflicts.map((conf: string, i: number) => (
+                          <li key={i} className="text-xs text-brand-text-muted flex items-start gap-1.5 leading-relaxed font-sans">
+                            <span className="text-red-500 text-sm font-bold leading-none shrink-0 mt-0.5">•</span>
+                            <span>{conf}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="text-left space-y-3 bg-emerald-50/25 p-4.5 rounded-xl border border-emerald-500/10 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[8px] uppercase tracking-widest text-emerald-600 font-bold font-mono flex items-center gap-1.5 mb-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Suggestions
+                        </span>
+                        <div className="space-y-2">
+                          {checkReport.suggestions.slice(0, 3).map((sug: string, i: number) => (
+                            <div key={i} className="flex items-center justify-between gap-2 p-2 bg-brand-bg border border-brand-border rounded-lg group">
+                              <span className="text-[10px] font-mono font-semibold text-brand-text truncate">{sug}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCheckName(sug);
+                                  setShowOnboardModal(true);
+                                }}
+                                title="Register this name"
+                                className="px-2 py-1 bg-brand-gold hover:bg-white text-black font-mono text-[8px] font-bold uppercase rounded transition-colors cursor-pointer shrink-0"
+                              >
+                                Register
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               )}
             </div>
           </motion.div>

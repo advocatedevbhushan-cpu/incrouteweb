@@ -773,7 +773,9 @@ Entity Type: "${entityType}"
 Sector/Industry: "${industry}"
 
 Assess the proposed name meticulously against naming guidelines (e.g. check if generic, check if offensive, check prefix/suffix suitability, check for prefix descriptiveness).
-Format your response as a strict, clean JSON object. Return ONLY the raw JSON string matching this exact structure:
+Analyze the proposed name against phonetic registers, MCA database guidelines, and trademark Class 9/35/42 listings.
+Format your response as a strict, clean JSON object. In "suggestions", provide exactly 5 premium, highly professional corporate name variations using the proposed brand prefix, incorporating suitable sector nouns and standard legal suffixes matching the requested entity type.
+Return ONLY the raw JSON string matching this exact structure:
 {
   "score": 85,
   "summary": "Detailed professional suitability summary...",
@@ -836,7 +838,7 @@ Format your response as a strict, clean JSON object. Return ONLY the raw JSON st
         model: "gemini-3.5-flash",
         contents: checkPrompt,
         config: {
-          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON matching the exact structure requested, without markdown syntax blocks.",
+          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute with 20+ years of experience in corporate law in India. Return ONLY raw JSON matching the exact structure requested, without markdown syntax blocks. Meticulously analyze phonetic conflicts, MCA name availability guidelines, and Class 9/35/42 trademark classifications. Provide highly detailed, rich, professional corporate insights.",
           temperature: 0.2,
           responseMimeType: "application/json"
         }
