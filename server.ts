@@ -1058,6 +1058,37 @@ Format your response in structured sections:
 
   // Local JSON Blog Datastore
   const BLOG_FILE = path.join(process.cwd(), "blog-posts.json");
+  const VIEWS_FILE = path.join(process.cwd(), "blog-views.json");
+
+  const loadViewsMap = (): Map<string, number> => {
+    const viewsMap = new Map<string, number>();
+    try {
+      if (fs.existsSync(VIEWS_FILE)) {
+        const data = JSON.parse(fs.readFileSync(VIEWS_FILE, "utf-8"));
+        if (typeof data === "object" && data !== null) {
+          Object.keys(data).forEach((id) => {
+            viewsMap.set(id, Number(data[id]) || 0);
+          });
+        }
+      }
+    } catch (e: any) {
+      console.warn("Failed to load blog-views.json:", e.message);
+    }
+    return viewsMap;
+  };
+
+  const saveViewsMap = (viewsMap: Map<string, number>) => {
+    try {
+      const obj: Record<string, number> = {};
+      viewsMap.forEach((val, key) => {
+        obj[key] = val;
+      });
+      fs.writeFileSync(VIEWS_FILE, JSON.stringify(obj, null, 2), "utf-8");
+    } catch (e: any) {
+      console.error("Failed to save blog-views.json:", e.message);
+    }
+  };
+
   let blogPosts: any[] = [];
 
   const defaultBlogs = [
@@ -1286,20 +1317,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     let posts: any[] = [];
     
     // First, load the local cache views map so we don't lose view counts when syncing from GitHub
-    const localPostsViews = new Map<string, number>();
-    try {
-      if (fs.existsSync(BLOG_FILE)) {
-        const localContent = fs.readFileSync(BLOG_FILE, "utf-8");
-        const localPosts = parseBlogPostsContent(localContent);
-        localPosts.forEach((p) => {
-          if (p && p.id) {
-            localPostsViews.set(p.id, Number(p.views) || 0);
-          }
-        });
-      }
-    } catch (e: any) {
-      console.warn("Failed to load local views cache map:", e.message);
-    }
+    const localPostsViews = loadViewsMap();
 
     // Load latest view counts from MySQL database if configured
     const dbPostsViews = new Map<string, number>();
@@ -1327,20 +1345,59 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
         const content = await response.text();
         const parsedPosts = parseBlogPostsContent(content);
         if (parsedPosts.length > 0) {
-          // Merge local and MySQL views over the GitHub views
-          posts = parsedPosts.map((p) => {
-            const dbViews = dbPostsViews.get(p.id) || 0;
-            const localViews = localPostsViews.get(p.id) || 0;
-            return {
-              ...p,
-              views: Math.max(dbViews, localViews, Number(p.views) || 0)
-            };
+          // Load local posts to merge and preserve locally created posts
+          let localPosts: any[] = [];
+          if (fs.existsSync(BLOG_FILE)) {
+            try {
+              localPosts = parseBlogPostsContent(fs.readFileSync(BLOG_FILE, "utf-8"));
+            } catch (e) {}
+          }
+
+          const postsMap = new Map<string, any>();
+          
+          // Seed with local posts first so they are not deleted if missing on GitHub
+          localPosts.forEach((lp) => {
+            if (lp && lp.id) {
+              postsMap.set(lp.id, lp);
+            }
           });
+
+          // Merge or overwrite with GitHub posts
+          parsedPosts.forEach((gp) => {
+            if (gp && gp.id) {
+              const lp = postsMap.get(gp.id);
+              const dbViews = dbPostsViews.get(gp.id) || 0;
+              const localViews = localPostsViews.get(gp.id) || 0;
+              const finalViews = Math.max(dbViews, localViews, Number(gp.views) || 0, Number(lp?.views) || 0);
+
+              if (finalViews > localViews) {
+                localPostsViews.set(gp.id, finalViews);
+              }
+
+              postsMap.set(gp.id, {
+                ...(lp || {}),
+                ...gp,
+                views: finalViews
+              });
+            }
+          });
+
+          // For any local post not present on GitHub, also populate its views
+          postsMap.forEach((p, id) => {
+            if (!parsedPosts.some(gp => gp.id === id)) {
+              const dbViews = dbPostsViews.get(id) || 0;
+              const localViews = localPostsViews.get(id) || 0;
+              p.views = Math.max(dbViews, localViews, Number(p.views) || 0);
+            }
+          });
+
+          posts = Array.from(postsMap.values());
           fetchedFromGitHub = true;
-          console.log(`🟢 Successfully synchronized ${posts.length} blogs from GitHub with view counts preserved.`);
-          // Save to local cache
+          console.log(`🟢 Successfully synchronized ${posts.length} blogs from GitHub with local posts merged and view counts preserved.`);
+          saveViewsMap(localPostsViews);
+          // Save to local cache with views reset to 0 to prevent git tracked file modifications
           try {
-            fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+            fs.writeFileSync(BLOG_FILE, JSON.stringify(posts.map(p => ({ ...p, views: 0 })), null, 2), "utf-8");
           } catch (err: any) {
             console.error("Failed to write blog cache to disk:", err.message);
           }
@@ -1605,17 +1662,14 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       }
     }
 
-    const localViews = (posts[postIndex].views || 0) + 1;
+    const localPostsViews = loadViewsMap();
+    const localViews = (localPostsViews.get(id) || 0) + 1;
     const finalViews = Math.max(dbViews, localViews);
-    posts[postIndex].views = finalViews;
+    localPostsViews.set(id, finalViews);
+    saveViewsMap(localPostsViews);
 
-    // Always save local disk cache
-    try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
-      blogPosts = posts;
-    } catch (err: any) {
-      console.error("Failed to write blog views to local database file:", err.message);
-    }
+    posts[postIndex].views = finalViews;
+    blogPosts = posts;
 
     res.json({ success: true, post: posts[postIndex] });
   });

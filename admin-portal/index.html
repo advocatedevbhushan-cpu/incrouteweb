@@ -35,18 +35,26 @@
       // Register custom format for parsing and saving flat JSON arrays
       CMS.registerCustomFormat('json-array', 'json', {
         toFile: function(obj) {
-          // Serialize the posts list back into a clean flat array
-          var posts = obj.posts || [];
-          return JSON.stringify(posts, null, 2);
+          var list = [];
+          for (var key in obj) {
+            if (Array.isArray(obj[key])) {
+              list = obj[key];
+              break;
+            }
+          }
+          return JSON.stringify(list, null, 2);
         },
         fromFile: function(content) {
-          // Read the flat JSON array and wrap it into a 'posts' property for the list widget
           try {
-            var posts = JSON.parse(content);
-            return { posts: Array.isArray(posts) ? posts : [] };
+            var list = JSON.parse(content);
+            var parsed = Array.isArray(list) ? list : [];
+            return { 
+              posts: parsed,
+              testimonials: parsed
+            };
           } catch (e) {
             console.error("[CMS] Failed to parse JSON database array:", e);
-            return { posts: [] };
+            return { posts: [], testimonials: [] };
           }
         }
       });

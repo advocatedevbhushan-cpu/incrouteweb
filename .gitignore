@@ -9,5 +9,6 @@ coverage/
 
 # Runtime data files — managed by the server, not git
 blog-posts.json
+blog-views.json
 contact-form-config.json
 submissions.json

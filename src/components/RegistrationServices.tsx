@@ -1472,15 +1472,11 @@ export default function RegistrationServices({
     }
   };
 
-  // Auto-scroll to onboarding form section when prefilled brand name is provided
+  // Auto-open onboarding modal when prefilled brand name is provided
   useEffect(() => {
     if (prefilledCompanyName) {
-      setTimeout(() => {
-        const onboardingForm = document.getElementById("onboarding-form-section");
-        if (onboardingForm) {
-          onboardingForm.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 350);
+      setCheckName(prefilledCompanyName);
+      setShowOnboardModal(true);
     }
   }, [prefilledCompanyName]);
 
@@ -2399,57 +2395,66 @@ export default function RegistrationServices({
                 </div>
               </ScrollReveal>
             </div>
-
-            {/* Centered Glassmorphic Intake Form Modal */}
-            {showOnboardModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                {/* Backdrop */}
-                <div 
-                  onClick={() => setShowOnboardModal(false)}
-                  className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" 
-                />
-
-                {/* Form Box */}
-                <div className="relative w-full max-w-lg bg-brand-bg-lighter border border-brand-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden subtle-glow animate-in zoom-in-95 duration-250 z-10 text-left">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-3xl rounded-full pointer-events-none" />
-                  
-                  <button 
-                    onClick={() => setShowOnboardModal(false)}
-                    className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-brand-text-muted hover:text-brand-text cursor-pointer transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-brand-gold/10 text-brand-gold rounded-lg border border-brand-gold/20 shrink-0">
-                        <Building2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-light text-brand-text serif">
-                          {isIncorporation ? "Start Your Incorporation" : "Get Started with INCroute"}
-                        </h3>
-                        <p className="text-[9px] text-brand-text-muted font-mono uppercase tracking-widest mt-0.5">{selectedEntity.name} Desk</p>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-brand-border pt-4">
-                      <ContactFormWidget 
-                        initialMessage={
-                          isIncorporation 
-                            ? `I would like to onboard and register my business structure as a ${selectedEntity.name}. Directors: ${calcDirectors}, Authorized Share Capital: ₹${calcCapital.toLocaleString()}. Addons: ${Object.keys(addOns).filter(k => addOns[k as any]).join(", ") || "None"}.`
-                            : `I would like to request a custom quote / register for the service: ${selectedEntity.name}.${pricing.customQuote ? "" : ` Estimated Professional Fee: ₹${pricing.total}.`}`
-                        } 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </>
       )}
     
+      {/* Centered Glassmorphic Intake Form Modal */}
+      {showOnboardModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            onClick={() => setShowOnboardModal(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" 
+          />
+
+          {/* Form Box */}
+          <div className="relative w-full max-w-lg bg-brand-bg-lighter border border-brand-border rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden subtle-glow animate-in zoom-in-95 duration-250 z-10 text-left">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-3xl rounded-full pointer-events-none" />
+            
+            <button 
+              onClick={() => setShowOnboardModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-brand-text-muted hover:text-brand-text cursor-pointer transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-brand-gold/10 text-brand-gold rounded-lg border border-brand-gold/25 shrink-0">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-light text-brand-text serif">
+                    {isIncorporation ? "Start Your Incorporation" : "Get Started with INCroute"}
+                  </h3>
+                  <p className="text-[9px] text-brand-text-muted font-mono uppercase tracking-widest mt-0.5">{selectedEntity.name} Desk</p>
+                </div>
+              </div>
+
+              <div className="border-t border-brand-border pt-4">
+                <ContactFormWidget 
+                  initialMessage={
+                    checkName
+                      ? `Hi, I checked my proposed business name "${checkName}" (${
+                          calcEntity === "pvt-ltd" ? "Private Limited Company" : 
+                          calcEntity === "llp" ? "Limited Liability Partnership" : 
+                          calcEntity === "opc" ? "One Person Company" : 
+                          calcEntity === "section8" ? "Section 8 Company" :
+                          calcEntity === "public-ltd" ? "Public Limited Company" :
+                          "Partnership Firm"
+                        }) using the AI Feasibility Advisor and would like to proceed with registration. Please help me with the next steps.`
+                      : isIncorporation 
+                        ? `I would like to onboard and register my business structure as a ${selectedEntity.name}. Directors: ${calcDirectors}, Authorized Share Capital: ₹${calcCapital.toLocaleString()}. Addons: ${Object.keys(addOns).filter(k => addOns[k as any]).join(", ") || "None"}.`
+                        : `I would like to request a custom quote / register for the service: ${selectedEntity.name}.${pricing.customQuote ? "" : ` Estimated Professional Fee: ₹${pricing.total}.`}`
+                  } 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Premium Glassmorphic Trust & Guarantees Modal */}
       {showTrustModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
