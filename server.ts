@@ -827,36 +827,22 @@ Format your response as a strict, clean JSON object. Return ONLY the raw JSON st
     const positiveHash = Math.abs(hash);
 
     try {
-      const apiKey = process.env.DEEPSEEK_API_KEY;
-      if (!apiKey || apiKey === "sk-cbeeee451dd848c3876906ac24293bbc_demo") {
-        throw new Error("DeepSeek key not loaded or placeholder.");
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Gemini key not configured.");
       }
 
-      const dsResponse = await fetch("https://api.deepseek.com/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON without markdown syntax blocks." },
-            { role: "user", content: checkPrompt }
-          ],
-          response_format: {
-            type: "json_object"
-          },
-          temperature: 0.2
-        })
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: checkPrompt,
+        config: {
+          systemInstruction: "You are the Senior Registrar Compliance Director of Incroute. Return ONLY raw JSON matching the exact structure requested, without markdown syntax blocks.",
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
       });
 
-      if (!dsResponse.ok) {
-        throw new Error(`DeepSeek API returned error status: ${dsResponse.status}`);
-      }
-
-      const data = await dsResponse.json();
-      let resultText = data.choices?.[0]?.message?.content || "{}";
+      let resultText = response.text || "{}";
       resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsed = JSON.parse(resultText);
 
@@ -890,7 +876,7 @@ Format your response as a strict, clean JSON object. Return ONLY the raw JSON st
 
       res.json({ success: true, report: parsed });
     } catch (err: any) {
-      console.warn("⚠️ DeepSeek Feasibility clearance falling back to simulated engine:", err.message);
+      console.warn("⚠️ Gemini Feasibility clearance falling back to simulated engine:", err.message);
       
       let score = 85;
       const conflicts: string[] = [];

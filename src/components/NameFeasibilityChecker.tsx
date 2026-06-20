@@ -235,7 +235,7 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
           </span>
         </h1>
         <p className="text-sm text-brand-text-muted font-sans leading-relaxed max-w-xl mx-auto">
-          DeepSeek clearance processor and statutory compliance tracker. Scan Indian MCA records instantly.
+          Gemini clearance processor and statutory compliance tracker. Scan Indian MCA records instantly.
         </p>
       </div>
 
@@ -476,7 +476,7 @@ export default function NameFeasibilityChecker({ onOnboard }: NameFeasibilityChe
                   Querying Central MCA Registry...
                 </h4>
                 <p className="text-xs text-brand-text-muted font-mono mt-1 animate-pulse">
-                  DeepSeek clearance agent is checking phonetics, trademarks, and statutory compliance
+                  Gemini clearance agent is checking phonetics, trademarks, and statutory compliance
                 </p>
               </div>
             </div>
