@@ -199,8 +199,8 @@ Founder A Signature                     Founder B Signature`;
     doc.text("INCROUTE | Common Draft Document", margin, y);
     y += 6;
 
-    // Gold line
-    doc.setDrawColor(199, 168, 107); // #C7A86B
+    // Neon Green line
+    doc.setDrawColor(191, 255, 0); // #BFFF00
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -230,7 +230,7 @@ Founder A Signature                     Founder B Signature`;
     // Footer
     y = Math.max(y + 10, 270);
     if (y > 270) { doc.addPage(); y = margin; }
-    doc.setDrawColor(199, 168, 107);
+    doc.setDrawColor(191, 255, 0);
     doc.setLineWidth(0.3);
     doc.line(margin, y, pageWidth - margin, y);
     y += 5;
@@ -380,7 +380,7 @@ Founder A Signature                     Founder B Signature`;
                     <span className="text-brand-gold">₹{fees.totalGovernmentFees.toLocaleString()}*</span>
                   </div>
                   <div className="border-t border-brand-border/40 pt-3 flex justify-between text-brand-text-muted"><span>Digital Signature (DSC)*:</span><span>₹{fees.dscCost.toLocaleString()}*</span></div>
-                  <div className="flex justify-between text-brand-text-muted"><span>Incroute Professional Fee*:</span><span>₹{fees.professionalFee.toLocaleString()}*</span></div>
+
                   <div className="border-t border-brand-gold/30 border-dashed pt-4 mt-2 flex justify-between text-xs font-bold text-brand-text">
                     <span className="flex items-center gap-1"><Scale className="w-3.5 h-3.5 text-brand-gold" /> Estimated Total*:</span>
                     <span className="text-brand-gold text-sm font-bold">₹{fees.totalFinal.toLocaleString()}*</span>

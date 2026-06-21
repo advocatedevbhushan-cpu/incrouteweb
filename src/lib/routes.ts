@@ -24,6 +24,7 @@ export const ROUTES = {
   dashboardCustomer: "/dashboard/customer",
   dashboardPartner: "/dashboard/partner",
   dashboardPartnerCustomerDetail: (id: string) => `/dashboard/partner/customer/${id}`,
+  portal: "/portal",
 } as const;
 
 // Map old tab names to new routes (for migration)
@@ -46,6 +47,7 @@ export const TAB_TO_ROUTE: Record<string, string> = {
   "dashboard-customer": ROUTES.dashboardCustomer,
   "dashboard-partner": ROUTES.dashboardPartner,
   "dashboard-partner-customer-detail": "/dashboard/partner/customer/:id",
+  "portal": ROUTES.portal,
 };
 
 // Breadcrumb label map

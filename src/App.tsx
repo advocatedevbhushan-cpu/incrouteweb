@@ -16,6 +16,8 @@ const Login = lazy(() => import("./components/Login"));
 const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
 const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
 const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
+const ClientPortal = lazy(() => import("./portal/ClientPortal"));
+const LoginPage = lazy(() => import("./components/LoginPage"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
 const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
 const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
@@ -281,10 +283,19 @@ export default function App() {
         <div className="executive-grid" />
         <div className="relative z-10 flex flex-col items-center gap-5">
           <div className="flex items-center gap-2.5">
-            <img src="/incroute_logo.webp" alt="Legiscorp" className="w-8 h-8 rounded-full object-cover border border-brand-gold/40" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <span className="text-lg font-light font-serif text-brand-text tracking-widest">
-              Legis<span className="text-brand-gold">corp</span>
-            </span>
+            <div className="w-9 h-9 rounded-full overflow-hidden">
+              <img src="/incroute_logo.png" alt="INCroute Logo" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col select-none leading-none">
+              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight">
+                INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
+              </span>
+              <div className="flex items-center gap-1 mt-[3px]">
+                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
+                <span className="text-[8px] text-[var(--text-tertiary)] tracking-[0.18em] uppercase font-semibold">Make It Right</span>
+                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
+              </div>
+            </div>
           </div>
           <div className="w-10 h-10 border-2 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin" />
           <p className="text-[11px] font-mono text-brand-text-muted uppercase tracking-widest">Loading portal&hellip;</p>
@@ -301,10 +312,10 @@ export default function App() {
       <div className="executive-glow-2" />
       <div className="executive-grid" />
 
-      {/* Decorative gold star — bottom right */}
+      {/* Decorative brand star — bottom right */}
       <div className="fixed bottom-24 right-6 z-0 pointer-events-none opacity-20 hidden md:block">
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 0L44.5 35.5L80 40L44.5 44.5L40 80L35.5 44.5L0 40L35.5 35.5L40 0Z" fill="#C7A86B" />
+          <path d="M40 0L44.5 35.5L80 40L44.5 44.5L40 80L35.5 44.5L0 40L35.5 35.5L40 0Z" fill="var(--color-brand-gold)" />
         </svg>
       </div>
 
@@ -318,7 +329,7 @@ export default function App() {
       <Breadcrumb />
 
       {/* Main Container Wrapper */}
-      <main className="flex-1 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full overflow-hidden">
+      <main className="flex-1 w-full overflow-hidden flex flex-col bg-brand-bg">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" /></div>}>
         <AnimatePresence mode="wait">
           {activeTab === "services" && (
@@ -328,6 +339,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full flex flex-col max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-6"
             >
               <RegistrationServices 
                 setActiveTab={setActiveTab} 
@@ -335,7 +347,7 @@ export default function App() {
                 prefilledEntityType={prefilledEntityType}
               />
               {/* Live Testimonial Carousel */}
-              <div className="mt-12">
+              <div className="pb-16 w-full mt-12">
                 <TestimonialCarousel setActiveTab={setActiveTab} />
               </div>
             </motion.div>
@@ -348,6 +360,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <NameFeasibilityChecker 
                 onOnboard={(brandName, entityType) => {
@@ -384,7 +397,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="space-y-12"
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
@@ -451,6 +464,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <BlogPage />
             </motion.div>
@@ -464,8 +478,12 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full catalog-section-bg relative"
             >
-              <ServiceCatalogInsights setActiveTab={setActiveTab} />
+              <div className="catalog-mesh" />
+              <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left relative z-10">
+                <ServiceCatalogInsights setActiveTab={setActiveTab} />
+              </div>
             </motion.div>
           )}
 
@@ -477,6 +495,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <StatutoryTools />
             </motion.div>
@@ -490,6 +509,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <ComplianceFlowchart />
             </motion.div>
@@ -503,6 +523,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <EntityComparison />
             </motion.div>
@@ -516,6 +537,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <ServiceImpactDashboard />
             </motion.div>
@@ -529,6 +551,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <AnimatedTimeline items={roadmapMilestones} />
             </motion.div>
@@ -542,6 +565,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <TestimonialsSection />
             </motion.div>
@@ -555,6 +579,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <AboutPage setActiveTab={setActiveTab} />
             </motion.div>
@@ -568,6 +593,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="bangalore" setActiveTab={setActiveTab} />
             </motion.div>
@@ -580,6 +606,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="mumbai" setActiveTab={setActiveTab} />
             </motion.div>
@@ -592,6 +619,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="delhi" setActiveTab={setActiveTab} />
             </motion.div>
@@ -605,6 +633,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <AnswerHub setActiveTab={setActiveTab} />
             </motion.div>
@@ -618,11 +647,11 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="space-y-12"
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
-                  <img src="/incroute_logo.webp" className="w-5 h-5 rounded-full object-cover border border-brand-gold/40 bg-black" alt="INCroute Logo" />
+                  <img src="/incroute_logo.png" className="w-5 h-5 rounded-full object-cover" alt="INCroute Logo" />
                   Static Statutory Calendars
                 </div>
                 <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
@@ -754,6 +783,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <AuthPortal />
             </motion.div>
@@ -766,8 +796,9 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full"
             >
-              <Login />
+              <LoginPage setActiveTab={setActiveTab} />
             </motion.div>
           )}
 
@@ -778,6 +809,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <CustomerDashboard />
             </motion.div>
@@ -790,6 +822,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <PartnerDashboard />
             </motion.div>
@@ -802,13 +835,27 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
             >
               <PartnerCustomerDetail customerId={routeParams.id} />
             </motion.div>
           )}
 
+          {activeTab === "portal" && (
+            <motion.div
+              key="portal"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
+            >
+              <ClientPortal />
+            </motion.div>
+          )}
+
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>
@@ -822,13 +869,18 @@ export default function App() {
             
             <div className="md:col-span-3 space-y-5">
               <div className="flex items-center gap-2.5 cursor-pointer font-sans justify-center md:justify-start" onClick={() => handleServiceClick("pvt-ltd")}>
-                <div className="w-9 h-9 bg-brand-dark rounded-lg border border-brand-border overflow-hidden flex items-center justify-center">
-                  <img src="/incroute_logo.webp" className="w-full h-full object-cover" alt="INCroute Logo" />
+                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                  <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
                 </div>
-                <div className="flex flex-col select-none">
-                  <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">
-                    INC<span className="text-brand-gold font-serif italic font-normal tracking-normal text-xl lowercase">route</span>
+                <div className="flex flex-col select-none leading-none text-left">
+                  <span className="text-[20px] font-extrabold text-[var(--text-primary)] tracking-tight">
+                    INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
                   </span>
+                  <div className="flex items-center gap-1.5 mt-[4px]">
+                    <span className="h-[1px] w-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
+                    <span className="text-[9px] text-[var(--text-tertiary)] tracking-[0.2em] uppercase font-semibold">Make It Right</span>
+                    <span className="h-[1px] w-4 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
+                  </div>
                 </div>
               </div>
               <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-sm mx-auto md:mx-0">

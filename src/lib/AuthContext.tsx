@@ -65,7 +65,7 @@ export const getDefaultTimeline = (): TimelineMilestone[] => [
     days: "3-4 Days",
     title: "SPICe+ Incorporation Form Lodgement",
     form: "Form INC-32, e-MOA & e-AOA",
-    description: "Legiscorp expert compiles all director consents, NOCs, utility address proofs, and submits SPICe+ bundle on MCA.",
+    description: "INCroute expert compiles all director consents, NOCs, utility address proofs, and submits SPICe+ bundle on MCA.",
     penalty: "Compounding processing fees on MCA if forms are rejected twice for signature mismatch.",
     tip: "Digital signatures must be valid Class 3 credentials.",
     owner: "expert",
@@ -550,7 +550,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         `%c📧 WELCOME EMAIL SENT TO: ${email}\n` +
         `Name: ${fullName}\n` +
         `Role: ${role.toUpperCase()}\n` +
-        `Login: https://legiscorp.in/portal\n` +
+        `Login: https://incroute.com/portal\n` +
         `Email: ${email}\n` +
         `Password: ${password}\n` +
         `(This is a simulated email — integrate EmailJS or SendGrid for production)`,
@@ -594,7 +594,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Log simulated welcome email
         console.log(
-          `%c📧 WELCOME EMAIL — ${email}\nName: ${fullName} | Role: ${role.toUpperCase()}\nLogin URL: https://legiscorp.in/portal\nEmail: ${email}\nPassword: ${password}`,
+          `%c📧 WELCOME EMAIL — ${email}\nName: ${fullName} | Role: ${role.toUpperCase()}\nLogin URL: https://incroute.com/portal\nEmail: ${email}\nPassword: ${password}`,
           "background: #0d0d1a; color: #ffd700; padding: 8px; font-size: 12px;"
         );
 

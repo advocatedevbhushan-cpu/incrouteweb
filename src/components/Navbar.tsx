@@ -1,31 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Shield, 
-  Building2, 
-  Scale, 
-  FileText, 
-  Phone, 
-  Menu, 
-  X, 
-  Sun, 
-  Moon, 
-  BookOpen, 
-  Globe, 
-  Info, 
-  Database, 
-  Calculator, 
-  TrendingUp, 
-  Zap, 
-  BarChart3, 
-  MessageSquare,
-  ChevronDown,
-  Sparkles,
-  ClipboardCheck,
-  Award,
-  HelpCircle
-} from "lucide-react";
+import { ChevronDown, Globe, Menu, X, Sun, Moon, ArrowRight } from "lucide-react";
 import { useLang } from "../lib/LanguageContext";
-import type { Lang } from "../lib/i18n";
+import { useTheme } from "../lib/useTheme";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../lib/AuthContext";
 
@@ -34,583 +10,232 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
 }
 
-export default function Navbar({
-  activeTab,
-  setActiveTab
-}: NavbarProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [isLightMode, setIsLightMode] = useState(true);
-  const { lang, setLang, t } = useLang();
-
-  // Active Dropdowns State for hover triggers on desktop
-  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
-  const { user: currentUser, profile, logoutUser } = useAuth();
-  const SHOW_SIGN_OPTION = false; // Hide Sign In option from website without deleting code
-
-  const handleNavClick = (e: React.MouseEvent, tab: string) => {
-    e.preventDefault();
-    setActiveTab(tab);
-  };
+export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const { lang, setLang } = useLang();
+  const { theme, toggleTheme } = useTheme();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
-    // Check initial mode
-    const isLight = document.documentElement.classList.contains("light");
-    setIsLightMode(isLight);
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const toggleTheme = () => {
-    if (isLightMode) {
-      document.documentElement.classList.remove("light");
-      setIsLightMode(false);
-    } else {
-      document.documentElement.classList.add("light");
-      setIsLightMode(true);
-    }
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 1024) setMobileOpen(false); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const nav = (e: React.MouseEvent, tab: string) => {
+    e.preventDefault();
+    setActiveTab(tab);
+    setMobileOpen(false);
+    setOpenDropdown(null);
   };
 
-  const toggleLang = () => {
-    setLang(lang === "en" ? "hi" : "en");
-  };
-
-  // Helper to check if any child of a dropdown is active
-  const isDropdownActive = (tabs: string[]) => tabs.includes(activeTab);
+  const isActive = (tabs: string[]) => tabs.includes(activeTab);
 
   return (
-    <nav className="sticky top-0 z-50 bg-brand-bg/95 border-b border-brand-border backdrop-blur-md transition-colors duration-150 transform-gpu">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          
-          {/* Logo Brand */}
-          <a href="/" className="flex items-center gap-2.5 cursor-pointer font-sans" onClick={(e) => handleNavClick(e, "services")}>
-            <div className="w-9 h-9 bg-brand-dark rounded-lg border border-brand-border overflow-hidden flex items-center justify-center">
-              <img src="/incroute_logo.webp" className="w-full h-full object-cover" alt="INCroute Logo" />
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-150 h-[72px] flex items-center ${
+        scrolled
+          ? "bg-[var(--bg-surface)]/95 border-b border-[var(--border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          : "bg-[var(--bg-surface)]/80 border-b border-transparent"
+      } backdrop-blur-xl`}
+    >
+      <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
+
+        {/* ─── Left: Logo + Nav ─── */}
+        <div className="flex items-center gap-8">
+          {/* Logo */}
+          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer">
+            <div className="w-9 h-9 rounded-full overflow-hidden">
+              <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
             </div>
-            <div className="flex flex-col select-none">
-              <span className="text-lg font-bold text-brand-text tracking-wider uppercase leading-none">
-                INC<span className="text-brand-gold font-serif italic font-normal tracking-normal text-xl lowercase">route</span>
+            <div className="flex flex-col select-none leading-none">
+              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight">
+                INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
               </span>
-              <p className="text-[8px] text-brand-text-muted font-mono tracking-widest uppercase mt-0.5">{t("footer_motto") as string}</p>
+              <div className="flex items-center gap-1 mt-[3px]">
+                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
+                <span className="text-[8px] text-[var(--text-tertiary)] tracking-[0.18em] uppercase font-semibold">Make It Right</span>
+                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
+              </div>
             </div>
           </a>
 
-          {/* Desktop Navigation Links - Organized into Dropdowns */}
-          <div className="hidden lg:flex items-center space-x-1">
-            
-            {/* Dropdown 1: Solutions */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setHoveredMenu("solutions")}
-              onMouseLeave={() => setHoveredMenu(null)}
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            {/* Solutions — dropdown */}
+            <NavDropdown
+              label="Solutions"
+              active={isActive(["services", "catalog", "tools", "name-checker", "comparison", "impact"])}
+              open={openDropdown === "solutions"}
+              onOpen={() => setOpenDropdown("solutions")}
+              onClose={() => setOpenDropdown(null)}
             >
-              <button
-                className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu flex items-center gap-1 cursor-pointer outline-none ${
-                  isDropdownActive(["services", "catalog", "tools"])
-                    ? isLightMode ? "text-[#111827]" : "text-brand-gold"
-                    : "text-brand-text-muted hover:text-brand-gold"
-                }`}
-              >
-                {isDropdownActive(["services", "catalog", "tools"]) && (
-                  <motion.div
-                    layoutId="navActivePill"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className={`absolute inset-0 rounded-full z-0 ${
-                      isLightMode ? "bg-[#efece6] border border-[#dcd9d0]" : "bg-brand-gold/15 border border-brand-gold/25"
-                    }`}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-1 pointer-events-none">
-                  <Building2 className="w-3.5 h-3.5" />
-                  Solutions
-                  <ChevronDown className="w-3 h-3 opacity-60" />
-                </span>
-              </button>
+              <DropdownItem onClick={(e) => nav(e, "services")} title="All Services" desc="Incorporation, compliance & advisory" active={activeTab === "services"} />
+              <DropdownItem onClick={(e) => nav(e, "catalog")} title="Service Catalog" desc="Detailed pricing & documentation" active={activeTab === "catalog"} />
+              <DropdownItem onClick={(e) => nav(e, "tools")} title="Business Tools" desc="Calculators, checkers & utilities" active={activeTab === "tools"} />
+              <DropdownItem onClick={(e) => nav(e, "name-checker")} title="Name Feasibility" desc="AI-powered brand name check" active={activeTab === "name-checker"} />
+            </NavDropdown>
 
-              <AnimatePresence>
-                {hoveredMenu === "solutions" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-1 w-60 rounded-2xl bg-brand-bg-lighter border border-brand-border p-2 shadow-2xl backdrop-blur-md"
-                  >
-                    {[
-                      { tab: "services", icon: Building2, title: "Services Panel", desc: "Start statutory incorporations" },
-                      { tab: "catalog", icon: Database, title: "Detailed Catalog", desc: "Document rules & advantages" },
-                      { tab: "tools", icon: Calculator, title: "Interactive Utilities", desc: "Calculators & draft generators" }
-                    ].map((sub) => (
-                      <a
-                        key={sub.tab}
-                        href={sub.tab === "services" ? "/" : `/${sub.tab}`}
-                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
-                        className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
-                          activeTab === sub.tab ? "bg-brand-gold/5" : ""
-                        }`}
-                      >
-                        <div className="p-1.5 bg-brand-bg border border-brand-border rounded-lg text-brand-gold shrink-0 mt-0.5">
-                          <sub.icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="text-left space-y-0.5 min-w-0">
-                          <span className={`text-[11px] font-bold block ${activeTab === sub.tab ? "text-brand-gold" : "text-brand-text group-hover:text-brand-gold"}`}>
-                            {sub.title}
-                          </span>
-                          <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
-                        </div>
-                      </a>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Dropdown 2: Intelligence */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setHoveredMenu("intelligence")}
-              onMouseLeave={() => setHoveredMenu(null)}
+            {/* Resources — dropdown */}
+            <NavDropdown
+              label="Resources"
+              active={isActive(["blog", "faq", "contact", "compliance", "flowchart"])}
+              open={openDropdown === "resources"}
+              onOpen={() => setOpenDropdown("resources")}
+              onClose={() => setOpenDropdown(null)}
             >
-              <button
-                className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu flex items-center gap-1 cursor-pointer outline-none ${
-                  isDropdownActive(["flowchart", "comparison", "impact", "compliance"])
-                    ? isLightMode ? "text-[#111827]" : "text-brand-gold"
-                    : "text-brand-text-muted hover:text-brand-gold"
-                }`}
-              >
-                {isDropdownActive(["flowchart", "comparison", "impact", "compliance"]) && (
-                  <motion.div
-                    layoutId="navActivePill"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className={`absolute inset-0 rounded-full z-0 ${
-                      isLightMode ? "bg-[#efece6] border border-[#dcd9d0]" : "bg-brand-gold/15 border border-brand-gold/25"
-                    }`}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-1 pointer-events-none">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  Statutory Hub
-                  <ChevronDown className="w-3 h-3 opacity-60" />
-                </span>
-              </button>
+              <DropdownItem onClick={(e) => nav(e, "blog")} title="Insights" desc="Articles on compliance & business" active={activeTab === "blog"} />
+              <DropdownItem onClick={(e) => nav(e, "faq")} title="Knowledge Center" desc="FAQs and guides" active={activeTab === "faq"} />
+              <DropdownItem onClick={(e) => nav(e, "compliance")} title="Compliance Tracker" desc="Statutory deadline calendar" active={activeTab === "compliance"} />
+              <DropdownItem onClick={(e) => nav(e, "contact")} title="Contact" desc="Get in touch with our team" active={activeTab === "contact"} />
+            </NavDropdown>
 
-              <AnimatePresence>
-                {hoveredMenu === "intelligence" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-1 w-64 rounded-2xl bg-brand-bg-lighter border border-brand-border p-2 shadow-2xl backdrop-blur-md"
-                  >
-                    {[
-                      { tab: "flowchart", icon: Zap, title: "Compliance Flowchart", desc: "Step-by-step setup pipelines" },
-                      { tab: "comparison", icon: BarChart3, title: "Entity Comparison", desc: "Side-by-side structural specs" },
-                      { tab: "impact", icon: TrendingUp, title: "Impact Dashboard", desc: "Timeline & growth visualizations" },
-                      { tab: "compliance", icon: FileText, title: "Due Date Tracker", desc: "Static statutory calendars" }
-                    ].map((sub) => (
-                      <a
-                        key={sub.tab}
-                        href={`/${sub.tab}`}
-                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
-                        className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
-                          activeTab === sub.tab ? "bg-brand-gold/5" : ""
-                        }`}
-                      >
-                        <div className="p-1.5 bg-brand-bg border border-brand-border rounded-lg text-brand-gold shrink-0 mt-0.5">
-                          <sub.icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="text-left space-y-0.5 min-w-0">
-                          <span className={`text-[11px] font-bold block ${activeTab === sub.tab ? "text-brand-gold" : "text-brand-text group-hover:text-brand-gold"}`}>
-                            {sub.title}
-                          </span>
-                          <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
-                        </div>
-                      </a>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* About */}
+            <NavLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</NavLink>
 
-            {/* Dropdown 3: Reputation */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setHoveredMenu("reputation")}
-              onMouseLeave={() => setHoveredMenu(null)}
-            >
-              <button
-                className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu flex items-center gap-1 cursor-pointer outline-none ${
-                  isDropdownActive(["blog", "testimonials", "faq"])
-                    ? isLightMode ? "text-[#111827]" : "text-brand-gold"
-                    : "text-brand-text-muted hover:text-brand-gold"
-                }`}
-              >
-                {isDropdownActive(["blog", "testimonials", "faq"]) && (
-                  <motion.div
-                    layoutId="navActivePill"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className={`absolute inset-0 rounded-full z-0 ${
-                      isLightMode ? "bg-[#efece6] border border-[#dcd9d0]" : "bg-brand-gold/15 border border-brand-gold/25"
-                    }`}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-1 pointer-events-none">
-                  <Award className="w-3.5 h-3.5" />
-                  Insights
-                  <ChevronDown className="w-3 h-3 opacity-60" />
-                </span>
-              </button>
-
-              <AnimatePresence>
-                {hoveredMenu === "reputation" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-1 w-56 rounded-2xl bg-brand-bg-lighter border border-brand-border p-2 shadow-2xl backdrop-blur-md"
-                  >
-                    {[
-                      { tab: "blog", icon: BookOpen, title: "Knowledge Base", desc: "Expert statutory articles" },
-                      { tab: "faq", icon: HelpCircle, title: "Answer Hub", desc: "Filing & compliance Q&A" },
-                      { tab: "testimonials", icon: MessageSquare, title: "Client Reflections", desc: "Founder feedback & reviews" }
-                    ].map((sub) => (
-                      <a
-                        key={sub.tab}
-                        href={`/${sub.tab}`}
-                        onClick={(e) => { handleNavClick(e, sub.tab); setHoveredMenu(null); }}
-                        className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 hover:bg-brand-gold/10 group cursor-pointer ${
-                          activeTab === sub.tab ? "bg-brand-gold/5" : ""
-                        }`}
-                      >
-                        <div className="p-1.5 bg-brand-bg border border-brand-border rounded-lg text-brand-gold shrink-0 mt-0.5">
-                          <sub.icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="text-left space-y-0.5 min-w-0">
-                          <span className={`text-[11px] font-bold block ${activeTab === sub.tab ? "text-brand-gold" : "text-brand-text group-hover:text-brand-gold"}`}>
-                            {sub.title}
-                          </span>
-                          <span className="text-[9px] text-brand-text-muted leading-tight block truncate">{sub.desc}</span>
-                        </div>
-                      </a>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Direct Links */}
-            {[
-              { tab: "about", icon: Info, label: t("nav_about") as string },
-              { tab: "contact", icon: Phone, label: t("nav_contact") as string },
-            ].map((item) => {
-              const isActive = activeTab === item.tab;
-              const Icon = item.icon;
-              return (
-                <a
-                  key={item.tab}
-                  href={`/${item.tab}`}
-                  onClick={(e) => handleNavClick(e, item.tab)}
-                  className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 transform-gpu cursor-pointer select-none outline-none ${
-                    isActive
-                      ? isLightMode ? "text-[#111827]" : "text-brand-gold"
-                      : "text-brand-text-muted hover:text-brand-gold"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="navActivePill"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      className={`absolute inset-0 rounded-full z-0 ${
-                        isLightMode ? "bg-[#efece6] border border-[#dcd9d0]" : "bg-brand-gold/15 border border-brand-gold/25"
-                      }`}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5 pointer-events-none">
-                    <Icon className="w-3.5 h-3.5" />
-                    {item.label}
-                  </span>
-                </a>
-              );
-            })}
-
-            {/* Portal Action */}
-            {SHOW_SIGN_OPTION && (currentUser ? (
-              profile ? (
-                <div className="flex items-center gap-2 ml-2">
-                  {profile.role === "customer" ? (
-                    <a
-                      href="/dashboard/customer"
-                      onClick={(e) => handleNavClick(e, "dashboard-customer")}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ${
-                        activeTab === "dashboard-customer"
-                          ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
-                          : "text-brand-text-muted hover:text-brand-gold border border-transparent"
-                      }`}
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      Dashboard
-                    </a>
-                  ) : (
-                    <a
-                      href="/dashboard/partner"
-                      onClick={(e) => handleNavClick(e, "dashboard-partner")}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ${
-                        activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail"
-                          ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
-                          : "text-brand-text-muted hover:text-brand-gold border border-transparent"
-                      }`}
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      Partner Portal
-                    </a>
-                  )}
-                  <button
-                    onClick={async () => {
-                      await logoutUser();
-                      setActiveTab("services");
-                    }}
-                    className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 border border-red-500/20 text-xs font-semibold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center ml-2 px-4 py-1.5">
-                  <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                </div>
-              )
-            ) : (
-              <a
-                href="/login"
-                onClick={(e) => handleNavClick(e, "login")}
-                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors duration-150 flex items-center gap-1.5 cursor-pointer outline-none ml-2 ${
-                  activeTab === "login"
-                    ? isLightMode ? "bg-[#efece6] border border-[#dcd9d0] text-[#111827]" : "bg-brand-gold/15 border border-brand-gold/25 text-brand-gold"
-                    : "bg-brand-gold text-black hover:bg-white hover:text-black shadow-md shadow-brand-gold/10"
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                Sign In
-              </a>
-            ))}
-
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLang}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-brand-text-muted hover:text-brand-gold hover:bg-brand-gold/10 border border-transparent transition-colors duration-150 ml-1 cursor-pointer"
-              title={lang === "en" ? "Switch to Hindi" : "Switch to English"}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              {lang === "en" ? "हिं" : "EN"}
-            </button>
-
-            {/* Desktop Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2.5 rounded-full text-brand-text-muted hover:text-brand-gold hover:bg-brand-gold/10 transition-colors duration-150 ml-1 cursor-pointer border border-transparent"
-              title={isLightMode ? "Switch to Midnight Theme" : "Switch to Marble Light Theme"}
-            >
-              {isLightMode ? (
-                <Moon className="w-4 h-4 text-slate-700" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
-              )}
-            </button>
+            {/* Blog */}
+            <NavLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</NavLink>
           </div>
+        </div>
 
-          {/* Mobile menu toggle buttons */}
-          <div className="lg:hidden flex items-center gap-2">
-            {/* Mobile Language Toggle */}
-            <button
-              onClick={toggleLang}
-              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-gold focus:outline-none cursor-pointer text-xs font-mono font-bold"
-            >
-              {lang === "en" ? "हिं" : "EN"}
-            </button>
+        {/* ─── Right: Utilities ─── */}
+        <div className="flex items-center gap-3">
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="hidden sm:flex p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
 
-            {/* Mobile Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-gold focus:outline-none cursor-pointer"
-            >
-              {isLightMode ? (
-                <Moon className="w-5 h-5 text-slate-700" />
-              ) : (
-                <Sun className="w-5 h-5 text-amber-400 fill-amber-400" />
-              )}
-            </button>
-            
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-brand-text-muted hover:text-brand-text focus:outline-none cursor-pointer"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          {/* Language */}
+          <button
+            onClick={() => setLang(lang === "en" ? "hi" : "en")}
+            aria-label="Switch language"
+            className="hidden sm:flex items-center gap-1 p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {lang === "en" ? "हिं" : "EN"}
+          </button>
 
+          {/* Login — secondary */}
+          <a
+            href="/login"
+            onClick={(e) => nav(e, "login")}
+            className="hidden lg:flex items-center h-[44px] px-4 text-[13px] font-semibold text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:text-[var(--accent)] rounded-xl transition-all cursor-pointer whitespace-nowrap"
+          >
+            Login
+          </a>
+
+          {/* Book Consultation — primary CTA */}
+          <a
+            href="/contact"
+            onClick={(e) => nav(e, "contact")}
+            className="hidden lg:flex items-center h-[44px] px-5 text-[13px] font-semibold text-[var(--on-gradient-text)] bg-[var(--accent)] hover:bg-[var(--accent-deep)] rounded-xl transition-all cursor-pointer whitespace-nowrap gap-1.5"
+          >
+            Book Consultation <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            className="lg:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] cursor-pointer"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu - Displays as fully organized sub-collapsible sections */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-brand-bg border-b border-brand-border px-4 py-4 space-y-3 relative overflow-y-auto max-h-[80vh] text-left">
-          {/* Solutions Category */}
-          <div className="space-y-1.5">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Solutions</span>
-            {[
-              { tab: "services", icon: Building2, label: "Services Dashboard" },
-              { tab: "catalog", icon: Database, label: "Detailed Catalog" },
-              { tab: "tools", icon: Calculator, label: "Interactive Tools" }
-            ].map(({ tab, icon: Icon, label }) => (
-              <a
-                key={tab}
-                href={tab === "services" ? "/" : `/${tab}`}
-                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                  activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                }`}
-              >
-                <Icon className="w-4 h-4 text-brand-text-muted" />
-                {label}
-              </a>
-            ))}
-          </div>
+      {/* ─── Mobile Menu ─── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute top-[72px] left-0 right-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
+          >
+            <div className="p-4 space-y-1 max-h-[75vh] overflow-y-auto">
+              <MobileLink onClick={(e) => nav(e, "services")} active={activeTab === "services"}>Solutions</MobileLink>
+              <MobileLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Insights</MobileLink>
+              <MobileLink onClick={(e) => nav(e, "faq")} active={activeTab === "faq"}>Knowledge Center</MobileLink>
+              <MobileLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</MobileLink>
+              <MobileLink onClick={(e) => nav(e, "contact")} active={activeTab === "contact"}>Contact</MobileLink>
 
-          {/* Statutory Hub Category */}
-          <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Statutory Hub</span>
-            {[
-              { tab: "flowchart", icon: Zap, label: "Compliance Flowchart" },
-              { tab: "comparison", icon: BarChart3, label: "Entity Comparison" },
-              { tab: "impact", icon: TrendingUp, label: "Impact Dashboard" },
-              { tab: "compliance", icon: FileText, label: "Due Date Tracker" }
-            ].map((item) => {
-              const tab = item.tab;
-              const Icon = item.icon || FileText;
-              const label = item.label || "Due Date Tracker";
-              return (
-                <a
-                  key={tab}
-                  href={`/${tab}`}
-                  onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                    activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 text-brand-text-muted" />
-                  {label}
-                </a>
-              );
-            })}
-          </div>
-
-          {/* Insights Category */}
-          <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Insights</span>
-            {[
-              { tab: "blog", icon: BookOpen, label: "Knowledge Base Articles" },
-              { tab: "faq", icon: HelpCircle, label: "Answer Hub" },
-              { tab: "testimonials", icon: MessageSquare, label: "Client Reflections" }
-            ].map(({ tab, icon: Icon, label }) => (
-              <a
-                key={tab}
-                href={`/${tab}`}
-                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                  activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                }`}
-              >
-                <Icon className="w-4 h-4 text-brand-text-muted" />
-                {label}
-              </a>
-            ))}
-          </div>
-
-          {/* Corporate Links */}
-          <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Corporate</span>
-            {[
-              { tab: "about", icon: Info, label: t("nav_about") as string },
-              { tab: "contact", icon: Phone, label: t("nav_contact") as string },
-            ].map(({ tab, icon: Icon, label }) => (
-              <a
-                key={tab}
-                href={`/${tab}`}
-                onClick={(e) => { handleNavClick(e, tab); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                  activeTab === tab ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                }`}
-              >
-                <Icon className="w-4 h-4 text-brand-text-muted" />
-                {label}
-              </a>
-            ))}
-          </div>
-
-          {/* Account/Portal Category */}
-          {SHOW_SIGN_OPTION && (
-            <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold pl-3 block mb-1">Account</span>
-              {currentUser ? (
-                profile ? (
-                  <>
-                    {profile.role === "customer" ? (
-                      <a
-                        href="/dashboard/customer"
-                        onClick={(e) => { handleNavClick(e, "dashboard-customer"); setMobileMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                          activeTab === "dashboard-customer" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                        }`}
-                      >
-                        <Building2 className="w-4 h-4 text-brand-text-muted" />
-                        Dashboard
-                      </a>
-                    ) : (
-                      <a
-                        href="/dashboard/partner"
-                        onClick={(e) => { handleNavClick(e, "dashboard-partner"); setMobileMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                          activeTab === "dashboard-partner" || activeTab === "dashboard-partner-customer-detail" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                        }`}
-                      >
-                        <Building2 className="w-4 h-4 text-brand-text-muted" />
-                        Partner Portal
-                      </a>
-                    )}
-                    <button
-                      onClick={async () => {
-                        await logoutUser();
-                        setActiveTab("services");
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer text-red-500 hover:bg-red-500/10 transition-colors"
-                    >
-                      <X className="w-4 h-4 text-red-500" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <div className="w-full pl-3 py-3 flex items-center gap-3">
-                    <div className="w-4 h-4 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[10px] text-brand-text-muted font-mono uppercase">Retrieving Profile...</span>
-                  </div>
-                )
-              ) : (
-                <a
-                  href="/login"
-                  onClick={(e) => { handleNavClick(e, "login"); setMobileMenuOpen(false); }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-3 cursor-pointer transition-colors duration-150 ${
-                    activeTab === "login" ? "bg-brand-gold/15 text-brand-gold border border-brand-gold/25" : "text-brand-text hover:text-brand-gold"
-                  }`}
-                >
-                  <Building2 className="w-4 h-4 text-brand-text-muted" />
-                  Sign In
-                </a>
-              )}
+              <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] space-y-2">
+                <a href="/login" onClick={(e) => nav(e, "login")} className="block w-full text-center py-3 border border-[var(--border-subtle)] text-[var(--text-primary)] font-semibold text-[13px] rounded-xl cursor-pointer">Login</a>
+                <a href="/contact" onClick={(e) => nav(e, "contact")} className="block w-full text-center py-3 bg-[var(--accent)] text-[var(--on-gradient-text)] font-semibold text-[13px] rounded-xl cursor-pointer">Book Consultation</a>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
+  );
+}
+
+/* ─── Sub-components ─── */
+
+function NavLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
+  return (
+    <a href="#" onClick={onClick} className={`relative px-4 py-2 text-[14px] font-medium transition-colors cursor-pointer whitespace-nowrap ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+      {children}
+      {active && <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-[var(--accent)] rounded-full" />}
+    </a>
+  );
+}
+
+function NavDropdown({ label, active, open, onOpen, onClose, children }: { label: string; active: boolean; open: boolean; onOpen: () => void; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+      <button className={`relative flex items-center gap-1 px-4 py-2 text-[14px] font-medium transition-colors cursor-pointer whitespace-nowrap ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+        {label}
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
+        {active && <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-[var(--accent)] rounded-full" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute top-full left-0 pt-2 z-50"
+          >
+            <div className="w-[280px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-1.5 space-y-0.5">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function DropdownItem({ onClick, title, desc, active }: { onClick: (e: React.MouseEvent) => void; title: string; desc: string; active: boolean }) {
+  return (
+    <a href="#" onClick={onClick} className={`block px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer ${active ? "bg-[var(--accent-soft)]" : "hover:bg-[var(--accent-soft)]"}`}>
+      <p className={`text-[13px] font-medium ${active ? "text-[var(--accent)]" : "text-[var(--text-primary)]"}`}>{title}</p>
+      <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{desc}</p>
+    </a>
+  );
+}
+
+function MobileLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
+  return (
+    <a href="#" onClick={onClick} className={`block px-4 py-3 rounded-xl text-[14px] font-medium cursor-pointer transition-colors ${active ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-primary)] hover:bg-[var(--accent-soft)]"}`}>
+      {children}
+    </a>
   );
 }

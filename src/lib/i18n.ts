@@ -42,7 +42,7 @@ export const translations = {
 
     // Blog
     blog_badge: "Corporate Editorial Insights",
-    blog_title: "LegisCorp",
+    blog_title: "INCroute",
     blog_title_accent: "Legal Ledger.",
     blog_subtitle: "Thought leadership, compliance briefs, statutory warnings, and registrar intelligence mapped directly by corporate advocates and chartered analysts.",
     blog_search_placeholder: "Search articles...",
@@ -149,7 +149,7 @@ export const translations = {
 
     // Blog
     blog_badge: "एक्सपर्ट्स की राय और ब्लॉग्स",
-    blog_title: "LegisCorp",
+    blog_title: "INCroute",
     blog_title_accent: "लीगल ब्लॉग्स।",
     blog_subtitle: "कॉर्पोरेट वकीलों और सीए (CA) एक्सपर्ट्स द्वारा शेयर की गई बिजनेस और टैक्स से जुड़ी जरूरी जानकारियां।",
     blog_search_placeholder: "ब्लॉग खोजें...",

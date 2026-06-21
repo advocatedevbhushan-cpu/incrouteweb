@@ -766,6 +766,18 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [activeSection, setActiveSection] = useState<"advantages" | "documents" | "compliance">("advantages");
 
+  const getCategoryBadgeClass = (category: string) => {
+    switch (category) {
+      case "Incorporation":
+      case "Advisory":
+        return "text-brand-gold bg-brand-gold/12 border-brand-gold/25";
+      case "Compliance":
+      case "Legal & IP":
+      default:
+        return "text-brand-blue bg-brand-blue/10 border-brand-blue/20";
+    }
+  };
+
   const filtered = catalog.filter(s => activeCategory === "All" || s.category === activeCategory);
 
   const openDetail = (service: ServiceType) => {
@@ -813,12 +825,16 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
               {/* Left Column: Cover Art & Metrics */}
               <div className="md:col-span-5 space-y-6">
                 {/* Illustration Frame */}
-                <div className="w-full rounded-2xl border border-brand-border bg-brand-bg-darker overflow-hidden shadow-xl">
+                <div className="w-full rounded-2xl border border-brand-border bg-[var(--bg-page)] overflow-hidden shadow-xl relative">
+                  {/* Dark base behind illustration */}
+                  <div className="absolute inset-0 bg-[var(--bg-page)] z-0" />
                   <img
                     src={selectedService.image}
                     alt={selectedService.name}
-                    className="w-full h-auto object-contain aspect-video md:aspect-auto"
+                    className="w-full h-auto object-contain aspect-video md:aspect-auto relative z-[1]"
                   />
+                  {/* Subtle vignette overlay */}
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_#0B0F1A_100%)] z-[2] opacity-60 pointer-events-none" />
                 </div>
 
                 {/* Key Metrics block */}
@@ -848,7 +864,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
               <div className="md:col-span-7 space-y-6">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`text-[8px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md border ${selectedService.categoryColor} font-bold`}>
+                    <span className={`text-[8px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md border ${getCategoryBadgeClass(selectedService.category)} font-bold`}>
                       {selectedService.category}
                     </span>
                     {selectedService.badge && (
@@ -967,7 +983,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
           >
             {/* Header */}
             <div className="text-center max-w-3xl mx-auto space-y-4">
-              <div className="inline-flex items-center gap-2.5 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
+              <div className="inline-flex items-center gap-2.5 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-[0_0_16px_-4px_rgba(16,185,129,0.2)]">
                 <Sparkles className="w-3.5 h-3.5" /> Detailed Service Intelligence
               </div>
               <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
@@ -977,6 +993,12 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
               <p className="text-sm text-brand-text-muted font-sans leading-relaxed max-w-xl mx-auto">
                 Deep-dive structural blueprints for every service — document rules, compliance requirements, timelines, and legal advantages.
               </p>
+              {/* Decorative separator */}
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <div className="h-px w-16 bg-gradient-to-r from-transparent to-brand-gold/40" />
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-gold/50" />
+                <div className="h-px w-16 bg-gradient-to-l from-transparent to-brand-gold/40" />
+              </div>
             </div>
 
             {/* Category Filter */}
@@ -988,7 +1010,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                   className={`px-4 py-2 rounded-full text-xs font-mono uppercase tracking-widest font-bold border transition-all duration-150 fast-transition cursor-pointer ${
                     activeCategory === cat
                       ? "bg-brand-gold text-black border-brand-gold"
-                      : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/40 hover:text-brand-text"
+                      : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-blue hover:text-brand-blue"
                   }`}
                 >
                   {cat}
@@ -1006,24 +1028,23 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: idx * 0.04 }}
-                    className="bg-brand-bg-lighter border border-brand-border rounded-2xl overflow-hidden hover:border-brand-gold/45 hover:shadow-2xl transition-all duration-300 relative group flex flex-col justify-between h-full premium-card"
+                    className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden hover:border-[var(--accent)] transition-all duration-300 relative group flex flex-col justify-between premium-card"
                   >
                     {/* Cover Image Header using perfect aspect ratio */}
-                    <div className="relative aspect-[16/9] overflow-hidden border-b border-brand-border bg-slate-950">
+                    <div className="relative aspect-[16/9] overflow-hidden border-b border-[var(--border-subtle)]">
                       <img
                         src={service.image}
                         alt={service.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out opacity-90"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-bg-darker via-transparent to-transparent opacity-75" />
                       
                       {/* Floating Badges */}
-                      <div className="absolute top-4 left-4 flex flex-wrap gap-1.5">
-                        <span className={`text-[8px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md border ${service.categoryColor} font-bold backdrop-blur-sm`}>
+                      <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-10">
+                        <span className={`text-[8px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md border ${getCategoryBadgeClass(service.category)} font-bold backdrop-blur-md bg-black/50`}>
                           {service.category}
                         </span>
                         {service.badge && (
-                          <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md backdrop-blur-sm ${service.badgeColor}`}>
+                          <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md backdrop-blur-md ${service.badgeColor}`}>
                             {service.badge}
                           </span>
                         )}
@@ -1037,7 +1058,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                           <div className="p-1.5 rounded-lg bg-brand-gold/10 border border-brand-gold/20 text-brand-gold">
                             <Icon className="w-4 h-4" />
                           </div>
-                          <h3 className="text-sm font-semibold text-brand-text group-hover:text-brand-gold transition-colors font-sans">
+                          <h3 onClick={() => openDetail(service)} className="text-sm font-semibold text-brand-text group-hover:text-brand-gold transition-colors font-sans cursor-pointer">
                             {service.name}
                           </h3>
                         </div>
@@ -1062,7 +1083,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {/* View Details Button */}
                       <button
                         onClick={() => openDetail(service)}
-                        className="w-full py-2.5 mt-2 bg-brand-bg border border-brand-border group-hover:border-brand-gold/60 text-brand-text-muted group-hover:text-brand-text font-mono uppercase tracking-widest text-[9px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 mt-2 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] group-hover:border-[var(--accent)] group-hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] group-hover:text-[var(--accent)] font-mono uppercase tracking-widest text-[9px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         View Blueprint <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                       </button>
@@ -1090,7 +1111,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                 {advantageSpectrum.map((item, idx) => (
                   <div
                     key={idx}
-                    className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-3 hover:border-brand-gold/30 transition-colors group premium-card text-left"
+                    className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3 hover:border-[var(--accent)]/30 transition-all duration-200 group premium-card text-left"
                   >
                     <div className="p-2.5 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-brand-gold w-fit group-hover:bg-brand-gold group-hover:text-black transition-colors">
                       <item.icon className="w-4 h-4" />
@@ -1102,23 +1123,23 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
               </div>
 
               {/* Bottom CTA */}
-              <div className="premium-hero-card border border-brand-border rounded-2xl p-8 sm:p-10 text-center space-y-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-brand-gold/10 blur-3xl rounded-full pointer-events-none" />
+              <div className="premium-hero-card border border-[var(--border-subtle)] rounded-2xl p-8 sm:p-10 text-center space-y-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--accent)]/10 blur-3xl rounded-full pointer-events-none" />
                 <div className="relative z-10 space-y-4">
-                  <h3 className="text-xl font-light text-white serif">Ready to get started?</h3>
-                  <p className="text-sm text-slate-300 font-sans max-w-md mx-auto">
+                  <h3 className="text-xl font-light text-[var(--text-primary)] serif">Ready to get started?</h3>
+                  <p className="text-sm text-[var(--text-secondary)] font-sans max-w-md mx-auto">
                     Pick your structure, upload your documents, and let Incroute handle the rest — end to end.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                     <button
                       onClick={() => navigateToTab("services")}
-                      className="px-6 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2"
+                      className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-2"
                     >
                       Start Registration <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => navigateToTab("contact")}
-                      className="px-6 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition cursor-pointer bg-transparent"
+                      className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] hover:text-[var(--accent)] font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer bg-transparent"
                     >
                       Talk to an Expert
                     </button>

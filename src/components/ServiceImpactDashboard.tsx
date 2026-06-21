@@ -27,9 +27,9 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
   // Cost Breakdown Data
   const costData = [
     { name: "Government Fees", value: 45, color: "#2B5B84" },       // Primary Blue
-    { name: "CA Service Charges", value: 35, color: "#C7A86B" },    // Primary Gold
+    { name: "CA Service Charges", value: 35, color: "#4F46E5" },    // Royal Indigo
     { name: "DSC & DIN Credentials", value: 15, color: "#4A7B9C" }, // Secondary Blue
-    { name: "Miscellaneous Stamping", value: 5, color: "#E5C687" }, // Secondary Gold
+    { name: "Miscellaneous Stamping", value: 5, color: "#10B981" }, // Mint Green
   ];
 
   // Timeline Comparison Data
@@ -195,7 +195,7 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                 />
                 <Legend wrapperStyle={{ fontSize: 10 }} />
                 <Bar dataKey="days" fill="#2B5B84" name="Days to Complete" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="complexity" fill="#C7A86B" name="Complexity Score" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="complexity" fill="#4F46E5" name="Complexity Score" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="compliance" fill="#4A7B9C" name="Compliance Level" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -238,19 +238,19 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                 <Line
                   type="monotone"
                   dataKey="compliance"
-                  stroke="#2B5B84"
+                  stroke="#4F46E5"
                   strokeWidth={3}
                   name="Compliance Level %"
-                  dot={{ fill: "#2B5B84", r: 4 }}
+                  dot={{ fill: "#4F46E5", r: 4 }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="documents"
-                  stroke="#C7A86B"
+                  stroke="#0D9488"
                   strokeWidth={3}
                   name="Documents Lodged"
-                  dot={{ fill: "#C7A86B", r: 4 }}
+                  dot={{ fill: "#0D9488", r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -285,26 +285,26 @@ export default function ServiceImpactDashboard({ onEntitySelect }: ServiceImpact
                 <Line
                   type="monotone"
                   dataKey="pvtLtd"
-                  stroke="#2B5B84"
+                  stroke="#4F46E5"
                   strokeWidth={3}
                   name="Pvt Ltd Structure"
-                  dot={{ fill: "#2B5B84", r: 4 }}
+                  dot={{ fill: "#4F46E5", r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="llp"
-                  stroke="#C7A86B"
+                  stroke="#0D9488"
                   strokeWidth={3}
                   name="LLP Partnership"
-                  dot={{ fill: "#C7A86B", r: 4 }}
+                  dot={{ fill: "#0D9488", r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="opc"
-                  stroke="#4A7B9C"
+                  stroke="#64748B"
                   strokeWidth={3}
                   name="OPC Solo Structure"
-                  dot={{ fill: "#4A7B9C", r: 4 }}
+                  dot={{ fill: "#64748B", r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>

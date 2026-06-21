@@ -127,7 +127,7 @@ export default function PinnedTimeline({ milestones, onDelegate }: PinnedTimelin
               className="h-2.5 rounded-full transition-all duration-700 ease-out"
               style={{
                 width: idx < revealedCount ? 20 : 10,
-                backgroundColor: idx < revealedCount ? "#C7A86B" : "#2A2D31",
+                backgroundColor: idx < revealedCount ? "var(--color-brand-gold)" : "#2A2D31",
               }}
             />
           ))}

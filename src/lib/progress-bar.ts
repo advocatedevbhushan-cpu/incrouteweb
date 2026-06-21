@@ -1,5 +1,5 @@
 /**
- * Page Load Progress Bar — Thin gold line at top of viewport.
+ * Page Load Progress Bar — Thin neon green line at top of viewport.
  * Fills 0% → 100% on page load. Also exposes start/done for SPA navigation.
  */
 
@@ -15,10 +15,10 @@ function createBar(): HTMLDivElement {
     left: 0;
     height: 2px;
     width: 0%;
-    background: linear-gradient(90deg, #C7A86B, #E5C687);
+    background: linear-gradient(90deg, #4F46E5, #0D9488);
     z-index: 99999;
     transition: width 0.3s ease-out, opacity 0.3s ease;
-    box-shadow: 0 0 6px rgba(199, 168, 107, 0.4);
+    box-shadow: 0 0 6px rgba(79, 70, 229, 0.45);
     pointer-events: none;
   `;
   document.body.appendChild(bar);

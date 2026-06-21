@@ -2,7 +2,7 @@
 const CACHE_NAME = "incroute-v2";
 const STATIC_ASSETS = [
   "/",
-  "/incroute_logo.webp",
+  "/incroute_logo.png",
 ];
 
 // Install — cache core assets

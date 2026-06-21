@@ -17,21 +17,24 @@
   <meta property="og:url" content="https://incroute.com/" />
   <meta property="og:title" content="INCroute | Premium Corporate Registrations" />
   <meta property="og:description" content="Launch and scale your Indian startup with professional corporate compliance, active roadmaps, and CA/advocate consulting." />
-  <meta property="og:image" content="https://incroute.com/incroute_logo.webp" />
+  <meta property="og:image" content="https://incroute.com/incroute_logo.png" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:title" content="INCroute | Premium Corporate Registrations" />
   <meta property="twitter:description" content="Launch and scale your Indian startup with professional corporate compliance." />
-  <meta property="twitter:image" content="https://incroute.com/incroute_logo.webp" />
+  <meta property="twitter:image" content="https://incroute.com/incroute_logo.png" />
 
-  <link rel="icon" type="image/png" href="/incroute_logo.webp" />
+  <link rel="icon" type="image/png" href="/incroute_logo.png" />
 
   <!-- Non-render-blocking Google Fonts with font-display: swap -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap" /></noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" /></noscript>
+  <!-- Satoshi from Fontshare -->
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap" /></noscript>
 
   <!-- Organization Schema (Global) -->
   <script type="application/ld+json">
@@ -40,7 +43,7 @@
     "@type": "Organization",
     "name": "Incroute",
     "url": "https://incroute.com",
-    "logo": "https://incroute.com/incroute_logo.webp",
+    "logo": "https://incroute.com/incroute_logo.png",
     "description": "Premium corporate registration and compliance advisory platform for startups, SMEs, and professionals in India.",
     "founder": {
       "@type": "Person",
@@ -61,20 +64,17 @@
   <script>
     (function(){
       try {
-        const storageKey = 'site-theme';
-        const html = document.documentElement;
-        const saved = localStorage.getItem(storageKey);
-        if (!saved) {
-          html.classList.remove('light');
-          html.classList.add('dark');
-          localStorage.setItem(storageKey, 'dark');
+        var key = 'theme-preference';
+        var html = document.documentElement;
+        var saved = localStorage.getItem(key);
+        var theme;
+        if (saved === 'light' || saved === 'dark') {
+          theme = saved;
         } else {
-          html.classList.toggle('dark', saved === 'dark');
-          html.classList.toggle('light', saved === 'light');
+          theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
-      } catch (e) {
-        /* ignore storage errors */
-      }
+        html.setAttribute('data-theme', theme);
+      } catch(e) {}
     })();
   </script>
 </head>

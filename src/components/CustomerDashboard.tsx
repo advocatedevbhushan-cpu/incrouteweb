@@ -155,7 +155,7 @@ export default function CustomerDashboard() {
     if (owner === "expert") {
       return (
         <span className="text-[8px] font-mono uppercase font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
-          Legiscorp Expert
+          INCroute Expert
         </span>
       );
     }

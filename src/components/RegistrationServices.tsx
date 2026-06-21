@@ -1590,74 +1590,120 @@ export default function RegistrationServices({
     <div className="space-y-12">
       {viewMode === "grid" ? (
         <>
-          {/* Animated Premium Dark Hero Card Banner */}
+          {/* ═══ HERO ═══ */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full premium-hero-card border rounded-3xl p-8 sm:p-12 pb-16 sm:pb-24 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[480px]"
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center py-8 sm:py-12"
           >
-            {/* Subtle decorative glow backdrops */}
-            <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-gold/10 blur-[80px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-72 h-72 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(#1e2d5a_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
-            
-            {/* Optimized Memoized India Map Component */}
-            <IndiaMap hoveredCity={hoveredCity} setHoveredCity={setHoveredCity} />
-            <div className="space-y-5 sm:space-y-6 relative z-10 max-w-xl text-left">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/25 uppercase tracking-widest font-mono">
-                <span className="text-brand-gold font-bold">#</span> Premium Legal-Tech Platform
+            {/* LEFT: Content */}
+            <div className="relative z-10 max-w-xl text-left space-y-7">
+              <div className="inline-flex items-center gap-2 text-[12px] text-[var(--accent)] font-medium tracking-wide">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
               </div>
-              
-              <h1 className="text-4xl sm:text-6xl font-light text-white tracking-tight leading-tight serif">
-                Architecting India's <br />
-                Finest Entity <span className="text-brand-gold italic font-normal font-serif">Within ₹999*</span>
+
+              <h1 className="text-4xl sm:text-[3.5rem] font-extrabold text-[var(--text-primary)] tracking-[-0.04em] leading-[1.05]">
+                Built For<br />Businesses<br />
+                <span className="bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">That Plan To Last.</span>
               </h1>
               
-              {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed max-w-lg">
-                A state-of-the-art legal-tech environment where premium company formation meets absolute CA-backed compliance. Trusted by 2,000+ ambitious startup founders.
+              <p className="text-[15px] text-[var(--text-secondary)] font-normal leading-relaxed max-w-md">
+                From incorporation and compliance to legal, tax and governance advisory, everything your business needs under one unified platform.
               </p>
               
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button 
-                  onClick={() => {
-                    const el = document.getElementById("service-catalog-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="px-5 py-3 bg-brand-gold hover:bg-white text-black font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition transform-gpu cursor-pointer shadow-lg shadow-brand-gold/10 flex items-center gap-2"
+                  onClick={() => { const el = document.getElementById("service-catalog-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
+                  className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all duration-150 cursor-pointer flex items-center gap-2"
                 >
-                  Explore Services <ArrowRight className="w-3.5 h-3.5" />
+                  Start Your Business <ArrowRight className="w-4 h-4" />
                 </button>
                 <button 
-                  onClick={() => navigateToTab("compliance")}
-                  className="px-5 py-3 border border-slate-500 hover:border-brand-gold text-white hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 fast-transition transform-gpu cursor-pointer bg-transparent"
+                  onClick={() => navigateToTab("contact")}
+                  className="px-6 py-3 border border-[var(--border-subtle)] hover:bg-[var(--accent-soft)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all duration-150 cursor-pointer bg-transparent flex items-center gap-2"
                 >
-                  Compliance Roadmap
+                  <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Book Consultation
                 </button>
               </div>
+
+              <p className="text-[13px] text-[var(--text-tertiary)]">
+                Existing client?{" "}
+                <button onClick={() => navigateToTab("login")} className="text-[var(--accent)] hover:text-[var(--accent-deep)] font-medium cursor-pointer transition-colors inline-flex items-center gap-0.5">
+                  Sign In <ArrowRight className="w-3 h-3" />
+                </button>
+              </p>
+
+              <div className="flex flex-wrap items-center gap-5 pt-2 text-[12px] text-[var(--text-secondary)]">
+                <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Expert Support</span>
+                <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Bank-Grade Security</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> 100% Compliance</span>
+              </div>
             </div>
-            
-            {/* Expert Covered Badge (Bottom Right) */}
-            <div 
-              onClick={() => setShowTrustModal(true)}
-              className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 z-10 hidden md:block cursor-pointer group"
-            >
-              <div className="flex items-center gap-3.5 bg-black/60 backdrop-blur-md border border-white/10 group-hover:border-brand-gold/50 px-4 py-2.5 rounded-xl transition-all duration-300 transform group-hover:scale-[1.02] shadow-lg shadow-black/30">
-                <div className="text-right flex flex-col justify-center">
-                  <p className="text-[7.5px] text-slate-400 font-mono tracking-wider uppercase group-hover:text-brand-gold transition-colors">Expert Covered</p>
-                  <p className="text-xs text-white font-bold tracking-wide flex items-center gap-1.5 font-sans">
-                    100% Satisfaction Guarantee 
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
-                    </span>
-                  </p>
+
+            {/* RIGHT: Dashboard Mockup */}
+            <div className="relative hidden lg:block">
+              <div className="rounded-[24px] overflow-hidden border border-[#2C2740] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] flex" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
+                <div className="w-[140px] shrink-0 bg-[#0F172A]/70 border-r border-[#2C2740] p-4 flex flex-col">
+                  <div className="flex items-center gap-1.5 mb-6">
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
+                    <span className="text-[11px] font-bold text-[#F2EFFB] tracking-tight">INC<span className="font-normal italic text-[#A78BFA]">route</span></span>
+                  </div>
+                  <nav className="space-y-0.5 flex-1">
+                    {[{ label: "Overview", active: true }, { label: "My Entities" }, { label: "Compliance" }, { label: "Documents" }, { label: "Trademarks" }, { label: "Calendar" }, { label: "Consultations" }, { label: "Reports" }, { label: "Settings" }].map((item, i) => (
+                      <div key={i} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-medium ${item.active ? "bg-[var(--accent)]/15 text-[#F2EFFB]" : "text-[#A9A3C2]"}`}>
+                        {item.label}
+                      </div>
+                    ))}
+                  </nav>
+                  <div className="flex items-center gap-2 pt-3 mt-3 border-t border-[#2C2740]">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
+                    <div>
+                      <p className="text-[9px] font-semibold text-[#F2EFFB] leading-tight">Client Admin</p>
+                      <p className="text-[7px] text-[#A9A3C2]">Your Company</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-brand-gold flex items-center justify-center text-black shadow-inner shadow-black/10 shrink-0 group-hover:bg-white transition-colors duration-300">
-                  <ShieldCheck className="w-5 h-5 stroke-[2]" />
+                <div className="flex-1 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[13px] font-bold text-[#F2EFFB] tracking-tight">Business Command Center</p>
+                      <p className="text-[9px] text-[#A9A3C2] mt-0.5">Manage compliance, documents & growth from one platform.</p>
+                    </div>
+                    <span className="text-[8px] text-[#A9A3C2] border border-[#2C2740] rounded-md px-2 py-1">All Entities ▾</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[{ label: "Incorporation", value: "3 / 3", note: "Completed", noteColor: "#34D399" }, { label: "ROC Compliance", value: "12", note: "Upcoming", noteColor: "#A9A3C2" }, { label: "GST Filings", value: "2", note: "Due This Month", noteColor: "#D4AF37" }, { label: "Trademarks", value: "5", note: "Active", noteColor: "#A9A3C2" }].map((s, i) => (
+                      <div key={i} className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-2.5 space-y-1">
+                        <span className="text-[7px] text-[#A9A3C2] font-medium">{s.label}</span>
+                        <p className="text-[16px] font-extrabold text-[#F2EFFB] tracking-tight leading-none">{s.value}</p>
+                        <p className="text-[7px]" style={{ color: s.noteColor }}>{s.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-[#F2EFFB]">Upcoming Compliance</span><span className="text-[7px] text-[var(--accent)]">View All</span></div>
+                      {[{ t: "DIN KYC", d: "Due in 5 days" }, { t: "Board Meeting", d: "Due in 8 days" }, { t: "GST Return - GSTR 1", d: "Due in 12 days" }].map((c, i) => (
+                        <div key={i} className="flex items-center justify-between"><span className="text-[8px] font-semibold text-[#F2EFFB]">{c.t}</span><span className="text-[6.5px] text-[#D4AF37]">{c.d}</span></div>
+                      ))}
+                    </div>
+                    <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-[#F2EFFB]">Entity Overview</span><span className="text-[7px] text-[var(--accent)]">View All</span></div>
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-[50px] h-[50px]"><svg viewBox="0 0 36 36" className="w-full h-full -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="#22304A" strokeWidth="4" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#6C7CFF" strokeWidth="4" strokeDasharray="58 100" strokeLinecap="round" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#A78BFA" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-58" strokeLinecap="round" /></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[12px] font-extrabold text-[#F2EFFB]">5</span><span className="text-[5px] text-[#A9A3C2]">Total</span></div></div>
+                        <div className="space-y-1 text-[7px]">
+                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#6C7CFF]" /> Active <span className="text-[#F2EFFB] font-semibold ml-1">3</span></div>
+                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA]" /> Upcoming <span className="text-[#F2EFFB] font-semibold ml-1">1</span></div>
+                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#22304A]" /> Dormant <span className="text-[#F2EFFB] font-semibold ml-1">1</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 flex items-center justify-between">
+                    <div><p className="text-[9px] font-semibold text-[#F2EFFB]">Your Compliance Health</p><p className="text-[7px] text-[#A9A3C2]">Everything looks good. Keep it up!</p></div>
+                    <div className="text-right"><p className="text-[14px] font-extrabold text-[#34D399]">98%</p><p className="text-[7px] text-[#A9A3C2]">Compliant</p></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1672,8 +1718,8 @@ export default function RegistrationServices({
           >
             <div className="premium-advisor-card border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5">
               {/* Header */}
-              <div className="flex items-center gap-2 text-[9px] font-mono tracking-wider text-[#9E896A] uppercase font-bold text-left pl-1">
-                <Search className="w-3.5 h-3.5 text-brand-gold" /> Registrar Name Feasibility Advisor
+              <div className="flex items-center gap-2 text-[10px] font-medium tracking-wider text-[var(--text-secondary)] uppercase text-left pl-1">
+                <Search className="w-3.5 h-3.5 text-[var(--accent)]" /> Business Setup Advisor
               </div>
               
               {/* Search form controls */}
@@ -1958,13 +2004,12 @@ export default function RegistrationServices({
                       className="premium-service-card border rounded-3xl overflow-hidden shadow-sm flex flex-col h-full group relative transition-all duration-150 fast-transition premium-card transform-gpu cursor-pointer"
                     >
                       {/* Cover Image Header using aspect ratio */}
-                      <div className="relative aspect-[16/9] overflow-hidden border-b border-brand-border bg-slate-950 shrink-0">
+                      <div className="relative aspect-[16/9] overflow-hidden border-b border-[var(--border-subtle)] shrink-0">
                         <img
                           src={service.image}
                           alt={service.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out opacity-90"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-brand-bg-darker via-transparent to-transparent opacity-75" />
                       </div>
 
                       {/* Card Header section (Deep navy in light mode, obsidian dark in dark mode) */}
@@ -1982,7 +2027,7 @@ export default function RegistrationServices({
                             <div className="font-serif text-xl font-bold text-brand-gold leading-snug">
                               {service.name}
                             </div>
-                            <div className="text-[10px] text-slate-300 font-sans uppercase tracking-wider mt-1">
+                            <div className="text-[10px] text-[var(--text-tertiary)] font-sans uppercase tracking-wider mt-1">
                               {service.category === "private-corporate" ? "Private Corporate Entity" :
                                service.category === "alternative-entity" ? "Alternative Entity Structure" :
                                service.category === "compliance" ? "Compliance & Statutory" :
@@ -1996,11 +2041,11 @@ export default function RegistrationServices({
                         </div>
 
                         {/* Metadata timeline details */}
-                        <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2 text-[10px] text-slate-200 font-mono">
-                          <span className="whitespace-nowrap flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-md border border-white/5 backdrop-blur-sm">
+                        <div className="relative z-10 mt-4 flex flex-wrap items-center gap-2 text-[10px] text-[var(--text-secondary)] font-mono">
+                          <span className="whitespace-nowrap flex items-center gap-1.5 bg-[var(--accent-soft)] px-2.5 py-1 rounded-md border border-[var(--border-subtle)]">
                             <Clock className="w-3.5 h-3.5 text-brand-gold" /> {service.timeline}
                           </span>
-                          <span className="whitespace-nowrap flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-md border border-white/5 backdrop-blur-sm">
+                          <span className="whitespace-nowrap flex items-center gap-1.5 bg-[var(--accent-soft)] px-2.5 py-1 rounded-md border border-[var(--border-subtle)]">
                             <Users className="w-3.5 h-3.5 text-brand-gold" /> {service.minDirectors}
                           </span>
                         </div>

@@ -269,7 +269,7 @@ interface CredentialsToastProps {
 function CredentialsToast({ result, onClose }: CredentialsToastProps) {
   const [copied, setCopied] = useState(false);
 
-  const credText = `Login Portal: https://legiscorp.in/portal\nEmail: ${result.email}\nPassword: ${result.password}`;
+  const credText = `Login Portal: https://incroute.com/portal\nEmail: ${result.email}\nPassword: ${result.password}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(credText);
@@ -355,7 +355,7 @@ export default function PartnerDashboard() {
         const seedUsers = [
           {
             uid: "partner-seed-1",
-            email: "adv.sharma@legiscorp.in",
+            email: "adv.sharma@incroute.com",
             fullName: "Adv. Priya Sharma",
             role: "partner",
             createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
