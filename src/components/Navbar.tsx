@@ -41,7 +41,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-150 h-[72px] flex items-center ${
+      className={`sticky top-0 z-50 transition-all duration-150 h-[64px] sm:h-[72px] flex items-center ${
         scrolled
           ? "bg-[var(--bg-surface)]/95 border-b border-[var(--border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
           : "bg-[var(--bg-surface)]/80 border-b border-transparent"
@@ -164,14 +164,27 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-[72px] left-0 right-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
+            className="absolute top-[64px] sm:top-[72px] left-0 right-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
           >
             <div className="p-4 space-y-1 max-h-[75vh] overflow-y-auto">
-              <MobileLink onClick={(e) => nav(e, "services")} active={activeTab === "services"}>Solutions</MobileLink>
-              <MobileLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Insights</MobileLink>
-              <MobileLink onClick={(e) => nav(e, "faq")} active={activeTab === "faq"}>Knowledge Center</MobileLink>
+              {/* Solutions accordion */}
+              <MobileAccordion label="Solutions" items={[
+                { label: "All Services", tab: "services" },
+                { label: "Service Catalog", tab: "catalog" },
+                { label: "Business Tools", tab: "tools" },
+                { label: "Name Feasibility", tab: "name-checker" },
+              ]} activeTab={activeTab} onNav={nav} />
+
+              {/* Resources accordion */}
+              <MobileAccordion label="Resources" items={[
+                { label: "Insights (Blog)", tab: "blog" },
+                { label: "Knowledge Center", tab: "faq" },
+                { label: "Compliance Tracker", tab: "compliance" },
+                { label: "Contact", tab: "contact" },
+              ]} activeTab={activeTab} onNav={nav} />
+
               <MobileLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</MobileLink>
-              <MobileLink onClick={(e) => nav(e, "contact")} active={activeTab === "contact"}>Contact</MobileLink>
+              <MobileLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</MobileLink>
 
               <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] space-y-2">
                 <a href="/login" onClick={(e) => nav(e, "login")} className="block w-full text-center py-3 border border-[var(--border-subtle)] text-[var(--text-primary)] font-semibold text-[13px] rounded-xl cursor-pointer">Login</a>
@@ -237,5 +250,27 @@ function MobileLink({ children, onClick, active }: { children: string; onClick: 
     <a href="#" onClick={onClick} className={`block px-4 py-3 rounded-xl text-[14px] font-medium cursor-pointer transition-colors ${active ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-primary)] hover:bg-[var(--accent-soft)]"}`}>
       {children}
     </a>
+  );
+}
+
+function MobileAccordion({ label, items, activeTab, onNav }: { label: string; items: { label: string; tab: string }[]; activeTab: string; onNav: (e: React.MouseEvent, tab: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const isActive = items.some(i => i.tab === activeTab);
+  return (
+    <div className="border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <button onClick={() => setOpen(!open)} className={`w-full flex items-center justify-between px-4 py-3 text-[14px] font-medium cursor-pointer transition-colors ${isActive ? "text-[var(--accent)]" : "text-[var(--text-primary)]"}`}>
+        {label}
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-2 pb-2 space-y-0.5">
+          {items.map(item => (
+            <a key={item.tab} href="#" onClick={(e) => onNav(e, item.tab)} className={`block px-3 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer transition-colors ${activeTab === item.tab ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"}`}>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

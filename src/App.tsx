@@ -17,6 +17,7 @@ const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
 const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
 const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
 const ClientPortal = lazy(() => import("./portal/ClientPortal"));
+const AdminPortal = lazy(() => import("./admin/AdminPortal"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
 const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
@@ -30,6 +31,7 @@ const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"
 const ContactFormWidget = lazy(() => import("./components/ContactFormWidget"));
 const LocalCityLanding = lazy(() => import("./components/LocalCityLanding"));
 const AnswerHub = lazy(() => import("./components/AnswerHub"));
+const ComplianceCalendarSection = lazy(() => import("./components/ComplianceCalendarSection"));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { useAuth } from "./lib/AuthContext";
@@ -339,7 +341,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full flex flex-col max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-6"
+              className="w-full flex flex-col max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-4"
             >
               <RegistrationServices 
                 setActiveTab={setActiveTab} 
@@ -347,7 +349,7 @@ export default function App() {
                 prefilledEntityType={prefilledEntityType}
               />
               {/* Live Testimonial Carousel */}
-              <div className="pb-16 w-full mt-12">
+              <div className="pb-12 w-full mt-8">
                 <TestimonialCarousel setActiveTab={setActiveTab} />
               </div>
             </motion.div>
@@ -649,130 +651,7 @@ export default function App() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
             >
-              <div className="text-center max-w-3xl mx-auto space-y-4">
-                <div className="inline-flex items-center gap-3 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-md shadow-brand-gold/5">
-                  <img src="/incroute_logo.png" className="w-5 h-5 rounded-full object-cover" alt="INCroute Logo" />
-                  Static Statutory Calendars
-                </div>
-                <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
-                  Global Compliance <span className="text-brand-gold italic font-normal">Calendars Tracker.</span>
-                </h1>
-                <p className="text-xs text-brand-text-muted font-sans max-w-xl mx-auto leading-relaxed">
-                  Unified live schedule of state, federal, and local financial statutory obligations. Keep your company fully operational and liability-free.
-                </p>
-              </div>
-
-               {/* Premium Pinned Compliance Timeline */}
-               <PinnedTimeline
-                 milestones={roadmapMilestones}
-                 onDelegate={() => setActiveTab("contact")}
-               />
-
-              {/* Live Calendars Tracker Search */}
-              <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 space-y-6">
-                
-                {/* Search & Filter Header Tool */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-brand-border">
-                  {/* Search Bar Input */}
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-brand-text-muted/50" />
-                    <input
-                      type="text"
-                      placeholder="Search standard compliance duties (e.g. ROC, GST, TDS, EPF)..."
-                      value={calendarSearch}
-                      onChange={(e) => setCalendarSearch(e.target.value)}
-                      className="w-full bg-brand-input-bg border border-brand-border rounded px-3 py-2 pl-9 text-xs text-brand-text placeholder-brand-text-muted/40 outline-none focus:border-brand-gold"
-                    />
-                  </div>
-
-                  {/* Filter Choices */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-                    <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-wider font-mono mr-1.5">Category:</span>
-                    {[
-                      { id: "all", name: "All Duties" },
-                      { id: "taxation", name: "Taxation & GST" },
-                      { id: "corporate", name: "ROC & Corporate" },
-                      { id: "employment", name: "Labor & Payroll" },
-                    ].map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setFilterType(cat.id)}
-                        className={`text-[10px] font-mono tracking-wider uppercase px-3 py-1.5 rounded transition-all whitespace-nowrap ${
-                          filterType === cat.id
-                            ? "bg-brand-gold text-black font-semibold"
-                            : "bg-brand-bg border border-brand-border text-brand-text-muted hover:text-brand-text"
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Grid representation */}
-                {loadingCalendar ? (
-                  <div className="py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-brand-gold mx-auto" />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {complianceEvents
-                      .filter((ev) => {
-                        const matchesCategory = filterType === "all" || ev.type === filterType;
-                        const matchesSearch =
-                          ev.service.toLowerCase().includes(calendarSearch.toLowerCase()) ||
-                          ev.description.toLowerCase().includes(calendarSearch.toLowerCase());
-                        return matchesCategory && matchesSearch;
-                      })
-                      .map((ev) => (
-                        <div
-                          key={ev.id}
-                          className="p-5 bg-brand-bg-lighter border border-brand-border rounded-xl hover:border-brand-gold/30 transition-all flex flex-col justify-between"
-                        >
-                          <div className="space-y-2">
-                            <div className="flex items-start justify-between gap-3">
-                              <span className="text-[9px] uppercase font-mono bg-brand-gold/10 text-brand-gold px-2 py-0.5 rounded border border-brand-gold/15">
-                                {ev.type}
-                              </span>
-                              <span className="text-[10px] font-mono text-brand-text-muted font-bold">{ev.dueDate}</span>
-                            </div>
-                            
-                            <h4 className="text-sm font-semibold text-brand-text tracking-wide">{ev.service}</h4>
-                            <p className="text-xs text-brand-text-muted leading-relaxed font-sans">{ev.description}</p>
-                          </div>
-
-                          <div className="border-t border-brand-border/60 pt-3 mt-4 flex items-center justify-between text-[10px]">
-                            <span className="text-brand-text-muted font-mono uppercase">Statutory Duty</span>
-                            {ev.downloadUrl ? (
-                              <a
-                                href={ev.downloadUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-brand-gold hover:underline flex items-center gap-1 font-semibold"
-                              >
-                                Access Official Portal <ArrowRight className="w-2.5 h-2.5" />
-                              </a>
-                            ) : (
-                              <span className="text-brand-text-muted italic">Template Unavailable</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
-                    {complianceEvents.filter((ev) => {
-                      const matchesCategory = filterType === "all" || ev.type === filterType;
-                      const matchesSearch =
-                        ev.service.toLowerCase().includes(calendarSearch.toLowerCase()) ||
-                        ev.description.toLowerCase().includes(calendarSearch.toLowerCase());
-                      return matchesCategory && matchesSearch;
-                    }).length === 0 && (
-                      <div className="col-span-full py-12 text-center text-brand-text-muted italic font-serif">
-                        No statutory compliance events match your current filter credentials.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <ComplianceCalendarSection />
             </motion.div>
           )}
 
@@ -841,6 +720,58 @@ export default function App() {
             </motion.div>
           )}
 
+          {activeTab === "login" && (
+            <motion.div
+              key="login"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full"
+            >
+              <LoginPage setActiveTab={setActiveTab} />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-customer" && (
+            <motion.div
+              key="dashboard-customer"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+            >
+              <CustomerDashboard />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-partner" && (
+            <motion.div
+              key="dashboard-partner"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+            >
+              <PartnerDashboard />
+            </motion.div>
+          )}
+
+          {activeTab === "dashboard-partner-customer-detail" && (
+            <motion.div
+              key="dashboard-partner-customer-detail"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+            >
+              <PartnerCustomerDetail customerId={routeParams.id} />
+            </motion.div>
+          )}
+
           {activeTab === "portal" && (
             <motion.div
               key="portal"
@@ -854,8 +785,21 @@ export default function App() {
             </motion.div>
           )}
 
+          {activeTab === "admin" && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
+            >
+              <AdminPortal />
+            </motion.div>
+          )}
+
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","admin"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>

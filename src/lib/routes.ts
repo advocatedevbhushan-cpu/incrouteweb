@@ -48,6 +48,7 @@ export const TAB_TO_ROUTE: Record<string, string> = {
   "dashboard-partner": ROUTES.dashboardPartner,
   "dashboard-partner-customer-detail": "/dashboard/partner/customer/:id",
   "portal": ROUTES.portal,
+  "admin": "/admin",
 };
 
 // Breadcrumb label map

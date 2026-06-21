@@ -7,6 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import nodemailer from "nodemailer";
+import authRoutes from "./src/server/auth/routes";
 
 dotenv.config();
 
@@ -37,6 +38,9 @@ async function startServer() {
   // Basic Middlewares
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+  // Auth API Routes
+  app.use("/api/auth", authRoutes);
 
   // --- MySQL Connection Pool Setup ---
   let dbPool: mysql.Pool | null = null;

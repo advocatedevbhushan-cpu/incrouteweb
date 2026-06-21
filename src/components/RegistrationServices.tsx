@@ -401,6 +401,101 @@ const INDIA_STATES = [
 // Fix: convert the leading 'm' of each path to uppercase 'M' (absolute moveto).
 const INDIA_COMBINED_PATH = INDIA_STATES.map(s => s.path.replace(/^m\s/, 'M ')).join(' ');
 
+/* ═══ ANIMATED TESTIMONIALS ═══ */
+function AnimatedTestimonials() {
+  const testimonials = [
+    { quote: "INCroute made our incorporation so easy. Their compliance tracking is a lifesaver!", name: "Ravi Sharma", role: "CEO, TechNova Labs" },
+    { quote: "We never miss a filing now. Everything is automated and super easy.", name: "Neha Verma", role: "CFO, GrowthX" },
+    { quote: "Excellent support, fast turnaround and zero penalties since we switched to INCroute.", name: "Arjun Mehta", role: "Founder, Buildify" },
+    { quote: "The compliance calendar alone saved us from a ₹50,000 penalty. Highly recommended.", name: "Priya Kapoor", role: "Director, NexGen Solutions" },
+    { quote: "Professional, reliable, and always available. INCroute is our go-to for everything compliance.", name: "Vikram Singh", role: "Co-founder, FastTrack Logistics" },
+  ];
+  const [active, setActive] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setActive(p => (p + 1) % testimonials.length), 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const t = testimonials[active];
+  return (
+    <div className="relative">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 sm:p-8 text-left min-h-[140px] flex flex-col justify-between transition-all duration-300">
+        <p className="text-[14px] text-[var(--text-secondary)] leading-relaxed italic">"{t.quote}"</p>
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] flex items-center justify-center text-white text-[11px] font-bold">{t.name.charAt(0)}</div>
+            <div>
+              <p className="text-[13px] font-semibold text-[var(--text-primary)]">{t.name}</p>
+              <p className="text-[11px] text-[var(--text-tertiary)]">{t.role}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-0.5 text-[var(--accent)]">{"★★★★★".split("").map((s, j) => <span key={j} className="text-sm">{s}</span>)}</div>
+        </div>
+      </div>
+      {/* Dots indicator */}
+      <div className="flex items-center justify-center gap-1.5 mt-4">
+        {testimonials.map((_, i) => (
+          <button key={i} onClick={() => setActive(i)} className={`w-2 h-2 rounded-full transition-all cursor-pointer ${i === active ? "bg-[var(--accent)] w-5" : "bg-[var(--border-subtle)]"}`} aria-label={`Testimonial ${i + 1}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══ ANIMATED COUNTER STATS ═══ */
+function AnimatedStats() {
+  const [counts, setCounts] = React.useState([0, 0, 0, 0, 0]);
+  const [hasAnimated, setHasAnimated] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  const targets = [
+    { end: 150, suffix: "+", prefix: "", label: "Businesses Onboarded" },
+    { end: 500, suffix: "+", prefix: "", label: "Filings Completed" },
+    { end: 99, suffix: "%", prefix: "", label: "On-time Compliance" },
+    { end: 12, suffix: "+", prefix: "", label: "Expert CAs & CSs" },
+    { end: 24, suffix: "/7", prefix: "", label: "Support Available" },
+  ];
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          const duration = 1500;
+          const steps = 40;
+          const interval = duration / steps;
+          let step = 0;
+          const timer = setInterval(() => {
+            step++;
+            const progress = step / steps;
+            // Ease-out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCounts(targets.map(t => Math.round(t.end * eased)));
+            if (step >= steps) clearInterval(timer);
+          }, interval);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasAnimated]);
+
+  return (
+    <div ref={ref} className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
+      {targets.map((s, i) => (
+        <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-1">
+          <p className="text-xl font-extrabold text-[var(--accent)] tabular-nums">
+            {s.prefix}{counts[i]}{s.suffix}
+          </p>
+          <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">{s.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface RegistrationServicesProps {
   setActiveTab?: (tab: string) => void;
   prefilledCompanyName?: string;
@@ -1587,7 +1682,7 @@ export default function RegistrationServices({
   const isIncorporation = ["pvt-ltd", "llp", "opc", "partnership", "section8", "public-ltd"].includes(selectedEntity.id);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {viewMode === "grid" ? (
         <>
           {/* ═══ HERO ═══ */}
@@ -1595,35 +1690,43 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center py-8 sm:py-12"
+            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center py-6 sm:py-8"
           >
             {/* LEFT: Content */}
-            <div className="relative z-10 max-w-xl text-left space-y-7">
+            <div className="relative z-10 max-w-xl text-left space-y-5">
               <div className="inline-flex items-center gap-2 text-[12px] text-[var(--accent)] font-medium tracking-wide">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
               </div>
 
               <h1 className="text-4xl sm:text-[3.5rem] font-extrabold text-[var(--text-primary)] tracking-[-0.04em] leading-[1.05]">
-                Built For<br />Businesses<br />
-                <span className="bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">That Plan To Last.</span>
+                Start, Manage &<br />Stay Compliant —<br />
+                <span className="bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">All in One Platform.</span>
               </h1>
               
               <p className="text-[15px] text-[var(--text-secondary)] font-normal leading-relaxed max-w-md">
-                From incorporation and compliance to legal, tax and governance advisory, everything your business needs under one unified platform.
+                Incorporate your company, track ROC & GST filings, avoid penalties, and manage compliance — without chaos.
               </p>
+
+              {/* Bullet points */}
+              <ul className="space-y-2 text-[13px] text-[var(--text-secondary)]">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Entity Incorporation (Pvt Ltd, LLP, OPC)</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Compliance Calendar & Reminders</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> ROC, GST, Tax & Legal Filings</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Expert Support & Documentation</li>
+              </ul>
               
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button 
                   onClick={() => { const el = document.getElementById("service-catalog-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                  className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all duration-150 cursor-pointer flex items-center gap-2"
+                  className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] hover:scale-[1.02] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-[0_0_20px_-4px_var(--accent)]"
                 >
                   Start Your Business <ArrowRight className="w-4 h-4" />
                 </button>
                 <button 
-                  onClick={() => navigateToTab("contact")}
-                  className="px-6 py-3 border border-[var(--border-subtle)] hover:bg-[var(--accent-soft)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all duration-150 cursor-pointer bg-transparent flex items-center gap-2"
+                  onClick={() => navigateToTab("portal")}
+                  className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:scale-[1.02] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer bg-transparent flex items-center gap-2"
                 >
-                  <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Book Consultation
+                  <Sparkles className="w-4 h-4 text-[var(--accent)]" /> View Live Dashboard
                 </button>
               </div>
 
@@ -1714,12 +1817,12 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[-20px] sm:mt-[-35px] pb-6"
+            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[-10px] sm:mt-[-20px] pb-4"
           >
             <div className="premium-advisor-card border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5">
               {/* Header */}
               <div className="flex items-center gap-2 text-[10px] font-medium tracking-wider text-[var(--text-secondary)] uppercase text-left pl-1">
-                <Search className="w-3.5 h-3.5 text-[var(--accent)]" /> Business Setup Advisor
+                <Search className="w-3.5 h-3.5 text-[var(--accent)]" /> Find the Right Business Setup
               </div>
               
               {/* Search form controls */}
@@ -1931,8 +2034,136 @@ export default function RegistrationServices({
           {/* Infinite logo scrolling marquee */}
           <LogoTicker />
 
-          {/* Category Pills Navigation & Services Cards Grid */}
-          <div id="service-catalog-section" className="flex flex-col gap-6 w-full max-w-5xl mx-auto pt-6 text-left">
+          {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
+          <div className="w-full max-w-5xl mx-auto space-y-5 text-left">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Choose Your Business Structure</h2>
+              <p className="text-[13px] text-[var(--text-secondary)]">The right entity type is the foundation of your business journey.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[
+                { title: "Private Limited Company", desc: "Best for startups & growing businesses.", benefits: ["Separate legal entity", "Limited liability protection", "Easy fundraising"], id: "pvt-ltd" },
+                { title: "Limited Liability Partnership", desc: "Best for professional & service businesses.", benefits: ["Flexible management", "Limited liability", "Less compliance"], id: "llp" },
+                { title: "One Person Company", desc: "Best for solo founders & individual entrepreneurs.", benefits: ["100% ownership", "Separate legal entity", "Limited liability"], id: "opc" },
+              ].map((item, i) => (
+                <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-3 hover:border-[var(--accent)] transition-all duration-200 group">
+                  <h3 className="text-[15px] font-bold text-[var(--accent)]">{item.title}</h3>
+                  <p className="text-[12px] text-[var(--text-secondary)]">{item.desc}</p>
+                  <ul className="space-y-1.5">
+                    {item.benefits.map((b, j) => <li key={j} className="flex items-center gap-2 text-[12px] text-[var(--text-secondary)]"><CheckCircle2 className="w-3 h-3 text-[var(--accent)]" />{b}</li>)}
+                  </ul>
+                  <button onClick={() => navigate(`/services/private-corporate/${item.id}/`)} className="text-[12px] text-[var(--accent)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all cursor-pointer pt-2">
+                    Incorporate in 7-10 Days <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {/* Consultation card */}
+              <div className="bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-[15px] font-bold text-[var(--text-primary)]">Not sure which is right for you?</h3>
+                  <p className="text-[12px] text-[var(--text-secondary)] mt-2">Talk to our experts and get free business structure recommendation.</p>
+                </div>
+                <button onClick={() => navigateToTab("contact")} className="w-full py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] text-[12px] font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
+                  Book Free Consultation <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <button onClick={() => navigateToTab("catalog")} className="px-5 py-2.5 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2">
+                View More Services <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* ═══ COMPLIANCE DEADLINE CARDS ═══ */}
+          <div className="w-full max-w-6xl mx-auto space-y-4 text-left pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Never Miss a Compliance Deadline</h2>
+                <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Stay ahead with our intelligent compliance calendar.</p>
+              </div>
+              <button onClick={() => navigateToTab("compliance")} className="text-[12px] text-[var(--accent)] font-medium flex items-center gap-1 cursor-pointer whitespace-nowrap">View Full Calendar <ArrowRight className="w-3 h-3" /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[
+                { due: "DUE IN 5 DAYS", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2024", penalty: "₹100 per day", color: "#EF4444" },
+                { due: "DUE IN 8 DAYS", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2024", penalty: "₹5,000 - ₹25,000", color: "#F59E0B" },
+                { due: "DUE IN 12 DAYS", title: "AOC-4 Filing", desc: "Financial statements & board report filing.", date: "01 Jun 2024", penalty: "₹100 per day", color: "#F59E0B" },
+                { due: "DUE IN 18 DAYS", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2024", penalty: "₹5,000", color: "var(--accent)" },
+                { due: "DUE IN 25 DAYS", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2024", penalty: "₹100 per day", color: "var(--accent)" },
+              ].map((c, i) => (
+                <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3 hover:border-[var(--accent)] transition-colors">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block" style={{ background: `${c.color}20`, color: c.color }}>{c.due}</span>
+                  <h4 className="text-[14px] font-bold text-[var(--text-primary)] leading-tight">{c.title}</h4>
+                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">{c.desc}</p>
+                  <div className="text-[10px] text-[var(--text-tertiary)] pt-2 border-t border-[var(--border-subtle)] space-y-1">
+                    <div className="flex justify-between"><span>Due: {c.date}</span></div>
+                    <div><span style={{ color: c.color }}>Penalty: {c.penalty}</span></div>
+                  </div>
+                  <div className="flex items-center gap-3 pt-1">
+                    <button onClick={() => navigateToTab("contact")} className="text-[11px] text-[var(--accent)] font-medium cursor-pointer flex items-center gap-0.5">File Now <ArrowRight className="w-2.5 h-2.5" /></button>
+                    <button onClick={() => alert(`✓ Reminder set for "${c.title}" — due ${c.date}. We'll notify you before the deadline.`)} className="text-[11px] text-[var(--text-secondary)] font-medium cursor-pointer">Set Reminder</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ═══ HOW IT WORKS ═══ */}
+          <div className="w-full max-w-5xl mx-auto space-y-6 text-center pt-4">
+            <div className="space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">How <span className="text-[var(--accent)]">INC</span><span className="italic">Route</span> Works</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+              {[
+                { step: "01", title: "Tell us about your business", desc: "Answer a few questions about your business and goals.", icon: Building2 },
+                { step: "02", title: "We recommend the best structure", desc: "Get the right entity suggestion based on your needs.", icon: FileText },
+                { step: "03", title: "We handle the incorporation", desc: "Our experts prepare documents and file with authorities.", icon: Shield },
+                { step: "04", title: "Get your company incorporated", desc: "Receive your incorporation certificate hassle-free.", icon: CheckCircle2 },
+                { step: "05", title: "Stay compliant forever", desc: "We track, remind & file all your compliances on time.", icon: TrendingUp },
+              ].map((s, i) => (
+                <React.Fragment key={i}>
+                  <div className="flex flex-col items-center text-center max-w-[160px] mx-auto sm:mx-0 space-y-2.5">
+                    <div className="w-12 h-12 rounded-full bg-[var(--accent-soft)] border border-[var(--accent)]/30 flex items-center justify-center">
+                      <s.icon className="w-5 h-5 text-[var(--accent)]" />
+                    </div>
+                    <span className="text-[10px] text-[var(--accent)] font-bold uppercase tracking-wider">{s.step}</span>
+                    <h4 className="text-[13px] font-bold text-[var(--text-primary)] leading-tight">{s.title}</h4>
+                    <p className="text-[11px] text-[var(--text-tertiary)] leading-relaxed">{s.desc}</p>
+                  </div>
+                  {i < 4 && <ArrowRight className="hidden sm:block w-5 h-5 text-[var(--accent)] shrink-0 opacity-50" />}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          {/* ═══ TRUST STATS — Animated Counter ═══ */}
+          <div className="w-full max-w-5xl mx-auto pt-4">
+            <AnimatedStats />
+          </div>
+
+          {/* Testimonials rendered via TestimonialCarousel below */}
+
+          {/* ═══ FINAL CTA ═══ */}
+          <div className="w-full max-w-5xl mx-auto pt-6">
+            <div className="relative rounded-2xl overflow-hidden border border-[var(--border-subtle)] p-6 sm:p-8 text-center" style={{ background: "linear-gradient(135deg, var(--bg-surface-alt) 0%, var(--bg-surface) 100%)" }}>
+              <div className="relative z-10 space-y-4">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Ready to Start Your Business Journey?</h2>
+                <p className="text-sm text-[var(--text-secondary)] max-w-lg mx-auto">Incorporate, manage & grow with confidence.</p>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <button onClick={() => { const el = document.getElementById("service-catalog-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }} className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2">
+                    Start Your Business <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => navigateToTab("contact")} className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all cursor-pointer">
+                    Book Consultation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Pills Navigation & Services Cards Grid — Hidden, use Catalogue page instead */}
+          <div id="service-catalog-section" style={{ display: "none" }}>
             <ScrollReveal 
               variant="fade-up" 
               className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-brand-border/60 pb-4 gap-4"
