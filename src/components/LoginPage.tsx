@@ -30,7 +30,14 @@ export default function LoginPage({ setActiveTab }: LoginPageProps) {
 
       localStorage.setItem("incroute_access_token", data.accessToken);
       localStorage.setItem("incroute_refresh_token", data.refreshToken);
-      setActiveTab("portal");
+      localStorage.setItem("incroute_user", JSON.stringify(data.user));
+      
+      // Redirect based on role
+      if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN" || data.user?.role === "TEAM_MEMBER") {
+        window.location.href = "/admin";
+      } else {
+        setActiveTab("portal");
+      }
     } catch {
       setError("Network error. Please try again.");
     }
