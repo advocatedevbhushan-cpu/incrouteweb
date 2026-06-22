@@ -2537,6 +2537,28 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     });
   }
 
+  // ─── ONE-TIME DATABASE SETUP ENDPOINT ───
+  // Visit: /api/setup-db?key=incroute2026 to create all Prisma tables
+  // Only works once. Remove after successful setup.
+  app.get("/api/setup-db", async (req, res) => {
+    const setupKey = req.query.key;
+    if (setupKey !== "incroute2026") {
+      return res.status(403).json({ error: "Invalid setup key" });
+    }
+    try {
+      const { execSync } = await import("child_process");
+      const output = execSync("npx prisma db push --accept-data-loss", { 
+        cwd: process.cwd(), 
+        encoding: "utf-8",
+        timeout: 60000,
+        env: { ...process.env, PATH: process.env.PATH }
+      });
+      res.json({ success: true, message: "Database tables created!", output });
+    } catch (err: any) {
+      res.status(500).json({ error: "Setup failed", details: err.message, output: err.stdout || "" });
+    }
+  });
+
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Incroute backend server active running on http://0.0.0.0:${PORT}`);
   });

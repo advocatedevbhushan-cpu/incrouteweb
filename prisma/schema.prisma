@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 // ─── ROLES & PERMISSIONS ─────────────────────────────────────────
@@ -188,6 +187,7 @@ model Client {
   legalMatters  LegalMatter[]
   trademarks    TrademarkApp[]
   activities    Activity[]
+  serviceRequests ServiceRequest[]
 
   @@index([status])
   @@index([contactEmail])
