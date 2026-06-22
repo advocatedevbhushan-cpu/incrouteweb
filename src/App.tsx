@@ -808,136 +808,82 @@ export default function App() {
       </main>
 
       {/* Footer segment */}
-      <footer className="bg-brand-bg-darker border-t border-brand-border/70 py-12 md:py-16 text-brand-text-muted mt-auto transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-7 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 text-center md:text-left">
+      <footer className="bg-[#0B0E1A] border-t border-[rgba(108,124,255,0.1)] py-10 md:py-14 text-[#8B8FA8] mt-auto">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10">
             
-            <div className="md:col-span-3 space-y-5">
-              <div className="flex items-center gap-2.5 cursor-pointer font-sans justify-center md:justify-start" onClick={() => handleServiceClick("pvt-ltd")}>
-                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full overflow-hidden">
                   <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
                 </div>
-                <div className="flex flex-col select-none leading-none text-left">
-                  <span className="text-[20px] font-extrabold text-[var(--text-primary)] tracking-tight">
-                    INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
-                  </span>
-                  <div className="flex items-center gap-1.5 mt-[4px]">
-                    <span className="h-[1px] w-4 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
-                    <span className="text-[9px] text-[var(--text-tertiary)] tracking-[0.2em] uppercase font-semibold">Make It Right</span>
-                    <span className="h-[1px] w-4 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
-                  </div>
-                </div>
+                <span className="text-[16px] font-extrabold text-white tracking-tight">
+                  INC<span className="text-[#6C7CFF] italic font-bold">route</span>
+                </span>
               </div>
-              <p className="text-xs text-brand-text-muted font-sans leading-relaxed max-w-sm mx-auto md:mx-0">
-                Premium corporate registration and compliance advisory platform for startups, SMEs, and professionals in India.
+              <p className="text-[11px] text-[#6B7094] leading-relaxed">
+                India's most trusted platform for business incorporation, compliance & advisory.
               </p>
-              <div className="text-[10px] font-mono tracking-widest text-[#9E896A] font-semibold uppercase pt-1">
-                MAKE IT RIGHT
+              <div className="flex items-center gap-3 pt-1">
+                {["f", "in", "x", "✉"].map((s, i) => (
+                  <div key={i} className="w-7 h-7 rounded-lg bg-[#1A1E30] flex items-center justify-center text-[10px] text-[#8B8FA8] hover:text-[#6C7CFF] hover:bg-[#1E2338] cursor-pointer transition-colors">{s}</div>
+                ))}
               </div>
             </div>
 
-            {/* Column 2: Our Services */}
-            <div className="md:col-span-3 space-y-4">
-              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
-                Our Services
-              </h4>
-              <div className="grid grid-cols-1 gap-y-2.5 text-xs font-sans">
-                <div className="space-y-2.5 flex flex-col items-center md:items-start">
-                  <div 
-                    onClick={() => handleServiceClick("pvt-ltd")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
-                  >
-                    Private Limited Company
-                  </div>
-                  <div 
-                    onClick={() => handleServiceClick("opc")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
-                  >
-                    One Person Company
-                  </div>
-                  <div 
-                    onClick={() => handleServiceClick("section8")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
-                  >
-                    Section 8 NGO / Foundation
-                  </div>
-                  <div 
-                    onClick={() => handleServiceClick("llp")}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200"
-                  >
-                    Limited Liability Partnership
-                  </div>
-                  <a
-                    href="/faq"
-                    onClick={(e) => { e.preventDefault(); setActiveTab("faq"); }}
-                    className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
-                  >
-                    Answer Hub (FAQ)
-                  </a>
-                </div>
+            {/* Our Services */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Our Services</h4>
+              <div className="space-y-2 text-[11px]">
+                {["Company Incorporation", "Compliance Management", "GST Services", "ROC Filings", "Trademark Registration", "Legal Advisory"].map(s => (
+                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                ))}
               </div>
             </div>
 
-            {/* Column 3: Service Locations */}
-            <div className="md:col-span-3 space-y-4">
-              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
-                Service Locations
-              </h4>
-              <div className="space-y-2.5 text-xs font-sans flex flex-col items-center md:items-start">
-                <a 
-                  href="/company-registration-bangalore"
-                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-bangalore"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
-                >
-                  Company Registration in Bangalore
-                </a>
-                <a 
-                  href="/company-registration-mumbai"
-                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-mumbai"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
-                >
-                  Company Registration in Mumbai
-                </a>
-                <a 
-                  href="/company-registration-delhi"
-                  onClick={(e) => { e.preventDefault(); setActiveTab("company-registration-delhi"); }}
-                  className="hover:text-brand-gold cursor-pointer transition-colors duration-200 decoration-none"
-                >
-                  Company Registration in Delhi NCR
-                </a>
+            {/* Important Links */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Important Links</h4>
+              <div className="space-y-2 text-[11px]">
+                {["About Us", "Blog", "Resources", "Pricing", "Careers", "Contact Us"].map(s => (
+                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                ))}
               </div>
             </div>
 
-            {/* Column 4: Security & Trust */}
-            <div className="md:col-span-3 space-y-4">
-              <h4 className="font-serif text-sm font-bold text-brand-text tracking-wide uppercase">
-                Security & Trust
-              </h4>
-              <p className="text-xs text-brand-text-muted font-sans leading-relaxed">
-                All filings are handled by registered advocates and chartered accountants. Your data is protected with TLS 1.3 encryption and 256-bit SSL.
-              </p>
-              
-              <div className="flex flex-wrap items-center gap-3 pt-1 justify-center md:justify-start">
-                {/* TLS Pill */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[10px] font-semibold text-green-600 dark:text-green-400">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>TLS 1.3 Certified</span>
-                </div>
-                
-                {/* SSL Pill */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-gold/10 border border-brand-gold/20 rounded-full text-[10px] font-semibold text-brand-gold">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
-                  <span>256-bit SSL</span>
-                </div>
-              </div>
-
-              <div className="text-[10px] font-mono tracking-wider uppercase text-brand-text-muted pt-2 select-none">
-                © {new Date().getFullYear()} INCROUTE. ALL RIGHTS RESERVED.
+            {/* Legal & Policies */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Legal & Policies</h4>
+              <div className="space-y-2 text-[11px]">
+                {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Disclaimer"].map(s => (
+                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                ))}
               </div>
             </div>
 
+            {/* Registered Office */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Registered Office</h4>
+              <div className="space-y-2 text-[11px]">
+                <p>INCroute Corporate Solutions Pvt. Ltd.</p>
+                <p>B-901, Sector 63, Noida,</p>
+                <p>Uttar Pradesh - 201301, India</p>
+                <p className="pt-1">Email: support@incroute.com</p>
+                <p>Phone: +91 870 755 2183</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-10 pt-6 border-t border-[#1A1E30] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[10px] text-[#5A5E78]">© {new Date().getFullYear()} INCroute Corporate Solutions Pvt. Ltd. All rights reserved.</p>
+            <div className="w-8 h-8 rounded-full bg-[#6C7CFF] flex items-center justify-center cursor-pointer hover:bg-[#5563E8] transition-colors" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              <ArrowRight className="w-3.5 h-3.5 text-white -rotate-90" />
+            </div>
           </div>
         </div>
+      </footer>
       </footer>
 
       {/* Mobile Floating CTA */}
@@ -967,59 +913,7 @@ export default function App() {
       </div>
 
       {/* Desktop Floating CTA — bottom right */}
-      {activeTab === "services" && (
-        <div className="desktop-floating-cta">
-          <button
-            onClick={() => setShowExpertModal(true)}
-            className="bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] font-bold px-5 py-3 rounded-lg shadow-lg shadow-brand-gold/20 transition-all duration-200 flex items-center gap-2 cursor-pointer"
-          >
-            <Scale className="w-3.5 h-3.5" />
-            Connect with our Expert
-          </button>
-        </div>
-      )}
-
-      {/* Expert Consultation Modal Overlay */}
-      <AnimatePresence>
-        {showExpertModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-brand-bg-lighter border border-brand-gold/30 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative premium-card my-8"
-            >
-              <button
-                onClick={() => setShowExpertModal(false)}
-                className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-3 border-b border-brand-border pb-4">
-                <div className="p-2 bg-brand-gold/10 text-brand-gold border border-brand-gold/25 rounded-lg">
-                  <UserCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-light text-brand-text font-serif">Connect with our Expert</h3>
-                  <p className="text-[9px] text-brand-text-muted font-mono tracking-widest uppercase mt-0.5 font-bold">Direct Statutory & Incorporation Consultation</p>
-                </div>
-              </div>
-
-              <div className="max-h-[70vh] overflow-y-auto pr-1">
-                <ContactFormWidget />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Decorative brand star removed — clean layout */}
     </div>
   );
 }

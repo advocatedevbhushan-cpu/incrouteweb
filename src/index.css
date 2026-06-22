@@ -331,9 +331,9 @@ a, button, input, select, textarea {
 /* Hero gradient background for light mode */
 [data-theme="light"] .hero-gradient-bg {
   background: 
-    radial-gradient(circle at top left, rgba(108,124,255,0.22), transparent 34%),
-    radial-gradient(circle at top right, rgba(156,109,255,0.18), transparent 36%),
-    linear-gradient(180deg, #EEEAFD 0%, #F7F6FC 42%, #FFFFFF 100%);
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(108,124,255,0.28), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 90% 5%, rgba(156,109,255,0.18), transparent 45%),
+    linear-gradient(180deg, #E8E4FD 0%, #F0EEFA 25%, #F7F6FC 50%, #FFFFFF 100%);
   position: absolute;
   inset: 0;
   z-index: -1;
