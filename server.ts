@@ -2586,11 +2586,23 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       }
       try {
         const { execSync } = await import("child_process");
-        const output = execSync("npx prisma db push --accept-data-loss", { 
+        // Use node_modules/.bin/prisma directly (npx not available on some hosts)
+        const prismaPath = path.join(process.cwd(), "node_modules", ".bin", "prisma");
+        const nodePath = process.execPath; // full path to the node binary
+        // Try direct prisma binary first, fall back to running via node
+        let cmd: string;
+        if (fs.existsSync(prismaPath)) {
+          cmd = `"${prismaPath}" db push --accept-data-loss`;
+        } else {
+          // Fallback: run prisma CLI via node directly
+          const prismaCliPath = path.join(process.cwd(), "node_modules", "prisma", "build", "index.js");
+          cmd = `"${nodePath}" "${prismaCliPath}" db push --accept-data-loss`;
+        }
+        const output = execSync(cmd, { 
           cwd: process.cwd(), 
           encoding: "utf-8",
           timeout: 60000,
-          env: { ...process.env, PATH: process.env.PATH }
+          env: { ...process.env, PATH: `${path.join(process.cwd(), "node_modules", ".bin")}:${process.env.PATH || ""}` }
         });
         res.json({ success: true, message: "Database tables created!", output });
       } catch (err: any) {
