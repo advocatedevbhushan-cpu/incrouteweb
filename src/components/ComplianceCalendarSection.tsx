@@ -122,50 +122,50 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-[fadeScale_0.2s_ease-out]">
       {/* Back button */}
-      <button onClick={onBack} className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 cursor-pointer transition-colors">
+      <button onClick={onBack} className="flex items-center gap-2 text-sm text-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
         ← Back to Compliance Calendar
       </button>
 
       {/* Header */}
       <div className="space-y-2">
-        <span className="text-xs font-semibold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-md inline-block">{item.days}</span>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">{item.title}</h1>
-        <p className="text-xs uppercase tracking-widest text-purple-400">{item.subtitle}</p>
+        <span className="text-xs font-semibold bg-[var(--accent-soft)] text-[var(--accent)] px-2.5 py-1 rounded-md inline-block">{item.days}</span>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">{item.title}</h1>
+        <p className="text-xs uppercase tracking-widest text-[var(--accent)]">{item.subtitle}</p>
       </div>
 
       {/* Overview */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 sm:p-6">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 sm:p-6">
         <h3 className="text-sm font-semibold text-white mb-3">Overview</h3>
-        <p className="text-sm text-gray-300 leading-relaxed">{item.fullDetails.overview}</p>
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.fullDetails.overview}</p>
       </div>
 
       {/* Requirements & Documents side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5">
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-white mb-3">Requirements</h3>
           <ul className="space-y-2">
             {item.fullDetails.requirements.map((r, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-300"><span className="text-purple-400 mt-0.5">•</span>{r}</li>
+              <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] mt-0.5">•</span>{r}</li>
             ))}
           </ul>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5">
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-white mb-3">Documents Required</h3>
           <ul className="space-y-2">
             {item.fullDetails.documents.map((d, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-300"><span className="text-purple-400 mt-0.5">📄</span>{d}</li>
+              <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] mt-0.5">📄</span>{d}</li>
             ))}
           </ul>
         </div>
       </div>
 
       {/* Steps */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 sm:p-6">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 sm:p-6">
         <h3 className="text-sm font-semibold text-white mb-4">Steps</h3>
         <ol className="space-y-3">
           {item.fullDetails.steps.map((s, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-gray-300">
-              <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center text-[11px] font-bold shrink-0">{i + 1}</span>
+            <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+              <span className="w-6 h-6 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center text-[11px] font-bold shrink-0">{i + 1}</span>
               {s}
             </li>
           ))}
@@ -174,8 +174,8 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
 
       {/* Tip & Penalty */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20">
-          <p className="text-sm text-gray-200"><span className="text-purple-400 font-semibold">� Pro Tip:</span> {item.fullDetails.tip}</p>
+        <div className="p-5 rounded-2xl bg-[var(--accent-soft)] border border-[var(--accent)]/20">
+          <p className="text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] font-semibold">� Pro Tip:</span> {item.fullDetails.tip}</p>
         </div>
         <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20">
           <p className="text-sm text-red-300"><span className="font-semibold">⚠️ Penalty:</span> {item.fullDetails.penalty}</p>
@@ -183,7 +183,7 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
       </div>
 
       {/* CTA */}
-      <button className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+      <button className="w-full sm:w-auto px-8 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer">
         Delegate This Task →
       </button>
     </div>
@@ -195,21 +195,21 @@ function DemoModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative w-full max-w-lg bg-[#1a1625] border border-purple-500/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-white">Compliance Tracking Demo</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-gray-400 cursor-pointer" aria-label="Close">✕</button>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Compliance Tracking Demo</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--bg-surface-alt)] text-[var(--text-tertiary)] cursor-pointer" aria-label="Close">✕</button>
         </div>
-        <p className="text-sm text-gray-300">See how INCroute tracks your compliance deadlines automatically.</p>
+        <p className="text-sm text-[var(--text-secondary)]">See how INCroute tracks your compliance deadlines automatically.</p>
         <div className="space-y-3">
           {[{ task: "DIR-3 KYC", due: "Sep 30", progress: 85 }, { task: "GSTR-3B Filing", due: "Jul 20", progress: 60 }, { task: "AOC-4 Annual", due: "Oct 30", progress: 20 }].map((t, i) => (
-            <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
-              <div className="flex justify-between text-sm"><span className="text-white font-medium">{t.task}</span><span className="text-gray-400">Due: {t.due}</span></div>
-              <div className="w-full h-1.5 rounded-full bg-white/10"><div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${t.progress}%` }} /></div>
+            <div key={i} className="p-3 rounded-xl bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] space-y-2">
+              <div className="flex justify-between text-sm"><span className="text-white font-medium">{t.task}</span><span className="text-[var(--text-tertiary)]">Due: {t.due}</span></div>
+              <div className="w-full h-1.5 rounded-full bg-[var(--bg-surface-alt)]"><div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${t.progress}%` }} /></div>
             </div>
           ))}
         </div>
-        <button onClick={onClose} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl cursor-pointer transition-colors">Start Tracking Now</button>
+        <button onClick={onClose} className="w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-sm font-semibold rounded-xl cursor-pointer transition-colors">Start Tracking Now</button>
       </div>
     </div>
   );
@@ -227,21 +227,21 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-[#1a1625] border border-purple-500/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-md bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-white">Select Your Business Type</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-gray-400 cursor-pointer" aria-label="Close">✕</button>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Select Your Business Type</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--bg-surface-alt)] text-[var(--text-tertiary)] cursor-pointer" aria-label="Close">✕</button>
         </div>
-        <p className="text-sm text-gray-400">We'll show you the compliance requirements specific to your entity type.</p>
+        <p className="text-sm text-[var(--text-tertiary)]">We'll show you the compliance requirements specific to your entity type.</p>
         <div className="space-y-2">
           {types.map(t => (
-            <button key={t.id} onClick={() => setSelected(t.id)} className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${selected === t.id ? "border-purple-500 bg-purple-500/10" : "border-white/10 hover:border-purple-500/40 bg-white/5"}`}>
-              <p className="text-sm font-semibold text-white">{t.name}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{t.desc}</p>
+            <button key={t.id} onClick={() => setSelected(t.id)} className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${selected === t.id ? "border-purple-500 bg-[var(--accent-soft)]" : "border-[var(--border-subtle)] hover:border-[var(--accent)]/40 bg-[var(--bg-surface-alt)]"}`}>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{t.name}</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{t.desc}</p>
             </button>
           ))}
         </div>
-        <button disabled={!selected} className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl cursor-pointer transition-colors">
+        <button disabled={!selected} className="w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl cursor-pointer transition-colors">
           View Compliance Roadmap →
         </button>
       </div>
@@ -252,23 +252,23 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 /* ═══ CARD COMPONENT ═══ */
 function ComplianceCard({ item, onClick }: { item: ComplianceItem; onClick: () => void }) {
   return (
-    <div onClick={onClick} className="relative bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.02] hover:border-purple-500/40 transition-all duration-300 cursor-pointer group">
+    <div onClick={onClick} className="relative bg-[var(--bg-surface)] backdrop-blur-sm border border-[var(--border-subtle)] rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.02] hover:border-[var(--accent)]/40 transition-all duration-300 cursor-pointer group">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-md tracking-wide">{item.days}</span>
-          <span className="text-xs text-gray-500 font-mono">{item.step}</span>
+          <span className="text-xs font-semibold bg-[var(--accent-soft)] text-[var(--accent)] px-2.5 py-1 rounded-md tracking-wide">{item.days}</span>
+          <span className="text-xs text-[var(--text-tertiary)] font-mono">{item.step}</span>
         </div>
         <h3 className="text-lg font-semibold text-white leading-snug">{item.title}</h3>
-        <p className="uppercase text-[10px] tracking-widest text-purple-400 mt-1.5 font-medium">{item.subtitle}</p>
-        <p className="text-sm text-gray-400 mt-3 leading-relaxed">{item.shortDescription}</p>
-        <div className="mt-4 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-          <p className="text-xs text-gray-300"><span className="text-purple-400 font-semibold">Pro Tip:</span> {item.fullDetails.tip}</p>
+        <p className="uppercase text-[10px] tracking-widest text-[var(--accent)] mt-1.5 font-medium">{item.subtitle}</p>
+        <p className="text-sm text-[var(--text-tertiary)] mt-3 leading-relaxed">{item.shortDescription}</p>
+        <div className="mt-4 p-3 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent)]/20">
+          <p className="text-xs text-[var(--text-secondary)]"><span className="text-[var(--accent)] font-semibold">Pro Tip:</span> {item.fullDetails.tip}</p>
         </div>
         <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
           <p className="text-xs text-red-400"><span className="font-semibold">Penalty:</span> {item.fullDetails.penalty.substring(0, 80)}...</p>
         </div>
       </div>
-      <p className="mt-5 text-sm text-purple-400 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+      <p className="mt-5 text-sm text-[var(--accent)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
         View Full Details <span>→</span>
       </p>
     </div>
@@ -285,7 +285,7 @@ export default function ComplianceCalendarSection() {
     <>
       <section className="relative overflow-hidden">
         {/* Background blobs */}
-        <div className="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-purple-600/[0.06] rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-[var(--accent)]/[0.06] rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[5%] w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-6 py-16">
@@ -295,21 +295,21 @@ export default function ComplianceCalendarSection() {
             <>
               {/* Header */}
               <div className="text-center space-y-5 mb-14">
-                <span className="inline-block text-xs tracking-widest uppercase bg-purple-500/10 text-purple-400 px-4 py-1.5 rounded-full font-medium">
+                <span className="inline-block text-xs tracking-widest uppercase bg-[var(--accent-soft)] text-[var(--accent)] px-4 py-1.5 rounded-full font-medium">
                   Static Statutory Calendars
                 </span>
                 <h2 className="text-4xl md:text-5xl font-semibold leading-tight">
-                  <span className="bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">Global Compliance</span><br />
-                  <span className="bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent">Calendars Tracker</span>
+                  <span className="bg-gradient-to-r from-[var(--text-primary)] to-[var(--accent)] bg-clip-text text-transparent">Global Compliance</span><br />
+                  <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--gradient-end)] bg-clip-text text-transparent">Calendars Tracker</span>
                 </h2>
-                <p className="text-gray-400 max-w-2xl mx-auto text-[15px] leading-relaxed">
+                <p className="text-[var(--text-secondary)] max-w-2xl mx-auto text-[15px] leading-relaxed">
                   Unified live schedule of state, federal, and local statutory obligations. Keep your company fully operational and liability-free.
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
-                  <button onClick={() => setShowOnboarding(true)} className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+                  <button onClick={() => setShowOnboarding(true)} className="px-6 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer">
                     Get Started
                   </button>
-                  <button onClick={() => setShowDemo(true)} className="px-6 py-2.5 border border-white/15 hover:border-purple-500/40 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer">
+                  <button onClick={() => setShowDemo(true)} className="px-6 py-2.5 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] text-sm font-semibold rounded-xl transition-colors cursor-pointer">
                     View Demo
                   </button>
                 </div>
