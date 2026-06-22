@@ -153,31 +153,75 @@ export function Notifications() {
 
 /* ─── PROFILE & SETTINGS ─── */
 export function ProfileSettings() {
+  const [profile, setProfile] = React.useState<any>(null);
+  const [pwForm, setPwForm] = React.useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [pwMsg, setPwMsg] = React.useState("");
+  const [pwLoading, setPwLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const token = localStorage.getItem("incroute_access_token");
+        const res = await fetch("/api/portal/profile", { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const d = await res.json();
+        if (d.user) setProfile(d);
+      } catch {}
+    })();
+  }, []);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwMsg("");
+    if (pwForm.newPassword !== pwForm.confirmPassword) { setPwMsg("Passwords do not match"); return; }
+    if (pwForm.newPassword.length < 8) { setPwMsg("Password must be at least 8 characters"); return; }
+    setPwLoading(true);
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+      });
+      const data = await res.json();
+      if (data.success) { setPwMsg("✓ Password updated successfully"); setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" }); }
+      else { setPwMsg(data.error || "Failed to change password"); }
+    } catch { setPwMsg("Network error"); }
+    finally { setPwLoading(false); }
+  };
+
+  const user = profile?.user;
+  const client = profile?.client;
+
   return (
     <div className="space-y-6">
       <ScreenHeader title="Profile & Settings" subtitle="Manage your account and preferences" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SettingsCard title="Profile Information">
-          <FieldRow label="Full Name" value="Rohit Verma" />
-          <FieldRow label="Email" value="rohit@abcpvtltd.com" />
-          <FieldRow label="Phone" value="+91 98765 43210" />
-          <FieldRow label="Role" value="Founder & Director" />
+          <FieldRow label="Full Name" value={user ? `${user.firstName} ${user.lastName}` : "—"} />
+          <FieldRow label="Email" value={user?.email || "—"} />
+          <FieldRow label="Phone" value={user?.phone || "—"} />
+          <FieldRow label="Role" value={user?.role?.replace(/_/g, " ") || "—"} />
         </SettingsCard>
         <SettingsCard title="Company Information">
-          <FieldRow label="Company" value="ABC Private Limited" />
-          <FieldRow label="CIN" value="U74999KA2023PTC123456" />
-          <FieldRow label="PAN" value="AABCU9603R" />
-          <FieldRow label="GSTIN" value="29AABCU9603R1ZM" />
+          <FieldRow label="Company" value={client?.companyName || "Not linked"} />
+          <FieldRow label="Industry" value={client?.industry || "—"} />
+          <FieldRow label="Status" value={client?.status || "—"} />
         </SettingsCard>
-        <SettingsCard title="Security">
-          <FieldRow label="Password" value="••••••••••" />
-          <FieldRow label="Two-Factor Auth" value="Enabled" />
-          <FieldRow label="Last Login" value="Jun 21, 2026 · 9:14 AM" />
-        </SettingsCard>
-        <SettingsCard title="Notification Preferences">
-          <FieldRow label="Email Notifications" value="Enabled" />
-          <FieldRow label="WhatsApp Alerts" value="Enabled" />
-          <FieldRow label="Compliance Reminders" value="7 days before" />
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+          <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Change Password</h3>
+          <form onSubmit={handlePasswordChange} className="space-y-3">
+            <input type="password" placeholder="Current Password" required value={pwForm.currentPassword} onChange={e => setPwForm({...pwForm, currentPassword: e.target.value})} className="w-full px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" />
+            <input type="password" placeholder="New Password (min 8 chars)" required value={pwForm.newPassword} onChange={e => setPwForm({...pwForm, newPassword: e.target.value})} className="w-full px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" />
+            <input type="password" placeholder="Confirm New Password" required value={pwForm.confirmPassword} onChange={e => setPwForm({...pwForm, confirmPassword: e.target.value})} className="w-full px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" />
+            {pwMsg && <p className={`text-[12px] ${pwMsg.startsWith("✓") ? "text-[var(--success)]" : "text-[#EF4444]"}`}>{pwMsg}</p>}
+            <button type="submit" disabled={pwLoading} className="w-full py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-semibold rounded-xl cursor-pointer disabled:opacity-50 transition-colors">
+              {pwLoading ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+        </div>
+        <SettingsCard title="Account">
+          <FieldRow label="Member Since" value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-IN", { month: "long", year: "numeric" }) : "—"} />
+          <FieldRow label="Last Login" value={user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"} />
         </SettingsCard>
       </div>
     </div>

@@ -227,6 +227,54 @@ async function startServer() {
     }
   });
 
+  // Change password endpoint (for logged-in users)
+  app.post("/api/auth/change-password", async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+      const decoded: any = jwt.verify(token, secret);
+
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) return res.status(400).json({ error: "Current password and new password required" });
+      if (newPassword.length < 8) return res.status(400).json({ error: "New password must be at least 8 characters" });
+
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query("SELECT id, passwordHash FROM `User` WHERE id = ?", [decoded.userId]);
+      if (users.length === 0) { await conn.end(); return res.status(404).json({ error: "User not found" }); }
+
+      const valid = await bcrypt.compare(currentPassword, users[0].passwordHash);
+      if (!valid) { await conn.end(); return res.status(401).json({ error: "Current password is incorrect" }); }
+
+      const newHash = await bcrypt.hash(newPassword, 12);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `User` SET passwordHash = ?, updatedAt = ? WHERE id = ?", [newHash, now, decoded.userId]);
+      await conn.end();
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to change password", details: err.message });
+    }
+  });
+
+  // Admin: Reset client password
+  app.post("/api/admin/reset-password", async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const { email, newPassword } = req.body;
+      if (!email || !newPassword) return res.status(400).json({ error: "Email and new password required" });
+      const conn = await getPlatformConnection();
+      const passwordHash = await bcrypt.hash(newPassword, 12);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const [result]: any = await conn.query("UPDATE `User` SET passwordHash = ?, updatedAt = ? WHERE email = ?", [passwordHash, now, email]);
+      await conn.end();
+      if (result.affectedRows === 0) return res.status(404).json({ error: "User not found" });
+      res.json({ success: true, message: "Password reset for " + email });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // Register endpoint (for new users)
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -347,23 +395,83 @@ async function startServer() {
 
   app.post("/api/admin/clients", async (req, res) => {
     try {
-      const { companyName, contactName, contactEmail, contactPhone, industry, notes } = req.body;
+      const bcrypt = require("bcryptjs");
+      const { companyName, contactName, contactEmail, contactPhone, industry, notes, password } = req.body;
       if (!companyName || !contactName || !contactEmail) {
         return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
       }
       const conn = await getPlatformConnection();
-      const id = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      
+      // Create client record
+      const clientId = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(
         `INSERT INTO \`Client\` (id, companyName, contactName, contactEmail, contactPhone, industry, notes, status, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
-        [id, companyName, contactName, contactEmail, contactPhone || null, industry || null, notes || null, now, now]
+        [clientId, companyName, contactName, contactEmail, contactPhone || null, industry || null, notes || null, now, now]
       );
+
+      // Create user account for the client (so they can login to portal)
+      const loginPassword = password || "Welcome@123";
+      const passwordHash = await bcrypt.hash(loginPassword, 12);
+      const userId = "usr_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const nameParts = contactName.split(" ");
+      const firstName = nameParts[0] || contactName;
+      const lastName = nameParts.slice(1).join(" ") || "";
+      
+      // Check if user with this email already exists
+      const [existingUser]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [contactEmail]);
+      if (existingUser.length === 0) {
+        await conn.query(
+          `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, 'CLIENT', 1, 0, ?, ?)`,
+          [userId, contactEmail, passwordHash, firstName, lastName, contactPhone || null, now, now]
+        );
+      }
+
+      // Log activity
+      await conn.query(
+        `INSERT INTO \`Activity\` (id, clientId, userId, type, title, createdAt) VALUES (?, ?, ?, ?, ?, ?)`,
+        ["act_" + Date.now().toString(36), clientId, null, "client_created", `New client onboarded: ${companyName}`, now]
+      );
+
       await conn.end();
-      res.json({ success: true, id, message: "Client created" });
+      res.json({ success: true, id: clientId, message: "Client created with login credentials", credentials: { email: contactEmail, password: loginPassword } });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to create client", details: err.message });
     }
+  });
+
+  // Delete client
+  app.delete("/api/admin/clients/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      await conn.query("DELETE FROM `Client` WHERE id = ?", [req.params.id]);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Update client
+  app.patch("/api/admin/clients/:id", async (req, res) => {
+    try {
+      const { companyName, contactName, contactEmail, contactPhone, industry, status, notes } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (companyName) { sets.push("companyName = ?"); vals.push(companyName); }
+      if (contactName) { sets.push("contactName = ?"); vals.push(contactName); }
+      if (contactEmail) { sets.push("contactEmail = ?"); vals.push(contactEmail); }
+      if (contactPhone !== undefined) { sets.push("contactPhone = ?"); vals.push(contactPhone); }
+      if (industry) { sets.push("industry = ?"); vals.push(industry); }
+      if (status) { sets.push("status = ?"); vals.push(status); }
+      if (notes !== undefined) { sets.push("notes = ?"); vals.push(notes); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Client\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
   // ─── TASKS CRUD ───
