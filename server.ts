@@ -474,6 +474,77 @@ async function startServer() {
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // ─── CLIENT DETAIL (with entities & service requests) ───
+  app.get("/api/admin/clients/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [clients]: any = await conn.query("SELECT * FROM `Client` WHERE id = ?", [req.params.id]);
+      if (clients.length === 0) { await conn.end(); return res.status(404).json({ error: "Client not found" }); }
+      const [entities]: any = await conn.query("SELECT * FROM `Entity` WHERE clientId = ?", [req.params.id]);
+      const [serviceRequests]: any = await conn.query("SELECT * FROM `ServiceRequest` WHERE clientId = ? ORDER BY createdAt DESC", [req.params.id]);
+      const [invoices]: any = await conn.query("SELECT id, invoiceNo, total, status, dueDate FROM `Invoice` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
+      const [tickets]: any = await conn.query("SELECT id, subject, status, createdAt FROM `Ticket` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
+      await conn.end();
+      res.json({ client: clients[0], entities, serviceRequests, invoices, tickets });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── ENTITIES CRUD ───
+  app.post("/api/admin/entities", async (req, res) => {
+    try {
+      const { clientId, name, type, cin, pan, gstin, incorporatedAt } = req.body;
+      if (!clientId || !name || !type) return res.status(400).json({ error: "clientId, name, and type are required" });
+      const conn = await getPlatformConnection();
+      const id = "ent_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Entity\` (id, clientId, name, type, cin, pan, gstin, incorporatedAt, status, complianceScore, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 100, ?, ?)`,
+        [id, clientId, name, type, cin || null, pan || null, gstin || null, incorporatedAt || null, now, now]
+      );
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── SERVICE REQUESTS ───
+  app.post("/api/admin/service-requests", async (req, res) => {
+    try {
+      const { clientId, serviceType, companyName, notes, expectedDate } = req.body;
+      if (!clientId || !serviceType) return res.status(400).json({ error: "clientId and serviceType are required" });
+      const conn = await getPlatformConnection();
+      const id = "sr_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`ServiceRequest\` (id, clientId, serviceType, status, companyName, notes, expectedDate, createdAt, updatedAt)
+         VALUES (?, ?, ?, 'IN_PROGRESS', ?, ?, ?, ?, ?)`,
+        [id, clientId, serviceType, companyName || null, notes || null, expectedDate || null, now, now]
+      );
+      // Log activity
+      await conn.query("INSERT INTO `Activity` (id, clientId, type, title, createdAt) VALUES (?, ?, ?, ?, ?)",
+        ["act_" + Date.now().toString(36), clientId, "service_added", `Service ${serviceType.replace(/_/g, " ")} added`, now]);
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/service-requests/:id", async (req, res) => {
+    try {
+      const { status, progress, notes } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); if (status === "COMPLETED") { sets.push("completedAt = ?"); vals.push(now); } }
+      if (progress !== undefined) { sets.push("progress = ?"); vals.push(progress); }
+      if (notes) { sets.push("notes = ?"); vals.push(notes); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`ServiceRequest\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // ─── TASKS CRUD ───
   app.get("/api/admin/tasks", async (req, res) => {
     try {
