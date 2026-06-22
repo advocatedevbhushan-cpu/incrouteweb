@@ -87,12 +87,11 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             {/* Resources — dropdown */}
             <NavDropdown
               label="Resources"
-              active={isActive(["blog", "faq", "contact", "compliance", "flowchart"])}
+              active={isActive(["faq", "contact", "compliance", "flowchart"])}
               open={openDropdown === "resources"}
               onOpen={() => setOpenDropdown("resources")}
               onClose={() => setOpenDropdown(null)}
             >
-              <DropdownItem onClick={(e) => nav(e, "blog")} title="Insights" desc="Articles on compliance & business" active={activeTab === "blog"} />
               <DropdownItem onClick={(e) => nav(e, "faq")} title="Knowledge Center" desc="FAQs and guides" active={activeTab === "faq"} />
               <DropdownItem onClick={(e) => nav(e, "compliance")} title="Compliance Tracker" desc="Statutory deadline calendar" active={activeTab === "compliance"} />
               <DropdownItem onClick={(e) => nav(e, "contact")} title="Contact" desc="Get in touch with our team" active={activeTab === "contact"} />
@@ -177,7 +176,6 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
               {/* Resources accordion */}
               <MobileAccordion label="Resources" items={[
-                { label: "Insights (Blog)", tab: "blog" },
                 { label: "Knowledge Center", tab: "faq" },
                 { label: "Compliance Tracker", tab: "compliance" },
                 { label: "Contact", tab: "contact" },

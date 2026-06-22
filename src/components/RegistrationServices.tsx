@@ -1721,7 +1721,7 @@ export default function RegistrationServices({
               
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button 
-                  onClick={() => { const el = document.getElementById("service-catalog-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
+                  onClick={() => navigateToTab("catalog")}
                   className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] hover:scale-[1.02] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-[0_0_20px_-4px_var(--accent)]"
                 >
                   Start Your Business <ArrowRight className="w-4 h-4" />
@@ -2178,7 +2178,7 @@ export default function RegistrationServices({
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Ready to Start Your Business Journey?</h2>
                 <p className="text-sm text-[var(--text-secondary)] max-w-lg mx-auto">Incorporate, manage & grow with confidence.</p>
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                  <button onClick={() => { const el = document.getElementById("service-catalog-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }} className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2">
+                  <button onClick={() => navigateToTab("catalog")} className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2">
                     Start Your Business <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => navigateToTab("contact")} className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all cursor-pointer">
