@@ -115,8 +115,65 @@ export function LegalOps() {
 
 // ─── REPORTING ───
 export function ReportingDashboard() {
-  return (<div className="space-y-5"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Reports & Analytics</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Platform performance</p></div>
-    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-8 text-center py-16"><BarChart3 className="w-10 h-10 text-[var(--accent)] mx-auto mb-3 opacity-40"/><p className="text-[14px] font-semibold text-[var(--text-primary)]">Reports Module — Phase C</p><p className="text-[12px] text-[var(--text-tertiary)] mt-1">Detailed analytics will be available in the next update.</p></div>
+  const [data, setData] = useState<any>(null); const [loading, setLoading] = useState(true);
+  useEffect(() => { api("/api/admin/reports").then(d => setData(d)).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  const fmtAmt = (n: number) => n >= 100000 ? `₹${(n/100000).toFixed(1)}L` : n >= 1000 ? `₹${(n/1000).toFixed(0)}K` : `₹${n}`;
+  const c = data?.clients || {}; const r = data?.revenue || {}; const comp = data?.compliance || {}; const s = data?.services || {}; const t = data?.tasks || {}; const tk = data?.tickets || {};
+
+  return (<div className="space-y-5"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Reports & Analytics</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Platform performance overview</p></div>
+
+    {/* KPI Grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{c.total || 0}</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Total Clients</p><p className="text-[10px] text-[var(--success)] font-medium">+{c.newThisMonth || 0} this month</p></div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{fmtAmt(r.collected || 0)}</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Revenue Collected</p><p className="text-[10px] text-[var(--warning)] font-medium">{fmtAmt(r.outstanding || 0)} pending</p></div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{comp.rate || 100}%</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Compliance Rate</p><p className="text-[10px] text-[#EF4444] font-medium">{comp.overdue || 0} overdue</p></div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{s.completed || 0}/{s.total || 0}</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Services Done</p><p className="text-[10px] text-[var(--accent)] font-medium">Avg {s.avgDays || 0} days</p></div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{t.completedThisWeek || 0}</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Tasks/Week</p><p className="text-[10px] text-[var(--success)] font-medium">{t.completed || 0} total done</p></div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{tk.avgHoursToResolve || 0}h</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase mt-0.5">Avg Resolution</p><p className="text-[10px] text-[var(--accent)] font-medium">{tk.resolved || 0}/{tk.total || 0} resolved</p></div>
+    </div>
+
+    {/* Details grid */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Revenue Summary</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">Total Billed</span><span className="text-[12px] font-semibold text-[var(--text-primary)]">{fmtAmt(r.totalBilled||0)}</span></div>
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">Collected</span><span className="text-[12px] font-semibold text-[var(--success)]">{fmtAmt(r.collected||0)}</span></div>
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">Outstanding</span><span className="text-[12px] font-semibold text-[var(--warning)]">{fmtAmt(r.outstanding||0)}</span></div>
+          <div className="flex justify-between py-2"><span className="text-[12px] text-[var(--text-secondary)]">Collection Rate</span><span className="text-[12px] font-semibold text-[var(--text-primary)]">{r.totalBilled ? Math.round((r.collected / r.totalBilled) * 100) : 0}%</span></div>
+        </div>
+      </div>
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Service Delivery</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">Total Service Requests</span><span className="text-[12px] font-semibold text-[var(--text-primary)]">{s.total||0}</span></div>
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">Completed</span><span className="text-[12px] font-semibold text-[var(--success)]">{s.completed||0}</span></div>
+          <div className="flex justify-between py-2 border-b border-[var(--border-subtle)]"><span className="text-[12px] text-[var(--text-secondary)]">In Progress</span><span className="text-[12px] font-semibold text-[var(--accent)]">{s.inProgress||0}</span></div>
+          <div className="flex justify-between py-2"><span className="text-[12px] text-[var(--text-secondary)]">Avg Delivery Time</span><span className="text-[12px] font-semibold text-[var(--text-primary)]">{s.avgDays||0} days</span></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Monthly Revenue */}
+    {(data?.monthlyRevenue?.length > 0) && (
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Monthly Revenue (Last 6 Months)</h3>
+        <div className="flex items-end gap-2 h-[120px]">
+          {data.monthlyRevenue.map((m: any) => {
+            const maxVal = Math.max(...data.monthlyRevenue.map((x: any) => Number(x.billed) || 1));
+            const height = Math.max(8, (Number(m.billed) / maxVal) * 100);
+            return (
+              <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-[9px] text-[var(--text-tertiary)]">{fmtAmt(Number(m.paid)||0)}</span>
+                <div className="w-full rounded-t-lg bg-[var(--accent)]" style={{ height: `${height}%` }} />
+                <span className="text-[9px] text-[var(--text-tertiary)]">{m.month.slice(5)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
   </div>);
 }
 

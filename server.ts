@@ -879,8 +879,65 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [team]: any = await conn.query("SELECT id, email, firstName, lastName, role, phone, isActive, createdAt FROM `User` WHERE role IN ('SUPER_ADMIN','ADMIN','TEAM_MEMBER') ORDER BY createdAt");
+      // Get workload per team member
+      const workload: any[] = [];
+      for (const member of team) {
+        const [[taskCount]]: any = await conn.query("SELECT COUNT(*) as c FROM `Task` WHERE assigneeId = ? AND status NOT IN ('COMPLETED')", [member.id]);
+        const [[compCount]]: any = await conn.query("SELECT COUNT(*) as c FROM `ComplianceTask` WHERE assigneeId = ? AND status NOT IN ('COMPLETED')", [member.id]);
+        const [[clientCount]]: any = await conn.query("SELECT COUNT(DISTINCT clientId) as c FROM `ServiceRequest` WHERE assignedMgrId = ? OR assignedExecId = ?", [member.id, member.id]);
+        workload.push({ ...member, activeTasks: (taskCount.c || 0) + (compCount.c || 0), clients: clientCount.c || 0 });
+      }
       await conn.end();
-      res.json({ team });
+      res.json({ team: workload });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/team/invite", async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const { email, firstName, lastName, role, phone, password } = req.body;
+      if (!email || !firstName || !role) return res.status(400).json({ error: "email, firstName, role required" });
+      const conn = await getPlatformConnection();
+      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
+      if (existing.length > 0) { await conn.end(); return res.status(409).json({ error: "Email already exists" }); }
+      const id = "tm_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const passwordHash = await bcrypt.hash(password || "Team@2026", 12);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(`INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?)`,
+        [id, email, passwordHash, firstName, lastName || "", phone || null, role, now, now]);
+      await conn.end();
+      res.json({ success: true, id, credentials: { email, password: password || "Team@2026" } });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── REPORTS & ANALYTICS ───
+  app.get("/api/admin/reports", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      // Client metrics
+      const [[clientStats]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='ACTIVE' THEN 1 END) as active, COUNT(CASE WHEN createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as newThisMonth FROM `Client`");
+      // Revenue metrics
+      const [[revenue]]: any = await conn.query("SELECT COALESCE(SUM(CASE WHEN status='PAID' THEN total ELSE 0 END),0) as collected, COALESCE(SUM(CASE WHEN status IN ('PENDING','SENT','OVERDUE') THEN total ELSE 0 END),0) as outstanding, COALESCE(SUM(total),0) as totalBilled FROM `Invoice`");
+      // Compliance metrics
+      const [[compliance]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='COMPLETED' THEN 1 END) as completed, COUNT(CASE WHEN status NOT IN ('COMPLETED') AND dueDate < NOW() THEN 1 END) as overdue FROM `ComplianceTask`");
+      // Service delivery
+      const [[services]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='COMPLETED' THEN 1 END) as completed, COUNT(CASE WHEN status='IN_PROGRESS' THEN 1 END) as inProgress, ROUND(AVG(CASE WHEN status='COMPLETED' THEN DATEDIFF(completedAt, createdAt) END),1) as avgDays FROM `ServiceRequest`");
+      // Task productivity
+      const [[tasks]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status='COMPLETED' THEN 1 END) as completed, COUNT(CASE WHEN status='COMPLETED' AND completedAt >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as completedThisWeek FROM `Task`");
+      // Ticket resolution
+      const [[tickets]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status IN ('RESOLVED','CLOSED') THEN 1 END) as resolved, ROUND(AVG(CASE WHEN resolvedAt IS NOT NULL THEN TIMESTAMPDIFF(HOUR, createdAt, resolvedAt) END),1) as avgHoursToResolve FROM `Ticket`");
+      // Monthly revenue trend (last 6 months)
+      const [monthlyRevenue]: any = await conn.query("SELECT DATE_FORMAT(createdAt, '%Y-%m') as month, SUM(CASE WHEN status='PAID' THEN total ELSE 0 END) as paid, SUM(total) as billed FROM `Invoice` WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY month");
+      await conn.end();
+      res.json({
+        clients: { total: clientStats.total, active: clientStats.active, newThisMonth: clientStats.newThisMonth },
+        revenue: { collected: Number(revenue.collected), outstanding: Number(revenue.outstanding), totalBilled: Number(revenue.totalBilled) },
+        compliance: { total: compliance.total, completed: compliance.completed, overdue: compliance.overdue, rate: compliance.total > 0 ? Math.round((compliance.completed / compliance.total) * 100) : 100 },
+        services: { total: services.total, completed: services.completed, inProgress: services.inProgress, avgDays: services.avgDays || 0 },
+        tasks: { total: tasks.total, completed: tasks.completed, completedThisWeek: tasks.completedThisWeek },
+        tickets: { total: tickets.total, resolved: tickets.resolved, avgHoursToResolve: tickets.avgHoursToResolve || 0 },
+        monthlyRevenue
+      });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
