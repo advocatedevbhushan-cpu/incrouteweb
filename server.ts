@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
@@ -2364,7 +2363,9 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     try {
       const templatePath = isDev 
         ? path.join(process.cwd(), "index.html")
-        : path.join(process.cwd(), "dist", "index.html");
+        : fs.existsSync(path.join(process.cwd(), "dist", "index.html"))
+          ? path.join(process.cwd(), "dist", "index.html")
+          : path.join(process.cwd(), "index.html");
 
       if (!fs.existsSync(templatePath)) {
         return next();
@@ -2466,7 +2467,35 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   const seoRoutes = Object.keys(seoProfiles);
 
   // Vite Integration for Full-Stack routing
-  if (process.env.NODE_ENV !== "production") {
+  // Production detection logic:
+  // - If NODE_ENV=production → production mode
+  // - If running from tsx (dev command) → dev mode, regardless of dist/ existing
+  // - If neither is set but built assets exist → production mode (Hostinger fallback)
+  const distPath = path.join(process.cwd(), "dist");
+  const distIndexPath = path.join(distPath, "index.html");
+  // Also check if running directly from inside dist/ folder (cd dist && node server.cjs)
+  const cwdIndexPath = path.join(process.cwd(), "index.html");
+  const cwdHasAssets = fs.existsSync(path.join(process.cwd(), "assets")) && fs.existsSync(cwdIndexPath);
+  
+  // Check if we're running via tsx (TypeScript execution = development)
+  const isRunningViaTsx = process.argv[1]?.endsWith('.ts') || process.argv[0]?.includes('tsx');
+  
+  let isProduction: boolean;
+  if (process.env.NODE_ENV === "production") {
+    isProduction = true;
+  } else if (isRunningViaTsx) {
+    isProduction = false;
+  } else if (fs.existsSync(distIndexPath) || cwdHasAssets) {
+    // Bundled server without NODE_ENV set — assume production
+    isProduction = true;
+    console.log("ℹ️ NODE_ENV not set but running bundled server. Assuming production.");
+  } else {
+    isProduction = false;
+  }
+  
+  if (!isProduction) {
+    console.log("🔵 Starting in DEVELOPMENT mode (Vite HMR)...");
+    const { createServer: createViteServer } = await import("vite");
     const hmrPort = Number(process.env.WS_PORT) || (PORT + 100);
     const vite = await createViteServer({
       server: {
@@ -2522,7 +2551,10 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     console.log(`Vite HMR configured to ws://localhost:${hmrPort}`);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    // Production mode — serve built static files with SPA fallback
+    // Resolve the actual dist path: if dist/index.html exists use dist/, else use cwd (running from dist/ directly)
+    const resolvedDistPath = fs.existsSync(distIndexPath) ? distPath : (cwdHasAssets ? process.cwd() : distPath);
+    console.log(`🟢 Starting in PRODUCTION mode. Serving from: ${resolvedDistPath}`);
 
     // Intercept blog post routes
     app.get(["/blog/:slug", "/blog/:slug/"], (req, res, next) => {
@@ -2533,7 +2565,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     app.get([...seoRoutes, "/services/:category/:serviceId", "/services/:category/:serviceId/"], (req, res, next) => {
       try {
         const url = req.originalUrl.split("?")[0];
-        const templatePath = path.join(distPath, "index.html");
+        const templatePath = path.join(resolvedDistPath, "index.html");
         if (fs.existsSync(templatePath)) {
           const template = fs.readFileSync(templatePath, "utf-8");
           const html = injectSEOMetadata(template, url);
@@ -2545,34 +2577,40 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       }
     });
 
-    app.use(express.static(distPath));
+    // ─── ONE-TIME DATABASE SETUP ENDPOINT ───
+    // Visit: /api/setup-db?key=incroute2026 to create all Prisma tables
+    app.get("/api/setup-db", async (req, res) => {
+      const setupKey = req.query.key;
+      if (setupKey !== "incroute2026") {
+        return res.status(403).json({ error: "Invalid setup key" });
+      }
+      try {
+        const { execSync } = await import("child_process");
+        const output = execSync("npx prisma db push --accept-data-loss", { 
+          cwd: process.cwd(), 
+          encoding: "utf-8",
+          timeout: 60000,
+          env: { ...process.env, PATH: process.env.PATH }
+        });
+        res.json({ success: true, message: "Database tables created!", output });
+      } catch (err: any) {
+        res.status(500).json({ error: "Setup failed", details: err.message, output: err.stdout || "" });
+      }
+    });
+
+    // Static file serving
+    app.use(express.static(resolvedDistPath));
     app.use(express.static(path.join(process.cwd(), "public")));
+
+    // SPA fallback — serve index.html for ALL non-API, non-file routes
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      // If the request looks like a file (has extension), let it 404 naturally
+      if (req.path.includes(".") && !req.path.endsWith(".html")) {
+        return res.status(404).end();
+      }
+      res.sendFile(path.join(resolvedDistPath, "index.html"));
     });
   }
-
-  // ─── ONE-TIME DATABASE SETUP ENDPOINT ───
-  // Visit: /api/setup-db?key=incroute2026 to create all Prisma tables
-  // Only works once. Remove after successful setup.
-  app.get("/api/setup-db", async (req, res) => {
-    const setupKey = req.query.key;
-    if (setupKey !== "incroute2026") {
-      return res.status(403).json({ error: "Invalid setup key" });
-    }
-    try {
-      const { execSync } = await import("child_process");
-      const output = execSync("npx prisma db push --accept-data-loss", { 
-        cwd: process.cwd(), 
-        encoding: "utf-8",
-        timeout: 60000,
-        env: { ...process.env, PATH: process.env.PATH }
-      });
-      res.json({ success: true, message: "Database tables created!", output });
-    } catch (err: any) {
-      res.status(500).json({ error: "Setup failed", details: err.message, output: err.stdout || "" });
-    }
-  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Incroute backend server active running on http://0.0.0.0:${PORT}`);
