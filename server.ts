@@ -46,15 +46,36 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-  // Auth API Routes
-  if (authRoutes) {
-    app.use("/api/auth", authRoutes);
-  }
+  // Auth API Routes — DISABLED: Prisma binary engine not available on Hostinger shared hosting
+  // Using raw SQL auth endpoints below instead
+  // if (authRoutes) {
+  //   app.use("/api/auth", authRoutes);
+  // }
 
   // Health check (always works)
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString(), auth: !!authRoutes });
+  app.get("/api/health", async (req, res) => {
+    let dbStatus = "unknown";
+    try {
+      const conn = await getPlatformConnection();
+      const [rows]: any = await conn.query("SELECT COUNT(*) as count FROM `User`");
+      dbStatus = `connected (${rows[0].count} users)`;
+      await conn.end();
+    } catch (e: any) {
+      dbStatus = `error: ${e.message?.substring(0, 50)}`;
+    }
+    res.json({ status: "ok", timestamp: new Date().toISOString(), db: dbStatus });
   });
+
+  // Platform DB connection helper
+  const getPlatformConnection = async () => {
+    const dbUrl = process.env.DATABASE_URL || "";
+    const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+    if (!match) throw new Error("DATABASE_URL not configured");
+    const [, user, pass, host, port, database] = match;
+    return mysql.createConnection({
+      host, port: Number(port), user, password: decodeURIComponent(pass), database
+    });
+  };
 
   // ─── ADMIN REGISTRATION (raw SQL, no Prisma needed) ───
   // Visit: /api/setup-admin?key=incroute2026 to create the admin user
@@ -65,24 +86,23 @@ async function startServer() {
     }
     try {
       const bcrypt = require("bcryptjs");
-      const dbUrl = process.env.DATABASE_URL || "";
-      const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-      if (!match) {
-        return res.status(500).json({ error: "DATABASE_URL not configured" });
-      }
-      const [, user, pass, host, port, database] = match;
-      const conn = await mysql.createConnection({
-        host, port: Number(port), user, password: decodeURIComponent(pass), database
-      });
+      const conn = await getPlatformConnection();
 
-      // Check if admin already exists
-      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", ["admin@incroute.com"]);
+      // Update existing admin email or create new one
+      const adminEmail = "d.bhushan@incroute.com";
+      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE role = 'SUPER_ADMIN' LIMIT 1");
+      
       if (existing.length > 0) {
+        // Update existing admin's email and reset password
+        const passwordHash = await bcrypt.hash("Admin@2026", 12);
+        const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+        await conn.query("UPDATE `User` SET email = ?, passwordHash = ?, updatedAt = ? WHERE id = ?", 
+          [adminEmail, passwordHash, now, existing[0].id]);
         await conn.end();
-        return res.json({ success: true, message: "Admin user already exists!", email: "admin@incroute.com" });
+        return res.json({ success: true, message: "Admin user updated!", credentials: { email: adminEmail, password: "Admin@2026" } });
       }
 
-      // Hash password and create admin user
+      // Create new admin
       const passwordHash = await bcrypt.hash("Admin@2026", 12);
       const id = "admin_" + Date.now().toString(36);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
@@ -90,18 +110,157 @@ async function startServer() {
       await conn.query(
         `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, "admin@incroute.com", passwordHash, "Dev", "Bhushan", "+918707552183", "SUPER_ADMIN", 1, 1, now, now]
+        [id, adminEmail, passwordHash, "Dev", "Bhushan", "+918707552183", "SUPER_ADMIN", 1, 1, now, now]
       );
       
       await conn.end();
       res.json({ 
         success: true, 
         message: "Admin user created!", 
-        credentials: { email: "admin@incroute.com", password: "Admin@2026" },
-        note: "Change this password after first login!"
+        credentials: { email: adminEmail, password: "Admin@2026" }
       });
     } catch (err: any) {
       res.status(500).json({ error: "Admin setup failed", details: err.message });
+    }
+  });
+
+  // ─── RAW SQL AUTH ENDPOINTS (bypasses Prisma binary requirement) ───
+  // Login endpoint
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const jwt = require("jsonwebtoken");
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+      }
+
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query(
+        "SELECT id, email, passwordHash, firstName, lastName, role, isActive FROM `User` WHERE email = ?",
+        [email]
+      );
+
+      if (users.length === 0) {
+        await conn.end();
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      const user = users[0];
+      if (!user.isActive) {
+        await conn.end();
+        return res.status(403).json({ error: "Account is deactivated" });
+      }
+
+      const validPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!validPassword) {
+        await conn.end();
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Update last login
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `User` SET lastLoginAt = ? WHERE id = ?", [now, user.id]);
+
+      // Create session
+      const sessionId = "sess_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Session\` (id, userId, ipAddress, userAgent, isActive, createdAt, lastActive, expiresAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [sessionId, user.id, req.ip, req.headers["user-agent"] || "", 1, now, now, expiresAt]
+      );
+
+      await conn.end();
+
+      // Sign JWT
+      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+      const accessToken = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role, sessionId },
+        secret,
+        { expiresIn: "24h" }
+      );
+      const refreshToken = jwt.sign(
+        { userId: user.id, sessionId, type: "refresh" },
+        secret,
+        { expiresIn: "7d" }
+      );
+
+      res.json({
+        success: true,
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
+        accessToken,
+        refreshToken
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Login failed", details: err.message });
+    }
+  });
+
+  // Token verification / current user endpoint
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const token = authHeader.slice(7);
+      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+      const decoded: any = jwt.verify(token, secret);
+
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query(
+        "SELECT id, email, firstName, lastName, role, phone, isActive, createdAt FROM `User` WHERE id = ?",
+        [decoded.userId]
+      );
+      await conn.end();
+
+      if (users.length === 0 || !users[0].isActive) {
+        return res.status(401).json({ error: "User not found or inactive" });
+      }
+
+      res.json({ success: true, user: users[0] });
+    } catch (err: any) {
+      res.status(401).json({ error: "Invalid or expired token" });
+    }
+  });
+
+  // Register endpoint (for new users)
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const bcrypt = require("bcryptjs");
+      const { email, password, firstName, lastName, phone } = req.body;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ error: "Email, password, firstName, and lastName are required" });
+      }
+      if (password.length < 8) {
+        return res.status(400).json({ error: "Password must be at least 8 characters" });
+      }
+
+      const conn = await getPlatformConnection();
+      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
+      if (existing.length > 0) {
+        await conn.end();
+        return res.status(409).json({ error: "Email already registered" });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12);
+      const id = "usr_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+
+      await conn.query(
+        `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, email, passwordHash, firstName, lastName, phone || null, "CLIENT", 1, 0, now, now]
+      );
+      await conn.end();
+
+      res.json({ success: true, message: "Account created", userId: id });
+    } catch (err: any) {
+      res.status(500).json({ error: "Registration failed", details: err.message });
     }
   });
 
