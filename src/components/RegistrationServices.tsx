@@ -4,6 +4,7 @@ import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
 import ScrollReveal, { ScrollRevealItem } from "./ScrollReveal";
+import { RotatingInsight, DashboardPreview, ProcessFlow, CompliancePreview, TrustMetrics, ScrollReveal as SReveal, StaggerContainer } from "./HomepageAnimations";
 import { useAppNavigate } from "../lib/useAppNavigate";
 import { useNavigate } from "react-router-dom";
 import LogoTicker from "./LogoTicker";
@@ -1707,6 +1708,9 @@ export default function RegistrationServices({
                 Incorporate your company, track ROC & GST filings, avoid penalties, and manage compliance — without chaos.
               </p>
 
+              {/* Animated rotating insight */}
+              <RotatingInsight />
+
               {/* Bullet points */}
               <ul className="space-y-2 text-[13px] text-[var(--text-secondary)]">
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Entity Incorporation (Pvt Ltd, LLP, OPC)</li>
@@ -2034,6 +2038,18 @@ export default function RegistrationServices({
           {/* Infinite logo scrolling marquee */}
           <LogoTicker />
 
+          {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
+          <SReveal className="w-full max-w-5xl mx-auto pt-6">
+            <div className="text-center space-y-2 mb-6">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Your Business Command Center</h2>
+              <p className="text-[13px] text-[var(--text-secondary)]">Every module works together to keep your business on track</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <DashboardPreview />
+              <CompliancePreview />
+            </div>
+          </SReveal>
+
           {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
           <div className="w-full max-w-5xl mx-auto space-y-5 text-left">
             <div className="text-center space-y-1">
@@ -2110,10 +2126,12 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS ═══ */}
-          <div className="w-full max-w-5xl mx-auto space-y-6 text-center pt-4">
+          <SReveal className="w-full max-w-5xl mx-auto space-y-6 text-center pt-4">
             <div className="space-y-2">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">How <span className="text-[var(--accent)]">INC</span><span className="italic">Route</span> Works</h2>
             </div>
+            {/* Animated process flow */}
+            <ProcessFlow />
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
               {[
                 { step: "01", title: "Tell us about your business", desc: "Answer a few questions about your business and goals.", icon: Building2 },
@@ -2135,12 +2153,14 @@ export default function RegistrationServices({
                 </React.Fragment>
               ))}
             </div>
-          </div>
+          </SReveal>
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
+          <SReveal>
           <div className="w-full max-w-5xl mx-auto pt-4">
             <AnimatedStats />
           </div>
+          </SReveal>
 
           {/* Testimonials rendered via TestimonialCarousel below */}
 
