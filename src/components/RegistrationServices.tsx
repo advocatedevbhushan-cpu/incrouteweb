@@ -1683,7 +1683,7 @@ export default function RegistrationServices({
   const isIncorporation = ["pvt-ltd", "llp", "opc", "partnership", "section8", "public-ltd"].includes(selectedEntity.id);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {viewMode === "grid" ? (
         <>
           {/* ═══ HERO ═══ */}
@@ -1691,10 +1691,10 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center py-6 sm:py-8"
+            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center py-4 sm:py-6"
           >
             {/* LEFT: Content */}
-            <div className="relative z-10 max-w-xl text-left space-y-5">
+            <div className="relative z-10 max-w-xl text-left space-y-4">
               <div className="inline-flex items-center gap-2 text-[12px] text-[var(--accent)] font-medium tracking-wide">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
               </div>
@@ -2038,15 +2038,33 @@ export default function RegistrationServices({
           {/* Infinite logo scrolling marquee */}
           <LogoTicker />
 
+          {/* ═══ FEATURES STRIP — Built for Modern Businesses ═══ */}
+          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 py-2">
+            {[
+              { icon: Shield, title: "Secure & Reliable", desc: "Bank-grade security for all your documents" },
+              { icon: Clock, title: "Stay Ahead", desc: "Smart reminders to never miss a deadline" },
+              { icon: Users, title: "Expert Support", desc: "Dedicated professionals by your side" },
+              { icon: Database, title: "All in One Place", desc: "Manage legal, tax & compliance needs" },
+            ].map((f, i) => (
+              <div key={i} className="flex flex-col items-center text-center gap-2 p-3">
+                <div className="w-10 h-10 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center">
+                  <f.icon className="w-5 h-5 text-[var(--accent)]" />
+                </div>
+                <h4 className="text-[12px] font-bold text-[var(--text-primary)]">{f.title}</h4>
+                <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
           {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
-          <SReveal className="w-full max-w-5xl mx-auto pt-8 pb-4">
-            <div className="text-center space-y-2 mb-10">
+          <SReveal className="w-full max-w-6xl mx-auto pt-4 pb-2">
+            <div className="text-center space-y-1.5 mb-6">
               <p className="text-[11px] font-semibold text-[var(--accent)] uppercase tracking-[0.2em]">Platform Overview</p>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Everything You Need. One Place.</h2>
               <p className="text-[14px] text-[var(--text-secondary)] max-w-lg mx-auto">From incorporation to annual filings — every compliance requirement tracked, managed, and delivered.</p>
             </div>
-            <div className="relative rounded-2xl border border-[var(--border-subtle)] bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-alt)] p-6 sm:p-8 shadow-[0_8px_40px_-12px_rgba(108,124,255,0.08)]">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+            <div className="relative rounded-2xl border border-[var(--border-subtle)] bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-alt)] p-5 sm:p-8 shadow-[0_8px_40px_-12px_rgba(108,124,255,0.08)]">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
                 <div className="lg:col-span-3">
                   <DashboardPreview />
                 </div>
@@ -2133,8 +2151,8 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS ═══ */}
-          <SReveal className="w-full max-w-5xl mx-auto space-y-6 text-center pt-4">
-            <div className="space-y-2">
+          <SReveal className="w-full max-w-5xl mx-auto space-y-4 text-center pt-2">
+            <div className="space-y-1">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">How <span className="text-[var(--accent)]">INC</span><span className="italic">Route</span> Works</h2>
             </div>
             {/* Animated process flow */}
@@ -2164,15 +2182,33 @@ export default function RegistrationServices({
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
           <SReveal>
-          <div className="w-full max-w-5xl mx-auto pt-4">
+          <div className="w-full max-w-5xl mx-auto pt-2">
             <AnimatedStats />
           </div>
           </SReveal>
 
+          {/* ═══ SECURITY BADGES ═══ */}
+          <div className="w-full max-w-5xl mx-auto">
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 py-4 border-t border-[var(--border-subtle)]">
+              {[
+                { icon: Shield, label: "Enterprise Security" },
+                { icon: Lock, label: "Encrypted Documents" },
+                { icon: Users, label: "Role-Based Access" },
+                { icon: FileText, label: "Audit Logs" },
+                { icon: Database, label: "Secure Cloud Storage" },
+              ].map((b, i) => (
+                <div key={i} className="flex items-center gap-2 text-[11px] text-[var(--text-tertiary)]">
+                  <b.icon className="w-3.5 h-3.5" />
+                  <span>{b.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Testimonials rendered via TestimonialCarousel below */}
 
           {/* ═══ FINAL CTA ═══ */}
-          <div className="w-full max-w-5xl mx-auto pt-6">
+          <div className="w-full max-w-5xl mx-auto pt-2">
             <div className="relative rounded-2xl overflow-hidden border border-[var(--border-subtle)] p-6 sm:p-8 text-center" style={{ background: "linear-gradient(135deg, var(--bg-surface-alt) 0%, var(--bg-surface) 100%)" }}>
               <div className="relative z-10 space-y-4">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Ready to Start Your Business Journey?</h2>
