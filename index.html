@@ -71,7 +71,7 @@
         if (saved === 'light' || saved === 'dark') {
           theme = saved;
         } else {
-          theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          theme = 'light';
         }
         html.setAttribute('data-theme', theme);
       } catch(e) {}

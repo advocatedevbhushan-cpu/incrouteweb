@@ -2039,17 +2039,20 @@ export default function RegistrationServices({
           <LogoTicker />
 
           {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
-          <SReveal className="w-full max-w-5xl mx-auto pt-6">
-            <div className="text-center space-y-2 mb-8">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Your Business Command Center</h2>
-              <p className="text-[13px] text-[var(--text-secondary)]">Every module works together to keep your business on track</p>
+          <SReveal className="w-full max-w-5xl mx-auto pt-8 pb-4">
+            <div className="text-center space-y-2 mb-10">
+              <p className="text-[11px] font-semibold text-[var(--accent)] uppercase tracking-[0.2em]">Platform Overview</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Everything You Need. One Place.</h2>
+              <p className="text-[14px] text-[var(--text-secondary)] max-w-lg mx-auto">From incorporation to annual filings — every compliance requirement tracked, managed, and delivered.</p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-              <div className="lg:col-span-3">
-                <DashboardPreview />
-              </div>
-              <div className="lg:col-span-2">
-                <CompliancePreview />
+            <div className="relative rounded-2xl border border-[var(--border-subtle)] bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-alt)] p-6 sm:p-8 shadow-[0_8px_40px_-12px_rgba(108,124,255,0.08)]">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                <div className="lg:col-span-3">
+                  <DashboardPreview />
+                </div>
+                <div className="lg:col-span-2">
+                  <CompliancePreview />
+                </div>
               </div>
             </div>
           </SReveal>

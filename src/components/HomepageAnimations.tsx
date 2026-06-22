@@ -58,12 +58,12 @@ export function RotatingInsight() {
 
 // ─── 2. DASHBOARD PREVIEW WITH ANIMATED HIGHLIGHTS ───
 const MODULES = [
-  { icon: CalendarCheck, label: "Compliance Health", tip: "Track pending filings and deadlines across all entities" },
-  { icon: FileText, label: "Document Vault", tip: "Securely store and verify business documents" },
-  { icon: Shield, label: "Trademark Tracking", tip: "Monitor application status from filing to registration" },
-  { icon: HelpCircle, label: "Support Tickets", tip: "Resolve client queries with priority-based routing" },
-  { icon: Receipt, label: "Invoices", tip: "Generate, send and track payment status" },
-  { icon: Users, label: "Relationship Manager", tip: "Dedicated advisor for every client engagement" },
+  { icon: CalendarCheck, label: "Compliance Health", tip: "Track pending filings and deadlines across all entities", gradient: "from-indigo-500 to-purple-500" },
+  { icon: FileText, label: "Document Vault", tip: "Securely store and verify business documents", gradient: "from-blue-500 to-cyan-500" },
+  { icon: Shield, label: "Trademark Tracking", tip: "Monitor application status from filing to registration", gradient: "from-violet-500 to-fuchsia-500" },
+  { icon: HelpCircle, label: "Support Center", tip: "Resolve client queries with priority-based routing", gradient: "from-amber-500 to-orange-500" },
+  { icon: Receipt, label: "Invoicing", tip: "Generate, send and track payment status", gradient: "from-emerald-500 to-teal-500" },
+  { icon: Users, label: "Advisory Team", tip: "Dedicated advisor for every client engagement", gradient: "from-rose-500 to-pink-500" },
 ];
 
 export function DashboardPreview() {
@@ -74,40 +74,43 @@ export function DashboardPreview() {
 
   useEffect(() => {
     if (reduced || !inView) return;
-    const timer = setInterval(() => setActiveIdx(i => (i + 1) % MODULES.length), 2000);
+    const timer = setInterval(() => setActiveIdx(i => (i + 1) % MODULES.length), 2200);
     return () => clearInterval(timer);
   }, [reduced, inView]);
 
   return (
-    <div ref={ref} className="space-y-4">
+    <div ref={ref} className="space-y-5">
       <div className="grid grid-cols-3 gap-3">
         {MODULES.map((m, i) => {
           const active = i === activeIdx && !reduced;
           return (
             <motion.div
               key={m.label}
-              animate={active ? { scale: 1.04, boxShadow: "0 0 24px -4px rgba(108,124,255,0.3)" } : { scale: 1, boxShadow: "0 0 0px transparent" }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className={`relative bg-[var(--bg-surface)] rounded-xl p-3.5 text-center cursor-default transition-colors duration-300 ${active ? "border-[rgba(108,124,255,0.5)] border" : "border border-[var(--border-subtle)]"}`}
+              animate={active ? { scale: 1.05, y: -4 } : { scale: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className={`relative bg-[var(--bg-surface)] rounded-2xl p-4 text-center cursor-default transition-all duration-300 border ${active ? "border-[var(--accent)] shadow-[0_8px_32px_-8px_rgba(108,124,255,0.25)]" : "border-[var(--border-subtle)] shadow-sm"}`}
             >
-              <m.icon className={`w-5 h-5 mx-auto mb-1.5 transition-colors duration-300 ${active ? "text-[#6C7CFF]" : "text-[var(--text-tertiary)]"}`} />
-              <p className={`text-[10px] sm:text-[11px] font-semibold transition-colors duration-300 leading-tight ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{m.label}</p>
+              <div className={`w-10 h-10 mx-auto mb-2.5 rounded-xl flex items-center justify-center transition-all duration-300 ${active ? `bg-gradient-to-br ${m.gradient} shadow-lg` : "bg-[var(--accent-soft)]"}`}>
+                <m.icon className={`w-5 h-5 transition-colors duration-300 ${active ? "text-white" : "text-[var(--accent)]"}`} />
+              </div>
+              <p className={`text-[11px] font-semibold transition-colors duration-300 leading-tight ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{m.label}</p>
             </motion.div>
           );
         })}
       </div>
-      {/* Tooltip below grid */}
-      <div className="h-[36px] flex items-center justify-center">
+      {/* Feature description */}
+      <div className="h-[44px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIdx}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className="px-4 py-2 rounded-lg bg-[var(--bg-surface)] border border-[rgba(108,124,255,0.2)] shadow-sm"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent)]/20"
           >
-            <p className="text-[11px] text-[var(--text-secondary)] text-center">{MODULES[activeIdx].tip}</p>
+            <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+            <p className="text-[12px] text-[var(--text-primary)] font-medium">{MODULES[activeIdx].tip}</p>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -167,12 +170,12 @@ export function ProcessFlow() {
 
 // ─── 4. COMPLIANCE CALENDAR PREVIEW ───
 const REMINDERS = [
-  { text: "GST Return due in 5 days", icon: CalendarCheck, urgency: "warning" },
-  { text: "ROC filing due in 18 days", icon: FileText, urgency: "info" },
-  { text: "Trademark renewal upcoming", icon: Shield, urgency: "info" },
-  { text: "Board meeting pending", icon: Users, urgency: "warning" },
-  { text: "TDS return due in 12 days", icon: Receipt, urgency: "info" },
-  { text: "DIR-3 KYC due Sep 30", icon: CheckCircle2, urgency: "info" },
+  { text: "GST Return due in 5 days", icon: CalendarCheck, urgency: "warning", color: "from-amber-500 to-orange-500" },
+  { text: "ROC filing due in 18 days", icon: FileText, urgency: "info", color: "from-blue-500 to-indigo-500" },
+  { text: "Trademark renewal upcoming", icon: Shield, urgency: "info", color: "from-violet-500 to-purple-500" },
+  { text: "Board meeting pending", icon: Users, urgency: "warning", color: "from-rose-500 to-pink-500" },
+  { text: "TDS return due in 12 days", icon: Receipt, urgency: "info", color: "from-emerald-500 to-teal-500" },
+  { text: "DIR-3 KYC due Sep 30", icon: CheckCircle2, urgency: "info", color: "from-cyan-500 to-blue-500" },
 ];
 
 export function CompliancePreview() {
@@ -195,24 +198,32 @@ export function CompliancePreview() {
 
   return (
     <div ref={ref} className="space-y-3">
-      <div className="flex items-center gap-2 mb-2">
-        <CalendarCheck className="w-4 h-4 text-[var(--accent)]" />
-        <p className="text-[12px] font-semibold text-[var(--text-primary)]">Upcoming Deadlines</p>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+          <CalendarCheck className="w-3.5 h-3.5 text-white" />
+        </div>
+        <div>
+          <p className="text-[13px] font-bold text-[var(--text-primary)]">Upcoming Deadlines</p>
+          <p className="text-[10px] text-[var(--text-tertiary)]">Auto-tracked for all entities</p>
+        </div>
       </div>
       <AnimatePresence mode="popLayout">
         {getVisible().map((item, i) => (
           <motion.div
             key={`${item.text}-${visibleIdx}-${i}`}
-            initial={reduced ? {} : { opacity: 0, x: -12 }}
+            initial={reduced ? {} : { opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={reduced ? {} : { opacity: 0, x: 12 }}
+            exit={reduced ? {} : { opacity: 0, x: 16 }}
             transition={{ duration: 0.35, delay: i * 0.06 }}
-            className={`flex items-center gap-3 px-4 py-3.5 bg-[var(--bg-surface)] border rounded-xl transition-all ${item.urgency === "warning" ? "border-[color-mix(in_srgb,var(--warning)_30%,var(--border-subtle))]" : "border-[var(--border-subtle)]"}`}
+            className="flex items-center gap-3 px-4 py-3.5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.urgency === "warning" ? "bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" : "bg-[var(--accent-soft)]"}`}>
-              <item.icon className={`w-4 h-4 ${item.urgency === "warning" ? "text-[var(--warning)]" : "text-[var(--accent)]"}`} />
+            <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shrink-0 shadow-sm`}>
+              <item.icon className="w-4 h-4 text-white" />
             </div>
-            <p className="text-[12px] text-[var(--text-primary)] font-medium">{item.text}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] text-[var(--text-primary)] font-medium">{item.text}</p>
+            </div>
+            {item.urgency === "warning" && <span className="w-2 h-2 rounded-full bg-[var(--warning)] shrink-0 animate-pulse" />}
           </motion.div>
         ))}
       </AnimatePresence>
