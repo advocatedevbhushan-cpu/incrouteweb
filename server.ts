@@ -738,11 +738,139 @@ async function startServer() {
   // ─── INVOICES CRUD ───
   app.get("/api/admin/invoices", async (req, res) => {
     try {
+      const { status, search, page = "1", limit = "15" } = req.query as any;
       const conn = await getPlatformConnection();
-      const [invoices]: any = await conn.query("SELECT i.*, c.companyName as clientName FROM `Invoice` i LEFT JOIN `Client` c ON i.clientId = c.id ORDER BY i.createdAt DESC");
+      let where = "1=1";
+      const params: any[] = [];
+      if (status && status !== "ALL") { where += " AND i.status = ?"; params.push(status); }
+      if (search) { where += " AND (i.invoiceNo LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE ${where}`, params);
+      const [invoices]: any = await conn.query(`SELECT i.*, c.companyName as clientName FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE ${where} ORDER BY i.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
       const [[totals]]: any = await conn.query("SELECT COALESCE(SUM(total),0) as totalRev, COALESCE(SUM(CASE WHEN status IN ('PENDING','SENT','OVERDUE') THEN total ELSE 0 END),0) as outstanding, COALESCE(SUM(CASE WHEN status='PAID' AND MONTH(paidAt)=MONTH(NOW()) THEN total ELSE 0 END),0) as paidThisMonth, COALESCE(SUM(CASE WHEN status='OVERDUE' THEN total ELSE 0 END),0) as overdue FROM `Invoice`");
       await conn.end();
-      res.json({ invoices, totals: { totalRevenue: Number(totals.totalRev), outstanding: Number(totals.outstanding), paidThisMonth: Number(totals.paidThisMonth), overdue: Number(totals.overdue) } });
+      res.json({ invoices, total, page: Number(page), pages: Math.ceil(total / Number(limit)), totals: { totalRevenue: Number(totals.totalRev), outstanding: Number(totals.outstanding), paidThisMonth: Number(totals.paidThisMonth), overdue: Number(totals.overdue) } });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/invoices", async (req, res) => {
+    try {
+      const { clientId, amount, tax, description, dueDate } = req.body;
+      if (!clientId || !amount || !dueDate) return res.status(400).json({ error: "clientId, amount, dueDate required" });
+      const conn = await getPlatformConnection();
+      const id = "inv_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const invoiceNo = "INV-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 9000) + 1000);
+      const totalAmt = Number(amount) + Number(tax || 0);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(`INSERT INTO \`Invoice\` (id, clientId, invoiceNo, amount, tax, total, status, dueDate, description, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`,
+        [id, clientId, invoiceNo, amount, tax || 0, totalAmt, dueDate, description || null, now, now]);
+      await conn.end();
+      res.json({ success: true, id, invoiceNo });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/invoices/:id", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?", "status = ?"];
+      const vals: any[] = [now, status];
+      if (status === "PAID") { sets.push("paidAt = ?"); vals.push(now); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Invoice\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── TICKETS (enhanced) ───
+  app.get("/api/admin/tickets", async (req, res) => {
+    try {
+      const { status, priority, search, page = "1", limit = "15" } = req.query as any;
+      const conn = await getPlatformConnection();
+      let where = "1=1";
+      const params: any[] = [];
+      if (status && status !== "ALL") { where += " AND t.status = ?"; params.push(status); }
+      if (priority && priority !== "ALL") { where += " AND t.priority = ?"; params.push(priority); }
+      if (search) { where += " AND (t.subject LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Ticket\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where}`, params);
+      const [tickets]: any = await conn.query(`SELECT t.*, c.companyName as clientName FROM \`Ticket\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where} ORDER BY FIELD(t.priority,'CRITICAL','HIGH','MEDIUM','LOW'), t.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
+      await conn.end();
+      res.json({ tickets, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/tickets", async (req, res) => {
+    try {
+      const { clientId, subject, description, priority } = req.body;
+      if (!clientId || !subject) return res.status(400).json({ error: "clientId and subject required" });
+      const conn = await getPlatformConnection();
+      const id = "tkt_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(`INSERT INTO \`Ticket\` (id, clientId, subject, description, priority, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, 'OPEN', ?, ?)`,
+        [id, clientId, subject, description || null, priority || "MEDIUM", now, now]);
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/tickets/:id", async (req, res) => {
+    try {
+      const { status, assigneeId } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); if (status === "RESOLVED" || status === "CLOSED") { sets.push("resolvedAt = ?"); vals.push(now); } }
+      if (assigneeId) { sets.push("assigneeId = ?"); vals.push(assigneeId); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Ticket\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── CONSULTATIONS (enhanced) ───
+  app.get("/api/admin/consultations", async (req, res) => {
+    try {
+      const { status, search, page = "1", limit = "15" } = req.query as any;
+      const conn = await getPlatformConnection();
+      let where = "1=1";
+      const params: any[] = [];
+      if (status && status !== "ALL") { where += " AND con.status = ?"; params.push(status); }
+      if (search) { where += " AND (con.topic LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Consultation\` con LEFT JOIN \`Client\` c ON con.clientId = c.id WHERE ${where}`, params);
+      const [consultations]: any = await conn.query(`SELECT con.*, c.companyName as clientName FROM \`Consultation\` con LEFT JOIN \`Client\` c ON con.clientId = c.id WHERE ${where} ORDER BY con.scheduledAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
+      await conn.end();
+      res.json({ consultations, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/consultations", async (req, res) => {
+    try {
+      const { clientId, topic, advisorId, scheduledAt, duration, meetingLink, notes } = req.body;
+      if (!clientId || !topic || !scheduledAt) return res.status(400).json({ error: "clientId, topic, scheduledAt required" });
+      const conn = await getPlatformConnection();
+      const id = "con_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(`INSERT INTO \`Consultation\` (id, clientId, topic, advisorId, scheduledAt, duration, status, meetingLink, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?)`,
+        [id, clientId, topic, advisorId || null, scheduledAt, duration || 30, meetingLink || null, notes || null, now, now]);
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/consultations/:id", async (req, res) => {
+    try {
+      const { status } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `Consultation` SET status = ?, updatedAt = ? WHERE id = ?", [status, now, req.params.id]);
+      await conn.end();
+      res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
@@ -753,26 +881,6 @@ async function startServer() {
       const [team]: any = await conn.query("SELECT id, email, firstName, lastName, role, phone, isActive, createdAt FROM `User` WHERE role IN ('SUPER_ADMIN','ADMIN','TEAM_MEMBER') ORDER BY createdAt");
       await conn.end();
       res.json({ team });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
-  });
-
-  // ─── TICKETS ───
-  app.get("/api/admin/tickets", async (req, res) => {
-    try {
-      const conn = await getPlatformConnection();
-      const [tickets]: any = await conn.query("SELECT t.*, c.companyName as clientName FROM `Ticket` t LEFT JOIN `Client` c ON t.clientId = c.id ORDER BY t.createdAt DESC");
-      await conn.end();
-      res.json({ tickets });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
-  });
-
-  // ─── CONSULTATIONS ───
-  app.get("/api/admin/consultations", async (req, res) => {
-    try {
-      const conn = await getPlatformConnection();
-      const [consultations]: any = await conn.query("SELECT con.*, c.companyName as clientName FROM `Consultation` con LEFT JOIN `Client` c ON con.clientId = c.id ORDER BY con.scheduledAt DESC");
-      await conn.end();
-      res.json({ consultations });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
