@@ -7,6 +7,7 @@ import TaskManagement from "./screens/TaskManagement";
 import DocumentOps from "./screens/DocumentOps";
 import InvoiceOps from "./screens/InvoiceOps";
 import TeamManagement from "./screens/TeamManagement";
+import ServiceRequestOps from "./screens/ServiceRequestOps";
 import { TicketOps, ConsultationOps, TrademarkOps, LegalOps, ReportingDashboard, AuditCenter } from "./screens/OpsScreens";
 
 export default function AdminPortal() {
@@ -16,6 +17,7 @@ export default function AdminPortal() {
     switch (screen) {
       case "dashboard": return <AdminDashboard onNavigate={setScreen} />;
       case "clients": return <ClientManagement />;
+      case "service-requests": return <ServiceRequestOps />;
       case "compliance": return <ComplianceOps />;
       case "tasks": return <TaskManagement />;
       case "documents": return <DocumentOps />;

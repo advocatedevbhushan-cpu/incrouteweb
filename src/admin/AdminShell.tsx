@@ -15,6 +15,7 @@ const navSections = [
   { label: "Core", items: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "clients", label: "Clients", icon: Users },
+    { id: "service-requests", label: "Service Requests", icon: FileText },
     { id: "compliance", label: "Compliance", icon: CalendarCheck },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
   ]},

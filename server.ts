@@ -508,6 +508,23 @@ async function startServer() {
   });
 
   // ─── SERVICE REQUESTS ───
+  app.get("/api/admin/service-requests", async (req, res) => {
+    try {
+      const { status, serviceType, search, page = "1", limit = "20" } = req.query as any;
+      const conn = await getPlatformConnection();
+      let where = "1=1";
+      const params: any[] = [];
+      if (status) { where += " AND sr.status = ?"; params.push(status); }
+      if (serviceType) { where += " AND sr.serviceType = ?"; params.push(serviceType); }
+      if (search) { where += " AND (sr.companyName LIKE ? OR c.companyName LIKE ? OR c.contactName LIKE ?)"; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`ServiceRequest\` sr LEFT JOIN \`Client\` c ON sr.clientId = c.id WHERE ${where}`, params);
+      const [requests]: any = await conn.query(`SELECT sr.*, c.companyName as clientName, c.contactName, c.contactEmail FROM \`ServiceRequest\` sr LEFT JOIN \`Client\` c ON sr.clientId = c.id WHERE ${where} ORDER BY sr.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
+      await conn.end();
+      res.json({ requests, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   app.post("/api/admin/service-requests", async (req, res) => {
     try {
       const { clientId, serviceType, companyName, notes, expectedDate } = req.body;
@@ -548,12 +565,19 @@ async function startServer() {
   // ─── TASKS CRUD ───
   app.get("/api/admin/tasks", async (req, res) => {
     try {
+      const { status, priority, search, assigneeId, page = "1", limit = "20" } = req.query as any;
       const conn = await getPlatformConnection();
-      const [tasks]: any = await conn.query(
-        `SELECT t.*, c.companyName as clientName FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id ORDER BY t.createdAt DESC`
-      );
+      let where = "1=1";
+      const params: any[] = [];
+      if (status) { where += " AND t.status = ?"; params.push(status); }
+      if (priority) { where += " AND t.priority = ?"; params.push(priority); }
+      if (assigneeId) { where += " AND t.assigneeId = ?"; params.push(assigneeId); }
+      if (search) { where += " AND (t.title LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where}`, params);
+      const [tasks]: any = await conn.query(`SELECT t.*, c.companyName as clientName FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where} ORDER BY FIELD(t.priority,'CRITICAL','HIGH','MEDIUM','LOW'), t.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
       await conn.end();
-      res.json({ tasks });
+      res.json({ tasks, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load tasks", details: err.message });
     }
@@ -600,16 +624,24 @@ async function startServer() {
   // ─── COMPLIANCE CRUD ───
   app.get("/api/admin/compliance", async (req, res) => {
     try {
+      const { status, category, priority, search, page = "1", limit = "20" } = req.query as any;
       const conn = await getPlatformConnection();
+      let where = "1=1";
+      const params: any[] = [];
+      if (status) { where += " AND ct.status = ?"; params.push(status); }
+      if (category) { where += " AND ct.category = ?"; params.push(category); }
+      if (priority) { where += " AND ct.priority = ?"; params.push(priority); }
+      if (search) { where += " AND (ct.title LIKE ? OR e.name LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`ComplianceTask\` ct LEFT JOIN \`Entity\` e ON ct.entityId = e.id LEFT JOIN \`Client\` c ON e.clientId = c.id WHERE ${where}`, params);
       const [tasks]: any = await conn.query(
         `SELECT ct.*, e.name as entityName, e.type as entityType, c.companyName as clientName
-         FROM \`ComplianceTask\` ct 
-         LEFT JOIN \`Entity\` e ON ct.entityId = e.id
-         LEFT JOIN \`Client\` c ON e.clientId = c.id
-         ORDER BY ct.dueDate ASC`
-      );
+         FROM \`ComplianceTask\` ct LEFT JOIN \`Entity\` e ON ct.entityId = e.id LEFT JOIN \`Client\` c ON e.clientId = c.id
+         WHERE ${where} ORDER BY ct.dueDate ASC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
+      // Stats
+      const [[stats]]: any = await conn.query("SELECT COUNT(CASE WHEN status='PENDING' THEN 1 END) as pending, COUNT(CASE WHEN status='IN_PROGRESS' THEN 1 END) as inProgress, COUNT(CASE WHEN status='OVERDUE' OR (status NOT IN ('COMPLETED') AND dueDate < NOW()) THEN 1 END) as overdue, COUNT(CASE WHEN status='COMPLETED' THEN 1 END) as completed FROM `ComplianceTask`");
       await conn.end();
-      res.json({ tasks });
+      res.json({ tasks, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load compliance tasks", details: err.message });
     }
@@ -658,10 +690,48 @@ async function startServer() {
   // ─── DOCUMENTS CRUD ───
   app.get("/api/admin/documents", async (req, res) => {
     try {
+      const { status, category, search, page = "1", limit = "20" } = req.query as any;
       const conn = await getPlatformConnection();
-      const [docs]: any = await conn.query("SELECT d.*, c.companyName as clientName FROM `Document` d LEFT JOIN `Client` c ON d.clientId = c.id ORDER BY d.createdAt DESC");
+      let where = "1=1";
+      const params: any[] = [];
+      if (status) { where += " AND d.status = ?"; params.push(status); }
+      if (category) { where += " AND d.category = ?"; params.push(category); }
+      if (search) { where += " AND (d.title LIKE ? OR d.fileName LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+      const offset = (Number(page) - 1) * Number(limit);
+      const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Document\` d LEFT JOIN \`Client\` c ON d.clientId = c.id WHERE ${where}`, params);
+      const [documents]: any = await conn.query(`SELECT d.*, c.companyName as clientName FROM \`Document\` d LEFT JOIN \`Client\` c ON d.clientId = c.id WHERE ${where} ORDER BY d.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
+      const [[stats]]: any = await conn.query("SELECT COUNT(CASE WHEN status='DRAFT' THEN 1 END) as draft, COUNT(CASE WHEN status='UNDER_REVIEW' THEN 1 END) as underReview, COUNT(CASE WHEN status='APPROVED' THEN 1 END) as approved, COUNT(CASE WHEN status='REJECTED' THEN 1 END) as rejected FROM `Document`");
       await conn.end();
-      res.json({ documents: docs });
+      res.json({ documents, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/documents", async (req, res) => {
+    try {
+      const { clientId, entityId, title, category, fileName, fileUrl } = req.body;
+      if (!title || !category) return res.status(400).json({ error: "title and category required" });
+      const conn = await getPlatformConnection();
+      const id = "doc_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(`INSERT INTO \`Document\` (id, clientId, entityId, title, category, fileName, fileUrl, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 'UNDER_REVIEW', ?, ?)`,
+        [id, clientId || null, entityId || null, title, category, fileName || title, fileUrl || "", now, now]);
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const { status, approvedBy } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); if (status === "APPROVED") { sets.push("approvedAt = ?"); sets.push("approvedBy = ?"); vals.push(now); vals.push(approvedBy || null); } }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Document\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
