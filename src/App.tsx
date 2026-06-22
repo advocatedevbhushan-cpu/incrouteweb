@@ -884,7 +884,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-      </footer>
 
       {/* Mobile Floating CTA */}
       <div className="mobile-floating-cta">
