@@ -2040,13 +2040,17 @@ export default function RegistrationServices({
 
           {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
           <SReveal className="w-full max-w-5xl mx-auto pt-6">
-            <div className="text-center space-y-2 mb-6">
+            <div className="text-center space-y-2 mb-8">
               <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Your Business Command Center</h2>
               <p className="text-[13px] text-[var(--text-secondary)]">Every module works together to keep your business on track</p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <DashboardPreview />
-              <CompliancePreview />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+              <div className="lg:col-span-3">
+                <DashboardPreview />
+              </div>
+              <div className="lg:col-span-2">
+                <CompliancePreview />
+              </div>
             </div>
           </SReveal>
 

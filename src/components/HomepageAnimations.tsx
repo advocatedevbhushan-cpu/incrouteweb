@@ -79,34 +79,38 @@ export function DashboardPreview() {
   }, [reduced, inView]);
 
   return (
-    <div ref={ref} className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl mx-auto mt-8">
-      {MODULES.map((m, i) => {
-        const active = i === activeIdx && !reduced;
-        return (
+    <div ref={ref} className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        {MODULES.map((m, i) => {
+          const active = i === activeIdx && !reduced;
+          return (
+            <motion.div
+              key={m.label}
+              animate={active ? { scale: 1.04, boxShadow: "0 0 24px -4px rgba(108,124,255,0.3)" } : { scale: 1, boxShadow: "0 0 0px transparent" }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className={`relative bg-[var(--bg-surface)] rounded-xl p-3.5 text-center cursor-default transition-colors duration-300 ${active ? "border-[rgba(108,124,255,0.5)] border" : "border border-[var(--border-subtle)]"}`}
+            >
+              <m.icon className={`w-5 h-5 mx-auto mb-1.5 transition-colors duration-300 ${active ? "text-[#6C7CFF]" : "text-[var(--text-tertiary)]"}`} />
+              <p className={`text-[10px] sm:text-[11px] font-semibold transition-colors duration-300 leading-tight ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{m.label}</p>
+            </motion.div>
+          );
+        })}
+      </div>
+      {/* Tooltip below grid */}
+      <div className="h-[36px] flex items-center justify-center">
+        <AnimatePresence mode="wait">
           <motion.div
-            key={m.label}
-            animate={active ? { scale: 1.02, borderColor: "rgba(108,124,255,0.5)" } : { scale: 1, borderColor: "var(--border-subtle)" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative bg-[var(--bg-surface)] border rounded-xl p-4 text-center"
+            key={activeIdx}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="px-4 py-2 rounded-lg bg-[var(--bg-surface)] border border-[rgba(108,124,255,0.2)] shadow-sm"
           >
-            <m.icon className={`w-5 h-5 mx-auto mb-2 transition-colors duration-300 ${active ? "text-[#6C7CFF]" : "text-[var(--text-tertiary)]"}`} />
-            <p className={`text-[11px] font-medium transition-colors duration-300 ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{m.label}</p>
-            <AnimatePresence>
-              {active && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.25 }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] border border-[rgba(108,124,255,0.3)] shadow-sm z-10"
-                >
-                  <p className="text-[9px] text-[var(--text-secondary)]">{m.tip}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <p className="text-[11px] text-[var(--text-secondary)] text-center">{MODULES[activeIdx].tip}</p>
           </motion.div>
-        );
-      })}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -190,19 +194,25 @@ export function CompliancePreview() {
   };
 
   return (
-    <div ref={ref} className="space-y-2 max-w-sm">
+    <div ref={ref} className="space-y-3">
+      <div className="flex items-center gap-2 mb-2">
+        <CalendarCheck className="w-4 h-4 text-[var(--accent)]" />
+        <p className="text-[12px] font-semibold text-[var(--text-primary)]">Upcoming Deadlines</p>
+      </div>
       <AnimatePresence mode="popLayout">
         {getVisible().map((item, i) => (
           <motion.div
             key={`${item.text}-${visibleIdx}-${i}`}
-            initial={reduced ? {} : { opacity: 0, x: -10 }}
+            initial={reduced ? {} : { opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={reduced ? {} : { opacity: 0, x: 10 }}
-            transition={{ duration: 0.3, delay: i * 0.08 }}
-            className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl"
+            exit={reduced ? {} : { opacity: 0, x: 12 }}
+            transition={{ duration: 0.35, delay: i * 0.06 }}
+            className={`flex items-center gap-3 px-4 py-3.5 bg-[var(--bg-surface)] border rounded-xl transition-all ${item.urgency === "warning" ? "border-[color-mix(in_srgb,var(--warning)_30%,var(--border-subtle))]" : "border-[var(--border-subtle)]"}`}
           >
-            <item.icon className={`w-4 h-4 shrink-0 ${item.urgency === "warning" ? "text-[var(--warning)]" : "text-[var(--accent)]"}`} />
-            <p className="text-[12px] text-[var(--text-secondary)]">{item.text}</p>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.urgency === "warning" ? "bg-[color-mix(in_srgb,var(--warning)_10%,transparent)]" : "bg-[var(--accent-soft)]"}`}>
+              <item.icon className={`w-4 h-4 ${item.urgency === "warning" ? "text-[var(--warning)]" : "text-[var(--accent)]"}`} />
+            </div>
+            <p className="text-[12px] text-[var(--text-primary)] font-medium">{item.text}</p>
           </motion.div>
         ))}
       </AnimatePresence>
