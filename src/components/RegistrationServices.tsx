@@ -1691,10 +1691,10 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center py-4 sm:py-6"
+            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[48%_52%] gap-4 lg:gap-6 items-start py-2 sm:py-4"
           >
             {/* LEFT: Content */}
-            <div className="relative z-10 max-w-xl text-left space-y-4">
+            <div className="relative z-10 max-w-xl text-left space-y-3 pt-2">
               <div className="inline-flex items-center gap-2 text-[12px] text-[var(--accent)] font-medium tracking-wide">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
               </div>
@@ -1730,7 +1730,7 @@ export default function RegistrationServices({
                   onClick={() => navigateToTab("portal")}
                   className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:scale-[1.02] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer bg-transparent flex items-center gap-2"
                 >
-                  <Sparkles className="w-4 h-4 text-[var(--accent)]" /> View Live Dashboard
+                  <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Explore The Platform
                 </button>
               </div>
 
@@ -1749,8 +1749,8 @@ export default function RegistrationServices({
             </div>
 
             {/* RIGHT: Dashboard Mockup */}
-            <div className="relative hidden lg:block">
-              <div className="rounded-[24px] overflow-hidden border border-[var(--border-subtle)] shadow-[0_30px_80px_-15px_rgba(25,25,50,0.15)] flex" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
+            <div className="relative hidden lg:block -mt-2">
+              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.15)] shadow-[0_36px_90px_rgba(27,31,60,0.20)] flex scale-[1.04] origin-top-right" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
                 <div className="w-[140px] shrink-0 bg-[#0F172A]/70 border-r border-[#2C2740] p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
@@ -2037,6 +2037,32 @@ export default function RegistrationServices({
 
           {/* Infinite logo scrolling marquee */}
           <LogoTicker />
+
+          {/* ═══ TRUST METRICS ROW ═══ */}
+          <div className="w-full max-w-[1320px] mx-auto">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl px-6 py-5 shadow-[0_4px_24px_rgba(108,124,255,0.04)]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                {[
+                  { icon: Users, value: "2,000+", label: "Businesses Served" },
+                  { icon: FileText, value: "10,000+", label: "Compliance Filings" },
+                  { icon: Shield, value: "500+", label: "Trademark Applications" },
+                  { icon: CheckCircle2, value: "99%", label: "On-Time Compliance" },
+                  { icon: Award, value: "12+", label: "Years Expertise" },
+                  { icon: Clock, value: "24/7", label: "Expert Support" },
+                ].map((m, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center shrink-0">
+                      <m.icon className="w-4 h-4 text-[var(--accent)]" />
+                    </div>
+                    <div>
+                      <p className="text-[16px] font-extrabold text-[var(--text-primary)] leading-none">{m.value}</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{m.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
           {/* ═══ FEATURES STRIP — Built for Modern Businesses ═══ */}
           <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 py-2">

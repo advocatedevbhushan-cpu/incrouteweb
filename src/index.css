@@ -330,7 +330,10 @@ a, button, input, select, textarea {
 
 /* Hero gradient background for light mode */
 [data-theme="light"] .hero-gradient-bg {
-  background: linear-gradient(180deg, #DAD4FF 0%, #F5F4FA 30%, transparent 100%);
+  background: 
+    radial-gradient(circle at top left, rgba(108,124,255,0.22), transparent 34%),
+    radial-gradient(circle at top right, rgba(156,109,255,0.18), transparent 36%),
+    linear-gradient(180deg, #EEEAFD 0%, #F7F6FC 42%, #FFFFFF 100%);
   position: absolute;
   inset: 0;
   z-index: -1;
