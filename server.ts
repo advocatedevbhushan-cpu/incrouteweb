@@ -56,6 +56,55 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString(), auth: !!authRoutes });
   });
 
+  // ─── ADMIN REGISTRATION (raw SQL, no Prisma needed) ───
+  // Visit: /api/setup-admin?key=incroute2026 to create the admin user
+  app.get("/api/setup-admin", async (req, res) => {
+    const setupKey = req.query.key;
+    if (setupKey !== "incroute2026") {
+      return res.status(403).json({ error: "Invalid setup key" });
+    }
+    try {
+      const bcrypt = require("bcryptjs");
+      const dbUrl = process.env.DATABASE_URL || "";
+      const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+      if (!match) {
+        return res.status(500).json({ error: "DATABASE_URL not configured" });
+      }
+      const [, user, pass, host, port, database] = match;
+      const conn = await mysql.createConnection({
+        host, port: Number(port), user, password: decodeURIComponent(pass), database
+      });
+
+      // Check if admin already exists
+      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", ["admin@incroute.com"]);
+      if (existing.length > 0) {
+        await conn.end();
+        return res.json({ success: true, message: "Admin user already exists!", email: "admin@incroute.com" });
+      }
+
+      // Hash password and create admin user
+      const passwordHash = await bcrypt.hash("Admin@2026", 12);
+      const id = "admin_" + Date.now().toString(36);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      
+      await conn.query(
+        `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, "admin@incroute.com", passwordHash, "Dev", "Bhushan", "+918707552183", "SUPER_ADMIN", 1, 1, now, now]
+      );
+      
+      await conn.end();
+      res.json({ 
+        success: true, 
+        message: "Admin user created!", 
+        credentials: { email: "admin@incroute.com", password: "Admin@2026" },
+        note: "Change this password after first login!"
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Admin setup failed", details: err.message });
+    }
+  });
+
   // --- MySQL Connection Pool Setup ---
   let dbPool: mysql.Pool | null = null;
   const isDbConfigured = !!(
@@ -2579,27 +2628,32 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     // ─── ONE-TIME DATABASE SETUP ENDPOINT ───
     // Visit: /api/setup-db?key=incroute2026 to create all Prisma tables
+    // Uses raw SQL since Prisma CLI binaries don't have execute permission on shared hosting
     app.get("/api/setup-db", async (req, res) => {
       const setupKey = req.query.key;
       if (setupKey !== "incroute2026") {
         return res.status(403).json({ error: "Invalid setup key" });
       }
       try {
-        const { execSync } = await import("child_process");
-        const nodePath = process.execPath; // full path to the running node binary
-        const prismaCliPath = path.join(process.cwd(), "node_modules", "prisma", "build", "index.js");
-        
-        // Run prisma via node directly (avoids permission issues with .bin symlinks)
-        const cmd = `"${nodePath}" "${prismaCliPath}" db push --accept-data-loss`;
-        const output = execSync(cmd, { 
-          cwd: process.cwd(), 
-          encoding: "utf-8",
-          timeout: 120000,
-          env: { ...process.env }
+        const dbUrl = process.env.DATABASE_URL || "";
+        const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+        if (!match) {
+          return res.status(500).json({ error: "Invalid DATABASE_URL format" });
+        }
+        const [, user, pass, host, port, database] = match;
+        const connection = await mysql.createConnection({
+          host, port: Number(port), user, password: decodeURIComponent(pass), database,
+          multipleStatements: true
         });
-        res.json({ success: true, message: "Database tables created!", output });
+
+        // Create all tables
+        const sql = fs.readFileSync(path.join(process.cwd(), "setup-database.sql"), "utf-8");
+        await connection.query(sql);
+        await connection.end();
+
+        res.json({ success: true, message: "All 27 database tables created successfully!" });
       } catch (err: any) {
-        res.status(500).json({ error: "Setup failed", details: err.message, output: err.stdout || "" });
+        res.status(500).json({ error: "Setup failed", details: err.message });
       }
     });
 
