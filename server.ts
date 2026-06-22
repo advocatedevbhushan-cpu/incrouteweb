@@ -476,6 +476,212 @@ async function startServer() {
     }
   });
 
+  // ─── DOCUMENTS CRUD ───
+  app.get("/api/admin/documents", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [docs]: any = await conn.query("SELECT d.*, c.companyName as clientName FROM `Document` d LEFT JOIN `Client` c ON d.clientId = c.id ORDER BY d.createdAt DESC");
+      await conn.end();
+      res.json({ documents: docs });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── INVOICES CRUD ───
+  app.get("/api/admin/invoices", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [invoices]: any = await conn.query("SELECT i.*, c.companyName as clientName FROM `Invoice` i LEFT JOIN `Client` c ON i.clientId = c.id ORDER BY i.createdAt DESC");
+      const [[totals]]: any = await conn.query("SELECT COALESCE(SUM(total),0) as totalRev, COALESCE(SUM(CASE WHEN status IN ('PENDING','SENT','OVERDUE') THEN total ELSE 0 END),0) as outstanding, COALESCE(SUM(CASE WHEN status='PAID' AND MONTH(paidAt)=MONTH(NOW()) THEN total ELSE 0 END),0) as paidThisMonth, COALESCE(SUM(CASE WHEN status='OVERDUE' THEN total ELSE 0 END),0) as overdue FROM `Invoice`");
+      await conn.end();
+      res.json({ invoices, totals: { totalRevenue: Number(totals.totalRev), outstanding: Number(totals.outstanding), paidThisMonth: Number(totals.paidThisMonth), overdue: Number(totals.overdue) } });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── TEAM MANAGEMENT ───
+  app.get("/api/admin/team", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [team]: any = await conn.query("SELECT id, email, firstName, lastName, role, phone, isActive, createdAt FROM `User` WHERE role IN ('SUPER_ADMIN','ADMIN','TEAM_MEMBER') ORDER BY createdAt");
+      await conn.end();
+      res.json({ team });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── TICKETS ───
+  app.get("/api/admin/tickets", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [tickets]: any = await conn.query("SELECT t.*, c.companyName as clientName FROM `Ticket` t LEFT JOIN `Client` c ON t.clientId = c.id ORDER BY t.createdAt DESC");
+      await conn.end();
+      res.json({ tickets });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── CONSULTATIONS ───
+  app.get("/api/admin/consultations", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [consultations]: any = await conn.query("SELECT con.*, c.companyName as clientName FROM `Consultation` con LEFT JOIN `Client` c ON con.clientId = c.id ORDER BY con.scheduledAt DESC");
+      await conn.end();
+      res.json({ consultations });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── TRADEMARKS ───
+  app.get("/api/admin/trademarks", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [trademarks]: any = await conn.query("SELECT tm.*, c.companyName as clientName FROM `TrademarkApp` tm LEFT JOIN `Client` c ON tm.clientId = c.id ORDER BY tm.createdAt DESC");
+      await conn.end();
+      res.json({ trademarks });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── LEGAL MATTERS ───
+  app.get("/api/admin/legal-matters", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [matters]: any = await conn.query("SELECT lm.*, c.companyName as clientName FROM `LegalMatter` lm LEFT JOIN `Client` c ON lm.clientId = c.id ORDER BY lm.createdAt DESC");
+      await conn.end();
+      res.json({ matters });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── AUDIT LOG ───
+  app.get("/api/admin/audit-log", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [logs]: any = await conn.query("SELECT a.*, u.email as userEmail FROM `AuditLog` a LEFT JOIN `User` u ON a.userId = u.id ORDER BY a.createdAt DESC LIMIT 50");
+      await conn.end();
+      res.json({ logs });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ═══ CLIENT PORTAL APIs ═══
+
+  // Portal Dashboard — get logged-in user's data
+  app.get("/api/portal/dashboard", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+      const decoded: any = jwt.verify(token, secret);
+      
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query("SELECT id, firstName, lastName, email, role FROM `User` WHERE id = ?", [decoded.userId]);
+      if (users.length === 0) { await conn.end(); return res.status(404).json({ error: "User not found" }); }
+      const user = users[0];
+
+      // Get entities for this user's client record
+      const [entities]: any = await conn.query("SELECT COUNT(*) as count FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?", [user.email]);
+      const [compliance]: any = await conn.query("SELECT COUNT(*) as count FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? AND ct.status != 'COMPLETED'", [user.email]);
+      const [docs]: any = await conn.query("SELECT COUNT(*) as count FROM `Document` d JOIN `Client` c ON d.clientId = c.id WHERE c.contactEmail = ?", [user.email]);
+      const [tickets]: any = await conn.query("SELECT COUNT(*) as count FROM `Ticket` t JOIN `Client` c ON t.clientId = c.id WHERE c.contactEmail = ? AND t.status IN ('OPEN','IN_PROGRESS')", [user.email]);
+      const [recentCompliance]: any = await conn.query("SELECT ct.title, ct.dueDate, ct.status, ct.assigneeId, e.name as entityName FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? AND ct.status != 'COMPLETED' ORDER BY ct.dueDate ASC LIMIT 5", [user.email]);
+      const [activities]: any = await conn.query("SELECT a.title, a.type, a.createdAt FROM `Activity` a JOIN `Client` c ON a.clientId = c.id WHERE c.contactEmail = ? ORDER BY a.createdAt DESC LIMIT 5", [user.email]);
+
+      await conn.end();
+      res.json({
+        user: { firstName: user.firstName, lastName: user.lastName, email: user.email },
+        metrics: { entities: entities[0].count, compliance: compliance[0].count, documents: docs[0].count, openTickets: tickets[0].count },
+        recentCompliance,
+        recentActivity: activities
+      });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal entities
+  app.get("/api/portal/entities", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [entities]: any = await conn.query("SELECT e.* FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?", [user[0]?.email]);
+      await conn.end();
+      res.json({ entities });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal compliance
+  app.get("/api/portal/compliance", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [tasks]: any = await conn.query("SELECT ct.*, e.name as entityName FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? ORDER BY ct.dueDate ASC", [user[0]?.email]);
+      await conn.end();
+      res.json({ tasks });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal documents
+  app.get("/api/portal/documents", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [docs]: any = await conn.query("SELECT d.* FROM `Document` d JOIN `Client` c ON d.clientId = c.id WHERE c.contactEmail = ? ORDER BY d.createdAt DESC", [user[0]?.email]);
+      await conn.end();
+      res.json({ documents: docs });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal invoices
+  app.get("/api/portal/invoices", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [invoices]: any = await conn.query("SELECT i.* FROM `Invoice` i JOIN `Client` c ON i.clientId = c.id WHERE c.contactEmail = ? ORDER BY i.createdAt DESC", [user[0]?.email]);
+      await conn.end();
+      res.json({ invoices });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal tickets
+  app.get("/api/portal/tickets", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [tickets]: any = await conn.query("SELECT t.* FROM `Ticket` t JOIN `Client` c ON t.clientId = c.id WHERE c.contactEmail = ? ORDER BY t.createdAt DESC", [user[0]?.email]);
+      await conn.end();
+      res.json({ tickets });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal profile
+  app.get("/api/portal/profile", async (req, res) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query("SELECT id, firstName, lastName, email, phone, role, createdAt, lastLoginAt FROM `User` WHERE id = ?", [decoded.userId]);
+      const [clients]: any = await conn.query("SELECT * FROM `Client` WHERE contactEmail = ? LIMIT 1", [users[0]?.email]);
+      await conn.end();
+      res.json({ user: users[0] || null, client: clients[0] || null });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // --- MySQL Connection Pool Setup ---
   let dbPool: mysql.Pool | null = null;
   const isDbConfigured = !!(

@@ -26,9 +26,14 @@ const navItems = [
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
-export default function PortalShell({ activeScreen, setActiveScreen, children, clientName = "Rohit", companyName = "ABC Private Limited" }: PortalShellProps) {
+export default function PortalShell({ activeScreen, setActiveScreen, children, clientName, companyName }: PortalShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Get user info from localStorage
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem("incroute_user") || "{}"); } catch { return {}; } })();
+  const displayName = clientName || storedUser.firstName || "User";
+  const displayCompany = companyName || "INCroute Portal";
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-page)]">
@@ -95,11 +100,11 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
           <div className="p-4 border-t border-[var(--border-subtle)]">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
-                {clientName.charAt(0)}
+                {displayName.charAt(0)}
               </div>
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-[var(--text-primary)] truncate">{clientName}</p>
-                <p className="text-[10px] text-[var(--text-tertiary)] truncate">{companyName}</p>
+                <p className="text-[12px] font-semibold text-[var(--text-primary)] truncate">{displayName}</p>
+                <p className="text-[10px] text-[var(--text-tertiary)] truncate">{displayCompany}</p>
               </div>
             </div>
           </div>
@@ -114,7 +119,7 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
             <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
           <div className="hidden sm:block">
-            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{companyName}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{displayCompany}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setActiveScreen("notifications")} aria-label="View notifications" className="relative p-2 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer">

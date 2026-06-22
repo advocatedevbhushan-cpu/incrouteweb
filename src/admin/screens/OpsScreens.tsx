@@ -1,70 +1,69 @@
-import React from "react";
-import { HelpCircle, Users, Shield, Scale, BarChart3, Clock, Plus, CheckCircle2, AlertTriangle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { HelpCircle, Users, Shield, Scale, BarChart3, Clock, Loader2 } from "lucide-react";
 
-function Header({ title, subtitle, action }: { title: string; subtitle: string; action?: React.ReactNode }) {
-  return (<div className="flex items-center justify-between"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">{title}</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{subtitle}</p></div>{action}</div>);
-}
-function Tbl({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
-  return (<div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-[var(--border-subtle)]">{headers.map(h => <th key={h} className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors cursor-pointer">{r.map((c, j) => <td key={j} className="px-5 py-3.5 text-[12px] text-[var(--text-secondary)]">{c}</td>)}</tr>)}</tbody></table></div></div>);
-}
-function Stat({ s }: { s: string }) { const c = s === "Resolved" || s === "Completed" || s === "Registered" ? "var(--success)" : s === "Open" || s === "Scheduled" || s === "Filed" ? "var(--accent)" : s === "Escalated" || s === "Overdue" ? "var(--warning)" : "var(--text-tertiary)"; return <span className="text-[10px] font-semibold" style={{ color: c }}>{s}</span>; }
-function Btn({ label }: { label: string }) { return <button className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer transition-colors"><Plus className="w-3.5 h-3.5" />{label}</button>; }
+const token = () => localStorage.getItem("incroute_access_token");
+const headers = () => token() ? { Authorization: `Bearer ${token()}` } : {};
+function Loading() { return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>; }
+function Empty({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) { return <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] rounded-2xl p-12 text-center"><Icon className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" /><p className="text-[14px] font-medium text-[var(--text-primary)]">{title}</p><p className="text-[12px] text-[var(--text-tertiary)] mt-1">{desc}</p></div>; }
+function Stat({ s }: { s: string }) { const c = ["RESOLVED","COMPLETED","REGISTERED","PAID"].includes(s) ? "var(--success)" : ["OPEN","SCHEDULED","FILED","IN_PROGRESS"].includes(s) ? "var(--accent)" : ["ESCALATED","OVERDUE"].includes(s) ? "var(--warning)" : "var(--text-tertiary)"; return <span className="text-[10px] font-semibold" style={{ color: c }}>{s.replace(/_/g, " ")}</span>; }
 
 export function TicketOps() {
-  return (<div className="space-y-6"><Header title="Support Operations" subtitle="14 open tickets" action={<Btn label="Create Ticket" />} /><Tbl headers={["Ticket", "Client", "Subject", "Priority", "Status", "Assignee", "Created"]} rows={[
-    ["TKT-1042", "ABC Pvt Ltd", "GST Portal Access Issue", <span key="p" className="text-[var(--warning)] text-[10px] font-semibold">High</span>, <Stat key="s" s="Open" />, "Support Team", "Jun 21"],
-    ["TKT-1041", "XYZ LLP", "Updated MOA copy needed", <span key="p" className="text-[var(--accent)] text-[10px] font-semibold">Medium</span>, <Stat key="s" s="In Progress" />, "CS Priya", "Jun 20"],
-    ["TKT-1040", "Verma Ventures", "Trademark hearing date?", <span key="p" className="text-[var(--text-tertiary)] text-[10px] font-semibold">Low</span>, <Stat key="s" s="Resolved" />, "IP Team", "Jun 18"],
-  ]} /></div>);
+  const [tickets, setTickets] = useState<any[]>([]); const [loading, setLoading] = useState(true);
+  useEffect(() => { fetch("/api/admin/tickets", { headers: headers() }).then(r => r.json()).then(d => { if (d.tickets) setTickets(d.tickets); }).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  return (<div className="space-y-6"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Support Operations</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{tickets.length} tickets</p></div>
+    {tickets.length === 0 ? <Empty icon={HelpCircle} title="No tickets" desc="Support tickets will appear here" /> : <Table headers={["Subject","Client","Priority","Status","Created"]} rows={tickets.map(t => [t.subject, t.clientName||"—", t.priority, <Stat key={t.id} s={t.status} />, new Date(t.createdAt).toLocaleDateString("en-IN",{month:"short",day:"numeric"})])} />}
+  </div>);
 }
 
 export function ConsultationOps() {
-  return (<div className="space-y-6"><Header title="Consultation Management" subtitle="Upcoming and past advisory sessions" action={<Btn label="Schedule" />} /><Tbl headers={["Topic", "Client", "Advisor", "Date", "Duration", "Status"]} rows={[
-    ["Annual Compliance FY27", "ABC Pvt Ltd", "CA Mehra", "Jul 5, 3:00 PM", "45 min", <Stat key="s" s="Scheduled" />],
-    ["Trademark Strategy", "Verma Ventures", "IP Team", "Jun 28, 11:00 AM", "30 min", <Stat key="s" s="Completed" />],
-    ["GST Reconciliation", "XYZ LLP", "Tax Team", "Jun 20, 2:00 PM", "30 min", <Stat key="s" s="Completed" />],
-  ]} /></div>);
+  const [items, setItems] = useState<any[]>([]); const [loading, setLoading] = useState(true);
+  useEffect(() => { fetch("/api/admin/consultations", { headers: headers() }).then(r => r.json()).then(d => { if (d.consultations) setItems(d.consultations); }).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  return (<div className="space-y-6"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Consultation Management</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{items.length} sessions</p></div>
+    {items.length === 0 ? <Empty icon={Users} title="No consultations" desc="Scheduled advisory sessions will appear here" /> : <Table headers={["Topic","Client","Date","Duration","Status"]} rows={items.map(c => [c.topic, c.clientName||"—", new Date(c.scheduledAt).toLocaleString("en-IN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}), `${c.duration} min`, <Stat key={c.id} s={c.status} />])} />}
+  </div>);
 }
 
 export function TrademarkOps() {
-  return (<div className="space-y-6"><Header title="Trademark Operations" subtitle="All trademark applications and renewals" action={<Btn label="New Application" />} /><Tbl headers={["Trademark", "Client", "App No.", "Class", "Status", "Stage", "Next Action"]} rows={[
-    ["INCroute", "INCroute", "TM-2024-98765", "42", <Stat key="s" s="Registered" />, "Certificate Issued", "Renewal 2034"],
-    ["INCroute Logo", "INCroute", "TM-2025-12345", "9", <Stat key="s" s="Under Examination" />, "Objection Reply", "Await hearing"],
-    ["CorpShield", "ABC Pvt Ltd", "TM-2026-55678", "36", <Stat key="s" s="Filed" />, "Vienna Code", "Exam pending"],
-  ]} /></div>);
+  const [items, setItems] = useState<any[]>([]); const [loading, setLoading] = useState(true);
+  useEffect(() => { fetch("/api/admin/trademarks", { headers: headers() }).then(r => r.json()).then(d => { if (d.trademarks) setItems(d.trademarks); }).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  return (<div className="space-y-6"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Trademark Operations</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{items.length} applications</p></div>
+    {items.length === 0 ? <Empty icon={Shield} title="No trademarks" desc="Trademark applications will appear here" /> : <Table headers={["Name","Client","App No.","Class","Status","Stage"]} rows={items.map(t => [t.name, t.clientName||"—", t.applicationNo||"—", t.classNumber, <Stat key={t.id} s={t.status} />, t.currentStage||"—"])} />}
+  </div>);
 }
 
 export function LegalOps() {
-  return (<div className="space-y-6"><Header title="Legal Matter Management" subtitle="All active legal cases and drafting" action={<Btn label="New Matter" />} /><Tbl headers={["Matter", "Client", "Type", "Assigned", "Priority", "Status", "Deadline"]} rows={[
-    ["NDA Vendor Agreement", "Verma Ventures", "Contract", "Adv. Sharma", <span key="p" className="text-[var(--accent)] text-[10px] font-semibold">Medium</span>, <Stat key="s" s="In Progress" />, "Jul 5"],
-    ["TM Opposition Class 9", "ABC Pvt Ltd", "IP Dispute", "Adv. Kapoor", <span key="p" className="text-[var(--warning)] text-[10px] font-semibold">High</span>, <Stat key="s" s="Hearing" />, "Jul 15"],
-    ["NCLT Compliance", "GreenLeaf", "Regulatory", "Adv. Mehta", <span key="p" className="text-[var(--warning)] text-[10px] font-semibold">High</span>, <Stat key="s" s="Under Review" />, "Aug 1"],
-  ]} /></div>);
+  const [items, setItems] = useState<any[]>([]); const [loading, setLoading] = useState(true);
+  useEffect(() => { fetch("/api/admin/legal-matters", { headers: headers() }).then(r => r.json()).then(d => { if (d.matters) setItems(d.matters); }).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  return (<div className="space-y-6"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Legal Matter Management</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{items.length} matters</p></div>
+    {items.length === 0 ? <Empty icon={Scale} title="No legal matters" desc="Active legal cases will appear here" /> : <Table headers={["Title","Client","Type","Priority","Status","Deadline"]} rows={items.map(m => [m.title, m.clientName||"—", m.type, m.priority, <Stat key={m.id} s={m.status} />, m.deadline ? new Date(m.deadline).toLocaleDateString("en-IN",{month:"short",day:"numeric"}) : "—"])} />}
+  </div>);
 }
 
 export function ReportingDashboard() {
-  return (<div className="space-y-6"><Header title="Reports & Analytics" subtitle="Platform performance and insights" />
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {[{ label: "Client Growth (M)", value: "+12" }, { label: "Revenue (M)", value: "₹4.2L" }, { label: "Compliance Rate", value: "94%" }, { label: "Avg Resolution", value: "2.4 days" }].map((m, i) => (
-        <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[20px] font-extrabold text-[var(--text-primary)]">{m.value}</p><p className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider mt-0.5">{m.label}</p></div>
-      ))}
-    </div>
+  return (<div className="space-y-6">
+    <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Reports & Analytics</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Platform performance insights</p></div>
     <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 text-center py-16">
       <BarChart3 className="w-10 h-10 text-[var(--accent)] mx-auto mb-3 opacity-40" />
       <p className="text-[14px] font-semibold text-[var(--text-primary)]">Reports Module</p>
-      <p className="text-[12px] text-[var(--text-tertiary)] mt-1">Charts and detailed analytics will render here when connected to live data.</p>
+      <p className="text-[12px] text-[var(--text-tertiary)] mt-1">Charts and analytics will be available as more data accumulates.</p>
     </div>
   </div>);
 }
 
 export function AuditCenter() {
-  return (<div className="space-y-6"><Header title="Audit Center" subtitle="System activity and security events" />
-    <Tbl headers={["Action", "User", "Resource", "IP Address", "Time", "Status"]} rows={[
-      ["Login", "rohit@abcpvtltd.com", "—", "103.21.x.x", "10 min ago", <Stat key="s" s="Success" />],
-      ["Document Upload", "CA Mehra", "AOC-4 ABC Pvt Ltd", "Internal", "1 hour ago", <Stat key="s" s="Success" />],
-      ["Password Change", "priya@xyzllp.com", "—", "182.73.x.x", "2 hours ago", <Stat key="s" s="Success" />],
-      ["Login Failed", "unknown@test.com", "—", "45.33.x.x", "3 hours ago", <span key="s" className="text-[10px] font-semibold text-[#EF4444]">Failed</span>],
-      ["Role Change", "Admin", "CS Priya → ADMIN", "Internal", "5 hours ago", <Stat key="s" s="Success" />],
-    ]} />
+  const [logs, setLogs] = useState<any[]>([]); const [loading, setLoading] = useState(true);
+  useEffect(() => { fetch("/api/admin/audit-log", { headers: headers() }).then(r => r.json()).then(d => { if (d.logs) setLogs(d.logs); }).finally(() => setLoading(false)); }, []);
+  if (loading) return <Loading />;
+  return (<div className="space-y-6"><div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Audit Center</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">System activity and security events</p></div>
+    {logs.length === 0 ? <Empty icon={Clock} title="No audit events" desc="Login attempts, changes, and actions will be logged here" /> : <Table headers={["Action","User","Resource","Status","Time"]} rows={logs.map(l => [l.action, l.userEmail||"Unknown", l.resource||"—", l.success ? <span key={l.id} className="text-[10px] font-semibold text-[var(--success)]">Success</span> : <span key={l.id} className="text-[10px] font-semibold text-[#EF4444]">Failed</span>, new Date(l.createdAt).toLocaleString("en-IN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})])} />}
   </div>);
+}
+
+// Shared table component
+function Table({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
+  return (<div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-[var(--border-subtle)]">{headers.map(h => <th key={h} className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors">{r.map((c, j) => <td key={j} className="px-5 py-3.5 text-[12px] text-[var(--text-secondary)]">{c}</td>)}</tr>)}</tbody></table></div></div>);
 }

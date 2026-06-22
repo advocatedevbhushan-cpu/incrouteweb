@@ -1,33 +1,34 @@
-import React from "react";
-import { FileText, Plus, Upload, CheckCircle2, Clock, XCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FileText, Upload, Loader2 } from "lucide-react";
 
-const docs = [
-  { name: "AOC-4 FY25-26 — ABC Pvt Ltd", category: "ROC", status: "Under Review", uploadedBy: "CA Mehra", date: "Jun 20" },
-  { name: "Board Resolution Q2 — Verma Ventures", category: "Corporate", status: "Approved", uploadedBy: "CS Priya", date: "Jun 18" },
-  { name: "Trademark Certificate Class 42", category: "IP", status: "Published", uploadedBy: "IP Team", date: "Jun 15" },
-  { name: "GST Registration — TechStart OPC", category: "GST", status: "Draft", uploadedBy: "Tax Team", date: "Jun 21" },
-  { name: "NDA — Vendor Agreement", category: "Legal", status: "Rejected", uploadedBy: "Adv. Sharma", date: "Jun 12" },
-];
-
-const statusColor = (s: string) => s === "Approved" || s === "Published" ? "var(--success)" : s === "Rejected" ? "#EF4444" : s === "Under Review" ? "var(--warning)" : "var(--text-tertiary)";
+interface Doc { id: string; title: string; category: string; status: string; uploadedBy: string | null; createdAt: string; clientName: string | null; }
+const statusColor = (s: string) => s === "APPROVED" || s === "PUBLISHED" ? "var(--success)" : s === "REJECTED" ? "#EF4444" : s === "UNDER_REVIEW" ? "var(--warning)" : "var(--text-tertiary)";
 
 export default function DocumentOps() {
+  const [docs, setDocs] = useState<Doc[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { (async () => { try { const token = localStorage.getItem("incroute_access_token"); const r = await fetch("/api/admin/documents", { headers: token ? { Authorization: `Bearer ${token}` } : {} }); const d = await r.json(); if (d.documents) setDocs(d.documents); } catch {} finally { setLoading(false); } })(); }, []);
+  if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Operations</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Upload, review and manage all client documents</p></div>
-        <button className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer transition-colors"><Upload className="w-3.5 h-3.5" /> Upload Document</button>
+        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Operations</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{docs.length} documents managed</p></div>
       </div>
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-[var(--border-subtle)]">{["Document", "Category", "Status", "Uploaded By", "Date"].map(h => <th key={h} className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}</tr></thead>
-        <tbody>{docs.map((d, i) => (<tr key={i} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors cursor-pointer">
-          <td className="px-5 py-3.5 text-[12px] font-medium text-[var(--text-primary)]">{d.name}</td>
+      {docs.length === 0 ? (
+        <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] rounded-2xl p-12 text-center">
+          <FileText className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" /><p className="text-[14px] font-medium text-[var(--text-primary)]">No documents yet</p>
+          <p className="text-[12px] text-[var(--text-tertiary)] mt-1">Documents will appear here when uploaded for clients</p>
+        </div>
+      ) : (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-[var(--border-subtle)]">{["Document", "Client", "Category", "Status", "Date"].map(h => <th key={h} className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}</tr></thead>
+        <tbody>{docs.map(d => (<tr key={d.id} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors cursor-pointer">
+          <td className="px-5 py-3.5 text-[12px] font-medium text-[var(--text-primary)]">{d.title}</td>
+          <td className="px-5 py-3.5 text-[11px] text-[var(--text-secondary)]">{d.clientName || "—"}</td>
           <td className="px-5 py-3.5 text-[10px] text-[var(--text-tertiary)] uppercase">{d.category}</td>
-          <td className="px-5 py-3.5"><span className="text-[10px] font-semibold" style={{ color: statusColor(d.status) }}>{d.status}</span></td>
-          <td className="px-5 py-3.5 text-[11px] text-[var(--text-tertiary)]">{d.uploadedBy}</td>
-          <td className="px-5 py-3.5 text-[11px] text-[var(--text-tertiary)]">{d.date}</td>
-        </tr>))}</tbody></table></div>
-      </div>
+          <td className="px-5 py-3.5"><span className="text-[10px] font-semibold" style={{ color: statusColor(d.status) }}>{d.status.replace(/_/g, " ")}</span></td>
+          <td className="px-5 py-3.5 text-[11px] text-[var(--text-tertiary)]">{new Date(d.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</td>
+        </tr>))}</tbody></table></div></div>
+      )}
     </div>
   );
 }
