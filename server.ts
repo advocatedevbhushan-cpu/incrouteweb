@@ -6,6 +6,9 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import nodemailer from "nodemailer";
+import multer from "multer";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Auth routes — wrapped in try/catch to prevent crash if Prisma not generated
 let authRoutes: any = null;
@@ -687,53 +690,189 @@ async function startServer() {
     }
   });
 
-  // ─── DOCUMENTS CRUD ───
+  // ─── CLOUDFLARE R2 DOCUMENT MANAGEMENT SYSTEM ───
+  const ALLOWED_MIMES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/png', 'image/jpeg', 'image/jpg', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+  const DOCUMENT_FOLDERS = ['Incorporation', 'GST', 'Trademark', 'ROC', 'Legal', 'Tax', 'Invoices', 'Other'];
+
+  // R2 Client setup
+  const r2Client = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ? new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    },
+  }) : null;
+  const R2_BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME || "incroute-documents";
+  const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || "";
+
+  // Multer config for memory storage (before uploading to R2)
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (req, file, cb) => {
+      if (ALLOWED_MIMES.includes(file.mimetype)) cb(null, true);
+      else cb(new Error("File type not allowed. Allowed: PDF, DOC, DOCX, PNG, JPG, XLS, XLSX"));
+    }
+  });
+
+  // Generate storage key
+  const generateStorageKey = (clientId: string, folder: string, originalName: string) => {
+    const ext = path.extname(originalName);
+    const hash = crypto.randomBytes(8).toString("hex");
+    const date = new Date().toISOString().slice(0, 10);
+    return `clients/${clientId}/${folder.toLowerCase()}/${date}-${hash}${ext}`;
+  };
+
+  // Upload to R2
+  const uploadToR2 = async (key: string, buffer: Buffer, mimeType: string) => {
+    if (!r2Client) throw new Error("R2 not configured");
+    await r2Client.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: buffer, ContentType: mimeType }));
+    return R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${key}` : key;
+  };
+
+  // Generate signed download URL (for private buckets)
+  const getSignedDownloadUrl = async (key: string, expiresIn = 3600) => {
+    if (!r2Client) return "";
+    if (R2_PUBLIC_URL) return `${R2_PUBLIC_URL}/${key}`;
+    const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: key });
+    return getSignedUrl(r2Client, command, { expiresIn });
+  };
+
+  // List documents
   app.get("/api/admin/documents", async (req, res) => {
     try {
-      const { status, category, search, page = "1", limit = "20" } = req.query as any;
+      const { status, category, folder, search, page = "1", limit = "15" } = req.query as any;
       const conn = await getPlatformConnection();
       let where = "1=1";
       const params: any[] = [];
-      if (status) { where += " AND d.status = ?"; params.push(status); }
+      if (status && status !== "ALL") { where += " AND d.status = ?"; params.push(status); }
       if (category) { where += " AND d.category = ?"; params.push(category); }
-      if (search) { where += " AND (d.title LIKE ? OR d.fileName LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+      if (folder) { where += " AND d.folder = ?"; params.push(folder); }
+      if (search) { where += " AND (d.title LIKE ? OR d.fileName LIKE ? OR d.originalName LIKE ? OR c.companyName LIKE ?)"; params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`); }
       const offset = (Number(page) - 1) * Number(limit);
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Document\` d LEFT JOIN \`Client\` c ON d.clientId = c.id WHERE ${where}`, params);
       const [documents]: any = await conn.query(`SELECT d.*, c.companyName as clientName FROM \`Document\` d LEFT JOIN \`Client\` c ON d.clientId = c.id WHERE ${where} ORDER BY d.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
       const [[stats]]: any = await conn.query("SELECT COUNT(CASE WHEN status='DRAFT' THEN 1 END) as draft, COUNT(CASE WHEN status='UNDER_REVIEW' THEN 1 END) as underReview, COUNT(CASE WHEN status='APPROVED' THEN 1 END) as approved, COUNT(CASE WHEN status='REJECTED' THEN 1 END) as rejected FROM `Document`");
+      // Folder counts
+      const [folderCounts]: any = await conn.query("SELECT folder, COUNT(*) as count FROM `Document` GROUP BY folder");
       await conn.end();
-      res.json({ documents, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats });
+      res.json({ documents, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats, folderCounts, folders: DOCUMENT_FOLDERS });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
-  app.post("/api/admin/documents", async (req, res) => {
+  // Upload document
+  app.post("/api/admin/documents/upload", upload.single("file"), async (req: any, res) => {
     try {
-      const { clientId, entityId, title, category, fileName, fileUrl } = req.body;
-      if (!title || !category) return res.status(400).json({ error: "title and category required" });
+      if (!req.file) return res.status(400).json({ error: "No file provided" });
+      const { clientId, entityId, title, folder, category } = req.body;
+      if (!title || !clientId) return res.status(400).json({ error: "title and clientId required" });
+
+      const file = req.file;
+      const docFolder = folder || "Other";
+      const storageKey = generateStorageKey(clientId, docFolder, file.originalname);
+
+      // Upload to R2 (or fallback to local if R2 not configured)
+      let publicUrl = "";
+      if (r2Client) {
+        publicUrl = await uploadToR2(storageKey, file.buffer, file.mimetype);
+      } else {
+        // Fallback: save locally
+        const localDir = path.join(process.cwd(), "uploads", clientId);
+        if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
+        fs.writeFileSync(path.join(localDir, path.basename(storageKey)), file.buffer);
+        publicUrl = `/uploads/${clientId}/${path.basename(storageKey)}`;
+      }
+
+      // Save metadata to MySQL
       const conn = await getPlatformConnection();
-      const id = "doc_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const id = "doc_" + Date.now().toString(36) + crypto.randomBytes(4).toString("hex");
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-      await conn.query(`INSERT INTO \`Document\` (id, clientId, entityId, title, category, fileName, fileUrl, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 'UNDER_REVIEW', ?, ?)`,
-        [id, clientId || null, entityId || null, title, category, fileName || title, fileUrl || "", now, now]);
+      await conn.query(
+        `INSERT INTO \`Document\` (id, clientId, entityId, title, category, fileName, originalName, mimeType, fileSize, fileUrl, storageProvider, storageKey, publicUrl, folder, status, version, createdAt, updatedAt) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'UNDER_REVIEW', 1, ?, ?)`,
+        [id, clientId, entityId || null, title, category || docFolder, file.originalname, file.originalname, file.mimetype, file.size, publicUrl, r2Client ? "cloudflare_r2" : "local", storageKey, publicUrl, docFolder, now, now]
+      );
+
+      // Audit log
+      await conn.query("INSERT INTO `AuditLog` (id, userId, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?, ?)",
+        ["aud_" + Date.now().toString(36), null, "document_uploaded", `Document: ${title}`, JSON.stringify({ docId: id, fileName: file.originalname, size: file.size, folder: docFolder }), now]);
+
       await conn.end();
-      res.json({ success: true, id });
+      res.json({ success: true, id, storageKey, publicUrl, fileName: file.originalname, size: file.size });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // Get signed download URL
+  app.get("/api/admin/documents/:id/download", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName FROM `Document` WHERE id = ?", [req.params.id]);
+      if (docs.length === 0) { await conn.end(); return res.status(404).json({ error: "Document not found" }); }
+      const doc = docs[0];
+
+      let downloadUrl = doc.publicUrl;
+      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client && !R2_PUBLIC_URL) {
+        downloadUrl = await getSignedDownloadUrl(doc.storageKey);
+      }
+
+      // Audit log
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
+        ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
+      await conn.end();
+      res.json({ success: true, downloadUrl, fileName: doc.fileName });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Update document status (approve/reject/etc)
   app.patch("/api/admin/documents/:id", async (req, res) => {
     try {
-      const { status, approvedBy } = req.body;
+      const { status, approvedBy, internalNote } = req.body;
       const conn = await getPlatformConnection();
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       const sets: string[] = ["updatedAt = ?"];
       const vals: any[] = [now];
       if (status) { sets.push("status = ?"); vals.push(status); if (status === "APPROVED") { sets.push("approvedAt = ?"); sets.push("approvedBy = ?"); vals.push(now); vals.push(approvedBy || null); } }
+      if (internalNote) { sets.push("internalNote = ?"); vals.push(internalNote); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Document\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+
+      // Audit log
+      await conn.query("INSERT INTO `AuditLog` (id, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?)",
+        ["aud_" + Date.now().toString(36), `document_${status?.toLowerCase() || "updated"}`, req.params.id, JSON.stringify({ status, note: internalNote }), now]);
       await conn.end();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
+
+  // Delete document (removes from R2 + MySQL)
+  app.delete("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, title FROM `Document` WHERE id = ?", [req.params.id]);
+      if (docs.length === 0) { await conn.end(); return res.status(404).json({ error: "Not found" }); }
+      const doc = docs[0];
+
+      // Delete from R2
+      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
+        try { await r2Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey })); } catch {}
+      }
+
+      // Delete metadata
+      await conn.query("DELETE FROM `Document` WHERE id = ?", [req.params.id]);
+      // Audit log
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `AuditLog` (id, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?)",
+        ["aud_" + Date.now().toString(36), "document_deleted", `Document: ${doc.title}`, JSON.stringify({ storageKey: doc.storageKey }), now]);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Serve local uploads fallback
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // ─── INVOICES CRUD ───
   app.get("/api/admin/invoices", async (req, res) => {
