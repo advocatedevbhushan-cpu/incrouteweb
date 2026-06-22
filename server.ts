@@ -253,13 +253,13 @@ async function startServer() {
       return next();
     }
     
-    // Serve the challenge verification gate for direct admin page requests
-    if (req.path === "/admin" || req.path === "/admin/" || req.path === "/admin/index.html") {
+    // Serve the challenge verification gate for direct CMS page requests
+    if (req.path === "/cms" || req.path === "/cms/" || req.path === "/cms/index.html") {
       return res.sendFile(path.join(process.cwd(), "admin-portal/gate.html"));
     }
     
     // Obfuscate CMS configuration and assets
-    if (req.path.startsWith("/admin/")) {
+    if (req.path.startsWith("/cms/")) {
       return res.status(404).end();
     }
 
@@ -412,10 +412,10 @@ async function startServer() {
   });
 
   // Serve the headless Decap CMS static wrapper only if device authenticated
-  app.get(["/admin", "/admin/"], (req, res, next) => {
+  app.get(["/cms", "/cms/"], (req, res, next) => {
     // Exact check to redirect to trailing slash version, preventing loop
-    if (req.path === "/admin") {
-      return res.redirect(301, "/admin/");
+    if (req.path === "/cms") {
+      return res.redirect(301, "/cms/");
     }
     next();
   }, deviceLockMiddleware, (req, res) => {
@@ -498,7 +498,7 @@ async function startServer() {
     }
   });
 
-  app.get("/admin/config.yml", deviceLockMiddleware, (req, res) => {
+  app.get("/cms/config.yml", deviceLockMiddleware, (req, res) => {
     try {
       const configPath = path.join(process.cwd(), "admin-portal/config.yml");
       let configContent = fs.readFileSync(configPath, "utf-8");
