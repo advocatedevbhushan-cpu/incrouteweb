@@ -7,7 +7,15 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import nodemailer from "nodemailer";
-import authRoutes from "./src/server/auth/routes";
+
+// Auth routes — wrapped in try/catch to prevent crash if Prisma not generated
+let authRoutes: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  authRoutes = require("./src/server/auth/routes").default;
+} catch (e: any) {
+  console.warn("⚠️ Auth routes not loaded:", e.message?.substring(0, 80));
+}
 
 dotenv.config();
 
@@ -40,7 +48,14 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
   // Auth API Routes
-  app.use("/api/auth", authRoutes);
+  if (authRoutes) {
+    app.use("/api/auth", authRoutes);
+  }
+
+  // Health check (always works)
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString(), auth: !!authRoutes });
+  });
 
   // --- MySQL Connection Pool Setup ---
   let dbPool: mysql.Pool | null = null;
