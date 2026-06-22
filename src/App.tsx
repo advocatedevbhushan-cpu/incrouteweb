@@ -313,6 +313,7 @@ export default function App() {
       <div className="executive-glow-1" />
       <div className="executive-glow-2" />
       <div className="executive-grid" />
+      <div className="hero-gradient-bg" />
 
       {/* Decorative brand star — bottom right */}
       <div className="fixed bottom-24 right-6 z-0 pointer-events-none opacity-20 hidden md:block">

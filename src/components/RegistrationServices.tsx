@@ -1750,7 +1750,7 @@ export default function RegistrationServices({
 
             {/* RIGHT: Dashboard Mockup */}
             <div className="relative hidden lg:block">
-              <div className="rounded-[24px] overflow-hidden border border-[#2C2740] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] flex" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
+              <div className="rounded-[24px] overflow-hidden border border-[var(--border-subtle)] shadow-[0_30px_80px_-15px_rgba(25,25,50,0.15)] flex" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
                 <div className="w-[140px] shrink-0 bg-[#0F172A]/70 border-r border-[#2C2740] p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
