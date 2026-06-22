@@ -1,7 +1,105 @@
-import React from "react";
-import { Users, Building2, CalendarCheck, HelpCircle, Receipt, TrendingUp, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Users, Building2, CalendarCheck, HelpCircle, Receipt, TrendingUp, Clock, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+
+interface DashboardStats {
+  clients: number;
+  entities: number;
+  complianceTasks: number;
+  openTickets: number;
+  pendingInvoices: number;
+  teamMembers: number;
+  activeTasks: number;
+}
+
+interface OverdueItem {
+  id: string;
+  title: string;
+  dueDate: string;
+  assigneeId: string | null;
+  entityName: string | null;
+}
+
+interface ActivityItem {
+  id: string;
+  type: string;
+  title: string;
+  details: string | null;
+  createdAt: string;
+}
 
 export default function AdminDashboard({ onNavigate }: { onNavigate: (s: string) => void }) {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [overdue, setOverdue] = useState<OverdueItem[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch("/api/admin/stats", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (data.stats) {
+        setStats(data.stats);
+        setOverdue(data.overdueCompliance || []);
+        setActivity(data.recentActivity || []);
+      } else {
+        setError(data.error || "Failed to load");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amt: number) => {
+    if (amt >= 100000) return `₹${(amt / 100000).toFixed(1)}L`;
+    if (amt >= 1000) return `₹${(amt / 1000).toFixed(1)}K`;
+    return `₹${amt}`;
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-[var(--text-secondary)]">{error}</p>
+        <button onClick={fetchStats} className="mt-3 text-[12px] text-[var(--accent)] underline cursor-pointer">Retry</button>
+      </div>
+    );
+  }
+
+  const metrics = [
+    { label: "Total Clients", value: String(stats?.clients || 0), icon: Users, screen: "clients" },
+    { label: "Active Entities", value: String(stats?.entities || 0), icon: Building2, screen: "clients" },
+    { label: "Compliance Tasks", value: String(stats?.complianceTasks || 0), icon: CalendarCheck, screen: "compliance" },
+    { label: "Open Tickets", value: String(stats?.openTickets || 0), icon: HelpCircle, screen: "tickets" },
+    { label: "Pending Invoices", value: formatCurrency(stats?.pendingInvoices || 0), icon: Receipt, screen: "invoices" },
+    { label: "Team Members", value: String(stats?.teamMembers || 0), icon: Users, screen: "team" },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,14 +109,7 @@ export default function AdminDashboard({ onNavigate }: { onNavigate: (s: string)
 
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          { label: "Total Clients", value: "247", icon: Users, screen: "clients" },
-          { label: "Active Entities", value: "412", icon: Building2, screen: "clients" },
-          { label: "Compliance Tasks", value: "89", icon: CalendarCheck, screen: "compliance" },
-          { label: "Open Tickets", value: "14", icon: HelpCircle, screen: "tickets" },
-          { label: "Pending Invoices", value: "₹4.2L", icon: Receipt, screen: "invoices" },
-          { label: "Team Members", value: "23", icon: Users, screen: "team" },
-        ].map((m, i) => (
+        {metrics.map((m, i) => (
           <button key={i} onClick={() => onNavigate(m.screen)} aria-label={`${m.label}: ${m.value}`}
             className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 text-left hover:border-[var(--accent)] transition-colors cursor-pointer">
             <m.icon className="w-4 h-4 text-[var(--accent)] mb-2" aria-hidden="true" />
@@ -34,71 +125,64 @@ export default function AdminDashboard({ onNavigate }: { onNavigate: (s: string)
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Overdue Compliance</h3>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-[var(--warning)] font-semibold">7 overdue</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-[var(--warning)] font-semibold">
+              {overdue.length} overdue
+            </span>
           </div>
-          {[
-            { task: "GSTR-3B — XYZ LLP", due: "Jun 20 (1 day overdue)", assignee: "Tax Team" },
-            { task: "DIN KYC — ABC Pvt Ltd", due: "Jun 15 (6 days overdue)", assignee: "CS Priya" },
-            { task: "AOC-4 — Verma Ventures", due: "Jun 10 (11 days overdue)", assignee: "CA Mehra" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between py-2.5 border-b border-[var(--border-subtle)] last:border-0">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-[var(--warning)]" />
-                <div>
-                  <p className="text-[12px] font-medium text-[var(--text-primary)]">{item.task}</p>
-                  <p className="text-[10px] text-[var(--text-tertiary)]">{item.assignee}</p>
+          {overdue.length === 0 ? (
+            <p className="text-[12px] text-[var(--text-tertiary)] py-4 text-center">No overdue items — great job!</p>
+          ) : (
+            overdue.slice(0, 5).map((item) => (
+              <div key={item.id} className="flex items-center justify-between py-2.5 border-b border-[var(--border-subtle)] last:border-0">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[var(--warning)]" />
+                  <div>
+                    <p className="text-[12px] font-medium text-[var(--text-primary)]">{item.title}</p>
+                    <p className="text-[10px] text-[var(--text-tertiary)]">{item.entityName || "Unassigned"}</p>
+                  </div>
                 </div>
+                <span className="text-[10px] text-[var(--warning)]">
+                  {new Date(item.dueDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+                </span>
               </div>
-              <span className="text-[10px] text-[var(--warning)]">{item.due}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* Team Workload */}
+        {/* Recent Activity */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
-          <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Team Workload</h3>
-          {[
-            { name: "CA Mehra", tasks: 18, capacity: 80 },
-            { name: "CS Priya", tasks: 12, capacity: 55 },
-            { name: "Tax Team", tasks: 24, capacity: 95 },
-            { name: "IP Team", tasks: 8, capacity: 35 },
-            { name: "Adv. Sharma", tasks: 6, capacity: 25 },
-          ].map((m, i) => (
-            <div key={i} className="flex items-center gap-3 py-2">
-              <div className="w-7 h-7 rounded-full bg-[var(--accent-soft)] flex items-center justify-center text-[9px] font-bold text-[var(--accent)] shrink-0">{m.name.charAt(0)}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-medium text-[var(--text-primary)] truncate">{m.name}</span>
-                  <span className="text-[10px] text-[var(--text-tertiary)]">{m.tasks} tasks</span>
+          <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Recent Activity</h3>
+          {activity.length === 0 ? (
+            <p className="text-[12px] text-[var(--text-tertiary)] py-4 text-center">No activity yet. Start adding clients and tasks.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {activity.slice(0, 8).map((a) => (
+                <div key={a.id} className="flex items-center gap-3 py-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] flex items-center justify-center shrink-0">
+                    <Clock className="w-3 h-3 text-[var(--accent)]" />
+                  </div>
+                  <p className="text-[12px] text-[var(--text-secondary)] flex-1">{a.title}</p>
+                  <span className="text-[10px] text-[var(--text-tertiary)] shrink-0">{timeAgo(a.createdAt)}</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-[var(--border-subtle)] mt-1">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${m.capacity}%`, background: m.capacity > 80 ? "var(--warning)" : "var(--accent)" }} />
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
-        <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4">Recent Activity</h3>
-        <div className="space-y-2.5">
-          {[
-            { text: "New client onboarded: Verma Ventures Pvt. Ltd.", time: "10 min ago", icon: Users },
-            { text: "GSTR-1 filed for ABC Pvt Ltd — May 2026", time: "1 hour ago", icon: CheckCircle2 },
-            { text: "Trademark TM-2026-55678 moved to examination", time: "2 hours ago", icon: Clock },
-            { text: "Invoice INV-2026-044 paid by XYZ LLP (₹14,999)", time: "3 hours ago", icon: Receipt },
-            { text: "CS Priya completed DIN KYC for 3 entities", time: "5 hours ago", icon: TrendingUp },
-          ].map((a, i) => (
-            <div key={i} className="flex items-center gap-3 py-1.5">
-              <div className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] flex items-center justify-center shrink-0"><a.icon className="w-3 h-3 text-[var(--accent)]" /></div>
-              <p className="text-[12px] text-[var(--text-secondary)] flex-1">{a.text}</p>
-              <span className="text-[10px] text-[var(--text-tertiary)] shrink-0">{a.time}</span>
-            </div>
-          ))}
+      {/* Empty state CTA */}
+      {(stats?.clients === 0) && (
+        <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--accent)] rounded-2xl p-8 text-center">
+          <Building2 className="w-8 h-8 text-[var(--accent)] mx-auto mb-3" />
+          <h3 className="text-[16px] font-bold text-[var(--text-primary)]">Get Started</h3>
+          <p className="text-[12px] text-[var(--text-secondary)] mt-1 max-w-md mx-auto">
+            Add your first client to start managing their compliance, documents, and tasks.
+          </p>
+          <button onClick={() => onNavigate("clients")} className="mt-4 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer transition-colors">
+            Add First Client
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

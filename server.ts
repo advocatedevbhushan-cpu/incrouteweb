@@ -264,6 +264,218 @@ async function startServer() {
     }
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // ADMIN CRUD API ENDPOINTS (Raw SQL — no Prisma binary needed)
+  // ═══════════════════════════════════════════════════════════════
+
+  // Auth middleware for admin routes
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const jwt = require("jsonwebtoken");
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+      const decoded: any = jwt.verify(token, secret);
+      if (!["SUPER_ADMIN", "ADMIN", "TEAM_MEMBER"].includes(decoded.role)) {
+        return res.status(403).json({ error: "Insufficient permissions" });
+      }
+      req.user = decoded;
+      next();
+    } catch {
+      res.status(401).json({ error: "Invalid or expired token" });
+    }
+  };
+
+  // ─── DASHBOARD STATS ───
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [[clientCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `Client`");
+      const [[entityCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `Entity`");
+      const [[complianceCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `ComplianceTask` WHERE status NOT IN ('COMPLETED')");
+      const [[ticketCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `Ticket` WHERE status IN ('OPEN','IN_PROGRESS')");
+      const [[invoicePending]]: any = await conn.query("SELECT COALESCE(SUM(total),0) as amount FROM `Invoice` WHERE status IN ('PENDING','SENT','OVERDUE')");
+      const [[teamCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `User` WHERE role IN ('ADMIN','TEAM_MEMBER','SUPER_ADMIN')");
+      const [[taskCount]]: any = await conn.query("SELECT COUNT(*) as count FROM `Task` WHERE status NOT IN ('COMPLETED')");
+      
+      // Overdue compliance
+      const [overdueCompliance]: any = await conn.query(
+        "SELECT ct.id, ct.title, ct.dueDate, ct.assigneeId, e.name as entityName FROM `ComplianceTask` ct LEFT JOIN `Entity` e ON ct.entityId = e.id WHERE ct.status NOT IN ('COMPLETED') AND ct.dueDate < NOW() ORDER BY ct.dueDate ASC LIMIT 10"
+      );
+
+      // Recent activity
+      const [recentActivity]: any = await conn.query(
+        "SELECT id, type, title, details, createdAt FROM `Activity` ORDER BY createdAt DESC LIMIT 10"
+      );
+
+      await conn.end();
+      res.json({
+        stats: {
+          clients: clientCount.count,
+          entities: entityCount.count,
+          complianceTasks: complianceCount.count,
+          openTickets: ticketCount.count,
+          pendingInvoices: Number(invoicePending.amount),
+          teamMembers: teamCount.count,
+          activeTasks: taskCount.count
+        },
+        overdueCompliance,
+        recentActivity
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load stats", details: err.message });
+    }
+  });
+
+  // ─── CLIENTS CRUD ───
+  app.get("/api/admin/clients", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [clients]: any = await conn.query(
+        `SELECT c.*, 
+         (SELECT COUNT(*) FROM \`Entity\` WHERE clientId = c.id) as entityCount,
+         (SELECT AVG(complianceScore) FROM \`Entity\` WHERE clientId = c.id) as avgHealth
+         FROM \`Client\` c ORDER BY c.createdAt DESC`
+      );
+      await conn.end();
+      res.json({ clients });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load clients", details: err.message });
+    }
+  });
+
+  app.post("/api/admin/clients", async (req, res) => {
+    try {
+      const { companyName, contactName, contactEmail, contactPhone, industry, notes } = req.body;
+      if (!companyName || !contactName || !contactEmail) {
+        return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
+      }
+      const conn = await getPlatformConnection();
+      const id = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Client\` (id, companyName, contactName, contactEmail, contactPhone, industry, notes, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
+        [id, companyName, contactName, contactEmail, contactPhone || null, industry || null, notes || null, now, now]
+      );
+      await conn.end();
+      res.json({ success: true, id, message: "Client created" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to create client", details: err.message });
+    }
+  });
+
+  // ─── TASKS CRUD ───
+  app.get("/api/admin/tasks", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [tasks]: any = await conn.query(
+        `SELECT t.*, c.companyName as clientName FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id ORDER BY t.createdAt DESC`
+      );
+      await conn.end();
+      res.json({ tasks });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load tasks", details: err.message });
+    }
+  });
+
+  app.post("/api/admin/tasks", async (req, res) => {
+    try {
+      const { title, description, clientId, assigneeId, priority, dueDate } = req.body;
+      if (!title) return res.status(400).json({ error: "Title is required" });
+      const conn = await getPlatformConnection();
+      const id = "tsk_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Task\` (id, clientId, title, description, assigneeId, priority, status, dueDate, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
+        [id, clientId || null, title, description || null, assigneeId || null, priority || "MEDIUM", dueDate || null, now, now]
+      );
+      await conn.end();
+      res.json({ success: true, id, message: "Task created" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to create task", details: err.message });
+    }
+  });
+
+  app.patch("/api/admin/tasks/:id", async (req, res) => {
+    try {
+      const { status, assigneeId, priority } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = [`updatedAt = ?`];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); if (status === "COMPLETED") { sets.push("completedAt = ?"); vals.push(now); } }
+      if (assigneeId) { sets.push("assigneeId = ?"); vals.push(assigneeId); }
+      if (priority) { sets.push("priority = ?"); vals.push(priority); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Task\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update task", details: err.message });
+    }
+  });
+
+  // ─── COMPLIANCE CRUD ───
+  app.get("/api/admin/compliance", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [tasks]: any = await conn.query(
+        `SELECT ct.*, e.name as entityName, e.type as entityType, c.companyName as clientName
+         FROM \`ComplianceTask\` ct 
+         LEFT JOIN \`Entity\` e ON ct.entityId = e.id
+         LEFT JOIN \`Client\` c ON e.clientId = c.id
+         ORDER BY ct.dueDate ASC`
+      );
+      await conn.end();
+      res.json({ tasks });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load compliance tasks", details: err.message });
+    }
+  });
+
+  app.post("/api/admin/compliance", async (req, res) => {
+    try {
+      const { entityId, title, category, dueDate, priority, assigneeId, notes } = req.body;
+      if (!entityId || !title || !category || !dueDate) {
+        return res.status(400).json({ error: "entityId, title, category, and dueDate are required" });
+      }
+      const conn = await getPlatformConnection();
+      const id = "comp_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`ComplianceTask\` (id, entityId, title, category, dueDate, priority, status, assigneeId, notes, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`,
+        [id, entityId, title, category, dueDate, priority || "MEDIUM", assigneeId || null, notes || null, now, now]
+      );
+      await conn.end();
+      res.json({ success: true, id });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to create compliance task", details: err.message });
+    }
+  });
+
+  app.patch("/api/admin/compliance/:id", async (req, res) => {
+    try {
+      const { status, assigneeId, priority } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = [`updatedAt = ?`];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); if (status === "COMPLETED") { sets.push("completedAt = ?"); vals.push(now); } }
+      if (assigneeId) { sets.push("assigneeId = ?"); vals.push(assigneeId); }
+      if (priority) { sets.push("priority = ?"); vals.push(priority); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`ComplianceTask\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      await conn.end();
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update compliance task", details: err.message });
+    }
+  });
+
   // --- MySQL Connection Pool Setup ---
   let dbPool: mysql.Pool | null = null;
   const isDbConfigured = !!(
