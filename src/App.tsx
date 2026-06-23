@@ -307,7 +307,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative">
+    <div className="min-h-screen text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative homepage-shell">
       <ScrollToTop />
       {/* Executive Backdrop Pattern Layers */}
       <div className="executive-glow-1" />
@@ -332,7 +332,7 @@ export default function App() {
       <Breadcrumb />
 
       {/* Main Container Wrapper */}
-      <main className="flex-1 w-full overflow-hidden flex flex-col bg-brand-bg">
+      <main className="flex-1 w-full overflow-hidden flex flex-col">
         <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" /></div>}>
         <AnimatePresence mode="wait">
           {activeTab === "services" && (

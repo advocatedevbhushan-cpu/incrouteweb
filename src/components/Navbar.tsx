@@ -45,8 +45,8 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         scrolled
           ? "border-b border-[rgba(108,124,255,0.10)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
           : "border-b border-transparent"
-      } backdrop-blur-[18px]`}
-      style={{ background: "rgba(255,255,255,0.78)" }}
+      }`}
+      style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }}
     >
       <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
