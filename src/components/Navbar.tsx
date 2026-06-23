@@ -43,8 +43,8 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     <nav
       className={`sticky top-0 z-50 transition-all duration-150 h-[64px] sm:h-[72px] flex items-center ${
         scrolled
-          ? "bg-[var(--bg-surface)]/95 border-b border-[var(--border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-          : "bg-[var(--bg-surface)]/80 border-b border-transparent"
+          ? "bg-white/95 dark:bg-[#0B0E1A]/95 border-b border-[var(--border-subtle)] shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+          : "bg-white/80 dark:bg-[#0B0E1A]/80 border-b border-transparent"
       } backdrop-blur-xl`}
     >
       <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
@@ -163,7 +163,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-[64px] sm:top-[72px] left-0 right-0 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
+            className="absolute top-[64px] sm:top-[72px] left-0 right-0 bg-white dark:bg-[#0B0E1A] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
           >
             <div className="p-4 space-y-1 max-h-[75vh] overflow-y-auto">
               {/* Solutions accordion */}
@@ -224,7 +224,7 @@ function NavDropdown({ label, active, open, onOpen, onClose, children }: { label
             transition={{ duration: 0.12 }}
             className="absolute top-full left-0 pt-2 z-50"
           >
-            <div className="w-[280px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-1.5 space-y-0.5">
+            <div className="w-[280px] bg-white dark:bg-[#1A1E2E] border border-[var(--border-subtle)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-1.5 space-y-0.5">
               {children}
             </div>
           </motion.div>

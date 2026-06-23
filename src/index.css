@@ -120,8 +120,8 @@ nav,
    UTILITIES
    ═══════════════════════════════════════════════════════ */
 
-/* Premium card system for light mode */
-[data-theme="light"] .bg-\[var\(--bg-surface\)\] {
+/* Premium card system for light mode — applied via specific classes */
+.glass-card {
   backdrop-filter: blur(18px);
   box-shadow: 0 10px 35px rgba(40, 40, 80, 0.06);
 }
