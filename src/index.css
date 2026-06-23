@@ -83,18 +83,18 @@
 }
 
 [data-theme="light"] {
-  --bg-page: #FAFAFD;
+  --bg-page: #FBFBFE;
   --bg-surface: rgba(255, 255, 255, 0.86);
-  --bg-surface-alt: #F5F2FF;
+  --bg-surface-alt: #F6F4FF;
   --border-subtle: rgba(108, 124, 255, 0.12);
-  --text-primary: #151728;
-  --text-secondary: #4A4E68;
-  --text-tertiary: #7B7F99;
-  --accent: #6C7CFF;
-  --accent-deep: #5563E8;
-  --accent-soft: rgba(108, 124, 255, 0.08);
-  --gradient-start: #6C7CFF;
-  --gradient-end: #9C6DFF;
+  --text-primary: #111322;
+  --text-secondary: #35384D;
+  --text-tertiary: #5F637A;
+  --accent: #5B6CFF;
+  --accent-deep: #4A58E8;
+  --accent-soft: rgba(108, 124, 255, 0.07);
+  --gradient-start: #5B6CFF;
+  --gradient-end: #8B5CF6;
   --success: #1F9D71;
   --warning: #C77C1F;
   --on-gradient-text: #FFFFFF;
@@ -134,9 +134,9 @@ nav,
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(108,124,255,0.18) 0%, transparent 60%);
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(108,124,255,0.16) 0%, transparent 62%);
   filter: blur(80px);
   pointer-events: none;
   z-index: -1;
@@ -246,11 +246,11 @@ a, button, input, select, textarea {
   height: 50vw;
   max-width: 700px;
   max-height: 700px;
-  background: radial-gradient(circle, rgba(108, 124, 255, 0.28) 0%, transparent 55%);
+  background: radial-gradient(circle, rgba(108, 124, 255, 0.14) 0%, transparent 55%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
-  filter: blur(70px);
+  filter: blur(80px);
 }
 
 .executive-glow-2 {
@@ -261,11 +261,11 @@ a, button, input, select, textarea {
   height: 45vw;
   max-width: 650px;
   max-height: 650px;
-  background: radial-gradient(circle, rgba(156, 109, 255, 0.22) 0%, transparent 52%);
+  background: radial-gradient(circle, rgba(156, 109, 255, 0.10) 0%, transparent 52%);
   border-radius: 50%;
   z-index: -1;
   pointer-events: none;
-  filter: blur(80px);
+  filter: blur(90px);
 }
 
 .executive-grid {
@@ -360,9 +360,9 @@ a, button, input, select, textarea {
 /* Global homepage gradient wrapper */
 [data-theme="light"] .homepage-shell {
   background: 
-    radial-gradient(circle at 12% 0%, rgba(108,124,255,0.30), transparent 32%),
-    radial-gradient(circle at 88% 0%, rgba(156,109,255,0.24), transparent 34%),
-    linear-gradient(180deg, #DED8FF 0%, #ECE8FF 18%, #F6F4FC 42%, #FFFFFF 78%, #FFFFFF 100%);
+    radial-gradient(circle at 18% 4%, rgba(108,124,255,0.18), transparent 28%),
+    radial-gradient(circle at 82% 6%, rgba(156,109,255,0.14), transparent 30%),
+    linear-gradient(180deg, #F3F0FF 0%, #F8F7FC 32%, #FBFBFE 62%, #FFFFFF 100%);
 }
 [data-theme="dark"] .homepage-shell {
   background: var(--bg-page);

@@ -1691,7 +1691,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[48%_52%] gap-4 lg:gap-6 items-start pt-[64px] pb-[48px]"
+            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-[72px] pb-[56px]"
           >
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
@@ -1749,9 +1749,9 @@ export default function RegistrationServices({
             </div>
 
             {/* RIGHT: Dashboard Mockup */}
-            <div className="relative hidden lg:block mt-4">
+            <div className="relative hidden lg:block mt-2">
               <div className="dashboard-halo" />
-              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.15)] shadow-[0_36px_90px_rgba(25,25,60,0.22)] flex scale-[1.04] origin-top-right" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
+              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.12)] shadow-[0_36px_90px_rgba(28,32,64,0.20),0_10px_30px_rgba(108,124,255,0.10)] flex scale-[1.05] origin-top-right" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
                 <div className="w-[140px] shrink-0 bg-[#0F172A]/70 border-r border-[#2C2740] p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
@@ -1822,9 +1822,9 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[24px] pb-4"
+            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[28px] pb-4"
           >
-            <div className="premium-advisor-card border rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-[0_20px_60px_rgba(30,30,60,0.10)] space-y-5">
+            <div className="premium-advisor-card border border-[rgba(108,124,255,0.12)] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-[0_24px_70px_rgba(40,40,80,0.10)] space-y-5" style={{ background: "rgba(255,255,255,0.88)" }}>
               {/* Header */}
               <div className="flex items-center gap-2 text-[10px] font-medium tracking-wider text-[var(--text-secondary)] uppercase text-left pl-1">
                 <Search className="w-3.5 h-3.5 text-[var(--accent)]" /> Find the Right Business Setup
