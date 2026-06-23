@@ -41,12 +41,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-150 h-[64px] sm:h-[72px] flex items-center ${
+      className={`sticky top-0 z-[1000] transition-all duration-150 h-[72px] flex items-center ${
         scrolled
-          ? "border-b border-[rgba(108,124,255,0.10)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+          ? "border-b border-[rgba(108,124,255,0.08)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
           : "border-b border-transparent"
       }`}
-      style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)" }}
+      style={{ background: "rgba(255,255,255,0.32)", backdropFilter: "blur(22px)", WebkitBackdropFilter: "blur(22px)" }}
     >
       <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
