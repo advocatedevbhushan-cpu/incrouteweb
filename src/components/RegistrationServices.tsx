@@ -2447,7 +2447,7 @@ export default function RegistrationServices({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full premium-hero-card border rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden flex flex-col justify-between transition-all duration-300"
+              className="relative w-full bg-[#15131F] border border-[#2C2740] rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 text-white"
             >
               {/* Subtle decorative glow backdrops */}
               <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-brand-gold/10 blur-[80px] rounded-full pointer-events-none" />
@@ -2767,11 +2767,11 @@ export default function RegistrationServices({
     
       {/* Centered Glassmorphic Intake Form Modal */}
       {showOnboardModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
             onClick={() => setShowOnboardModal(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" 
+            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300" 
           />
 
           {/* Form Box */}
@@ -2823,7 +2823,7 @@ export default function RegistrationServices({
 
       {/* Premium Glassmorphic Trust & Guarantees Modal */}
       {showTrustModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           {/* Backdrop blur */}
           <div 
             onClick={() => setShowTrustModal(false)}
@@ -2836,7 +2836,7 @@ export default function RegistrationServices({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-3xl premium-hero-card border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl z-10 overflow-hidden text-left"
+            className="relative w-full max-w-3xl bg-[#15131F] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl z-10 overflow-hidden text-left"
           >
             {/* Glow effect */}
             <div className="absolute top-[-20%] right-[-20%] w-80 h-80 bg-brand-gold/15 blur-[60px] rounded-full pointer-events-none" />

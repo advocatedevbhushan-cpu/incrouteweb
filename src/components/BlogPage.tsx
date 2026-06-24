@@ -1131,7 +1131,7 @@ export default function BlogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           >
             <motion.div 
               initial={{ scale: 0.92, y: 15, opacity: 0 }}
@@ -1206,7 +1206,7 @@ export default function BlogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-[2000] flex items-start justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
           >
             <motion.div 
               initial={{ scale: 0.93, y: 15, opacity: 0 }}
@@ -1571,7 +1571,7 @@ export default function BlogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
           >
             <motion.div 
               initial={{ scale: 0.92, y: 15, opacity: 0 }}

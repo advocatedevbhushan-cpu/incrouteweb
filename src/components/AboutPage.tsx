@@ -270,7 +270,7 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
       {/* ═══ CTA BANNER ═══ */}
       <ScrollReveal
         variant="zoom"
-        className="max-w-4xl mx-auto premium-hero-card border rounded-2xl p-10 text-center space-y-6 relative overflow-hidden"
+        className="max-w-4xl mx-auto bg-[#15131F] border border-[#2C2740] rounded-2xl p-10 text-center space-y-6 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-48 h-48 bg-brand-gold/5 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#2B5B84]/5 blur-3xl rounded-full pointer-events-none" />

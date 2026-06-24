@@ -135,14 +135,14 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
 
       {/* Overview */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 sm:p-6">
-        <h3 className="text-sm font-semibold text-white mb-3">Overview</h3>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Overview</h3>
         <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.fullDetails.overview}</p>
       </div>
 
       {/* Requirements & Documents side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3">Requirements</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Requirements</h3>
           <ul className="space-y-2">
             {item.fullDetails.requirements.map((r, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] mt-0.5">•</span>{r}</li>
@@ -150,7 +150,7 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
           </ul>
         </div>
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3">Documents Required</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Documents Required</h3>
           <ul className="space-y-2">
             {item.fullDetails.documents.map((d, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] mt-0.5">📄</span>{d}</li>
@@ -161,7 +161,7 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
 
       {/* Steps */}
       <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 sm:p-6">
-        <h3 className="text-sm font-semibold text-white mb-4">Steps</h3>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Steps</h3>
         <ol className="space-y-3">
           {item.fullDetails.steps.map((s, i) => (
             <li key={i} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
@@ -178,7 +178,7 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
           <p className="text-sm text-[var(--text-secondary)]"><span className="text-[var(--accent)] font-semibold">� Pro Tip:</span> {item.fullDetails.tip}</p>
         </div>
         <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20">
-          <p className="text-sm text-red-300"><span className="font-semibold">⚠️ Penalty:</span> {item.fullDetails.penalty}</p>
+          <p className="text-sm text-red-700 dark:text-red-300"><span className="font-semibold">⚠️ Penalty:</span> {item.fullDetails.penalty}</p>
         </div>
       </div>
 
@@ -193,8 +193,8 @@ function ComplianceDetail({ item, onBack }: { item: ComplianceItem; onBack: () =
 /* ═══ DEMO MODAL ═══ */
 function DemoModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
       <div className="relative w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold text-[var(--text-primary)]">Compliance Tracking Demo</h2>
@@ -204,8 +204,8 @@ function DemoModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-3">
           {[{ task: "DIR-3 KYC", due: "Sep 30", progress: 85 }, { task: "GSTR-3B Filing", due: "Jul 20", progress: 60 }, { task: "AOC-4 Annual", due: "Oct 30", progress: 20 }].map((t, i) => (
             <div key={i} className="p-3 rounded-xl bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] space-y-2">
-              <div className="flex justify-between text-sm"><span className="text-white font-medium">{t.task}</span><span className="text-[var(--text-tertiary)]">Due: {t.due}</span></div>
-              <div className="w-full h-1.5 rounded-full bg-[var(--bg-surface-alt)]"><div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${t.progress}%` }} /></div>
+              <div className="flex justify-between text-sm"><span className="text-[var(--text-primary)] font-semibold">{t.task}</span><span className="text-[var(--text-tertiary)]">Due: {t.due}</span></div>
+              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800"><div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${t.progress}%` }} /></div>
             </div>
           ))}
         </div>
@@ -225,8 +225,8 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
     { id: "startup", name: "Startup (DPIIT)", desc: "Recognized startups" },
   ];
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
       <div className="relative w-full max-w-md bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 sm:p-8 space-y-5 animate-[fadeScale_0.2s_ease-out]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold text-[var(--text-primary)]">Select Your Business Type</h2>
@@ -258,14 +258,14 @@ function ComplianceCard({ item, onClick }: { item: ComplianceItem; onClick: () =
           <span className="text-xs font-semibold bg-[var(--accent-soft)] text-[var(--accent)] px-2.5 py-1 rounded-md tracking-wide">{item.days}</span>
           <span className="text-xs text-[var(--text-tertiary)] font-mono">{item.step}</span>
         </div>
-        <h3 className="text-lg font-semibold text-white leading-snug">{item.title}</h3>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] leading-snug">{item.title}</h3>
         <p className="uppercase text-[10px] tracking-widest text-[var(--accent)] mt-1.5 font-medium">{item.subtitle}</p>
         <p className="text-sm text-[var(--text-tertiary)] mt-3 leading-relaxed">{item.shortDescription}</p>
         <div className="mt-4 p-3 rounded-lg bg-[var(--accent-soft)] border border-[var(--accent)]/20">
           <p className="text-xs text-[var(--text-secondary)]"><span className="text-[var(--accent)] font-semibold">Pro Tip:</span> {item.fullDetails.tip}</p>
         </div>
         <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-          <p className="text-xs text-red-400"><span className="font-semibold">Penalty:</span> {item.fullDetails.penalty.substring(0, 80)}...</p>
+          <p className="text-xs text-red-700 dark:text-red-400"><span className="font-semibold">Penalty:</span> {item.fullDetails.penalty.substring(0, 80)}...</p>
         </div>
       </div>
       <p className="mt-5 text-sm text-[var(--accent)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
