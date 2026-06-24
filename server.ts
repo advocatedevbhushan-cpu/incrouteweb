@@ -10,15 +10,6 @@ import multer from "multer";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// Auth routes — wrapped in try/catch to prevent crash if Prisma not generated
-let authRoutes: any = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  authRoutes = require("./src/server/auth/routes").default;
-} catch (e: any) {
-  console.warn("⚠️ Auth routes not loaded:", e.message?.substring(0, 80));
-}
-
 dotenv.config();
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -48,12 +39,6 @@ async function startServer() {
   // Basic Middlewares
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-
-  // Auth API Routes — DISABLED: Prisma binary engine not available on Hostinger shared hosting
-  // Using raw SQL auth endpoints below instead
-  // if (authRoutes) {
-  //   app.use("/api/auth", authRoutes);
-  // }
 
   // Health check (always works)
   app.get("/api/health", async (req, res) => {

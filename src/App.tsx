@@ -12,7 +12,7 @@ const NameFeasibilityChecker = lazy(() => import("./components/NameFeasibilityCh
 const BlogPage = lazy(() => import("./components/BlogPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
 const AuthPortal = lazy(() => import("./components/AuthPortal"));
-const Login = lazy(() => import("./components/Login"));
+const Login = lazy(() => import("./components/LoginPage")); // consolidated login
 const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
 const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
 const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
@@ -25,7 +25,6 @@ const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
 const EntityComparison = lazy(() => import("./components/EntityComparison"));
 const ServiceImpactDashboard = lazy(() => import("./components/ServiceImpactDashboard"));
 const ComplianceFlowchart = lazy(() => import("./components/ComplianceFlowchart"));
-const PinnedTimeline = lazy(() => import("./components/PinnedTimeline"));
 const TestimonialsSection = lazy(() => import("./components/TestimonialsSection"));
 const TestimonialCarousel = lazy(() => import("./components/TestimonialCarousel"));
 const ContactFormWidget = lazy(() => import("./components/ContactFormWidget"));
@@ -350,7 +349,7 @@ export default function App() {
                 prefilledEntityType={prefilledEntityType}
               />
               {/* Live Testimonial Carousel */}
-              <div className="pb-12 w-full mt-8">
+              <div className="pb-4 w-full mt-2">
                 <TestimonialCarousel setActiveTab={setActiveTab} />
               </div>
             </motion.div>
@@ -721,57 +720,6 @@ export default function App() {
             </motion.div>
           )}
 
-          {activeTab === "login" && (
-            <motion.div
-              key="login"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full"
-            >
-              <LoginPage setActiveTab={setActiveTab} />
-            </motion.div>
-          )}
-
-          {activeTab === "dashboard-customer" && (
-            <motion.div
-              key="dashboard-customer"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
-            >
-              <CustomerDashboard />
-            </motion.div>
-          )}
-
-          {activeTab === "dashboard-partner" && (
-            <motion.div
-              key="dashboard-partner"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
-            >
-              <PartnerDashboard />
-            </motion.div>
-          )}
-
-          {activeTab === "dashboard-partner-customer-detail" && (
-            <motion.div
-              key="dashboard-partner-customer-detail"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
-            >
-              <PartnerCustomerDetail customerId={routeParams.id} />
-            </motion.div>
-          )}
 
           {activeTab === "portal" && (
             <motion.div

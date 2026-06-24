@@ -83,16 +83,16 @@
 }
 
 [data-theme="light"] {
-  --bg-page: #FBFBFE;
-  --bg-surface: rgba(255, 255, 255, 0.86);
-  --bg-surface-alt: #F6F4FF;
-  --border-subtle: rgba(108, 124, 255, 0.12);
-  --text-primary: #111322;
-  --text-secondary: #35384D;
-  --text-tertiary: #5F637A;
+  --bg-page: #FAFAFD;
+  --bg-surface: rgba(255, 255, 255, 0.90);
+  --bg-surface-alt: #F0EEFF;
+  --border-subtle: rgba(91, 108, 255, 0.13);
+  --text-primary: #0F1128;
+  --text-secondary: #323452;
+  --text-tertiary: #666880;
   --accent: #5B6CFF;
   --accent-deep: #4A58E8;
-  --accent-soft: rgba(108, 124, 255, 0.07);
+  --accent-soft: rgba(91, 108, 255, 0.08);
   --gradient-start: #5B6CFF;
   --gradient-end: #8B5CF6;
   --success: #1F9D71;
@@ -122,10 +122,15 @@ nav,
 
 /* Premium card system for light mode — applied via specific classes */
 .glass-card {
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(108, 124, 255, 0.12);
-  box-shadow: 0 16px 45px rgba(40, 40, 80, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(91, 108, 255, 0.14);
+  box-shadow: 0 16px 45px rgba(60, 50, 120, 0.10);
+}
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(91, 108, 255, 0.14);
+  box-shadow: 0 12px 40px rgba(60, 50, 120, 0.10);
 }
 
 /* Dashboard halo glow — light behind dashboard in hero */
@@ -229,6 +234,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+[data-theme="light"] body {
+  background: #FFFFFF;
 }
 
 a, button, input, select, textarea {
@@ -352,21 +361,283 @@ a, button, input, select, textarea {
   border-radius: 28px;
 }
 
-/* Hero gradient background for light mode */
+/* Hero gradient background — replaced by homepage-shell */
 [data-theme="light"] .hero-gradient-bg {
-  display: none; /* Replaced by homepage-shell gradient */
+  display: none;
 }
 
-/* Global homepage gradient wrapper */
+/* ═══════════════════════════════════════════════════════
+   HOMEPAGE SHELL — Full-page gradient surface
+   Header + Hero + sections all share this canvas
+   ═══════════════════════════════════════════════════════ */
+
+/* Make html/body/root transparent so .homepage-shell shows through */
+[data-theme="light"] body,
+[data-theme="light"] #root,
+[data-theme="light"] main,
+[data-theme="light"] .homepage,
+[data-theme="light"] .hero-section,
+[data-theme="light"] .navbar,
+[data-theme="light"] .header-wrapper,
+[data-theme="light"] .navigation-wrapper {
+  background: transparent !important;
+}
+
+/* Hide ambient glow layers in light — gradient handles ambience */
+[data-theme="light"] .executive-glow-1,
+[data-theme="light"] .executive-glow-2,
+[data-theme="light"] .executive-grid,
+[data-theme="light"] .hero-gradient-bg {
+  display: none !important;
+}
+
+/* THE GRADIENT — rich lavender periwinkle hero, fades to white */
 [data-theme="light"] .homepage-shell {
-  background: 
-    radial-gradient(circle at 18% 4%, rgba(108,124,255,0.18), transparent 28%),
-    radial-gradient(circle at 82% 6%, rgba(156,109,255,0.14), transparent 30%),
-    linear-gradient(180deg, #F3F0FF 0%, #F8F7FC 32%, #FBFBFE 62%, #FFFFFF 100%);
+  background:
+    radial-gradient(ellipse 80% 55% at 8% -5%, rgba(91,108,255,0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 92% -8%, rgba(139,92,246,0.22) 0%, transparent 52%),
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(120,100,255,0.12) 0%, transparent 45%),
+    linear-gradient(
+      180deg,
+      #DBD7FF 0%,
+      #E5E2FF 8%,
+      #EDEBFF 18%,
+      #F3F1FF 32%,
+      #F8F7FF 50%,
+      #FBFAFE 68%,
+      #FDFCFF 84%,
+      #FFFFFF 100%
+    ) !important;
 }
+
 [data-theme="dark"] .homepage-shell {
-  background: var(--bg-page);
+  background: var(--bg-page) !important;
 }
+
+/* ═══ SITE HEADER — frosted glass over gradient ═══ */
+.site-header {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.site-header.scrolled-nav {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(91, 108, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(91, 108, 255, 0.04) !important;
+}
+
+[data-theme="dark"] .site-header.scrolled-nav {
+  background: rgba(21, 19, 31, 0.45) !important;
+  border-bottom: 1px solid rgba(157, 133, 242, 0.12) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Logo container & visibility styling */
+.logo-wrapper {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+[data-theme="dark"] .logo-wrapper {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.logo-text-inc {
+  color: #111322 !important;
+  transition: color 0.25s ease !important;
+}
+
+[data-theme="dark"] .logo-text-inc {
+  color: #F2EFFB !important;
+}
+
+.logo-text-route {
+  color: #6C63FF !important;
+  transition: color 0.25s ease !important;
+}
+
+[data-theme="dark"] .logo-text-route {
+  color: #9D85F2 !important;
+}
+
+.logo-tagline {
+  color: #6B6F86 !important;
+  transition: color 0.25s ease !important;
+}
+
+[data-theme="dark"] .logo-tagline {
+  color: #9590AD !important;
+}
+
+/* Navbar links typography */
+.nav-link {
+  font-family: Inter, Satoshi, system-ui, sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 550 !important;
+  letter-spacing: -0.012em !important;
+  position: relative !important;
+  transition: color 0.25s ease !important;
+}
+
+.nav-link.active-nav {
+  color: #5B6CFF !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .nav-link.active-nav {
+  color: #9D85F2 !important;
+}
+
+.nav-link.inactive-nav {
+  color: #3B3E52 !important;
+}
+
+[data-theme="dark"] .nav-link.inactive-nav {
+  color: #A9A3C2 !important;
+}
+
+.nav-link:hover {
+  color: #5B6CFF !important;
+}
+
+[data-theme="dark"] .nav-link:hover {
+  color: #9D85F2 !important;
+}
+
+/* Active Nav Underline & Smooth Center Expand Hover */
+.nav-link::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 16px !important;
+  right: 16px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, #5B6CFF, #8B5CF6) !important;
+  transform: scaleX(0) !important;
+  transform-origin: center !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+[data-theme="dark"] .nav-link::after {
+  background: linear-gradient(90deg, #9D85F2, #E08AEC) !important;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1) !important;
+}
+
+.nav-link.active-nav::after {
+  transform: scaleX(1) !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, #5B6CFF, #8B5CF6) !important;
+}
+
+[data-theme="dark"] .nav-link.active-nav::after {
+  background: linear-gradient(90deg, #9D85F2, #E08AEC) !important;
+}
+
+/* Login Button */
+.nav-login-btn {
+  height: 38px !important;
+  padding: 0 18px !important;
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  border: 1px solid rgba(91, 108, 255, 0.18) !important;
+  color: #242638 !important;
+  font-weight: 600 !important;
+  font-family: Inter, Satoshi, system-ui, sans-serif !important;
+  transition: all 0.25s ease !important;
+}
+
+[data-theme="dark"] .nav-login-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(157, 133, 242, 0.20) !important;
+  color: #F2EFFB !important;
+}
+
+.nav-login-btn:hover {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(91, 108, 255, 0.35) !important;
+  color: #242638 !important;
+}
+
+[data-theme="dark"] .nav-login-btn:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: rgba(157, 133, 242, 0.35) !important;
+  color: #F2EFFB !important;
+}
+
+/* Book Consultation Button */
+.book-consultation-button {
+  height: 38px !important;
+  padding: 0 18px !important;
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #FFFFFF !important;
+  background: linear-gradient(135deg, #5B6CFF 0%, #7C5CFF 55%, #8B5CF6 100%) !important;
+  box-shadow:
+    0 8px 20px rgba(91, 108, 255, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: Inter, Satoshi, system-ui, sans-serif !important;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+  animation: premiumPulse 3s ease-in-out infinite !important;
+}
+
+@keyframes premiumPulse {
+  0%, 100% {
+    box-shadow:
+      0 8px 20px rgba(91, 108, 255, 0.24),
+      0 0 0 0 rgba(91, 108, 255, 0.20);
+    transform: translateY(0);
+  }
+
+  50% {
+    box-shadow:
+      0 10px 24px rgba(91, 108, 255, 0.30),
+      0 0 0 5px rgba(91, 108, 255, 0.06);
+    transform: translateY(-1px);
+  }
+}
+
+.book-consultation-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 28px rgba(91, 108, 255, 0.32) !important;
+}
+
+/* Arrow transition inside Book Consultation */
+.book-consultation-button .cta-arrow {
+  transition: transform 0.25s ease-in-out !important;
+}
+
+.book-consultation-button:hover .cta-arrow {
+  transform: translateX(4px) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-consultation-button {
+    animation: none !important;
+  }
+}
+
 
 .premium-advisor-card {
   background: var(--bg-surface);
@@ -775,7 +1046,7 @@ html, body { overflow-x: hidden; max-width: 100vw; }
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding: 2.5rem 0;
+  padding: 1.25rem 0;
   display: flex;
   align-items: center;
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);

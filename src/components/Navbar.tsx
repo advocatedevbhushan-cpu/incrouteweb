@@ -41,30 +41,29 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   return (
     <nav
-      className={`sticky top-0 z-[1000] transition-all duration-150 h-[72px] flex items-center ${
+      className={`site-header sticky top-0 z-[1000] transition-all duration-250 h-[72px] flex items-center ${
         scrolled
-          ? "border-b border-[rgba(108,124,255,0.10)] shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+          ? "scrolled-nav border-b border-[rgba(91,108,255,0.10)] shadow-[0_1px_12px_rgba(91,108,255,0.06)]"
           : "border-b border-transparent"
       }`}
-      style={{ background: "rgba(255,255,255,0.62)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
     >
       <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
         {/* ─── Left: Logo + Nav ─── */}
         <div className="flex items-center gap-8">
           {/* Logo */}
-          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer">
+          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
             <div className="w-9 h-9 rounded-full overflow-hidden">
               <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
             </div>
             <div className="flex flex-col select-none leading-none">
-              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight">
-                INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
+              <span className="text-[16px] font-extrabold logo-text-inc tracking-tight">
+                INC<span className="logo-text-route font-bold italic">route</span>
               </span>
               <div className="flex items-center gap-1 mt-[3px]">
-                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
-                <span className="text-[8px] text-[var(--text-tertiary)] tracking-[0.18em] uppercase font-semibold">Make It Right</span>
-                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
+                <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
+                <span className="text-[8px] logo-tagline tracking-[0.18em] uppercase font-semibold">Make It Right</span>
+                <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
               </div>
             </div>
           </a>
@@ -131,7 +130,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <a
             href="/login"
             onClick={(e) => nav(e, "login")}
-            className="hidden lg:flex items-center h-[44px] px-4 text-[13px] font-semibold text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:text-[var(--accent)] rounded-xl transition-all cursor-pointer whitespace-nowrap"
+            className="hidden lg:flex items-center nav-login-btn cursor-pointer whitespace-nowrap"
           >
             Login
           </a>
@@ -140,9 +139,9 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <a
             href="/contact"
             onClick={(e) => nav(e, "contact")}
-            className="hidden lg:flex items-center h-[44px] px-5 text-[13px] font-semibold text-[var(--on-gradient-text)] bg-[var(--accent)] hover:bg-[var(--accent-deep)] rounded-xl transition-all cursor-pointer whitespace-nowrap gap-1.5"
+            className="hidden lg:flex items-center book-consultation-button cursor-pointer whitespace-nowrap gap-1.5"
           >
-            Book Consultation <ArrowRight className="w-3.5 h-3.5" />
+            Book Consultation <ArrowRight className="w-3.5 h-3.5 cta-arrow" />
           </a>
 
           {/* Mobile hamburger */}
@@ -201,9 +200,8 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
 function NavLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
   return (
-    <a href="#" onClick={onClick} className={`relative px-4 py-2 text-[14px] font-medium transition-colors cursor-pointer whitespace-nowrap ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+    <a href="#" onClick={onClick} className={`nav-link px-4 py-2 cursor-pointer whitespace-nowrap ${active ? "active-nav" : "inactive-nav"}`}>
       {children}
-      {active && <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-[var(--accent)] rounded-full" />}
     </a>
   );
 }
@@ -211,10 +209,9 @@ function NavLink({ children, onClick, active }: { children: string; onClick: (e:
 function NavDropdown({ label, active, open, onOpen, onClose, children }: { label: string; active: boolean; open: boolean; onOpen: () => void; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
-      <button className={`relative flex items-center gap-1 px-4 py-2 text-[14px] font-medium transition-colors cursor-pointer whitespace-nowrap ${active ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+      <button className={`nav-link flex items-center gap-1 px-4 py-2 cursor-pointer whitespace-nowrap ${active ? "active-nav" : "inactive-nav"}`}>
         {label}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
-        {active && <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-[var(--accent)] rounded-full" />}
       </button>
       <AnimatePresence>
         {open && (
@@ -246,7 +243,7 @@ function DropdownItem({ onClick, title, desc, active }: { onClick: (e: React.Mou
 
 function MobileLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
   return (
-    <a href="#" onClick={onClick} className={`block px-4 py-3 rounded-xl text-[14px] font-medium cursor-pointer transition-colors ${active ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-primary)] hover:bg-[var(--accent-soft)]"}`}>
+    <a href="#" onClick={onClick} className={`block px-4 py-3 rounded-xl text-[14px] font-medium cursor-pointer transition-colors ${active ? "bg-[var(--accent-soft)] text-[var(--accent)] nav-link-active" : "text-[var(--text-primary)] hover:bg-[var(--accent-soft)] nav-link-inactive"}`}>
       {children}
     </a>
   );
@@ -257,14 +254,14 @@ function MobileAccordion({ label, items, activeTab, onNav }: { label: string; it
   const isActive = items.some(i => i.tab === activeTab);
   return (
     <div className="border border-[var(--border-subtle)] rounded-xl overflow-hidden">
-      <button onClick={() => setOpen(!open)} className={`w-full flex items-center justify-between px-4 py-3 text-[14px] font-medium cursor-pointer transition-colors ${isActive ? "text-[var(--accent)]" : "text-[var(--text-primary)]"}`}>
+      <button onClick={() => setOpen(!open)} className={`w-full flex items-center justify-between px-4 py-3 text-[14px] font-medium cursor-pointer transition-colors ${isActive ? "text-[var(--accent)] nav-link-active" : "text-[var(--text-primary)] nav-link-inactive"}`}>
         {label}
         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="px-2 pb-2 space-y-0.5">
           {items.map(item => (
-            <a key={item.tab} href="#" onClick={(e) => onNav(e, item.tab)} className={`block px-3 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer transition-colors ${activeTab === item.tab ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"}`}>
+            <a key={item.tab} href="#" onClick={(e) => onNav(e, item.tab)} className={`block px-3 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer transition-colors ${activeTab === item.tab ? "bg-[var(--accent-soft)] text-[var(--accent)] nav-link-active" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] nav-link-inactive"}`}>
               {item.label}
             </a>
           ))}

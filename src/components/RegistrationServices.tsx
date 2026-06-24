@@ -1691,7 +1691,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-[72px] pb-[56px]"
+            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-5 pb-5 hero-section"
           >
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
@@ -1751,66 +1751,66 @@ export default function RegistrationServices({
             {/* RIGHT: Dashboard Mockup */}
             <div className="relative hidden lg:block mt-2">
               <div className="dashboard-halo" />
-              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.12)] shadow-[0_36px_90px_rgba(28,32,64,0.20),0_10px_30px_rgba(108,124,255,0.10)] flex scale-[1.05] origin-top-right" style={{ background: "linear-gradient(135deg, #14213D 0%, #1B263B 100%)" }}>
-                <div className="w-[140px] shrink-0 bg-[#0F172A]/70 border-r border-[#2C2740] p-4 flex flex-col">
+              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.12)] shadow-[0_36px_90px_rgba(28,32,64,0.06),0_10px_30px_rgba(108,124,255,0.04)] flex scale-[1.05] origin-top-right bg-white" style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)" }}>
+                <div className="w-[140px] shrink-0 bg-[#F8FAFC] border-r border-slate-100 p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
-                    <span className="text-[11px] font-bold text-[#F2EFFB] tracking-tight">INC<span className="font-normal italic text-[#A78BFA]">route</span></span>
+                    <span className="text-[11px] font-bold text-slate-800 tracking-tight">INC<span className="font-normal italic text-[var(--accent)]">route</span></span>
                   </div>
                   <nav className="space-y-0.5 flex-1">
                     {[{ label: "Overview", active: true }, { label: "My Entities" }, { label: "Compliance" }, { label: "Documents" }, { label: "Trademarks" }, { label: "Calendar" }, { label: "Consultations" }, { label: "Reports" }, { label: "Settings" }].map((item, i) => (
-                      <div key={i} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-medium ${item.active ? "bg-[var(--accent)]/15 text-[#F2EFFB]" : "text-[#A9A3C2]"}`}>
+                      <div key={i} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors ${item.active ? "bg-[var(--accent)]/10 text-[var(--accent)] font-semibold" : "text-slate-500 hover:text-slate-800"}`}>
                         {item.label}
                       </div>
                     ))}
                   </nav>
-                  <div className="flex items-center gap-2 pt-3 mt-3 border-t border-[#2C2740]">
+                  <div className="flex items-center gap-2 pt-3 mt-3 border-t border-slate-100">
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
                     <div>
-                      <p className="text-[9px] font-semibold text-[#F2EFFB] leading-tight">Client Admin</p>
-                      <p className="text-[7px] text-[#A9A3C2]">Your Company</p>
+                      <p className="text-[9px] font-semibold text-slate-800 leading-tight">Client Admin</p>
+                      <p className="text-[7px] text-slate-400">Your Company</p>
                     </div>
                   </div>
                 </div>
                 <div className="flex-1 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[13px] font-bold text-[#F2EFFB] tracking-tight">Business Command Center</p>
-                      <p className="text-[9px] text-[#A9A3C2] mt-0.5">Manage compliance, documents & growth from one platform.</p>
+                      <p className="text-[13px] font-bold text-slate-800 tracking-tight">Business Command Center</p>
+                      <p className="text-[9px] text-slate-400 mt-0.5">Manage compliance, documents & growth from one platform.</p>
                     </div>
-                    <span className="text-[8px] text-[#A9A3C2] border border-[#2C2740] rounded-md px-2 py-1">All Entities ▾</span>
+                    <span className="text-[8px] text-slate-500 border border-slate-200 rounded-md px-2 py-1 bg-white">All Entities ▾</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
-                    {[{ label: "Incorporation", value: "3 / 3", note: "Completed", noteColor: "#34D399" }, { label: "ROC Compliance", value: "12", note: "Upcoming", noteColor: "#A9A3C2" }, { label: "GST Filings", value: "2", note: "Due This Month", noteColor: "#D4AF37" }, { label: "Trademarks", value: "5", note: "Active", noteColor: "#A9A3C2" }].map((s, i) => (
-                      <div key={i} className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-2.5 space-y-1">
-                        <span className="text-[7px] text-[#A9A3C2] font-medium">{s.label}</span>
-                        <p className="text-[16px] font-extrabold text-[#F2EFFB] tracking-tight leading-none">{s.value}</p>
+                    {[{ label: "Incorporation", value: "3 / 3", note: "Completed", noteColor: "#059669" }, { label: "ROC Compliance", value: "12", note: "Upcoming", noteColor: "#64748B" }, { label: "GST Filings", value: "2", note: "Due This Month", noteColor: "#D97706" }, { label: "Trademarks", value: "5", note: "Active", noteColor: "#64748B" }].map((s, i) => (
+                      <div key={i} className="bg-white border border-slate-100 rounded-xl p-2.5 space-y-1 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                        <span className="text-[7px] text-slate-400 font-medium">{s.label}</span>
+                        <p className="text-[16px] font-extrabold text-slate-800 tracking-tight leading-none">{s.value}</p>
                         <p className="text-[7px]" style={{ color: s.noteColor }}>{s.note}</p>
                       </div>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 space-y-2">
-                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-[#F2EFFB]">Upcoming Compliance</span><span className="text-[7px] text-[var(--accent)]">View All</span></div>
+                    <div className="bg-white border border-slate-100 rounded-xl p-3 space-y-2 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-slate-800">Upcoming Compliance</span><span className="text-[7px] text-[var(--accent)] font-medium">View All</span></div>
                       {[{ t: "DIN KYC", d: "Due in 5 days" }, { t: "Board Meeting", d: "Due in 8 days" }, { t: "GST Return - GSTR 1", d: "Due in 12 days" }].map((c, i) => (
-                        <div key={i} className="flex items-center justify-between"><span className="text-[8px] font-semibold text-[#F2EFFB]">{c.t}</span><span className="text-[6.5px] text-[#D4AF37]">{c.d}</span></div>
+                        <div key={i} className="flex items-center justify-between"><span className="text-[8px] font-semibold text-slate-700">{c.t}</span><span className="text-[6.5px] text-amber-600 font-medium">{c.d}</span></div>
                       ))}
                     </div>
-                    <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 space-y-2">
-                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-[#F2EFFB]">Entity Overview</span><span className="text-[7px] text-[var(--accent)]">View All</span></div>
+                    <div className="bg-white border border-slate-100 rounded-xl p-3 space-y-2 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                      <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-slate-800">Entity Overview</span><span className="text-[7px] text-[var(--accent)] font-medium">View All</span></div>
                       <div className="flex items-center gap-3">
-                        <div className="relative w-[50px] h-[50px]"><svg viewBox="0 0 36 36" className="w-full h-full -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="#22304A" strokeWidth="4" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#6C7CFF" strokeWidth="4" strokeDasharray="58 100" strokeLinecap="round" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#A78BFA" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-58" strokeLinecap="round" /></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[12px] font-extrabold text-[#F2EFFB]">5</span><span className="text-[5px] text-[#A9A3C2]">Total</span></div></div>
+                        <div className="relative w-[50px] h-[50px]"><svg viewBox="0 0 36 36" className="w-full h-full -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="#E2E8F0" strokeWidth="4" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#6C7CFF" strokeWidth="4" strokeDasharray="58 100" strokeLinecap="round" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#A78BFA" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-58" strokeLinecap="round" /></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[12px] font-extrabold text-slate-800">5</span><span className="text-[5px] text-slate-400">Total</span></div></div>
                         <div className="space-y-1 text-[7px]">
-                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#6C7CFF]" /> Active <span className="text-[#F2EFFB] font-semibold ml-1">3</span></div>
-                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA]" /> Upcoming <span className="text-[#F2EFFB] font-semibold ml-1">1</span></div>
-                          <div className="flex items-center gap-1.5 text-[#A9A3C2]"><span className="w-1.5 h-1.5 rounded-full bg-[#22304A]" /> Dormant <span className="text-[#F2EFFB] font-semibold ml-1">1</span></div>
+                          <div className="flex items-center gap-1.5 text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-[#6C7CFF]" /> Active <span className="text-slate-700 font-semibold ml-1">3</span></div>
+                          <div className="flex items-center gap-1.5 text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA]" /> Upcoming <span className="text-slate-700 font-semibold ml-1">1</span></div>
+                          <div className="flex items-center gap-1.5 text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-[#E2E8F0]" /> Dormant <span className="text-slate-700 font-semibold ml-1">1</span></div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-[#0F172A]/60 border border-[#2C2740] rounded-xl p-3 flex items-center justify-between">
-                    <div><p className="text-[9px] font-semibold text-[#F2EFFB]">Your Compliance Health</p><p className="text-[7px] text-[#A9A3C2]">Everything looks good. Keep it up!</p></div>
-                    <div className="text-right"><p className="text-[14px] font-extrabold text-[#34D399]">98%</p><p className="text-[7px] text-[#A9A3C2]">Compliant</p></div>
+                  <div className="bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                    <div><p className="text-[9px] font-semibold text-slate-800">Your Compliance Health</p><p className="text-[7px] text-slate-400">Everything looks good. Keep it up!</p></div>
+                    <div className="text-right"><p className="text-[14px] font-extrabold text-emerald-600">98%</p><p className="text-[7px] text-slate-400 font-medium">Compliant</p></div>
                   </div>
                 </div>
               </div>
@@ -1822,7 +1822,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[28px] pb-4"
+            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[28px] pb-4 business-setup-section"
           >
             <div className="premium-advisor-card border border-[rgba(108,124,255,0.12)] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-[0_24px_70px_rgba(40,40,80,0.10)] space-y-5" style={{ background: "rgba(255,255,255,0.88)" }}>
               {/* Header */}
@@ -2040,7 +2040,7 @@ export default function RegistrationServices({
           <LogoTicker />
 
           {/* ═══ TRUST METRICS ROW ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto">
+          <div className="w-full max-w-[1320px] mx-auto trust-strip">
             <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl px-6 py-5 shadow-[0_4px_24px_rgba(108,124,255,0.04)]">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
                 {[
