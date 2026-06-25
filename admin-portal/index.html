@@ -6,32 +6,27 @@
     <title>INCroute CMS</title>
     <link rel="icon" type="image/png" href="/incroute_logo.png" />
     <style>
-      /* ─── Full Dark Theme Override for Decap CMS ─── */
+      /* ─── Clean Light Theme for Decap CMS ─── */
       
-      /* Global resets */
       html, body {
-        background: #15131F !important;
-        color: #F2EFFB !important;
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
         font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
       }
 
-      /* Force dark background everywhere */
+      /* Force light background globally */
       #nc-root,
       #nc-root > div,
-      #nc-root > div > div,
-      [class*="AppMainContainer"],
-      [class*="defaultMain"],
-      [class*="AppWrapper"] {
-        background: #15131F !important;
-        color: #F2EFFB !important;
+      #nc-root > div > div {
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
       }
 
-      /* Top navigation bar */
+      /* Top navigation bar — dark header for contrast */
       [class*="AppHeader"],
       header[class] {
-        background: linear-gradient(135deg, #1B1828 0%, #15131F 100%) !important;
+        background: #1B1828 !important;
         border-bottom: 1px solid rgba(108, 124, 255, 0.15) !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
       }
       [class*="AppHeader"] a,
       [class*="AppHeader"] span,
@@ -44,290 +39,90 @@
         color: #6C7CFF !important;
       }
 
-      /* Nav tabs (Contents / Media) */
-      [class*="TabNav"] a,
-      nav a {
-        color: #A5A3B5 !important;
-      }
-      [class*="TabNav"] a[class*="active"],
-      nav a[class*="active"],
-      [class*="TabNav"] a[aria-current="page"] {
-        color: #FFFFFF !important;
-        background: linear-gradient(135deg, #5B6CFF, #7C5CF6) !important;
-        border-radius: 8px !important;
-      }
-
-      /* Sidebar / Collections panel */
-      [class*="Sidebar"],
-      [class*="CollectionPane"],
-      aside,
-      aside[class] {
-        background: #1B1828 !important;
-        border-right: 1px solid rgba(108, 124, 255, 0.10) !important;
-        color: #F2EFFB !important;
-      }
-      [class*="Sidebar"] a,
-      [class*="Sidebar"] li,
-      [class*="CollectionPane"] a,
-      aside a {
-        color: #A5A3B5 !important;
-      }
-      [class*="Sidebar"] a:hover,
-      [class*="CollectionPane"] a:hover,
-      aside a:hover {
-        color: #6C7CFF !important;
-      }
-      [class*="Sidebar"] [class*="active"],
-      [class*="CollectionPane"] [class*="active"],
-      aside [class*="active"] a {
-        color: #6C7CFF !important;
-        border-left-color: #6C7CFF !important;
-      }
-
-      /* Main content wrapper */
-      main,
+      /* Main content area */
+      main, [role="main"],
       [class*="Main"],
-      [class*="content"],
       [class*="EntryListing"],
       [class*="CollectionTop"],
       [class*="CollectionMain"],
-      [class*="ViewContainer"],
-      [role="main"] {
-        background: #15131F !important;
-        color: #F2EFFB !important;
+      [class*="ViewContainer"] {
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
       }
 
-      /* Cards and list items */
+      /* Sidebar */
+      aside, [class*="Sidebar"], [class*="CollectionPane"] {
+        background: #FFFFFF !important;
+        border-right: 1px solid #E5E7EB !important;
+      }
+
+      /* Headings */
+      h1, h2, h3, h4, h5, h6 {
+        color: #1a1a2e !important;
+      }
+
+      /* Cards */
       [class*="ListCard"],
       [class*="Card"],
-      [class*="EntryCard"],
-      [class*="ObjectWidgetTopBar"],
-      [class*="ListItem"],
-      li[class*="Card"],
-      a[class*="Card"] {
-        background: #241F38 !important;
-        border: 1px solid rgba(108, 124, 255, 0.12) !important;
-        border-radius: 12px !important;
-        color: #F2EFFB !important;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+      [class*="EntryCard"] {
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 10px !important;
+        color: #1a1a2e !important;
       }
       [class*="ListCard"]:hover,
-      [class*="Card"]:hover,
-      [class*="EntryCard"]:hover {
-        border-color: rgba(108, 124, 255, 0.30) !important;
-        box-shadow: 0 4px 16px rgba(91, 108, 255, 0.10) !important;
+      [class*="Card"]:hover {
+        border-color: #6C7CFF !important;
+        box-shadow: 0 4px 12px rgba(91, 108, 255, 0.08) !important;
       }
 
-      /* Search input */
-      [class*="SearchInput"],
-      input[type="search"],
-      [class*="Sidebar"] input,
-      aside input {
-        background: #241F38 !important;
-        border: 1px solid rgba(108, 124, 255, 0.15) !important;
-        color: #F2EFFB !important;
-        border-radius: 8px !important;
-      }
-
-      /* All headings */
-      h1, h2, h3, h4, h5, h6 {
-        color: #F2EFFB !important;
-      }
-
-      /* All paragraph / span text */
-      p, span, div, li, a, label, td, th {
-        color: inherit !important;
-      }
-
-      /* Buttons — primary (gradient purple) */
-      [class*="Button"][class*="primary"],
-      [class*="ToolbarButton"],
-      button[class*="css"] {
-        background: linear-gradient(135deg, #5B6CFF, #7C5CF6) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 12px rgba(91, 108, 255, 0.25) !important;
-      }
-
-      /* Buttons — secondary / outlined */
-      [class*="Button"]:not([class*="primary"]) {
-        border-color: rgba(108, 124, 255, 0.25) !important;
-        color: #A5A3B5 !important;
-      }
-
-      /* Editor wrapper */
-      [class*="Editor"],
-      [class*="ControlPane"],
-      [class*="ControlPaneContainer"],
-      [class*="EditorContainer"],
-      [class*="EditorControl"] {
-        background: #15131F !important;
-        color: #F2EFFB !important;
-      }
-
-      /* Input fields, textarea, select */
+      /* Inputs */
       input, textarea, select {
-        background: #241F38 !important;
-        border: 1px solid rgba(108, 124, 255, 0.18) !important;
-        color: #F2EFFB !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        color: #1a1a2e !important;
         border-radius: 8px !important;
       }
       input:focus, textarea:focus, select:focus {
         border-color: #6C7CFF !important;
-        box-shadow: 0 0 0 3px rgba(108, 124, 255, 0.12) !important;
+        box-shadow: 0 0 0 3px rgba(108, 124, 255, 0.10) !important;
         outline: none !important;
-      }
-      input::placeholder, textarea::placeholder {
-        color: #5A5E78 !important;
       }
 
       /* Labels */
       label {
-        color: #A5A3B5 !important;
-        font-weight: 500 !important;
+        color: #4B5563 !important;
       }
 
-      /* Markdown editor toolbar */
-      [class*="Toolbar"],
-      [class*="toolbar"],
-      [class*="EditorToolbar"] {
-        background: #1B1828 !important;
-        border: 1px solid rgba(108, 124, 255, 0.12) !important;
-        border-radius: 8px !important;
-      }
-      [class*="Toolbar"] button,
-      [class*="toolbar"] button {
-        color: #A5A3B5 !important;
-      }
-      [class*="Toolbar"] button:hover {
-        color: #6C7CFF !important;
-        background: rgba(108, 124, 255, 0.08) !important;
+      /* Editor area */
+      [class*="Editor"],
+      [class*="ControlPane"],
+      [class*="ControlPaneContainer"] {
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
       }
 
-      /* Markdown content area */
-      [class*="RawEditor"],
-      [class*="VisualEditor"],
-      [class*="raw"],
-      [class*="visual"],
-      [contenteditable="true"],
-      .CodeMirror,
-      .CodeMirror-scroll {
-        background: #1B1828 !important;
-        color: #F2EFFB !important;
-        border: 1px solid rgba(108, 124, 255, 0.10) !important;
+      /* Toolbar */
+      [class*="Toolbar"], [class*="toolbar"] {
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
         border-radius: 8px !important;
       }
 
-      /* Dropdown menus */
-      [class*="Dropdown"],
-      [class*="dropdown"],
-      [class*="Menu"],
-      [role="listbox"],
-      [role="menu"] {
-        background: #1B1828 !important;
-        border: 1px solid rgba(108, 124, 255, 0.15) !important;
-        border-radius: 10px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-        color: #F2EFFB !important;
-      }
-
-      /* Dialog / Modal */
-      [class*="Modal"],
-      [class*="Dialog"],
-      [role="dialog"] {
-        background: #1B1828 !important;
-        border: 1px solid rgba(108, 124, 255, 0.15) !important;
+      /* Modals */
+      [class*="Modal"], [class*="Dialog"], [role="dialog"] {
+        background: #FFFFFF !important;
         border-radius: 16px !important;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
-        color: #F2EFFB !important;
-      }
-      [class*="Modal"] [class*="overlay"],
-      [class*="ModalOverlay"] {
-        background: rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+        color: #1a1a2e !important;
       }
 
-      /* Toast notifications */
-      [class*="Toast"],
-      [class*="Notification"] {
-        background: #241F38 !important;
-        border: 1px solid rgba(108, 124, 255, 0.15) !important;
-        color: #F2EFFB !important;
-        border-radius: 10px !important;
-      }
-
-      /* Widget containers */
-      [class*="Widget"],
-      [class*="widget"],
-      [class*="WidgetPreviewContainer"] {
-        background: transparent !important;
-        color: #F2EFFB !important;
-      }
-
-      /* File/image upload widget */
-      [class*="FileWidget"],
-      [class*="ImageWidget"] {
-        background: #241F38 !important;
-        border: 2px dashed rgba(108, 124, 255, 0.20) !important;
-        border-radius: 12px !important;
-      }
-
-      /* Table styles */
-      table, tr, td, th {
-        border-color: rgba(108, 124, 255, 0.10) !important;
-        background: transparent !important;
-      }
-      th {
-        background: #1B1828 !important;
-      }
-
-      /* Scrollbar */
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-track { background: #15131F; }
-      ::-webkit-scrollbar-thumb { background: rgba(108, 124, 255, 0.25); border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: rgba(108, 124, 255, 0.4); }
-
-      /* Sort/Filter controls */
-      [class*="SortControl"],
-      [class*="ViewStyle"],
-      [class*="Filter"] {
-        color: #A5A3B5 !important;
-      }
-
-      /* Loading */
-      [class*="Loading"],
-      [class*="loading"] {
-        background: #15131F !important;
-      }
-
-      /* Breadcrumbs and top bar elements */
-      [class*="Breadcrumb"] a,
-      [class*="Breadcrumb"] span,
-      [class*="BackLink"],
-      [class*="backLink"] {
-        color: #A5A3B5 !important;
-      }
-      [class*="Breadcrumb"] a:hover,
-      [class*="BackLink"]:hover {
-        color: #6C7CFF !important;
-      }
-
-      /* Status indicators */
-      [class*="status"][class*="draft"] { color: #FCD34D !important; }
-      [class*="status"][class*="ready"] { color: #34D399 !important; }
-      [class*="status"][class*="published"] { color: #6C7CFF !important; }
-
-      /* Override any remaining white/light backgrounds */
-      [style*="background: rgb(255"],
-      [style*="background-color: rgb(255"],
-      [style*="background: white"],
-      [style*="background-color: white"],
-      [style*="background:#fff"],
-      [style*="background: #fff"],
-      [style*="background-color:#fff"],
-      [style*="background-color: #fff"] {
-        background: #15131F !important;
+      /* Dropdowns */
+      [class*="Dropdown"], [role="listbox"], [role="menu"] {
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 8px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10) !important;
       }
     </style>
   </head>
