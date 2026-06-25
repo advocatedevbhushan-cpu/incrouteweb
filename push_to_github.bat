@@ -1,139 +1,69 @@
 @echo off
 setlocal enabledelayedexpansion
-title INCroute — Deploy to GitHub
+title INCroute — Push to GitHub
 color 0B
 
 echo.
-echo   ┌─────────────────────────────────────────────────────┐
-echo   │                                                     │
-echo   │         ██╗███╗   ██╗ ██████╗                       │
-echo   │         ██║████╗  ██║██╔════╝ route                 │
-echo   │         ██║██╔██╗ ██║██║                            │
-echo   │         ██║██║╚██╗██║╚██████╗  Deploy Pipeline      │
-echo   │         ╚═╝╚═╝ ╚═══╝ ╚═════╝                       │
-echo   │                                                     │
-echo   │   github.com/advocatedevbhushan-cpu/incrouteweb     │
-echo   └─────────────────────────────────────────────────────┘
+echo   ╔═══════════════════════════════════════╗
+echo   ║   INCroute — Quick Push to GitHub     ║
+echo   ╚═══════════════════════════════════════╝
 echo.
 
-:: ─── STEP 1: Pre-flight checks ───
-echo   [1/5] Pre-flight checks...
-where git >nul 2>nul
-if errorlevel 1 (
-    color 0C
-    echo         ERROR: git is not installed or not in PATH.
-    goto :fail
-)
-
-:: Check if we're in a git repo
+:: ─── Pre-flight ───
 git rev-parse --git-dir >nul 2>nul
 if errorlevel 1 (
     color 0C
-    echo         ERROR: Not a git repository.
-    goto :fail
+    echo   ERROR: Not a git repository.
+    pause
+    exit /b 1
 )
-echo         ✓ Git repository verified
-echo.
 
-:: ─── STEP 2: Build project ───
-echo   [2/5] Building project...
-echo         Running: npm run build
-call npm run build >nul 2>&1
-if errorlevel 1 (
-    color 0E
-    echo         ⚠ Build had warnings/errors. Continuing anyway...
-) else (
-    echo         ✓ Build completed successfully
-)
-echo.
-
-:: ─── STEP 3: Stage files ───
-echo   [3/5] Staging changes...
-:: Close OneDrive file locks by waiting briefly
-timeout /t 2 /nobreak >nul 2>nul
+:: ─── Stage all changes ───
+echo   [1/3] Staging changes...
 git add -A
-if errorlevel 1 (
-    echo         ⚠ Some files couldn't be staged (OneDrive lock?)
-    echo         Retrying in 3 seconds...
-    timeout /t 3 /nobreak >nul
-    git add -A
+for /f %%i in ('git status --porcelain ^| find /c /v ""') do set CHANGED=%%i
+if "!CHANGED!"=="0" (
+    echo         No changes to push.
+    pause
+    exit /b 0
 )
-:: Show what changed
-for /f %%i in ('git diff --cached --numstat ^| find /c /v ""') do set CHANGED=%%i
-echo         ✓ %CHANGED% file(s) staged
+echo         %CHANGED% file(s) staged
 echo.
 
-:: ─── STEP 4: Commit ───
-echo   [4/5] Creating commit...
-for /f "tokens=1-3 delims=/ " %%a in ("%date%") do set DSTAMP=%%c-%%b-%%a
-for /f "tokens=1-2 delims=:." %%a in ("%time: =0%") do set TSTAMP=%%a:%%b
-
-set /p COMMIT_MSG="         Enter message (Enter for auto): "
-if "!COMMIT_MSG!"=="" set COMMIT_MSG=deploy: !DSTAMP! !TSTAMP!
-
-git commit -m "!COMMIT_MSG!" >nul 2>&1
+:: ─── Commit ───
+echo   [2/3] Committing...
+set /p COMMIT_MSG="         Message (Enter for auto): "
+if "!COMMIT_MSG!"=="" (
+    for /f "tokens=1-3 delims=/ " %%a in ("%date%") do set DSTAMP=%%c-%%b-%%a
+    for /f "tokens=1-2 delims=:." %%a in ("%time: =0%") do set TSTAMP=%%a:%%b
+    set COMMIT_MSG=deploy: !DSTAMP! !TSTAMP!
+)
+git commit -m "!COMMIT_MSG!"
 if errorlevel 1 (
-    echo         ℹ Nothing to commit (working tree clean)
+    echo         Nothing to commit.
     echo.
     goto :push
 )
-echo         ✓ Committed: "!COMMIT_MSG!"
+echo         Done.
 echo.
 
-:: ─── STEP 5: Push ───
+:: ─── Push ───
 :push
-echo   [5/5] Pushing to GitHub...
-echo.
-
-:: Ensure remote is correct
-git remote set-url origin https://github.com/advocatedevbhushan-cpu/incrouteweb.git 2>nul
+echo   [3/3] Pushing to origin/main...
+git push origin main
 if errorlevel 1 (
-    git remote add origin https://github.com/advocatedevbhushan-cpu/incrouteweb.git 2>nul
-)
-
-:: Push with retry logic for OneDrive issues
-git push -u origin main
-if errorlevel 1 (
+    color 0C
     echo.
-    echo         ⚠ First push attempt failed. Retrying...
-    timeout /t 3 /nobreak >nul
-    git push -u origin main
-    if errorlevel 1 (
-        goto :fail
-    )
+    echo   PUSH FAILED — check connection or run manually:
+    echo   git push origin main
+    echo.
+    pause
+    exit /b 1
 )
 
-:: ─── SUCCESS ───
+:: ─── Done ───
 echo.
 color 0A
-echo   ┌─────────────────────────────────────────────────────┐
-echo   │                                                     │
-echo   │   ✓ DEPLOYED SUCCESSFULLY                           │
-echo   │                                                     │
-echo   │   Remote: github.com/advocatedevbhushan-cpu/        │
-echo   │           incrouteweb (main)                        │
-echo   │                                                     │
-echo   │   Hostinger will auto-deploy in ~60 seconds.        │
-echo   │                                                     │
-echo   └─────────────────────────────────────────────────────┘
+echo   ✓ Pushed successfully. Hostinger will auto-deploy.
 echo.
-goto :end
-
-:fail
-echo.
-color 0C
-echo   ┌─────────────────────────────────────────────────────┐
-echo   │                                                     │
-echo   │   ✗ PUSH FAILED                                     │
-echo   │                                                     │
-echo   │   Common fixes:                                     │
-echo   │   • Close OneDrive sync temporarily                 │
-echo   │   • Check internet connection                       │
-echo   │   • Run: git push -u origin main  manually          │
-echo   │                                                     │
-echo   └─────────────────────────────────────────────────────┘
-echo.
-
-:end
-endlocal
 pause

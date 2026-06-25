@@ -758,10 +758,10 @@ export default function App() {
       {/* Footer segment */}
       <footer className="bg-[#0B0E1A] border-t border-[rgba(108,124,255,0.1)] py-10 md:py-14 text-[#8B8FA8] mt-auto">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 text-center md:text-left">
             
             {/* Brand */}
-            <div className="col-span-2 md:col-span-1 space-y-4">
+            <div className="col-span-1 sm:col-span-2 md:col-span-1 space-y-4 flex flex-col items-center md:items-start">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full overflow-hidden">
                   <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
@@ -794,7 +794,7 @@ export default function App() {
             <div className="space-y-3">
               <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Important Links</h4>
               <div className="space-y-2 text-[11px]">
-                {["About Us", "Blog", "Resources", "Pricing", "Careers", "Contact Us"].map(s => (
+                {["About Us", "Blog", "Resources", "Careers", "Contact Us"].map(s => (
                   <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
                 ))}
               </div>
@@ -810,14 +810,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Registered Office */}
+            {/* Contact */}
             <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Registered Office</h4>
+              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Contact Us</h4>
               <div className="space-y-2 text-[11px]">
-                <p>INCroute Corporate Solutions Pvt. Ltd.</p>
-                <p>B-901, Sector 63, Noida,</p>
-                <p>Uttar Pradesh - 201301, India</p>
-                <p className="pt-1">Email: support@incroute.com</p>
+                <p>Email: info@incroute.com</p>
                 <p>Phone: +91 870 755 2183</p>
               </div>
             </div>
@@ -825,7 +822,7 @@ export default function App() {
 
           {/* Bottom bar */}
           <div className="mt-10 pt-6 border-t border-[#1A1E30] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[10px] text-[#5A5E78]">© {new Date().getFullYear()} INCroute Corporate Solutions Pvt. Ltd. All rights reserved.</p>
+            <p className="text-[10px] text-[#5A5E78]">© {new Date().getFullYear()} INCroute. All rights reserved.</p>
             <div className="w-8 h-8 rounded-full bg-[#6C7CFF] flex items-center justify-center cursor-pointer hover:bg-[#5563E8] transition-colors" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
               <ArrowRight className="w-3.5 h-3.5 text-white -rotate-90" />
             </div>

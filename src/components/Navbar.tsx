@@ -45,7 +45,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         scrolled
           ? "scrolled-nav border-b border-[rgba(91,108,255,0.10)] shadow-[0_1px_12px_rgba(91,108,255,0.06)]"
           : "border-b border-transparent"
-      }`}
+      } ${mobileOpen ? "mobile-menu-open" : ""}`}
     >
       <div className="w-full max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
@@ -163,7 +163,8 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-[64px] sm:top-[72px] left-0 right-0 bg-white dark:bg-[#0B0E1A] border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50"
+            className="absolute top-[64px] sm:top-[72px] left-0 right-0 border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50 shadow-[0_12px_32px_rgba(0,0,0,0.15)]"
+            style={{ background: "var(--bg-page)" }}
           >
             <div className="p-4 space-y-1 max-h-[75vh] overflow-y-auto">
               {/* Solutions accordion */}
@@ -222,7 +223,7 @@ function NavDropdown({ label, active, open, onOpen, onClose, children }: { label
             transition={{ duration: 0.12 }}
             className="absolute top-full left-0 pt-2 z-50"
           >
-            <div className="w-[280px] border border-[rgba(108,124,255,0.12)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.10)] p-1.5 space-y-0.5" style={{ background: "#FFFFFF" }}>
+            <div className="w-[280px] border border-[rgba(108,124,255,0.12)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.10)] p-1.5 space-y-0.5" style={{ background: "var(--bg-surface)" }}>
               {children}
             </div>
           </motion.div>

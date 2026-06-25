@@ -438,6 +438,19 @@ a, button, input, select, textarea {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
+/* When mobile menu is open, give nav a solid background */
+.site-header.mobile-menu-open {
+  background: #FFFFFF !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+[data-theme="dark"] .site-header.mobile-menu-open {
+  background: #15131F !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
 /* Logo container & visibility styling */
 .logo-wrapper {
   background: transparent !important;
@@ -594,7 +607,6 @@ a, button, input, select, textarea {
   box-shadow:
     0 8px 20px rgba(91, 108, 255, 0.24),
     0 0 0 1px rgba(255, 255, 255, 0.18) inset !important;
-  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   font-family: Inter, Satoshi, system-ui, sans-serif !important;
@@ -875,7 +887,8 @@ input:not(:focus):not(:placeholder-shown):invalid {
 * { -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 8%, transparent); }
 button, a, [role="button"], input[type="submit"] { touch-action: manipulation; }
 img, video, svg { max-width: 100%; height: auto; }
-html, body { overflow-x: hidden; max-width: 100vw; }
+html { overflow-x: clip; max-width: 100vw; }
+body { overflow-x: hidden; max-width: 100vw; }
 .overflow-x-auto { -webkit-overflow-scrolling: touch; }
 
 @media (hover: none) {
