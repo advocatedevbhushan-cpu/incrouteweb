@@ -1380,37 +1380,8 @@ async function startServer() {
     }
   };
 
-  // --- Cryptographic Device Locking & Administration Security System ---
-  const DEVICE_CONFIG_FILE = path.join(process.cwd(), "device-config.json");
-  let deviceConfig: {
-    activationKey?: { key: string; expires: string };
-    registeredPublicKey?: string;
-  } = {};
-
-  function loadDeviceConfig() {
-    if (fs.existsSync(DEVICE_CONFIG_FILE)) {
-      try {
-        deviceConfig = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf-8"));
-      } catch (e: any) {
-        console.error("⚠️ Failed to parse device-config.json:", e.message);
-      }
-    }
-  }
-  loadDeviceConfig();
-
-  // Active validation sessions & challenges
-  const activeSessions = new Set<string>();
-  const activeChallenges = new Map<string, { timestamp: number; expires: number }>();
-
-  // Periodically sweep expired challenges
-  setInterval(() => {
-    const now = Date.now();
-    for (const [challenge, data] of activeChallenges.entries()) {
-      if (data.expires < now) {
-        activeChallenges.delete(challenge);
-      }
-    }
-  }, 5 * 60 * 1000);
+  // --- CMS Access Control (Password-based) ---
+  const cmsSessions = new Set<string>();
 
   // Cookie extraction utility
   function getCookie(req: any, name: string): string | null {
@@ -1424,179 +1395,55 @@ async function startServer() {
     return null;
   }
 
-  // Device whitelisting verification middleware
-  function deviceLockMiddleware(req: any, res: any, next: any) {
-    const sessionToken = getCookie(req, "admin_device_session");
-    if (sessionToken && activeSessions.has(sessionToken)) {
+  // CMS password verification endpoint
+  app.post("/api/cms/verify", (req, res) => {
+    const { password } = req.body;
+    const cmsPassword = process.env.CMS_PASSWORD || process.env.ADMIN_PASSWORD || "incroute2026";
+    
+    if (!password || password !== cmsPassword) {
+      return res.status(401).json({ success: false, error: "Invalid password" });
+    }
+
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    cmsSessions.add(sessionToken);
+
+    res.cookie("cms_session", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
+    return res.json({ success: true });
+  });
+
+  // CMS access middleware
+  function cmsAuthMiddleware(req: any, res: any, next: any) {
+    const sessionToken = getCookie(req, "cms_session");
+    if (sessionToken && cmsSessions.has(sessionToken)) {
       return next();
     }
     
-    // Serve the challenge verification gate for direct CMS page requests
+    // Serve the password gate for CMS page requests
     if (req.path === "/cms" || req.path === "/cms/" || req.path === "/cms/index.html") {
       return res.sendFile(path.join(process.cwd(), "admin-portal/gate.html"));
     }
     
-    // Obfuscate CMS configuration and assets
+    // Block other CMS assets if not authenticated
     if (req.path.startsWith("/cms/")) {
       return res.status(404).end();
     }
 
-    // Block backend write operations
-    return res.status(403).json({ success: false, error: "Access denied: Unauthorized hardware device." });
+    return res.status(403).json({ success: false, error: "Access denied" });
   }
 
-  // --- Device Lock APIs ---
-  app.get("/api/admin/challenge", (req, res) => {
-    const challenge = crypto.randomBytes(32).toString("hex");
-    const expires = Date.now() + 60 * 1000;
-    activeChallenges.set(challenge, { timestamp: Date.now(), expires });
-    res.json({ success: true, challenge, timestamp: Date.now() });
-  });
-
-  app.post("/api/admin/verify-device", (req, res) => {
-    const { signature, challenge, timestamp } = req.body;
-    
-    if (!signature || !challenge || !timestamp) {
-      return res.status(400).json({ success: false, error: "Missing verification parameters." });
-    }
-
-    const storedChallenge = activeChallenges.get(challenge);
-    if (!storedChallenge || storedChallenge.expires < Date.now()) {
-      return res.status(403).json({ success: false, error: "Challenge invalid or expired." });
-    }
-
-    if (Math.abs(Date.now() - Number(timestamp)) > 60 * 1000) {
-      return res.status(403).json({ success: false, error: "Challenge verification timeout." });
-    }
-
-    loadDeviceConfig();
-    if (!deviceConfig.registeredPublicKey) {
-      return res.status(403).json({ success: false, error: "Device is not registered." });
-    }
-
-    try {
-      const pubKeyPem = `-----BEGIN PUBLIC KEY-----\n${deviceConfig.registeredPublicKey.match(/.{1,64}/g)?.join("\n")}\n-----END PUBLIC KEY-----`;
-      const pubKey = crypto.createPublicKey({
-        key: pubKeyPem,
-        format: "pem",
-        type: "spki"
-      });
-
-      const verifyData = Buffer.from(challenge + ":" + timestamp);
-      const signatureBytes = Buffer.from(signature, "base64");
-
-      const isVerified = crypto.verify(
-        "RSA-SHA256",
-        verifyData,
-        pubKey,
-        signatureBytes
-      );
-
-      if (isVerified) {
-        const sessionToken = crypto.randomBytes(32).toString("hex");
-        activeSessions.add(sessionToken);
-        activeChallenges.delete(challenge);
-
-        res.cookie("admin_device_session", sessionToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 24 * 60 * 60 * 1000
-        });
-
-        return res.json({ success: true });
-      } else {
-        return res.status(403).json({ success: false, error: "Cryptographic signature check failed." });
-      }
-    } catch (err: any) {
-      console.error("[Crypto Verification Error]:", err.message);
-      return res.status(500).json({ success: false, error: "Internal security engine verification failure." });
-    }
-  });
-
-  app.post("/api/admin/register-device", (req, res) => {
-    const { key, publicKey } = req.body;
-    
-    if (!key || !publicKey) {
-      return res.status(400).json({ success: false, error: "Missing required registration parameters." });
-    }
-
-    loadDeviceConfig();
-    const activeKey = deviceConfig.activationKey;
-    if (!activeKey || activeKey.key !== key || new Date(activeKey.expires).getTime() < Date.now()) {
-      return res.status(400).json({ success: false, error: "Invalid or expired device activation key." });
-    }
-
-    deviceConfig.registeredPublicKey = publicKey;
-    delete deviceConfig.activationKey;
-
-    try {
-      fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2), "utf-8");
-      console.log(`🟢 DEVICE PUBLIC KEY WHITELISTED: ${publicKey.slice(0, 30)}...`);
-      return res.json({ success: true });
-    } catch (err: any) {
-      console.error("Failed to write device config:", err.message);
-      return res.status(500).json({ success: false, error: "Failed to persist device credentials." });
-    }
-  });
-
-  // Browser-accessible endpoint to generate activation token
-  app.get("/api/admin/generate-activation-key", (req, res) => {
-    const { password } = req.query;
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-    
-    if (!password || password !== adminPassword) {
-      return res.status(401).json({ success: false, error: "Unauthorized access: Invalid admin password." });
-    }
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-
-    loadDeviceConfig();
-    deviceConfig.activationKey = {
-      key: token,
-      expires: expires
-    };
-
-    try {
-      fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2), "utf-8");
-      return res.send(`
-        <html>
-          <body style="background:#030303;color:#fff;font-family:sans-serif;padding:40px;text-align:center;display:flex;align-items:center;justify-content:center;min-height:80vh;">
-            <div style="border:1px solid rgba(212,175,55,0.2);padding:40px;max-width:500px;margin:0 auto;border-radius:16px;background:#0d0d0d;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-              <img src="/incroute_logo.png" style="width:60px;height:60px;border-radius:50%;border:2px solid #d4af37;margin-bottom:20px;" />
-              <h2 style="color:#d4af37;margin-top:0;">Secure Token Generated</h2>
-              <p style="color:rgba(255,255,255,0.6);font-size:14px;line-height:1.6;">A temporary cryptographic activation key has been successfully created and registered on this server. Click the button below to whitelist this PC.</p>
-              <a href="/admin-setup?key=${token}" style="color:#000;background:#d4af37;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin-top:20px;text-transform:uppercase;font-size:12px;letter-spacing:0.05em;">Whitelist This PC</a>
-            </div>
-          </body>
-        </html>
-      `);
-    } catch (err: any) {
-      return res.status(500).json({ success: false, error: err.message });
-    }
-  });
-
-  app.get("/admin-setup", (req, res) => {
-    const { key } = req.query;
-    loadDeviceConfig();
-    const activeKey = deviceConfig.activationKey;
-    
-    if (key && activeKey && activeKey.key === key && new Date(activeKey.expires).getTime() > Date.now()) {
-      return res.sendFile(path.join(process.cwd(), "admin-portal/setup.html"));
-    }
-    
-    return res.status(404).end();
-  });
-
-  // Serve the headless Decap CMS static wrapper only if device authenticated
+  // Serve Decap CMS — password protected
   app.get(["/cms", "/cms/"], (req, res, next) => {
-    // Exact check to redirect to trailing slash version, preventing loop
     if (req.path === "/cms") {
       return res.redirect(301, "/cms/");
     }
     next();
-  }, deviceLockMiddleware, (req, res) => {
+  }, cmsAuthMiddleware, (req, res) => {
     res.sendFile(path.join(process.cwd(), "admin-portal/index.html"));
   });
 
@@ -1676,7 +1523,7 @@ async function startServer() {
     }
   });
 
-  app.get("/cms/config.yml", deviceLockMiddleware, (req, res) => {
+  app.get("/cms/config.yml", cmsAuthMiddleware, (req, res) => {
     try {
       const configPath = path.join(process.cwd(), "admin-portal/config.yml");
       let configContent = fs.readFileSync(configPath, "utf-8");
@@ -2640,7 +2487,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   });
 
-  app.post("/api/blog/posts", deviceLockMiddleware, async (req, res) => {
+  app.post("/api/blog/posts", cmsAuthMiddleware, async (req, res) => {
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
     if (token !== "admin-session-secure-token") {
@@ -2703,7 +2550,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   // Admin Edit Blog Post
-  app.post("/api/blog/posts/:id/edit", deviceLockMiddleware, async (req, res) => {
+  app.post("/api/blog/posts/:id/edit", cmsAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { title, subtitle, content, image, author, tags, token, status, metaDescription } = req.body;
 
@@ -2765,7 +2612,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   });
 
   // Toggle/Update blog status
-  app.post("/api/blog/posts/:id/status", deviceLockMiddleware, async (req, res) => {
+  app.post("/api/blog/posts/:id/status", cmsAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { token, status } = req.body;
 
@@ -2856,7 +2703,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     res.json({ success: true, post: posts[postIndex] });
   });
 
-  app.delete("/api/blog/posts/:id", deviceLockMiddleware, async (req, res) => {
+  app.delete("/api/blog/posts/:id", cmsAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { token } = req.body;
 

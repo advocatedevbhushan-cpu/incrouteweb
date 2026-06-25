@@ -3,33 +3,187 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Incroute Admin CMS</title>
+    <title>INCroute CMS</title>
     <link rel="icon" type="image/png" href="/incroute_logo.png" />
-    <!-- Netlify Identity Widget for Authentication -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
-      /* Style customization to align Decap CMS aesthetics with Incroute branding */
-      #nc-root {
-        font-family: ui-sans-serif, system-ui, sans-serif !important;
+      /* ─── INCroute Twilight Theme for Decap CMS ─── */
+      body {
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
       }
-      #nc-root header {
-        background-color: #000000 !important;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+
+      /* Top header bar */
+      #nc-root [class*="AppHeader"] {
+        background: linear-gradient(135deg, #15131F 0%, #1B1828 100%) !important;
+        border-bottom: 1px solid rgba(108, 124, 255, 0.15) !important;
+        box-shadow: 0 2px 12px rgba(91, 108, 255, 0.08) !important;
       }
-      #nc-root header a, #nc-root header button {
-        color: #ffffff !important;
+
+      /* Header text and links */
+      #nc-root [class*="AppHeader"] a,
+      #nc-root [class*="AppHeader"] span,
+      #nc-root [class*="AppHeader"] button {
+        color: #F2EFFB !important;
       }
-      #nc-root header a:hover, #nc-root header button:hover {
-        color: #d4af37 !important;
+      #nc-root [class*="AppHeader"] a:hover,
+      #nc-root [class*="AppHeader"] button:hover {
+        color: #6C7CFF !important;
+      }
+
+      /* Sidebar */
+      #nc-root [class*="Sidebar"] {
+        background: #1B1828 !important;
+        border-right: 1px solid rgba(108, 124, 255, 0.10) !important;
+      }
+      #nc-root [class*="Sidebar"] a,
+      #nc-root [class*="Sidebar"] span {
+        color: #A5A3B5 !important;
+      }
+      #nc-root [class*="Sidebar"] a:hover,
+      #nc-root [class*="Sidebar"] [class*="active"] a,
+      #nc-root [class*="Sidebar"] [class*="active"] span {
+        color: #6C7CFF !important;
+        background: rgba(108, 124, 255, 0.08) !important;
+      }
+
+      /* Main content area */
+      #nc-root main,
+      #nc-root [class*="Main"],
+      #nc-root [class*="EntryListing"],
+      #nc-root [class*="CollectionTop"] {
+        background: #15131F !important;
+        color: #F2EFFB !important;
+      }
+
+      /* Cards and list items */
+      #nc-root [class*="ListCard"],
+      #nc-root [class*="Card"],
+      #nc-root [class*="EntryCard"] {
+        background: #241F38 !important;
+        border: 1px solid rgba(108, 124, 255, 0.12) !important;
+        border-radius: 12px !important;
+        color: #F2EFFB !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      #nc-root [class*="ListCard"]:hover,
+      #nc-root [class*="Card"]:hover,
+      #nc-root [class*="EntryCard"]:hover {
+        border-color: rgba(108, 124, 255, 0.30) !important;
+        box-shadow: 0 4px 16px rgba(91, 108, 255, 0.10) !important;
+      }
+
+      /* Buttons — primary */
+      #nc-root [class*="Button"][class*="primary"],
+      #nc-root button[class*="Button"]:not([class*="secondary"]) {
+        background: linear-gradient(135deg, #5B6CFF, #7C5CF6) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(91, 108, 255, 0.25) !important;
+      }
+      #nc-root [class*="Button"][class*="primary"]:hover {
+        box-shadow: 0 6px 20px rgba(91, 108, 255, 0.35) !important;
+      }
+
+      /* Editor area */
+      #nc-root [class*="Editor"],
+      #nc-root [class*="ControlPane"],
+      #nc-root [class*="ControlPaneContainer"] {
+        background: #15131F !important;
+        color: #F2EFFB !important;
+      }
+
+      /* Input fields */
+      #nc-root input,
+      #nc-root textarea,
+      #nc-root select {
+        background: #241F38 !important;
+        border: 1px solid rgba(108, 124, 255, 0.18) !important;
+        color: #F2EFFB !important;
+        border-radius: 8px !important;
+        padding: 10px 12px !important;
+      }
+      #nc-root input:focus,
+      #nc-root textarea:focus,
+      #nc-root select:focus {
+        border-color: #6C7CFF !important;
+        box-shadow: 0 0 0 3px rgba(108, 124, 255, 0.12) !important;
+        outline: none !important;
+      }
+
+      /* Labels */
+      #nc-root label,
+      #nc-root [class*="label"],
+      #nc-root [class*="Label"] {
+        color: #A5A3B5 !important;
+        font-weight: 500 !important;
+      }
+
+      /* Markdown editor toolbar */
+      #nc-root [class*="Toolbar"],
+      #nc-root [class*="toolbar"] {
+        background: #1B1828 !important;
+        border: 1px solid rgba(108, 124, 255, 0.12) !important;
+        border-radius: 8px !important;
+      }
+      #nc-root [class*="Toolbar"] button,
+      #nc-root [class*="toolbar"] button {
+        color: #A5A3B5 !important;
+      }
+      #nc-root [class*="Toolbar"] button:hover,
+      #nc-root [class*="toolbar"] button:hover {
+        color: #6C7CFF !important;
+        background: rgba(108, 124, 255, 0.08) !important;
+      }
+
+      /* Scrollbar */
+      #nc-root ::-webkit-scrollbar { width: 6px; }
+      #nc-root ::-webkit-scrollbar-track { background: #15131F; }
+      #nc-root ::-webkit-scrollbar-thumb { background: rgba(108, 124, 255, 0.25); border-radius: 3px; }
+      #nc-root ::-webkit-scrollbar-thumb:hover { background: rgba(108, 124, 255, 0.4); }
+
+      /* Dialog/Modal */
+      #nc-root [class*="Modal"],
+      #nc-root [class*="Dialog"] {
+        background: #1B1828 !important;
+        border: 1px solid rgba(108, 124, 255, 0.15) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+        color: #F2EFFB !important;
+      }
+
+      /* Toast notifications */
+      #nc-root [class*="Toast"],
+      #nc-root [class*="Notification"] {
+        background: #241F38 !important;
+        border: 1px solid rgba(108, 124, 255, 0.15) !important;
+        color: #F2EFFB !important;
+        border-radius: 10px !important;
+      }
+
+      /* Collection page heading */
+      #nc-root h1, #nc-root h2, #nc-root h3 {
+        color: #F2EFFB !important;
+      }
+
+      /* Breadcrumbs */
+      #nc-root [class*="Breadcrumb"] a,
+      #nc-root [class*="Breadcrumb"] span {
+        color: #A5A3B5 !important;
+      }
+
+      /* Loading spinner area */
+      #nc-root [class*="loading"],
+      #nc-root [class*="Loading"] {
+        background: #15131F !important;
       }
     </style>
   </head>
   <body>
-    <!-- Enable manual initialization to ensure custom formats are registered before CMS starts -->
     <script>
       window.CMS_MANUAL_INIT = true;
     </script>
-    <!-- Decap CMS main library script -->
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
     <script>
       // Register custom format for parsing and saving flat JSON arrays
@@ -53,13 +207,12 @@
               testimonials: parsed
             };
           } catch (e) {
-            console.error("[CMS] Failed to parse JSON database array:", e);
+            console.error("[CMS] Failed to parse JSON:", e);
             return { posts: [], testimonials: [] };
           }
         }
       });
       
-      // Initialize the CMS manually after registering custom formats
       CMS.init();
     </script>
   </body>
