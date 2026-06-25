@@ -1,0 +1,26 @@
+[
+  {
+    "id": "privacy-policy",
+    "title": "Privacy Policy",
+    "slug": "privacy-policy",
+    "content": "## Privacy Policy\n\nYour privacy is important to us. This policy outlines how INCroute collects, uses, and protects your personal information.\n\n### Information We Collect\n- Name, email, and phone number provided via forms\n- Business details for service delivery\n- Usage data for improving our platform\n\n### How We Use Your Information\n- To provide requested services\n- To communicate updates and deadlines\n- To improve our platform experience\n\n### Data Protection\nWe implement industry-standard security measures to protect your data.",
+    "lastUpdated": "2026-06-01",
+    "visible": true
+  },
+  {
+    "id": "terms-conditions",
+    "title": "Terms & Conditions",
+    "slug": "terms-and-conditions",
+    "content": "## Terms & Conditions\n\nBy using INCroute's services, you agree to the following terms.\n\n### Service Scope\nINCroute provides compliance, registration, and advisory services. We act as facilitators between you and government bodies.\n\n### Refund Policy\nRefunds are processed as per our refund policy for services not yet initiated with government authorities.",
+    "lastUpdated": "2026-06-01",
+    "visible": true
+  },
+  {
+    "id": "refund-policy",
+    "title": "Refund Policy",
+    "slug": "refund-policy",
+    "content": "## Refund Policy\n\nWe value your trust. If you are unsatisfied with our services, please contact us within 7 days.\n\n### Eligible for Refund\n- Service not yet initiated with any government body\n- Duplicate payment\n\n### Not Eligible\n- Government fees already paid\n- Services already filed with authorities",
+    "lastUpdated": "2026-06-01",
+    "visible": true
+  }
+]

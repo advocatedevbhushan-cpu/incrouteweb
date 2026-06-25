@@ -1,0 +1,26 @@
+[
+  {
+    "id": "faq-1",
+    "question": "How long does it take to incorporate a Private Limited Company?",
+    "answer": "Typically 7-10 working days from the date of filing, assuming all documents are in order and no name objection is raised by ROC.",
+    "category": "Company Registration",
+    "order": 1,
+    "visible": true
+  },
+  {
+    "id": "faq-2",
+    "question": "What documents are required for company registration?",
+    "answer": "PAN Card, Aadhaar Card, Passport-size photographs, Address proof (utility bill), Bank statement, and NOC from property owner for registered office address.",
+    "category": "Company Registration",
+    "order": 2,
+    "visible": true
+  },
+  {
+    "id": "faq-3",
+    "question": "Do I need to file GST returns even if I have no sales?",
+    "answer": "Yes. If you are GST registered, nil returns must be filed every month (GSTR-1 and GSTR-3B) even if there is zero revenue. Non-filing attracts late fees of ₹50/day.",
+    "category": "GST & Tax",
+    "order": 3,
+    "visible": true
+  }
+]

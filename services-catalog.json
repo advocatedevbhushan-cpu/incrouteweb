@@ -1,0 +1,30 @@
+[
+  {
+    "id": "svc-1",
+    "name": "Private Limited Company Registration",
+    "slug": "private-limited-company-registration",
+    "category": "Company Registration",
+    "shortDescription": "Most popular structure for startups. Limited liability, separate legal entity, and easy fundraising.",
+    "description": "Register your Private Limited Company with India's most trusted compliance platform. We handle DSC, DIN, name approval, MOA/AOA drafting, and SPICe+ filing.",
+    "timeline": "7-10 working days",
+    "documents": ["PAN Card", "Aadhaar Card", "Address Proof", "Bank Statement", "NOC from Property Owner"],
+    "icon": "building",
+    "featured": true,
+    "visible": true,
+    "order": 1
+  },
+  {
+    "id": "svc-2",
+    "name": "LLP Registration",
+    "slug": "llp-registration",
+    "category": "Company Registration",
+    "shortDescription": "Perfect for professional services. Low compliance, limited liability, flexible operations.",
+    "description": "Register your Limited Liability Partnership with minimal compliance requirements and full legal protection.",
+    "timeline": "8-12 working days",
+    "documents": ["PAN Card", "Aadhaar Card", "Address Proof", "Bank Statement", "Partnership Deed Draft"],
+    "icon": "users",
+    "featured": true,
+    "visible": true,
+    "order": 2
+  }
+]

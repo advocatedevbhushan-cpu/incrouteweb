@@ -3,44 +3,110 @@ backend:
   repo: advocatedevbhushan-cpu/incrouteweb
   branch: main
   site_domain: incroute.com
+  commit_messages:
+    create: "content: create {{collection}} — {{slug}}"
+    update: "content: update {{collection}} — {{slug}}"
+    delete: "content: delete {{collection}} — {{slug}}"
+    uploadMedia: "media: upload {{path}}"
+    deleteMedia: "media: delete {{path}}"
 
 local_backend: true
 
 media_folder: "public/blog-images"
 public_folder: "/blog-images"
+media_library:
+  max_file_size: 5120000
+  folder_support: true
+
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"
+
+# ═══════════════════════════════════════════════════════════
+# COLLECTIONS
+# ═══════════════════════════════════════════════════════════
 
 collections:
+
+  # ─── BLOG POSTS ───
   - name: "blogs"
-    label: "Blogs"
+    label: "📝 Blog Posts"
+    label_singular: "Blog Post"
+    description: "Manage all blog articles. Create, edit, schedule, and publish."
     delete: true
     editor:
       preview: false
     files:
       - file: "blog-posts.json"
-        label: "Blog Posts"
+        label: "All Blog Posts"
         name: "blog_posts"
         format: "json-array"
         fields:
           - name: "posts"
-            label: "Blog Posts List"
+            label: "Blog Posts"
             label_singular: "Blog Post"
             widget: "list"
-            summary: "{{fields.title}}"
+            summary: "{{fields.title}} [{{fields.status}}] — {{fields.date}}"
+            collapsed: true
+            minimize_collapsed: true
             fields:
-              - { label: "ID", name: "id", widget: "string" }
-              - { label: "Title", name: "title", widget: "string" }
-              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
-              - { label: "Content", name: "content", widget: "markdown" }
-              - { label: "Image", name: "image", widget: "image", default: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800" }
-              - { label: "Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "ID", name: "id", widget: "string", hint: "Unique identifier (e.g., blog-4). Do not change after creation." }
+              - { label: "Title", name: "title", widget: "string", pattern: [".{10,100}", "Title must be 10-100 characters"] }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false, hint: "Brief one-line summary for cards and meta." }
+              - { label: "URL Slug", name: "slug", widget: "string", hint: "URL-friendly path (e.g., how-to-register-pvt-ltd)" }
+              - label: "Content"
+                name: "content"
+                widget: "markdown"
+                buttons: ["bold", "italic", "code", "link", "heading-two", "heading-three", "quote", "bulleted-list", "numbered-list"]
+                editor_components: ["image", "code-block"]
+                hint: "Full blog content. Use headings, lists, and images."
+              - { label: "Featured Image", name: "image", widget: "image", required: false, hint: "Recommended: 1200x630px for social sharing." }
+              - { label: "Publish Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "Author", name: "author", widget: "string", default: "D Bhushan" }
+              - label: "Category"
+                name: "category"
+                widget: "select"
+                options:
+                  - "Company Registration"
+                  - "Compliance & ROC"
+                  - "GST & Taxation"
+                  - "Trademark & IP"
+                  - "Legal Advisory"
+                  - "Startup Guide"
+                  - "Industry News"
+                default: "Company Registration"
+                required: false
+              - label: "Tags"
+                name: "tags"
+                widget: "list"
+                required: false
+                hint: "Comma-separated tags for categorization"
+              - { label: "Reading Time (min)", name: "readingTime", widget: "number", value_type: "int", default: 5, required: false }
               - { label: "Views", name: "views", widget: "number", value_type: "int", default: 0 }
-              - { label: "Slug", name: "slug", widget: "string" }
-              - { label: "Status", name: "status", widget: "select", options: ["draft", "ready", "published"], default: "published" }
-              - { label: "Meta Description", name: "metaDescription", widget: "string", required: false }
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                options:
+                  - { label: "Draft", value: "draft" }
+                  - { label: "Ready for Review", value: "ready" }
+                  - { label: "Published", value: "published" }
+                  - { label: "Archived", value: "archived" }
+                default: "draft"
+              - { label: "Featured Post", name: "featured", widget: "boolean", default: false, required: false }
+              - label: "SEO — Meta Description"
+                name: "metaDescription"
+                widget: "text"
+                required: false
+                hint: "150-160 characters for Google search results."
+                pattern: [".{0,160}", "Max 160 characters"]
+              - { label: "SEO — Meta Keywords", name: "metaKeywords", widget: "string", required: false, hint: "Comma-separated keywords" }
 
+  # ─── TESTIMONIALS ───
   - name: "testimonials"
-    label: "Testimonials"
+    label: "⭐ Testimonials"
+    label_singular: "Testimonial"
+    description: "Client reviews and success stories displayed on the homepage."
     delete: true
     editor:
       preview: false
@@ -51,16 +117,287 @@ collections:
         format: "json-array"
         fields:
           - name: "testimonials"
-            label: "Testimonials List"
+            label: "Testimonials"
             label_singular: "Testimonial"
             widget: "list"
-            summary: "{{fields.name}} - {{fields.entityType}}"
+            summary: "⭐{{fields.rating}} — {{fields.name}} ({{fields.entityType}})"
+            collapsed: true
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Client Name", name: "name", widget: "string" }
-              - { label: "Designation", name: "designation", widget: "string" }
-              - { label: "Entity Type", name: "entityType", widget: "string" }
-              - { label: "Rating (1-5)", name: "rating", widget: "number", value_type: "int", default: 5 }
-              - { label: "Content", name: "content", widget: "text" }
-              - { label: "Approved", name: "approved", widget: "boolean", default: true }
-              - { label: "Timestamp", name: "timestamp", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ss.SSSZ" }
+              - { label: "Designation / Role", name: "designation", widget: "string" }
+              - { label: "Company / Entity Name", name: "entityType", widget: "string" }
+              - label: "Rating"
+                name: "rating"
+                widget: "select"
+                options:
+                  - { label: "⭐⭐⭐⭐⭐ (5)", value: 5 }
+                  - { label: "⭐⭐⭐⭐ (4)", value: 4 }
+                  - { label: "⭐⭐⭐ (3)", value: 3 }
+                default: 5
+              - { label: "Review Content", name: "content", widget: "text" }
+              - { label: "Client Photo", name: "photo", widget: "image", required: false }
+              - { label: "Approved (visible on site)", name: "approved", widget: "boolean", default: true }
+              - { label: "Featured on Homepage", name: "featured", widget: "boolean", default: false, required: false }
+              - { label: "Submitted On", name: "timestamp", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ss.SSSZ" }
+
+  # ─── SERVICES CATALOG ───
+  - name: "services"
+    label: "🛠️ Services"
+    label_singular: "Service"
+    description: "Manage the service offerings displayed in the catalog."
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "services-catalog.json"
+        label: "Service Catalog"
+        name: "service_catalog"
+        format: "json-array"
+        fields:
+          - name: "services"
+            label: "Services"
+            label_singular: "Service"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.category}}"
+            collapsed: true
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Service Name", name: "name", widget: "string" }
+              - { label: "URL Slug", name: "slug", widget: "string" }
+              - label: "Category"
+                name: "category"
+                widget: "select"
+                options:
+                  - "Company Registration"
+                  - "Compliance & ROC"
+                  - "GST & Tax"
+                  - "Trademark & IP"
+                  - "Legal Services"
+                  - "Certification"
+                  - "Advisory"
+              - { label: "Short Description", name: "shortDescription", widget: "string", hint: "One-liner for cards (max 120 chars)" }
+              - { label: "Full Description", name: "description", widget: "markdown" }
+              - { label: "Timeline", name: "timeline", widget: "string", hint: "e.g., 7-10 working days" }
+              - label: "Required Documents"
+                name: "documents"
+                widget: "list"
+                hint: "List of documents client needs to provide"
+              - label: "Icon"
+                name: "icon"
+                widget: "select"
+                options: ["building", "users", "shield", "file-text", "scale", "landmark", "award", "briefcase", "globe", "trending-up"]
+                default: "building"
+              - { label: "Service Image", name: "image", widget: "image", required: false }
+              - { label: "Featured", name: "featured", widget: "boolean", default: false }
+              - { label: "Visible", name: "visible", widget: "boolean", default: true }
+              - { label: "Sort Order", name: "order", widget: "number", value_type: "int", default: 10 }
+
+  # ─── TEAM MEMBERS ───
+  - name: "team"
+    label: "👥 Team"
+    label_singular: "Team Member"
+    description: "Manage team members displayed on the About page."
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "team-members.json"
+        label: "Team Members"
+        name: "team_members"
+        format: "json-array"
+        fields:
+          - name: "members"
+            label: "Team Members"
+            label_singular: "Member"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.role}}"
+            collapsed: true
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Full Name", name: "name", widget: "string" }
+              - { label: "Role / Designation", name: "role", widget: "string" }
+              - { label: "Bio", name: "bio", widget: "text", required: false }
+              - { label: "Profile Photo", name: "image", widget: "image", required: false }
+              - { label: "Email", name: "email", widget: "string", required: false }
+              - { label: "LinkedIn URL", name: "linkedin", widget: "string", required: false }
+              - { label: "Sort Order", name: "order", widget: "number", value_type: "int", default: 10 }
+              - { label: "Visible", name: "visible", widget: "boolean", default: true }
+
+  # ─── FAQs / KNOWLEDGE CENTER ───
+  - name: "faqs"
+    label: "❓ FAQs"
+    label_singular: "FAQ"
+    description: "Knowledge center questions and answers."
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "faqs.json"
+        label: "FAQ Database"
+        name: "faq_database"
+        format: "json-array"
+        fields:
+          - name: "faqs"
+            label: "FAQs"
+            label_singular: "FAQ"
+            widget: "list"
+            summary: "{{fields.question}} [{{fields.category}}]"
+            collapsed: true
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Question", name: "question", widget: "string" }
+              - { label: "Answer", name: "answer", widget: "markdown" }
+              - label: "Category"
+                name: "category"
+                widget: "select"
+                options:
+                  - "Company Registration"
+                  - "LLP & Partnership"
+                  - "GST & Tax"
+                  - "Compliance & ROC"
+                  - "Trademark & IP"
+                  - "Legal"
+                  - "Platform & Account"
+                  - "Payments & Billing"
+                default: "Company Registration"
+              - { label: "Sort Order", name: "order", widget: "number", value_type: "int", default: 10 }
+              - { label: "Visible", name: "visible", widget: "boolean", default: true }
+
+  # ─── CASE STUDIES ───
+  - name: "case-studies"
+    label: "🏆 Case Studies"
+    label_singular: "Case Study"
+    description: "Client success stories and project highlights."
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "case-studies.json"
+        label: "Case Studies"
+        name: "case_studies_list"
+        format: "json-array"
+        fields:
+          - name: "cases"
+            label: "Case Studies"
+            label_singular: "Case Study"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.industry}}"
+            collapsed: true
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Client Name", name: "client", widget: "string", hint: "Use 'Confidential' if NDA applies" }
+              - label: "Industry"
+                name: "industry"
+                widget: "select"
+                options:
+                  - "Technology"
+                  - "Healthcare"
+                  - "E-Commerce"
+                  - "Manufacturing"
+                  - "Real Estate"
+                  - "Education"
+                  - "Finance"
+                  - "Food & Beverage"
+                  - "Professional Services"
+                  - "Other"
+              - label: "Service Used"
+                name: "service"
+                widget: "select"
+                options:
+                  - "Private Limited Incorporation"
+                  - "LLP Registration"
+                  - "OPC Registration"
+                  - "GST Registration"
+                  - "Trademark Filing"
+                  - "Compliance Management"
+                  - "Legal Advisory"
+                  - "Virtual CFO"
+                  - "Multiple Services"
+              - { label: "Challenge", name: "challenge", widget: "text" }
+              - { label: "Our Solution", name: "solution", widget: "text" }
+              - { label: "Result / Impact", name: "result", widget: "text" }
+              - { label: "Cover Image", name: "image", widget: "image", required: false }
+              - { label: "Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "Featured", name: "featured", widget: "boolean", default: false }
+              - { label: "Visible", name: "visible", widget: "boolean", default: true }
+
+  # ─── LEGAL PAGES ───
+  - name: "legal"
+    label: "📜 Legal Pages"
+    label_singular: "Legal Page"
+    description: "Privacy policy, terms, refund policy, and disclaimer."
+    delete: true
+    editor:
+      preview: false
+    files:
+      - file: "legal-pages.json"
+        label: "Legal Pages"
+        name: "legal_pages"
+        format: "json-array"
+        fields:
+          - name: "pages"
+            label: "Legal Pages"
+            label_singular: "Page"
+            widget: "list"
+            summary: "{{fields.title}} — Updated {{fields.lastUpdated}}"
+            collapsed: true
+            fields:
+              - { label: "ID", name: "id", widget: "string" }
+              - { label: "Page Title", name: "title", widget: "string" }
+              - { label: "URL Slug", name: "slug", widget: "string" }
+              - { label: "Content", name: "content", widget: "markdown" }
+              - { label: "Last Updated", name: "lastUpdated", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "Visible", name: "visible", widget: "boolean", default: true }
+
+  # ─── SITE SETTINGS ───
+  - name: "settings"
+    label: "⚙️ Site Settings"
+    description: "Global site configuration — SEO, contact info, announcements."
+    editor:
+      preview: false
+    files:
+      - file: "site-settings.json"
+        label: "General Settings"
+        name: "general_settings"
+        fields:
+          - { label: "Site Name", name: "siteName", widget: "string", default: "INCroute" }
+          - { label: "Tagline", name: "tagline", widget: "string", default: "Make It Right" }
+          - { label: "Site Description", name: "description", widget: "text" }
+          - { label: "Contact Email", name: "contactEmail", widget: "string" }
+          - { label: "Contact Phone", name: "contactPhone", widget: "string" }
+          - label: "Social Links"
+            name: "socialLinks"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Facebook", name: "facebook", widget: "string", required: false }
+              - { label: "LinkedIn", name: "linkedin", widget: "string", required: false }
+              - { label: "Twitter / X", name: "twitter", widget: "string", required: false }
+              - { label: "Instagram", name: "instagram", widget: "string", required: false }
+              - { label: "YouTube", name: "youtube", widget: "string", required: false }
+          - label: "SEO Defaults"
+            name: "seo"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Default Page Title", name: "defaultTitle", widget: "string" }
+              - { label: "Meta Description", name: "defaultDescription", widget: "text" }
+              - { label: "Keywords", name: "keywords", widget: "string" }
+          - label: "Announcement Banner"
+            name: "announcement"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: false }
+              - { label: "Banner Text", name: "text", widget: "string", required: false }
+              - { label: "Link URL", name: "link", widget: "string", required: false }
+              - { label: "Background Color", name: "bgColor", widget: "color", default: "#5B6CFF", required: false }
+          - label: "Maintenance Mode"
+            name: "maintenance"
+            widget: "object"
+            collapsed: true
+            fields:
+              - { label: "Enabled", name: "enabled", widget: "boolean", default: false }
+              - { label: "Message", name: "message", widget: "text", required: false }

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "team-1",
+    "name": "D Bhushan",
+    "role": "Founder & CEO",
+    "bio": "Legal tech entrepreneur building India's most comprehensive compliance platform.",
+    "image": "",
+    "email": "bhushan@incroute.com",
+    "linkedin": "",
+    "order": 1,
+    "visible": true
+  }
+]
