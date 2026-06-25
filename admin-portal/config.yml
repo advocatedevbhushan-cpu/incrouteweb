@@ -14,9 +14,6 @@ local_backend: true
 
 media_folder: "public/blog-images"
 public_folder: "/blog-images"
-media_library:
-  max_file_size: 5120000
-  folder_support: true
 
 slug:
   encoding: "ascii"
