@@ -1345,6 +1345,38 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  app.post("/api/admin/trademarks", async (req, res) => {
+    try {
+      const { clientId, name, classNumber, applicationNo, status, currentStage, nextAction } = req.body;
+      if (!clientId || !name || !classNumber) return res.status(400).json({ error: "clientId, name, classNumber required" });
+      const conn = await getPlatformConnection();
+      const id = "tm_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `TrademarkApp` (id, clientId, name, classNumber, applicationNo, status, currentStage, nextAction, filedAt, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, clientId, name, classNumber, applicationNo || null, status || "FILED", currentStage || null, nextAction || null, now, now, now]);
+      conn.release();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/trademarks/:id", async (req, res) => {
+    try {
+      const { status, currentStage, nextAction, applicationNo } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); }
+      if (currentStage) { sets.push("currentStage = ?"); vals.push(currentStage); }
+      if (nextAction) { sets.push("nextAction = ?"); vals.push(nextAction); }
+      if (applicationNo) { sets.push("applicationNo = ?"); vals.push(applicationNo); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`TrademarkApp\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // ─── LEGAL MATTERS ───
   app.get("/api/admin/legal-matters", async (req, res) => {
     try {
@@ -1352,6 +1384,38 @@ const secret = JWT_SECRET;
       const [matters]: any = await conn.query("SELECT lm.*, c.companyName as clientName FROM `LegalMatter` lm LEFT JOIN `Client` c ON lm.clientId = c.id ORDER BY lm.createdAt DESC");
       conn.release();
       res.json({ matters });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/legal-matters", async (req, res) => {
+    try {
+      const { clientId, title, type, lawyerId, priority, deadline, notes } = req.body;
+      if (!clientId || !title || !type) return res.status(400).json({ error: "clientId, title, type required" });
+      const conn = await getPlatformConnection();
+      const id = "lm_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `LegalMatter` (id, clientId, title, type, lawyerId, priority, status, deadline, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?)",
+        [id, clientId, title, type, lawyerId || null, priority || "MEDIUM", deadline || null, notes || null, now, now]);
+      conn.release();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/legal-matters/:id", async (req, res) => {
+    try {
+      const { status, lawyerId, priority, notes } = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      if (status) { sets.push("status = ?"); vals.push(status); }
+      if (lawyerId) { sets.push("lawyerId = ?"); vals.push(lawyerId); }
+      if (priority) { sets.push("priority = ?"); vals.push(priority); }
+      if (notes) { sets.push("notes = ?"); vals.push(notes); }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`LegalMatter\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      conn.release();
+      res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
@@ -1459,6 +1523,85 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // Portal document upload (client uploads their own documents)
+  app.post("/api/portal/documents/upload", upload.single("file"), async (req: any, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      
+      if (!req.file) return res.status(400).json({ error: "No file provided" });
+      
+      const { title, category, folder } = req.body;
+      if (!title || !category) return res.status(400).json({ error: "Title and category are required" });
+
+      const conn = await getPlatformConnection();
+      // Get client ID from user email
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      if (!user[0]) { conn.release(); return res.status(404).json({ error: "User not found" }); }
+      const [clients]: any = await conn.query("SELECT id FROM `Client` WHERE contactEmail = ?", [user[0].email]);
+      if (!clients[0]) { conn.release(); return res.status(404).json({ error: "Client account not found" }); }
+      const clientId = clients[0].id;
+
+      const file = req.file;
+      const fileExt = path.extname(file.originalname);
+      const storageKey = `clients/${clientId}/${category}/${Date.now()}${fileExt}`;
+      
+      let publicUrl = "";
+      let storageProvider = "local";
+
+      // Upload to R2 if configured
+      if (process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+        try {
+          const s3 = new S3Client({
+            region: "auto",
+            endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            credentials: {
+              accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+              secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+            },
+          });
+          await s3.send(new PutObjectCommand({
+            Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME || "incroute",
+            Key: storageKey,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          }));
+          storageProvider = "r2";
+          if (process.env.CLOUDFLARE_R2_PUBLIC_URL) {
+            publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${storageKey}`;
+          }
+        } catch (r2Err: any) {
+          console.error("R2 upload failed, falling back to local:", r2Err.message);
+          // Fallback: save locally
+          const localDir = path.join(process.cwd(), "uploads", clientId, category);
+          fs.mkdirSync(localDir, { recursive: true });
+          fs.writeFileSync(path.join(localDir, `${Date.now()}${fileExt}`), file.buffer);
+          storageProvider = "local";
+        }
+      } else {
+        // Save locally if R2 not configured
+        const localDir = path.join(process.cwd(), "uploads", clientId, category);
+        fs.mkdirSync(localDir, { recursive: true });
+        fs.writeFileSync(path.join(localDir, `${Date.now()}${fileExt}`), file.buffer);
+      }
+
+      // Save metadata to DB
+      const docId = "doc_" + Date.now().toString(36) + crypto.randomBytes(4).toString("hex");
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Document\` (id, clientId, title, category, folder, fileName, originalName, mimeType, size, storageKey, storageProvider, publicUrl, status, uploadedBy, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
+        [docId, clientId, title, category, folder || category, file.originalname, file.originalname, file.mimetype, file.size, storageKey, storageProvider, publicUrl, decoded.userId, now, now]
+      );
+      conn.release();
+
+      res.json({ success: true, id: docId, message: "Document uploaded successfully" });
+    } catch (err: any) {
+      res.status(500).json({ error: "Upload failed: " + err.message });
+    }
+  });
+
   // Portal invoices
   app.get("/api/portal/invoices", async (req, res) => {
     try {
@@ -1498,6 +1641,117 @@ const secret = JWT_SECRET;
       const [clients]: any = await conn.query("SELECT * FROM `Client` WHERE contactEmail = ? LIMIT 1", [users[0]?.email]);
       conn.release();
       res.json({ user: users[0] || null, client: clients[0] || null });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Create support ticket
+  app.post("/api/portal/tickets/create", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const { subject, description, priority } = req.body;
+      if (!subject) return res.status(400).json({ error: "Subject is required" });
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [clients]: any = await conn.query("SELECT id FROM `Client` WHERE contactEmail = ?", [user[0]?.email]);
+      if (!clients[0]) { conn.release(); return res.status(404).json({ error: "Client not found" }); }
+      const id = "tkt_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `Ticket` (id, clientId, subject, description, priority, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, 'OPEN', ?, ?)", [id, clients[0].id, subject, description || null, priority || "MEDIUM", now, now]);
+      conn.release();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Book consultation
+  app.post("/api/portal/consultations/book", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const { topic, scheduledAt, notes } = req.body;
+      if (!topic || !scheduledAt) return res.status(400).json({ error: "Topic and date required" });
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [clients]: any = await conn.query("SELECT id FROM `Client` WHERE contactEmail = ?", [user[0]?.email]);
+      if (!clients[0]) { conn.release(); return res.status(404).json({ error: "Client not found" }); }
+      const id = "con_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const scheduled = new Date(scheduledAt).toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("INSERT INTO `Consultation` (id, clientId, topic, scheduledAt, duration, status, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, 30, 'SCHEDULED', ?, ?, ?)", [id, clients[0].id, topic, scheduled, notes || null, now, now]);
+      conn.release();
+      res.json({ success: true, id });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Get consultations
+  app.get("/api/portal/consultations", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [consultations]: any = await conn.query("SELECT con.* FROM `Consultation` con JOIN `Client` c ON con.clientId = c.id WHERE c.contactEmail = ? ORDER BY con.scheduledAt DESC", [user[0]?.email]);
+      conn.release();
+      res.json({ consultations });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Get legal matters
+  app.get("/api/portal/legal-matters", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [matters]: any = await conn.query("SELECT lm.* FROM `LegalMatter` lm JOIN `Client` c ON lm.clientId = c.id WHERE c.contactEmail = ? ORDER BY lm.createdAt DESC", [user[0]?.email]);
+      conn.release();
+      res.json({ matters });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Get trademarks
+  app.get("/api/portal/trademarks", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [trademarks]: any = await conn.query("SELECT t.* FROM `TrademarkApp` t JOIN `Client` c ON t.clientId = c.id WHERE c.contactEmail = ? ORDER BY t.createdAt DESC", [user[0]?.email]);
+      conn.release();
+      res.json({ trademarks });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Tax filings (entities with GSTIN info)
+  app.get("/api/portal/tax-filings", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [entities]: any = await conn.query("SELECT e.id, e.name, e.gstin, e.pan, e.type FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?", [user[0]?.email]);
+      conn.release();
+      res.json({ entities });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal: Notifications (recent activity for client)
+  app.get("/api/portal/notifications", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [activities]: any = await conn.query("SELECT a.id, a.title, a.type, a.details, a.createdAt FROM `Activity` a JOIN `Client` c ON a.clientId = c.id WHERE c.contactEmail = ? ORDER BY a.createdAt DESC LIMIT 20", [user[0]?.email]);
+      conn.release();
+      res.json({ notifications: activities });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 

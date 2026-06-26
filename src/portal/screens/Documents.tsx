@@ -1,50 +1,285 @@
 import React, { useEffect, useState } from "react";
-import { FileText, FolderOpen, Loader2, Search } from "lucide-react";
+import { FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, X, AlertTriangle, Download, ChevronRight, Plus } from "lucide-react";
 
-interface Doc { id: string; title: string; category: string; fileName: string; status: string; createdAt: string; }
+// Service categories with their required documents
+const SERVICE_DOCUMENTS: Record<string, { label: string; icon: string; docs: string[] }> = {
+  "PVT_LTD": {
+    label: "Private Limited Company",
+    icon: "🏢",
+    docs: ["PAN Card (All Directors)", "Aadhaar Card (All Directors)", "Passport Size Photo", "Address Proof (Utility Bill)", "Bank Statement", "NOC from Property Owner", "Rent Agreement", "Digital Signature Certificate (DSC)"]
+  },
+  "LLP": {
+    label: "LLP Registration",
+    icon: "🤝",
+    docs: ["PAN Card (All Partners)", "Aadhaar Card (All Partners)", "Address Proof", "Bank Statement", "Registered Office Proof", "LLP Agreement Draft", "DSC of Designated Partners"]
+  },
+  "OPC": {
+    label: "One Person Company",
+    icon: "👤",
+    docs: ["PAN Card (Director)", "Aadhaar Card (Director)", "Photo", "Address Proof", "Bank Statement", "NOC from Owner", "Nominee Consent (Form INC-3)"]
+  },
+  "GST": {
+    label: "GST Registration",
+    icon: "📊",
+    docs: ["PAN Card (Business)", "Aadhaar Card (Authorized Signatory)", "Address Proof of Business", "Bank Account Statement/Cancelled Cheque", "Electricity Bill", "Rent Agreement/Ownership Proof", "Photo of Signatory", "Authorization Letter"]
+  },
+  "TRADEMARK": {
+    label: "Trademark Registration",
+    icon: "™️",
+    docs: ["Trademark Logo (High Resolution)", "Applicant ID Proof", "Address Proof", "Business Registration Certificate", "Authorization Letter (TM-48)", "User Affidavit (if claiming prior use)"]
+  },
+  "MSME": {
+    label: "MSME / Udyam Registration",
+    icon: "🏭",
+    docs: ["Aadhaar Card (Owner)", "PAN Card (Business)", "GST Certificate (if applicable)", "Bank Account Details", "Business Address Proof"]
+  },
+  "ROC_FILING": {
+    label: "Annual ROC Filing",
+    icon: "📋",
+    docs: ["Audited Financial Statements", "Board Resolution", "Director Report", "AGM Minutes", "Form AOC-4 Data", "Form MGT-7 Data"]
+  },
+  "INCOME_TAX": {
+    label: "Income Tax Return",
+    icon: "💰",
+    docs: ["Form 16 / Salary Slips", "Bank Statements (All Accounts)", "Investment Proofs", "TDS Certificates", "Capital Gains Statement", "Rental Income Proof", "Business P&L Statement"]
+  },
+};
+
+interface Doc {
+  id: string;
+  title: string;
+  category: string;
+  folder: string;
+  fileName: string;
+  status: string;
+  createdAt: string;
+  size?: number;
+}
+
+const authHeaders = () => {
+  const t = localStorage.getItem("incroute_access_token");
+  return t ? { Authorization: `Bearer ${t}` } : {};
+};
 
 export default function Documents() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [search, setSearch] = useState("");
-  useEffect(() => { (async () => { try { const token = localStorage.getItem("incroute_access_token"); const r = await fetch("/api/portal/documents", { headers: token ? { Authorization: `Bearer ${token}` } : {} }); const d = await r.json(); if (d.documents) setDocs(d.documents); } catch {} finally { setLoading(false); } })(); }, []);
+
+  useEffect(() => {
+    fetchDocs();
+  }, []);
+
+  const fetchDocs = async () => {
+    try {
+      const r = await fetch("/api/portal/documents", { headers: authHeaders() });
+      const d = await r.json();
+      if (d.documents) setDocs(d.documents);
+    } catch {} finally { setLoading(false); }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string, docName: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { setUploadError("File too large (max 10MB)"); return; }
+
+    setUploading(true);
+    setUploadError("");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", docName);
+    formData.append("category", category);
+    formData.append("folder", activeFolder || category);
+
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch("/api/portal/documents/upload", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchDocs();
+      } else {
+        setUploadError(data.error || "Upload failed");
+      }
+    } catch {
+      setUploadError("Network error during upload");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "APPROVED": return <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />;
+      case "REJECTED": return <AlertTriangle className="w-3.5 h-3.5 text-red-400" />;
+      default: return <Clock className="w-3.5 h-3.5 text-yellow-500" />;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "APPROVED": return "Verified";
+      case "REJECTED": return "Rejected";
+      case "UNDER_REVIEW": return "Under Review";
+      default: return "Pending";
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>;
 
-  const filtered = docs.filter(d => d.title.toLowerCase().includes(search.toLowerCase()) || d.category.toLowerCase().includes(search.toLowerCase()));
-  const categories = [...new Set(docs.map(d => d.category))];
+  // Folder view — show required docs + uploaded ones
+  if (activeFolder) {
+    const serviceInfo = SERVICE_DOCUMENTS[activeFolder];
+    const folderDocs = docs.filter(d => d.category === activeFolder || d.folder === activeFolder);
+    const uploadedNames = folderDocs.map(d => d.title);
 
-  if (docs.length === 0) return (
-    <div className="space-y-6">
-      <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Center</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">No documents available</p></div>
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center mb-4"><FolderOpen className="w-6 h-6 text-[var(--accent)]" /></div>
-        <h3 className="text-[16px] font-bold text-[var(--text-primary)] mb-1">No documents yet</h3>
-        <p className="text-[13px] text-[var(--text-secondary)] max-w-sm">Your documents will appear here once uploaded by your advisor.</p>
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setActiveFolder(null)} className="p-2 rounded-xl hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer"><X className="w-4 h-4" /></button>
+          <div>
+            <h1 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight flex items-center gap-2">
+              <span>{serviceInfo?.icon}</span> {serviceInfo?.label || activeFolder}
+            </h1>
+            <p className="text-[12px] text-[var(--text-secondary)]">{folderDocs.length} of {serviceInfo?.docs.length || 0} documents uploaded</p>
+          </div>
+        </div>
+
+        {uploadError && (
+          <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[13px] text-red-400 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" /> {uploadError}
+            <button onClick={() => setUploadError("")} className="ml-auto cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+          </div>
+        )}
+
+        {/* Progress bar */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[12px] font-medium text-[var(--text-secondary)]">Upload Progress</span>
+            <span className="text-[12px] font-bold text-[var(--accent)]">{folderDocs.length}/{serviceInfo?.docs.length || 0}</span>
+          </div>
+          <div className="h-2 bg-[var(--bg-surface-alt)] rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-full transition-all duration-500" style={{ width: `${serviceInfo?.docs.length ? (folderDocs.length / serviceInfo.docs.length * 100) : 0}%` }} />
+          </div>
+        </div>
+
+        {/* Required documents list */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-[var(--border-subtle)]">
+            <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Required Documents</h3>
+          </div>
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {serviceInfo?.docs.map((docName, i) => {
+              const uploaded = folderDocs.find(d => d.title === docName);
+              return (
+                <div key={i} className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    {uploaded ? getStatusIcon(uploaded.status) : <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--border-subtle)]" />}
+                    <div>
+                      <p className={`text-[13px] font-medium ${uploaded ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{docName}</p>
+                      {uploaded && <p className="text-[10px] text-[var(--text-tertiary)]">{uploaded.fileName} · {getStatusLabel(uploaded.status)}</p>}
+                    </div>
+                  </div>
+                  <div>
+                    {uploaded ? (
+                      <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${uploaded.status === "APPROVED" ? "bg-green-500/10 text-green-500" : uploaded.status === "REJECTED" ? "bg-red-500/10 text-red-400" : "bg-yellow-500/10 text-yellow-600"}`}>
+                        {getStatusLabel(uploaded.status)}
+                      </span>
+                    ) : (
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors">
+                        <Upload className="w-3 h-3" /> Upload
+                        <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder, docName)} disabled={uploading} />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {uploading && (
+          <div className="flex items-center gap-2 text-[12px] text-[var(--accent)]">
+            <Loader2 className="w-4 h-4 animate-spin" /> Uploading document...
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Main view — service folders
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Center</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{docs.length} documents</p></div>
-        <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" /><input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-[13px] bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] w-[200px]" /></div>
+        <div>
+          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Center</h1>
+          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Upload and manage documents for each service</p>
+        </div>
+        {docs.length > 0 && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+            <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-[13px] bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] w-[200px]" />
+          </div>
+        )}
       </div>
-      {categories.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {categories.map(cat => (<div key={cat} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 flex items-center gap-3 hover:border-[var(--accent)] transition-colors cursor-pointer"><FolderOpen className="w-5 h-5 text-[var(--accent)] shrink-0" /><div><p className="text-[13px] font-medium text-[var(--text-primary)]">{cat}</p><p className="text-[11px] text-[var(--text-tertiary)]">{docs.filter(d => d.category === cat).length} files</p></div></div>))}
+
+      {/* Service folders grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {Object.entries(SERVICE_DOCUMENTS).map(([key, service]) => {
+          const count = docs.filter(d => d.category === key || d.folder === key).length;
+          const total = service.docs.length;
+          const progress = total > 0 ? Math.round((count / total) * 100) : 0;
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveFolder(key)}
+              className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 text-left hover:border-[var(--accent)] hover:shadow-[0_4px_16px_rgba(91,108,255,0.06)] transition-all cursor-pointer group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">{service.icon}</span>
+                <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--accent)] transition-colors" />
+              </div>
+              <p className="text-[13px] font-bold text-[var(--text-primary)] mb-1">{service.label}</p>
+              <p className="text-[11px] text-[var(--text-tertiary)] mb-3">{count}/{total} documents</p>
+              <div className="h-1.5 bg-[var(--bg-surface-alt)] rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${progress === 100 ? "bg-green-500" : "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)]"}`} style={{ width: `${progress}%` }} />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Recent uploads */}
+      {docs.length > 0 && (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-[var(--border-subtle)]">
+            <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Recent Uploads</h3>
+          </div>
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {docs.slice(0, 5).map(d => (
+              <div key={d.id} className="flex items-center justify-between px-5 py-3.5">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-4 h-4 text-[var(--accent)]" />
+                  <div>
+                    <p className="text-[13px] font-medium text-[var(--text-primary)]">{d.title}</p>
+                    <p className="text-[10px] text-[var(--text-tertiary)]">{SERVICE_DOCUMENTS[d.category]?.label || d.category} · {new Date(d.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(d.status)}
+                  <span className="text-[10px] font-medium text-[var(--text-tertiary)]">{getStatusLabel(d.status)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--border-subtle)]"><h3 className="text-[15px] font-bold text-[var(--text-primary)]">All Documents</h3></div>
-        <div className="divide-y divide-[var(--border-subtle)]">
-          {filtered.map(d => (
-            <div key={d.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-[var(--accent-soft)] transition-colors cursor-pointer">
-              <div className="flex items-center gap-3"><FileText className="w-4 h-4 text-[var(--accent)]" /><div><p className="text-[13px] font-medium text-[var(--text-primary)]">{d.title}</p><p className="text-[11px] text-[var(--text-tertiary)]">{d.category} · {new Date(d.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}</p></div></div>
-              <span className="text-[10px] font-semibold text-[var(--accent)]">{d.status.replace(/_/g, " ")}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
