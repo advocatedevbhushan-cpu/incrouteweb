@@ -67,12 +67,6 @@ collections:
               - label: "Status"
                 name: "status"
                 widget: "select"
-                options: ["draft", "ready", "published", "archived"]
-                default: "draft"
-              - { label: "Meta Description", name: "metaDescription", widget: "text", required: false }
-              - label: "Status"
-                name: "status"
-                widget: "select"
                 options:
                   - { label: "Draft", value: "draft" }
                   - { label: "Ready for Review", value: "ready" }
