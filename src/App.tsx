@@ -12,7 +12,6 @@ const NameFeasibilityChecker = lazy(() => import("./components/NameFeasibilityCh
 const BlogPage = lazy(() => import("./components/BlogPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
 const AuthPortal = lazy(() => import("./components/AuthPortal"));
-const Login = lazy(() => import("./components/LoginPage")); // consolidated login
 const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
 const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
 const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
@@ -302,6 +301,40 @@ export default function App() {
           <p className="text-[11px] font-mono text-brand-text-muted uppercase tracking-widest">Loading portal&hellip;</p>
         </div>
       </div>
+    );
+  }
+
+  // Check if we're in a full-screen portal mode (portal/admin have their own shell)
+  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin";
+
+  // Check if user is authenticated for portal/admin access
+  const isAuthenticated = (() => {
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      return !!token;
+    } catch { return false; }
+  })();
+
+  // Redirect to login if trying to access portal/admin without auth
+  useEffect(() => {
+    if (isFullScreenPortal && !isAuthenticated && !loading) {
+      navigate("/login");
+    }
+  }, [activeTab, isAuthenticated, loading]);
+
+  // If portal/admin is active, render without outer shell
+  if (isFullScreenPortal) {
+    if (!isAuthenticated) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]">
+          <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
+    return (
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>}>
+        {activeTab === "portal" ? <ClientPortal /> : <AdminPortal />}
+      </Suspense>
     );
   }
 
