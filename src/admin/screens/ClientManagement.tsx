@@ -176,7 +176,24 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
               <div className="flex items-center gap-3"><FileText className="w-4 h-4 text-[var(--accent)]" /><div><p className="text-[13px] font-medium text-[var(--text-primary)]">{sr.serviceType.replace(/_/g, " ")}</p><p className="text-[10px] text-[var(--text-tertiary)]">{sr.notes || "No notes"} · {new Date(sr.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</p></div></div>
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${sr.status === "COMPLETED" ? "bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[var(--success)]" : sr.status === "IN_PROGRESS" ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] text-[var(--warning)]"}`}>{sr.status.replace(/_/g, " ")}</span>
-                {sr.status !== "COMPLETED" && <button onClick={() => updateServiceStatus(sr.id, sr.status === "DRAFT" || sr.status === "PENDING_DOCUMENTS" ? "IN_PROGRESS" : "COMPLETED")} className="text-[10px] px-2 py-1 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] font-medium cursor-pointer hover:bg-[var(--accent)] hover:text-white">{sr.status === "IN_PROGRESS" ? "Complete" : "Start"}</button>}
+                {sr.status !== "COMPLETED" && sr.status !== "CANCELLED" && (
+                  <select
+                    value=""
+                    onChange={(e) => { if (e.target.value) updateServiceStatus(sr.id, e.target.value); }}
+                    className="text-[10px] px-2 py-1 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] font-medium cursor-pointer border-none outline-none"
+                  >
+                    <option value="">Change Status</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="PENDING_DOCUMENTS">Pending Documents</option>
+                    <option value="UNDER_REVIEW">Under Review</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="FILED">Filed with Authority</option>
+                    <option value="AWAITING_APPROVAL">Awaiting Approval</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="ON_HOLD">On Hold</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                )}
               </div>
             </div>
           ))}</div>
