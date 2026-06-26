@@ -274,36 +274,6 @@ export default function App() {
     fetchCalendar();
   }, []);
 
-  // Loading screen rendered after all hooks (avoids React hooks rules violation)
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center gap-6 relative">
-        <div className="executive-glow-1" />
-        <div className="executive-glow-2" />
-        <div className="executive-grid" />
-        <div className="relative z-10 flex flex-col items-center gap-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full overflow-hidden">
-              <img src="/incroute_logo.png" alt="INCroute Logo" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col select-none leading-none">
-              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight">
-                INC<span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] font-bold italic">route</span>
-              </span>
-              <div className="flex items-center gap-1 mt-[3px]">
-                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] opacity-50" />
-                <span className="text-[8px] text-[var(--text-tertiary)] tracking-[0.18em] uppercase font-semibold">Make It Right</span>
-                <span className="h-[1px] w-3.5 bg-gradient-to-r from-[var(--gradient-end)] to-[var(--gradient-start)] opacity-50" />
-              </div>
-            </div>
-          </div>
-          <div className="w-10 h-10 border-2 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin" />
-          <p className="text-[11px] font-mono text-brand-text-muted uppercase tracking-widest">Loading portal&hellip;</p>
-        </div>
-      </div>
-    );
-  }
-
   // Check if we're in a full-screen portal mode (portal/admin have their own shell)
   const isFullScreenPortal = activeTab === "portal" || activeTab === "admin";
 
