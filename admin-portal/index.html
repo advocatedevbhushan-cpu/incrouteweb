@@ -132,38 +132,6 @@
     </script>
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
     <script>
-      // Register custom format for parsing and saving flat JSON arrays
-      CMS.registerCustomFormat('json-array', 'json', {
-        toFile: function(obj) {
-          // Find the first array property and save it as root-level JSON array
-          for (var key in obj) {
-            if (Array.isArray(obj[key])) {
-              return JSON.stringify(obj[key], null, 2);
-            }
-          }
-          return JSON.stringify([], null, 2);
-        },
-        fromFile: function(content) {
-          try {
-            var parsed = JSON.parse(content);
-            var list = Array.isArray(parsed) ? parsed : [];
-            // Return with all possible collection field names
-            return { 
-              posts: list,
-              testimonials: list,
-              services: list,
-              members: list,
-              faqs: list,
-              cases: list,
-              pages: list
-            };
-          } catch (e) {
-            console.error("[CMS] JSON parse error:", e);
-            return { posts: [], testimonials: [], services: [], members: [], faqs: [], cases: [], pages: [] };
-          }
-        }
-      });
-      
       CMS.init();
     </script>
   </body>

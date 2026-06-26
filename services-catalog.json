@@ -1,4 +1,4 @@
-[
+{"services": [
   {
     "id": "svc-1",
     "name": "Private Limited Company Registration",
@@ -27,4 +27,4 @@
     "visible": true,
     "order": 2
   }
-]
+]}

@@ -1,4 +1,4 @@
-[
+{"faqs": [
   {
     "id": "faq-1",
     "question": "How long does it take to incorporate a Private Limited Company?",
@@ -23,4 +23,4 @@
     "order": 3,
     "visible": true
   }
-]
+]}

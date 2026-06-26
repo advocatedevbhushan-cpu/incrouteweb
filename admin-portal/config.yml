@@ -38,7 +38,7 @@ collections:
       - file: "blog-posts.json"
         label: "All Blog Posts"
         name: "blog_posts"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "posts"
             label: "Blog Posts"
@@ -47,37 +47,29 @@ collections:
             summary: "{{fields.title}} [{{fields.status}}] — {{fields.date}}"
             add_to_top: true
             fields:
-              - { label: "ID", name: "id", widget: "string", hint: "Unique identifier (e.g., blog-4). Do not change after creation." }
+              - { label: "ID", name: "id", widget: "string", hint: "Unique identifier (e.g., blog-4)." }
               - { label: "Title", name: "title", widget: "string" }
-              - { label: "Subtitle", name: "subtitle", widget: "string", required: false, hint: "Brief one-line summary for cards and meta." }
-              - { label: "URL Slug", name: "slug", widget: "string", hint: "URL-friendly path (e.g., how-to-register-pvt-ltd)" }
+              - { label: "Subtitle", name: "subtitle", widget: "string", required: false }
+              - { label: "URL Slug", name: "slug", widget: "string" }
               - label: "Content"
                 name: "content"
                 widget: "markdown"
-                hint: "Full blog content. Use headings, lists, and images."
-              - { label: "Featured Image", name: "image", widget: "image", required: false, hint: "Recommended: 1200x630px for social sharing." }
+              - { label: "Featured Image", name: "image", widget: "image", required: false }
               - { label: "Publish Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
               - { label: "Author", name: "author", widget: "string", default: "D Bhushan" }
               - label: "Category"
                 name: "category"
                 widget: "select"
-                options:
-                  - "Company Registration"
-                  - "Compliance & ROC"
-                  - "GST & Taxation"
-                  - "Trademark & IP"
-                  - "Legal Advisory"
-                  - "Startup Guide"
-                  - "Industry News"
+                options: ["Company Registration", "Compliance & ROC", "GST & Taxation", "Trademark & IP", "Legal Advisory", "Startup Guide", "Industry News"]
                 default: "Company Registration"
                 required: false
-              - label: "Tags"
-                name: "tags"
-                widget: "list"
-                required: false
-                hint: "Comma-separated tags for categorization"
-              - { label: "Reading Time (min)", name: "readingTime", widget: "number", value_type: "int", default: 5, required: false }
               - { label: "Views", name: "views", widget: "number", value_type: "int", default: 0 }
+              - label: "Status"
+                name: "status"
+                widget: "select"
+                options: ["draft", "ready", "published", "archived"]
+                default: "draft"
+              - { label: "Meta Description", name: "metaDescription", widget: "text", required: false }
               - label: "Status"
                 name: "status"
                 widget: "select"
@@ -106,7 +98,7 @@ collections:
       - file: "testimonials.json"
         label: "Client Testimonials"
         name: "client_testimonials"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "testimonials"
             label: "Testimonials"
@@ -145,7 +137,7 @@ collections:
       - file: "services-catalog.json"
         label: "Service Catalog"
         name: "service_catalog"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "services"
             label: "Services"
@@ -197,7 +189,7 @@ collections:
       - file: "team-members.json"
         label: "Team Members"
         name: "team_members"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "members"
             label: "Team Members"
@@ -228,7 +220,7 @@ collections:
       - file: "faqs.json"
         label: "FAQ Database"
         name: "faq_database"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "faqs"
             label: "FAQs"
@@ -268,7 +260,7 @@ collections:
       - file: "case-studies.json"
         label: "Case Studies"
         name: "case_studies_list"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "cases"
             label: "Case Studies"
@@ -327,7 +319,7 @@ collections:
       - file: "legal-pages.json"
         label: "Legal Pages"
         name: "legal_pages"
-        format: "json-array"
+        format: "json"
         fields:
           - name: "pages"
             label: "Legal Pages"

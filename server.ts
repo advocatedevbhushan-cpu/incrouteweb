@@ -2832,7 +2832,8 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   // Load testimonials from disk
   if (fs.existsSync(TESTIMONIALS_FILE)) {
     try {
-      testimonials = JSON.parse(fs.readFileSync(TESTIMONIALS_FILE, "utf-8"));
+      const rawData = JSON.parse(fs.readFileSync(TESTIMONIALS_FILE, "utf-8"));
+      testimonials = Array.isArray(rawData) ? rawData : (rawData.testimonials || []);
       console.log(`🟢 LOADED PERSISTED TESTIMONIALS: ${testimonials.length} reviews`);
     } catch (err: any) {
       console.error("Failed to read persisted testimonials:", err.message);
