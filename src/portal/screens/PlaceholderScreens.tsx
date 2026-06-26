@@ -21,132 +21,70 @@ function EmptyState({ icon: Icon, title, description, action }: { icon: React.Co
 
 /* ─── LEGAL MATTERS ─── */
 export function Legal() {
-  const matters = [
-    { name: "NDA Review — Vendor Agreement", type: "Contract Review", status: "In Progress", lawyer: "Adv. Sharma", updated: "Jun 19, 2026", priority: "Medium" },
-    { name: "Trademark Opposition — Class 9", type: "IP Dispute", status: "Hearing Scheduled", lawyer: "Adv. Kapoor", updated: "Jun 15, 2026", priority: "High" },
-    { name: "Employment Contract Drafting", type: "Drafting", status: "Completed", lawyer: "Adv. Sharma", updated: "Jun 10, 2026", priority: "Low" },
-    { name: "NCLT Compliance Matter", type: "Regulatory", status: "Under Review", lawyer: "Adv. Mehta", updated: "Jun 5, 2026", priority: "High" },
-  ];
-  if (matters.length === 0) return (<div className="space-y-6"><ScreenHeader title="Legal Matters" subtitle="0 active matters" /><EmptyState icon={Scale} title="No legal matters" description="When you have active legal cases or consultations, they'll appear here." action={{ label: "Start Consultation" }} /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Legal Matters" subtitle={`${matters.length} active matters`} />
-      <TableCard headers={["Case Name", "Type", "Assigned Lawyer", "Status", "Priority", "Last Update"]} rows={matters.map(m => [m.name, m.type, m.lawyer, <StatusPill key={m.name} s={m.status} />, <PriorityPill key={m.name+"p"} p={m.priority} />, m.updated])} />
+      <ScreenHeader title="Legal Matters" subtitle="0 active matters" />
+      <EmptyState icon={Scale} title="No legal matters" description="When your admin assigns legal cases or consultations, they'll appear here." action={{ label: "Request Consultation" }} />
     </div>
   );
 }
 
 /* ─── TRADEMARK TRACKING ─── */
 export function Trademark() {
-  const trademarks = [
-    { name: "INCroute", appNo: "TM-2024-98765", classN: "42", status: "Registered", stage: "Certificate Issued", next: "Renewal in 2034" },
-    { name: "INCroute Logo", appNo: "TM-2025-12345", classN: "9", status: "Under Examination", stage: "Objection Reply Filed", next: "Await hearing date" },
-    { name: "CorpShield", appNo: "TM-2026-55678", classN: "36", status: "Application Filed", stage: "Vienna Code Allotted", next: "Examination pending" },
-  ];
-  if (trademarks.length === 0) return (<div className="space-y-6"><ScreenHeader title="Trademark Tracking" subtitle="0 applications" /><EmptyState icon={Shield} title="No trademarks tracked" description="When you file trademarks through INCroute, track their progress here." action={{ label: "Start Trademark" }} /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Trademark Tracking" subtitle={`${trademarks.length} trademark applications`} />
-      <TableCard headers={["Trademark", "App No.", "Class", "Status", "Current Stage", "Next Action"]} rows={trademarks.map(t => [t.name, t.appNo, t.classN, <StatusPill key={t.appNo} s={t.status} />, t.stage, t.next])} />
+      <ScreenHeader title="Trademark Tracking" subtitle="0 applications" />
+      <EmptyState icon={Shield} title="No trademarks tracked" description="When you file trademarks through INCroute, track their progress here." action={{ label: "Start Trademark" }} />
     </div>
   );
 }
 
 /* ─── TAX & GST ─── */
 export function TaxGST() {
-  const filings = [
-    { name: "GSTR-1 (June 2026)", due: "Jul 11, 2026", status: "Due Soon", amount: "₹12,450" },
-    { name: "GSTR-3B (June 2026)", due: "Jul 20, 2026", status: "Upcoming", amount: "₹18,200" },
-    { name: "GSTR-1 (May 2026)", due: "Jun 11, 2026", status: "Filed", amount: "₹11,800" },
-    { name: "GSTR-3B (May 2026)", due: "Jun 20, 2026", status: "Filed", amount: "₹16,900" },
-    { name: "ITR FY25-26", due: "Sep 30, 2026", status: "Upcoming", amount: "—" },
-  ];
   return (
     <div className="space-y-6">
       <ScreenHeader title="Tax & GST" subtitle="GST registrations, returns and tax filings" />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MetricBox label="GSTIN" value="29AABCU9603R1ZM" />
-        <MetricBox label="Filing Status" value="Up to Date" />
-        <MetricBox label="Pending Returns" value="2" />
-      </div>
-      <TableCard headers={["Filing", "Due Date", "Status", "Tax Liability"]} rows={filings.map(f => [f.name, f.due, <StatusPill key={f.name} s={f.status} />, f.amount])} />
+      <EmptyState icon={Database} title="No tax filings yet" description="Your GST returns, ITR filings, and tax liabilities will appear here once assigned by your admin." />
     </div>
   );
 }
 
 /* ─── CONSULTATIONS ─── */
 export function Consultations() {
-  const meetings = [
-    { topic: "Annual Compliance Planning FY27", date: "Jul 5, 2026 · 3:00 PM", advisor: "CA Mehra", status: "Upcoming" },
-    { topic: "Trademark Strategy Review", date: "Jun 28, 2026 · 11:00 AM", advisor: "Adv. Kapoor", status: "Completed" },
-    { topic: "GST Reconciliation Walkthrough", date: "Jun 20, 2026 · 2:00 PM", advisor: "Tax Team", status: "Completed" },
-  ];
-  if (meetings.length === 0) return (<div className="space-y-6"><ScreenHeader title="Consultations" subtitle="No sessions scheduled" action={<ActionBtn label="Book Consultation" />} /><EmptyState icon={Users} title="No consultations yet" description="Schedule your first advisory session with our compliance and legal experts." action={{ label: "Book First Session" }} /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Consultations" subtitle="Schedule, manage and review your advisory sessions" action={<ActionBtn label="Book Consultation" />} />
-      <TableCard headers={["Topic", "Date & Time", "Advisor", "Status"]} rows={meetings.map(m => [m.topic, m.date, m.advisor, <StatusPill key={m.topic} s={m.status} />])} />
+      <ScreenHeader title="Consultations" subtitle="No sessions scheduled" action={<ActionBtn label="Book Consultation" />} />
+      <EmptyState icon={Users} title="No consultations yet" description="Schedule your first advisory session with our compliance and legal experts." action={{ label: "Book First Session" }} />
     </div>
   );
 }
 
 /* ─── INVOICES ─── */
 export function Invoices() {
-  const inv = [
-    { no: "INV-2026-042", date: "Jun 15, 2026", amount: "₹14,999", status: "Paid" },
-    { no: "INV-2026-041", date: "May 15, 2026", amount: "₹14,999", status: "Paid" },
-    { no: "INV-2026-043", date: "Jul 01, 2026", amount: "₹7,499", status: "Pending" },
-    { no: "INV-2026-040", date: "Apr 15, 2026", amount: "₹14,999", status: "Paid" },
-  ];
-  if (inv.length === 0) return (<div className="space-y-6"><ScreenHeader title="Invoices" subtitle="No invoices" /><EmptyState icon={Receipt} title="No invoices yet" description="Your billing history and pending payments will appear here." /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Invoices" subtitle="Billing history and pending payments" />
-      <TableCard headers={["Invoice", "Date", "Amount", "Status", "Action"]} rows={inv.map(i => [i.no, i.date, <span key={i.no} className="font-semibold text-[var(--text-primary)]">{i.amount}</span>, <StatusPill key={i.no+"s"} s={i.status} />, <button key={i.no+"a"} className="text-[11px] text-[var(--accent)] font-medium cursor-pointer">Download</button>])} />
+      <ScreenHeader title="Invoices" subtitle="No invoices" />
+      <EmptyState icon={Receipt} title="No invoices yet" description="Your billing history and pending payments will appear here." />
     </div>
   );
 }
 
 /* ─── SUPPORT ─── */
 export function Support() {
-  const tickets = [
-    { id: "TKT-1042", subject: "GST Portal Access Issue", priority: "High", status: "Open", assigned: "Support Team" },
-    { id: "TKT-1041", subject: "Request updated MOA copy", priority: "Medium", status: "In Progress", assigned: "CS Priya" },
-    { id: "TKT-1040", subject: "Trademark hearing clarification", priority: "Low", status: "Closed", assigned: "IP Team" },
-  ];
-  if (tickets.length === 0) return (<div className="space-y-6"><ScreenHeader title="Support Center" subtitle="No tickets" action={<ActionBtn label="Create Ticket" />} /><EmptyState icon={HelpCircle} title="No open tickets" description="All clear! When you need help, create a support ticket here." action={{ label: "Create Ticket" }} /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Support Center" subtitle="Get help and track your requests" action={<ActionBtn label="Create Ticket" />} />
-      <TableCard headers={["Ticket", "Subject", "Priority", "Status", "Assigned"]} rows={tickets.map(t => [t.id, t.subject, <PriorityPill key={t.id} p={t.priority} />, <StatusPill key={t.id+"s"} s={t.status} />, t.assigned])} />
+      <ScreenHeader title="Support Center" subtitle="No tickets" action={<ActionBtn label="Create Ticket" />} />
+      <EmptyState icon={HelpCircle} title="No open tickets" description="All clear! When you need help, create a support ticket here." action={{ label: "Create Ticket" }} />
     </div>
   );
 }
 
 /* ─── NOTIFICATIONS ─── */
 export function Notifications() {
-  const notifs = [
-    { text: "GSTR-1 filing deadline in 3 days", time: "1 hour ago", type: "warning" },
-    { text: "New document uploaded: Board Resolution Q2", time: "5 hours ago", type: "info" },
-    { text: "Trademark application status updated", time: "Yesterday", type: "info" },
-    { text: "Invoice INV-2026-043 generated", time: "2 days ago", type: "info" },
-    { text: "DIR-3 KYC reminder — due Sep 30", time: "3 days ago", type: "warning" },
-  ];
-  if (notifs.length === 0) return (<div className="space-y-6"><ScreenHeader title="Notifications" subtitle="No notifications" /><EmptyState icon={Bell} title="You're all caught up" description="When there are updates to your compliance, documents or account, they'll show here." /></div>);
   return (
     <div className="space-y-6">
-      <ScreenHeader title="Notifications" subtitle="Stay updated on your business activity" />
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl divide-y divide-[var(--border-subtle)]">
-        {notifs.map((n, i) => (
-          <div key={i} className="flex items-start gap-3 px-5 py-4 hover:bg-[var(--accent-soft)] transition-colors cursor-pointer">
-            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.type === "warning" ? "bg-[var(--warning)]" : "bg-[var(--accent)]"}`} />
-            <div>
-              <p className="text-[13px] text-[var(--text-primary)]">{n.text}</p>
-              <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{n.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ScreenHeader title="Notifications" subtitle="No notifications" />
+      <EmptyState icon={Bell} title="You're all caught up" description="When there are updates to your compliance, documents or account, they'll show here." />
     </div>
   );
 }
