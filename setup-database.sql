@@ -455,47 +455,24 @@ CREATE TABLE IF NOT EXISTS `RelationshipAssignment` (
   INDEX `RelationshipAssignment_managerId_idx` (`managerId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ═══ FOREIGN KEY CONSTRAINTS (safe — skips if already exist) ═══
--- Note: These will silently fail if constraints already exist from a previous run.
--- This is expected and safe.
-
-SET @fk_errors = 0;
-
--- We use a procedure to safely add foreign keys
-DELIMITER //
-DROP PROCEDURE IF EXISTS safe_add_fkeys//
-CREATE PROCEDURE safe_add_fkeys()
-BEGIN
-  DECLARE CONTINUE HANDLER FOR 1005, 1022, 1061, 1826 BEGIN END;
-  ALTER TABLE `UserPermission` ADD CONSTRAINT `UserPermission_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `UserPermission` ADD CONSTRAINT `UserPermission_permissionId_fkey` FOREIGN KEY (`permissionId`) REFERENCES `Permission`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `Session` ADD CONSTRAINT `Session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `RefreshToken` ADD CONSTRAINT `RefreshToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `TeamAssignment` ADD CONSTRAINT `TeamAssignment_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `EntityAccess` ADD CONSTRAINT `EntityAccess_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `AuditLog` ADD CONSTRAINT `AuditLog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `Entity` ADD CONSTRAINT `Entity_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `ComplianceTask` ADD CONSTRAINT `ComplianceTask_entityId_fkey` FOREIGN KEY (`entityId`) REFERENCES `Entity`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `Task` ADD CONSTRAINT `Task_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `Document` ADD CONSTRAINT `Document_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `Document` ADD CONSTRAINT `Document_entityId_fkey` FOREIGN KEY (`entityId`) REFERENCES `Entity`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `Invoice` ADD CONSTRAINT `Invoice_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `Ticket` ADD CONSTRAINT `Ticket_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `Consultation` ADD CONSTRAINT `Consultation_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `LegalMatter` ADD CONSTRAINT `LegalMatter_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `TrademarkApp` ADD CONSTRAINT `TrademarkApp_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `Activity` ADD CONSTRAINT `Activity_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `ServiceRequest` ADD CONSTRAINT `ServiceRequest_clientId_fkey` FOREIGN KEY (`clientId`) REFERENCES `Client`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-  ALTER TABLE `ServiceStep` ADD CONSTRAINT `ServiceStep_serviceRequestId_fkey` FOREIGN KEY (`serviceRequestId`) REFERENCES `ServiceRequest`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `ServiceDocument` ADD CONSTRAINT `ServiceDocument_serviceRequestId_fkey` FOREIGN KEY (`serviceRequestId`) REFERENCES `ServiceRequest`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-  ALTER TABLE `TimelineEntry` ADD CONSTRAINT `TimelineEntry_serviceRequestId_fkey` FOREIGN KEY (`serviceRequestId`) REFERENCES `ServiceRequest`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-END//
-DELIMITER ;
-
-CALL safe_add_fkeys();
-DROP PROCEDURE IF EXISTS safe_add_fkeys;
+-- ═══ FOREIGN KEY CONSTRAINTS ═══
+-- Skipped: Foreign keys already exist from initial setup.
+-- If running for the first time, execute these manually in phpMyAdmin if needed.
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- ═══ ALTER Document table to add new columns (safe — ignores if exist) ═══
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `folder` VARCHAR(191) NULL AFTER `category`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `originalName` VARCHAR(191) NULL AFTER `fileName`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `mimeType` VARCHAR(191) NULL AFTER `originalName`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `size` INT NULL AFTER `mimeType`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `storageKey` VARCHAR(500) NULL AFTER `fileUrl`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `storageProvider` VARCHAR(50) NULL DEFAULT 'local' AFTER `storageKey`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `publicUrl` VARCHAR(500) NULL AFTER `storageProvider`;
+ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `internalNote` TEXT NULL AFTER `approvedAt`;
+
+-- Add PENDING to Document status enum if not already there
+ALTER TABLE `Document` MODIFY COLUMN `status` ENUM('DRAFT','PENDING','UNDER_REVIEW','APPROVED','REJECTED','PUBLISHED','ARCHIVED','EXPIRED') NOT NULL DEFAULT 'PENDING';
+
 -- ═══ DONE ═══
--- All 27 tables created/updated successfully!
+-- All tables created/updated successfully!
