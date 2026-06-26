@@ -124,6 +124,31 @@ async function startServer() {
         return res.status(400).json({ error: "Email and password required" });
       }
 
+      // Fallback admin login (works even if DB is not set up)
+      const fallbackAdminEmail = process.env.ADMIN_EMAIL || "d.bhushan@incroute.com";
+      const fallbackAdminPassword = process.env.ADMIN_PASSWORD || "Admin@2026";
+      
+      if (email === fallbackAdminEmail && password === fallbackAdminPassword) {
+        const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+        const accessToken = jwt.sign(
+          { userId: "admin_fallback", email, role: "SUPER_ADMIN", sessionId: "fallback_" + Date.now() },
+          secret,
+          { expiresIn: "24h" }
+        );
+        const refreshToken = jwt.sign(
+          { userId: "admin_fallback", sessionId: "fallback_" + Date.now(), type: "refresh" },
+          secret,
+          { expiresIn: "7d" }
+        );
+        return res.json({
+          success: true,
+          user: { id: "admin_fallback", email, firstName: "Dev", lastName: "Bhushan", role: "SUPER_ADMIN" },
+          accessToken,
+          refreshToken
+        });
+      }
+
+      // Database-backed login
       const conn = await getPlatformConnection();
       const [users]: any = await conn.query(
         "SELECT id, email, passwordHash, firstName, lastName, role, isActive FROM `User` WHERE email = ?",
@@ -182,6 +207,33 @@ async function startServer() {
         refreshToken
       });
     } catch (err: any) {
+      // If DB fails, still allow fallback admin
+      try {
+        const jwt = require("jsonwebtoken");
+        const { email, password } = req.body;
+        const fallbackAdminEmail = process.env.ADMIN_EMAIL || "d.bhushan@incroute.com";
+        const fallbackAdminPassword = process.env.ADMIN_PASSWORD || "Admin@2026";
+        
+        if (email === fallbackAdminEmail && password === fallbackAdminPassword) {
+          const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+          const accessToken = jwt.sign(
+            { userId: "admin_fallback", email, role: "SUPER_ADMIN", sessionId: "fallback_" + Date.now() },
+            secret,
+            { expiresIn: "24h" }
+          );
+          const refreshToken = jwt.sign(
+            { userId: "admin_fallback", sessionId: "fallback_" + Date.now(), type: "refresh" },
+            secret,
+            { expiresIn: "7d" }
+          );
+          return res.json({
+            success: true,
+            user: { id: "admin_fallback", email, firstName: "Dev", lastName: "Bhushan", role: "SUPER_ADMIN" },
+            accessToken,
+            refreshToken
+          });
+        }
+      } catch {}
       res.status(500).json({ error: "Login failed", details: err.message });
     }
   });

@@ -45,18 +45,15 @@ collections:
             label_singular: "Blog Post"
             widget: "list"
             summary: "{{fields.title}} [{{fields.status}}] — {{fields.date}}"
-            collapsed: true
-            minimize_collapsed: true
+            add_to_top: true
             fields:
               - { label: "ID", name: "id", widget: "string", hint: "Unique identifier (e.g., blog-4). Do not change after creation." }
-              - { label: "Title", name: "title", widget: "string", pattern: [".{10,100}", "Title must be 10-100 characters"] }
+              - { label: "Title", name: "title", widget: "string" }
               - { label: "Subtitle", name: "subtitle", widget: "string", required: false, hint: "Brief one-line summary for cards and meta." }
               - { label: "URL Slug", name: "slug", widget: "string", hint: "URL-friendly path (e.g., how-to-register-pvt-ltd)" }
               - label: "Content"
                 name: "content"
                 widget: "markdown"
-                buttons: ["bold", "italic", "code", "link", "heading-two", "heading-three", "quote", "bulleted-list", "numbered-list"]
-                editor_components: ["image", "code-block"]
                 hint: "Full blog content. Use headings, lists, and images."
               - { label: "Featured Image", name: "image", widget: "image", required: false, hint: "Recommended: 1200x630px for social sharing." }
               - { label: "Publish Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
@@ -96,8 +93,6 @@ collections:
                 widget: "text"
                 required: false
                 hint: "150-160 characters for Google search results."
-                pattern: [".{0,160}", "Max 160 characters"]
-              - { label: "SEO — Meta Keywords", name: "metaKeywords", widget: "string", required: false, hint: "Comma-separated keywords" }
 
   # ─── TESTIMONIALS ───
   - name: "testimonials"
@@ -118,7 +113,7 @@ collections:
             label_singular: "Testimonial"
             widget: "list"
             summary: "⭐{{fields.rating}} — {{fields.name}} ({{fields.entityType}})"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Client Name", name: "name", widget: "string" }
@@ -157,7 +152,7 @@ collections:
             label_singular: "Service"
             widget: "list"
             summary: "{{fields.name}} — {{fields.category}}"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Service Name", name: "name", widget: "string" }
@@ -209,7 +204,7 @@ collections:
             label_singular: "Member"
             widget: "list"
             summary: "{{fields.name}} — {{fields.role}}"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Full Name", name: "name", widget: "string" }
@@ -240,7 +235,7 @@ collections:
             label_singular: "FAQ"
             widget: "list"
             summary: "{{fields.question}} [{{fields.category}}]"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Question", name: "question", widget: "string" }
@@ -280,7 +275,7 @@ collections:
             label_singular: "Case Study"
             widget: "list"
             summary: "{{fields.title}} — {{fields.industry}}"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Title", name: "title", widget: "string" }
@@ -339,7 +334,7 @@ collections:
             label_singular: "Page"
             widget: "list"
             summary: "{{fields.title}} — Updated {{fields.lastUpdated}}"
-            collapsed: true
+
             fields:
               - { label: "ID", name: "id", widget: "string" }
               - { label: "Page Title", name: "title", widget: "string" }
@@ -367,7 +362,7 @@ collections:
           - label: "Social Links"
             name: "socialLinks"
             widget: "object"
-            collapsed: true
+
             fields:
               - { label: "Facebook", name: "facebook", widget: "string", required: false }
               - { label: "LinkedIn", name: "linkedin", widget: "string", required: false }
@@ -377,7 +372,7 @@ collections:
           - label: "SEO Defaults"
             name: "seo"
             widget: "object"
-            collapsed: true
+
             fields:
               - { label: "Default Page Title", name: "defaultTitle", widget: "string" }
               - { label: "Meta Description", name: "defaultDescription", widget: "text" }
@@ -385,7 +380,7 @@ collections:
           - label: "Announcement Banner"
             name: "announcement"
             widget: "object"
-            collapsed: true
+
             fields:
               - { label: "Enabled", name: "enabled", widget: "boolean", default: false }
               - { label: "Banner Text", name: "text", widget: "string", required: false }
@@ -394,7 +389,7 @@ collections:
           - label: "Maintenance Mode"
             name: "maintenance"
             widget: "object"
-            collapsed: true
+
             fields:
               - { label: "Enabled", name: "enabled", widget: "boolean", default: false }
               - { label: "Message", name: "message", widget: "text", required: false }
