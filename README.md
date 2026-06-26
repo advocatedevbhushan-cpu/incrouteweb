@@ -4,64 +4,58 @@ This project implements a secure role-based Customer & Partner portal for INCrou
 
 ---
 
-## 1. Firebase Project Provisioning Guide
+## 1. Technology Stack
 
-Follow these steps to connect your Firebase project:
-
-### Step A: Configure Firebase Web SDK
-1. Open the [Firebase Console](https://console.firebase.google.com/).
-2. Create a new project (e.g. `incroute-compliance`).
-3. Under **Project Settings**, add a new **Web App**.
-4. Copy the Firebase configuration object.
-5. In this repository root directory, create/update `firebase-applet-config.json` containing:
-   ```json
-   {
-     "apiKey": "YOUR_API_KEY",
-     "authDomain": "YOUR_PROJECT_ID.firebaseapp.com",
-     "projectId": "YOUR_PROJECT_ID",
-     "storageBucket": "YOUR_PROJECT_ID.appspot.com",
-     "messagingSenderId": "YOUR_SENDER_ID",
-     "appId": "YOUR_APP_ID"
-   }
-   ```
-
-### Step B: Provision Services
-- **Firebase Authentication**: Enable **Email/Password** sign-in and **Google** sign-in providers under the Build > Authentication dashboard.
-- **Cloud Firestore**: Enable Firestore in your desired regional datastore.
-- **Cloud Storage**: Enable Cloud Storage. Choose your preferred storage region.
+- **Frontend**: React 19, Vite, TailwindCSS, Motion
+- **Backend**: Express (TypeScript), served via `tsx`
+- **Database**: MySQL (via `mysql2/promise` connection pool + Prisma ORM)
+- **Auth**: JWT-based (bcryptjs for hashing, jsonwebtoken for tokens)
+- **File Storage**: Cloudflare R2 (S3-compatible)
+- **AI**: Google GenAI (Gemini) for advisory features
+- **Email**: Nodemailer + SMTP
 
 ---
 
-## 2. Deploying Security Rules
+## 2. Setup
 
-Security rules are declared locally in the workspace. Deploy them using the Firebase CLI:
-
-1. Install the Firebase CLI:
+1. Clone the repository.
+2. Install dependencies:
    ```bash
-   npm install -g firebase-tools
+   npm install
    ```
-2. Authenticate and select your active project:
+3. Copy `.env.example` to `.env` and fill in your credentials (MySQL, SMTP, Cloudflare R2, Gemini API key).
+4. Run the development server:
    ```bash
-   firebase login
-   firebase use --add
-   ```
-3. Deploy Firestore rules from `firestore.rules`:
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-4. Deploy Storage rules from `storage.rules`:
-   ```bash
-   firebase deploy --only storage:rules
+   npm run dev
    ```
 
 ---
 
-## 3. Local Simulation Sandbox Desk
+## 3. Database
 
-To allow rapid developer testing without requiring active Firebase credentials, we have built a **Simulation Sandbox Desk** directly into the interface:
+The app connects to two MySQL databases:
 
-- If Firebase triggers `auth/operation-not-allowed` (indicating email auth is disabled in the project console) or if the developer uses the sandbox buttons, the app automatically switches to **Mock Local Mode**.
-- In mock mode:
-  - Users, documents, and progress indices are preserved inside `localStorage` across page reloads.
-  - Uploading documents uses browser `ObjectURL` pointers, allowing the partner to actually download and review the customer's uploaded file.
-  - Quick simulation toggles allow testing of customer uploads and real-time partner review approvals/rejections side-by-side.
+- **Leads DB** (`u453824837_Client`) — stores contact form submissions.
+- **Platform DB** (`u453824837_Platform`) — main application data (users, sessions, clients, entities, compliance tasks, documents, invoices, tickets).
+
+Schema migrations are managed via Prisma. Run `npx prisma db push` or apply SQL scripts like `migrate-documents.sql` in phpMyAdmin.
+
+---
+
+## 4. Authentication
+
+All authentication is handled via REST API endpoints:
+
+- `POST /api/auth/register` — create new user
+- `POST /api/auth/login` — sign in (returns JWT access + refresh tokens)
+
+Tokens are stored in `localStorage` on the client. Admin routes are protected by middleware that validates the JWT.
+
+---
+
+## 5. Build & Deploy
+
+```bash
+npm run build   # Vite frontend build + esbuild server bundle
+npm start       # Run production server from dist/server.cjs
+```

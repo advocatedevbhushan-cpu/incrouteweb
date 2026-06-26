@@ -1,4 +1,4 @@
-{"testimonials": [
+[
   {
     "id": "test-1",
     "name": "Keshav Agarwal",
@@ -29,4 +29,4 @@
     "approved": true,
     "timestamp": "2026-05-31T15:52:00.128Z"
   }
-]}
+]

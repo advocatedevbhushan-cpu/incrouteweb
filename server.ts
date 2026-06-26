@@ -9,6 +9,9 @@ import nodemailer from "nodemailer";
 import multer from "multer";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import compression from "compression";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -40,6 +43,21 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+  // Compression middleware — reduces response size by 60-80%
+  app.use(compression());
+
+  const JWT_SECRET = process.env.JWT_SECRET || "incroute_jwt_secret_2024";
+
+  // Security headers
+  app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.removeHeader("X-Powered-By");
+    next();
+  });
+
   // Health check (always works)
   app.get("/api/health", async (req, res) => {
     let dbStatus = "unknown";
@@ -47,22 +65,35 @@ async function startServer() {
       const conn = await getPlatformConnection();
       const [rows]: any = await conn.query("SELECT COUNT(*) as count FROM `User`");
       dbStatus = `connected (${rows[0].count} users)`;
-      await conn.end();
+      conn.release();
     } catch (e: any) {
       dbStatus = `error: ${e.message?.substring(0, 50)}`;
     }
     res.json({ status: "ok", timestamp: new Date().toISOString(), db: dbStatus });
   });
 
-  // Platform DB connection helper
+  // Platform DB connection helper — uses connection pool for automatic cleanup
+  let platformPool: any = null;
+  
   const getPlatformConnection = async () => {
     const dbUrl = process.env.DATABASE_URL || "";
     const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
     if (!match) throw new Error("DATABASE_URL not configured");
     const [, user, pass, host, port, database] = match;
-    return mysql.createConnection({
-      host, port: Number(port), user, password: decodeURIComponent(pass), database
-    });
+    
+    // Reuse pool if already created
+    if (!platformPool) {
+      platformPool = mysql.createPool({
+        host, port: Number(port), user, password: decodeURIComponent(pass), database,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        idleTimeout: 60000,
+        enableKeepAlive: true,
+      });
+    }
+    
+    return platformPool.getConnection();
   };
 
   // ─── ADMIN REGISTRATION (raw SQL, no Prisma needed) ───
@@ -73,7 +104,6 @@ async function startServer() {
       return res.status(403).json({ error: "Invalid setup key" });
     }
     try {
-      const bcrypt = require("bcryptjs");
       const conn = await getPlatformConnection();
 
       // Update existing admin email or create new one
@@ -86,8 +116,8 @@ async function startServer() {
         const now = new Date().toISOString().slice(0, 23).replace("T", " ");
         await conn.query("UPDATE `User` SET email = ?, passwordHash = ?, updatedAt = ? WHERE id = ?", 
           [adminEmail, passwordHash, now, existing[0].id]);
-        await conn.end();
-        return res.json({ success: true, message: "Admin user updated!", credentials: { email: adminEmail, password: "Admin@2026" } });
+        conn.release();
+        return res.json({ success: true, message: "Admin user updated!", credentials: { email: adminEmail, password: "***hidden***" }, hint: "Password is the same as ADMIN_PASSWORD env variable" });
       }
 
       // Create new admin
@@ -101,11 +131,12 @@ async function startServer() {
         [id, adminEmail, passwordHash, "Dev", "Bhushan", "+918707552183", "SUPER_ADMIN", 1, 1, now, now]
       );
       
-      await conn.end();
+      conn.release();
       res.json({ 
         success: true, 
         message: "Admin user created!", 
-        credentials: { email: adminEmail, password: "Admin@2026" }
+        credentials: { email: adminEmail, password: "***hidden***" },
+        hint: "Password is the same as ADMIN_PASSWORD env variable"
       });
     } catch (err: any) {
       res.status(500).json({ error: "Admin setup failed", details: err.message });
@@ -113,32 +144,101 @@ async function startServer() {
   });
 
   // ─── RAW SQL AUTH ENDPOINTS (bypasses Prisma binary requirement) ───
+  // ─── RATE LIMITING & SECURITY ───
+  const loginAttempts = new Map<string, { count: number; lastAttempt: number; lockedUntil: number }>();
+  
+  // Clean up old entries every 15 minutes
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, data] of loginAttempts.entries()) {
+      if (now - data.lastAttempt > 30 * 60 * 1000) loginAttempts.delete(key);
+    }
+  }, 15 * 60 * 1000);
+
+  function checkRateLimit(identifier: string): { allowed: boolean; remainingAttempts: number; lockedUntilMs: number } {
+    const now = Date.now();
+    const entry = loginAttempts.get(identifier);
+    
+    if (!entry) return { allowed: true, remainingAttempts: 5, lockedUntilMs: 0 };
+    
+    // If locked, check if lock expired
+    if (entry.lockedUntil > now) {
+      return { allowed: false, remainingAttempts: 0, lockedUntilMs: entry.lockedUntil - now };
+    }
+    
+    // Reset if last attempt was more than 15 min ago
+    if (now - entry.lastAttempt > 15 * 60 * 1000) {
+      loginAttempts.delete(identifier);
+      return { allowed: true, remainingAttempts: 5, lockedUntilMs: 0 };
+    }
+    
+    if (entry.count >= 5) {
+      // Lock for 15 minutes after 5 failed attempts
+      entry.lockedUntil = now + 15 * 60 * 1000;
+      return { allowed: false, remainingAttempts: 0, lockedUntilMs: 15 * 60 * 1000 };
+    }
+    
+    return { allowed: true, remainingAttempts: 5 - entry.count, lockedUntilMs: 0 };
+  }
+
+  function recordFailedAttempt(identifier: string) {
+    const entry = loginAttempts.get(identifier) || { count: 0, lastAttempt: 0, lockedUntil: 0 };
+    entry.count += 1;
+    entry.lastAttempt = Date.now();
+    loginAttempts.set(identifier, entry);
+  }
+
+  function clearAttempts(identifier: string) {
+    loginAttempts.delete(identifier);
+  }
+
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
-      const jwt = require("jsonwebtoken");
-      const { email, password } = req.body;
+      const { email, password, rememberMe } = req.body;
       
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
+      
+      // Input sanitization — prevent bcrypt DoS with extremely long passwords
+      if (email.length > 191 || password.length > 128) {
+        return res.status(400).json({ error: "Invalid input length" });
+      }
+
+      // Rate limit check
+      const clientIp = req.ip || req.headers["x-forwarded-for"] || "unknown";
+      const rateLimitKey = `${email}:${clientIp}`;
+      const rateCheck = checkRateLimit(rateLimitKey);
+      
+      if (!rateCheck.allowed) {
+        const minutes = Math.ceil(rateCheck.lockedUntilMs / 60000);
+        return res.status(429).json({ 
+          error: `Too many failed attempts. Account locked for ${minutes} minute(s).`,
+          lockedMinutes: minutes
+        });
+      }
+
+      // Token expiry based on rememberMe
+      const accessExpiry = rememberMe ? "7d" : "24h";
+      const refreshExpiry = rememberMe ? "30d" : "7d";
 
       // Fallback admin login (works even if DB is not set up)
       const fallbackAdminEmail = process.env.ADMIN_EMAIL || "d.bhushan@incroute.com";
       const fallbackAdminPassword = process.env.ADMIN_PASSWORD || "Admin@2026";
       
       if (email === fallbackAdminEmail && password === fallbackAdminPassword) {
-        const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+        clearAttempts(rateLimitKey);
+  const secret = JWT_SECRET;
         const accessToken = jwt.sign(
           { userId: "admin_fallback", email, role: "SUPER_ADMIN", sessionId: "fallback_" + Date.now() },
           secret,
-          { expiresIn: "24h" }
+          { expiresIn: accessExpiry }
         );
         const refreshToken = jwt.sign(
           { userId: "admin_fallback", sessionId: "fallback_" + Date.now(), type: "refresh" },
           secret,
-          { expiresIn: "7d" }
+          { expiresIn: refreshExpiry }
         );
         return res.json({
           success: true,
@@ -156,21 +256,26 @@ async function startServer() {
       );
 
       if (users.length === 0) {
-        await conn.end();
-        return res.status(401).json({ error: "Invalid email or password" });
+        conn.release();
+        recordFailedAttempt(rateLimitKey);
+        return res.status(401).json({ error: "Invalid email or password", remainingAttempts: rateCheck.remainingAttempts - 1 });
       }
 
       const user = users[0];
       if (!user.isActive) {
-        await conn.end();
-        return res.status(403).json({ error: "Account is deactivated" });
+        conn.release();
+        return res.status(403).json({ error: "Account is deactivated. Please contact support." });
       }
 
       const validPassword = await bcrypt.compare(password, user.passwordHash);
       if (!validPassword) {
-        await conn.end();
-        return res.status(401).json({ error: "Invalid email or password" });
+        conn.release();
+        recordFailedAttempt(rateLimitKey);
+        return res.status(401).json({ error: "Invalid email or password", remainingAttempts: rateCheck.remainingAttempts - 1 });
       }
+
+      // Success — clear rate limit
+      clearAttempts(rateLimitKey);
 
       // Update last login
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
@@ -178,26 +283,27 @@ async function startServer() {
 
       // Create session
       const sessionId = "sess_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 23).replace("T", " ");
+      const sessionDays = rememberMe ? 30 : 7;
+      const expiresAt = new Date(Date.now() + sessionDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 23).replace("T", " ");
       await conn.query(
         `INSERT INTO \`Session\` (id, userId, ipAddress, userAgent, isActive, createdAt, lastActive, expiresAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [sessionId, user.id, req.ip, req.headers["user-agent"] || "", 1, now, now, expiresAt]
+        [sessionId, user.id, clientIp, req.headers["user-agent"] || "", 1, now, now, expiresAt]
       );
 
-      await conn.end();
+      conn.release();
 
       // Sign JWT
-      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+const secret = JWT_SECRET;
       const accessToken = jwt.sign(
         { userId: user.id, email: user.email, role: user.role, sessionId },
         secret,
-        { expiresIn: "24h" }
+        { expiresIn: accessExpiry }
       );
       const refreshToken = jwt.sign(
         { userId: user.id, sessionId, type: "refresh" },
         secret,
-        { expiresIn: "7d" }
+        { expiresIn: refreshExpiry }
       );
 
       res.json({
@@ -209,22 +315,23 @@ async function startServer() {
     } catch (err: any) {
       // If DB fails, still allow fallback admin
       try {
-        const jwt = require("jsonwebtoken");
-        const { email, password } = req.body;
+          const { email, password, rememberMe } = req.body;
         const fallbackAdminEmail = process.env.ADMIN_EMAIL || "d.bhushan@incroute.com";
         const fallbackAdminPassword = process.env.ADMIN_PASSWORD || "Admin@2026";
         
         if (email === fallbackAdminEmail && password === fallbackAdminPassword) {
-          const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
+    const secret = JWT_SECRET;
+          const accessExpiry = rememberMe ? "7d" : "24h";
+          const refreshExpiry = rememberMe ? "30d" : "7d";
           const accessToken = jwt.sign(
             { userId: "admin_fallback", email, role: "SUPER_ADMIN", sessionId: "fallback_" + Date.now() },
             secret,
-            { expiresIn: "24h" }
+            { expiresIn: accessExpiry }
           );
           const refreshToken = jwt.sign(
             { userId: "admin_fallback", sessionId: "fallback_" + Date.now(), type: "refresh" },
             secret,
-            { expiresIn: "7d" }
+            { expiresIn: refreshExpiry }
           );
           return res.json({
             success: true,
@@ -234,28 +341,70 @@ async function startServer() {
           });
         }
       } catch {}
-      res.status(500).json({ error: "Login failed", details: err.message });
+      res.status(500).json({ error: "Login failed. Please try again later." });
     }
+  });
+
+  // Logout endpoint — invalidates session
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.json({ success: true });
+      const token = authHeader.slice(7);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      
+      if (decoded.sessionId && decoded.sessionId !== "fallback_") {
+        try {
+          const conn = await getPlatformConnection();
+          await conn.query("UPDATE `Session` SET isActive = 0 WHERE id = ?", [decoded.sessionId]);
+          conn.release();
+        } catch {}
+      }
+      res.json({ success: true });
+    } catch {
+      res.json({ success: true });
+    }
+  });
+
+  // Forgot password — sends reset instructions
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    
+    // Always return success to prevent email enumeration
+    // In production, this would send an email with a reset link
+    try {
+      const conn = await getPlatformConnection();
+      const [users]: any = await conn.query("SELECT id, email FROM `User` WHERE email = ?", [email]);
+      conn.release();
+      
+      if (users.length > 0) {
+        // TODO: Send password reset email when SMTP is configured
+        console.log(`🔑 Password reset requested for: ${email}`);
+      }
+    } catch {}
+    
+    res.json({ success: true, message: "If an account exists with this email, you will receive reset instructions." });
   });
 
   // Token verification / current user endpoint
   app.get("/api/auth/me", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) {
         return res.status(401).json({ error: "Not authenticated" });
       }
       const token = authHeader.slice(7);
-      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
-      const decoded: any = jwt.verify(token, secret);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
 
       const conn = await getPlatformConnection();
       const [users]: any = await conn.query(
         "SELECT id, email, firstName, lastName, role, phone, isActive, createdAt FROM `User` WHERE id = ?",
         [decoded.userId]
       );
-      await conn.end();
+      conn.release();
 
       if (users.length === 0 || !users[0].isActive) {
         return res.status(401).json({ error: "User not found or inactive" });
@@ -270,13 +419,11 @@ async function startServer() {
   // Change password endpoint (for logged-in users)
   app.post("/api/auth/change-password", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
       const token = authHeader.slice(7);
-      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
-      const decoded: any = jwt.verify(token, secret);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
 
       const { currentPassword, newPassword } = req.body;
       if (!currentPassword || !newPassword) return res.status(400).json({ error: "Current password and new password required" });
@@ -284,32 +431,43 @@ async function startServer() {
 
       const conn = await getPlatformConnection();
       const [users]: any = await conn.query("SELECT id, passwordHash FROM `User` WHERE id = ?", [decoded.userId]);
-      if (users.length === 0) { await conn.end(); return res.status(404).json({ error: "User not found" }); }
+      if (users.length === 0) { conn.release(); return res.status(404).json({ error: "User not found" }); }
 
       const valid = await bcrypt.compare(currentPassword, users[0].passwordHash);
-      if (!valid) { await conn.end(); return res.status(401).json({ error: "Current password is incorrect" }); }
+      if (!valid) { conn.release(); return res.status(401).json({ error: "Current password is incorrect" }); }
 
       const newHash = await bcrypt.hash(newPassword, 12);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query("UPDATE `User` SET passwordHash = ?, updatedAt = ? WHERE id = ?", [newHash, now, decoded.userId]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, message: "Password updated successfully" });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to change password", details: err.message });
     }
   });
 
-  // Admin: Reset client password
+  // Admin: Reset client password (requires admin auth)
   app.post("/api/admin/reset-password", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
+      
+      // Verify admin token
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      if (!["SUPER_ADMIN", "ADMIN"].includes(decoded.role)) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
       const { email, newPassword } = req.body;
       if (!email || !newPassword) return res.status(400).json({ error: "Email and new password required" });
+      if (newPassword.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
       const conn = await getPlatformConnection();
       const passwordHash = await bcrypt.hash(newPassword, 12);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       const [result]: any = await conn.query("UPDATE `User` SET passwordHash = ?, updatedAt = ? WHERE email = ?", [passwordHash, now, email]);
-      await conn.end();
+      conn.release();
       if (result.affectedRows === 0) return res.status(404).json({ error: "User not found" });
       res.json({ success: true, message: "Password reset for " + email });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
@@ -318,7 +476,6 @@ async function startServer() {
   // Register endpoint (for new users)
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
       const { email, password, firstName, lastName, phone } = req.body;
       
       if (!email || !password || !firstName || !lastName) {
@@ -327,11 +484,23 @@ async function startServer() {
       if (password.length < 8) {
         return res.status(400).json({ error: "Password must be at least 8 characters" });
       }
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email) || email.length > 191) {
+        return res.status(400).json({ error: "Invalid email address" });
+      }
+      // Input length validation
+      if (firstName.length > 100 || lastName.length > 100) {
+        return res.status(400).json({ error: "Name too long (max 100 characters)" });
+      }
+      if (password.length > 128) {
+        return res.status(400).json({ error: "Password too long (max 128 characters)" });
+      }
 
       const conn = await getPlatformConnection();
       const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
       if (existing.length > 0) {
-        await conn.end();
+        conn.release();
         return res.status(409).json({ error: "Email already registered" });
       }
 
@@ -344,11 +513,12 @@ async function startServer() {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, email, passwordHash, firstName, lastName, phone || null, "CLIENT", 1, 0, now, now]
       );
-      await conn.end();
+      conn.release();
 
       res.json({ success: true, message: "Account created", userId: id });
     } catch (err: any) {
-      res.status(500).json({ error: "Registration failed", details: err.message });
+      const isDuplicate = err.message?.includes("Duplicate");
+      res.status(500).json({ error: isDuplicate ? "An account with this email already exists" : "Registration failed" });
     }
   });
 
@@ -359,12 +529,11 @@ async function startServer() {
   // Auth middleware for admin routes
   const requireAdmin = async (req: any, res: any, next: any) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
       const token = authHeader.slice(7);
-      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
-      const decoded: any = jwt.verify(token, secret);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
       if (!["SUPER_ADMIN", "ADMIN", "TEAM_MEMBER"].includes(decoded.role)) {
         return res.status(403).json({ error: "Insufficient permissions" });
       }
@@ -374,6 +543,9 @@ async function startServer() {
       res.status(401).json({ error: "Invalid or expired token" });
     }
   };
+
+  // Apply auth to ALL /api/admin/* routes (except reset-password which has its own check)
+  app.use("/api/admin", requireAdmin);
 
   // ─── DASHBOARD STATS ───
   app.get("/api/admin/stats", async (req, res) => {
@@ -397,7 +569,7 @@ async function startServer() {
         "SELECT id, type, title, details, createdAt FROM `Activity` ORDER BY createdAt DESC LIMIT 10"
       );
 
-      await conn.end();
+      conn.release();
       res.json({
         stats: {
           clients: clientCount.count,
@@ -426,7 +598,7 @@ async function startServer() {
          (SELECT AVG(complianceScore) FROM \`Entity\` WHERE clientId = c.id) as avgHealth
          FROM \`Client\` c ORDER BY c.createdAt DESC`
       );
-      await conn.end();
+      conn.release();
       res.json({ clients });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load clients", details: err.message });
@@ -435,7 +607,6 @@ async function startServer() {
 
   app.post("/api/admin/clients", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
       const { companyName, contactName, contactEmail, contactPhone, industry, notes, password } = req.body;
       if (!companyName || !contactName || !contactEmail) {
         return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
@@ -475,7 +646,7 @@ async function startServer() {
         ["act_" + Date.now().toString(36), clientId, null, "client_created", `New client onboarded: ${companyName}`, now]
       );
 
-      await conn.end();
+      conn.release();
       res.json({ success: true, id: clientId, message: "Client created with login credentials", credentials: { email: contactEmail, password: loginPassword } });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to create client", details: err.message });
@@ -487,7 +658,7 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       await conn.query("DELETE FROM `Client` WHERE id = ?", [req.params.id]);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -509,7 +680,7 @@ async function startServer() {
       if (notes !== undefined) { sets.push("notes = ?"); vals.push(notes); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Client\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -519,12 +690,12 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [clients]: any = await conn.query("SELECT * FROM `Client` WHERE id = ?", [req.params.id]);
-      if (clients.length === 0) { await conn.end(); return res.status(404).json({ error: "Client not found" }); }
+      if (clients.length === 0) { conn.release(); return res.status(404).json({ error: "Client not found" }); }
       const [entities]: any = await conn.query("SELECT * FROM `Entity` WHERE clientId = ?", [req.params.id]);
       const [serviceRequests]: any = await conn.query("SELECT * FROM `ServiceRequest` WHERE clientId = ? ORDER BY createdAt DESC", [req.params.id]);
       const [invoices]: any = await conn.query("SELECT id, invoiceNo, total, status, dueDate FROM `Invoice` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
       const [tickets]: any = await conn.query("SELECT id, subject, status, createdAt FROM `Ticket` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
-      await conn.end();
+      conn.release();
       res.json({ client: clients[0], entities, serviceRequests, invoices, tickets });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -542,7 +713,7 @@ async function startServer() {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 100, ?, ?)`,
         [id, clientId, name, type, cin || null, pan || null, gstin || null, incorporatedAt || null, now, now]
       );
-      await conn.end();
+      conn.release();
       res.json({ success: true, id });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -560,7 +731,7 @@ async function startServer() {
       const offset = (Number(page) - 1) * Number(limit);
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`ServiceRequest\` sr LEFT JOIN \`Client\` c ON sr.clientId = c.id WHERE ${where}`, params);
       const [requests]: any = await conn.query(`SELECT sr.*, c.companyName as clientName, c.contactName, c.contactEmail FROM \`ServiceRequest\` sr LEFT JOIN \`Client\` c ON sr.clientId = c.id WHERE ${where} ORDER BY sr.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
-      await conn.end();
+      conn.release();
       res.json({ requests, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -580,7 +751,7 @@ async function startServer() {
       // Log activity
       await conn.query("INSERT INTO `Activity` (id, clientId, type, title, createdAt) VALUES (?, ?, ?, ?, ?)",
         ["act_" + Date.now().toString(36), clientId, "service_added", `Service ${serviceType.replace(/_/g, " ")} added`, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, id });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -597,7 +768,7 @@ async function startServer() {
       if (notes) { sets.push("notes = ?"); vals.push(notes); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`ServiceRequest\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -616,7 +787,7 @@ async function startServer() {
       const offset = (Number(page) - 1) * Number(limit);
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where}`, params);
       const [tasks]: any = await conn.query(`SELECT t.*, c.companyName as clientName FROM \`Task\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where} ORDER BY FIELD(t.priority,'CRITICAL','HIGH','MEDIUM','LOW'), t.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
-      await conn.end();
+      conn.release();
       res.json({ tasks, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load tasks", details: err.message });
@@ -635,7 +806,7 @@ async function startServer() {
          VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
         [id, clientId || null, title, description || null, assigneeId || null, priority || "MEDIUM", dueDate || null, now, now]
       );
-      await conn.end();
+      conn.release();
       res.json({ success: true, id, message: "Task created" });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to create task", details: err.message });
@@ -654,7 +825,7 @@ async function startServer() {
       if (priority) { sets.push("priority = ?"); vals.push(priority); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Task\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to update task", details: err.message });
@@ -680,7 +851,7 @@ async function startServer() {
          WHERE ${where} ORDER BY ct.dueDate ASC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
       // Stats
       const [[stats]]: any = await conn.query("SELECT COUNT(CASE WHEN status='PENDING' THEN 1 END) as pending, COUNT(CASE WHEN status='IN_PROGRESS' THEN 1 END) as inProgress, COUNT(CASE WHEN status='OVERDUE' OR (status NOT IN ('COMPLETED') AND dueDate < NOW()) THEN 1 END) as overdue, COUNT(CASE WHEN status='COMPLETED' THEN 1 END) as completed FROM `ComplianceTask`");
-      await conn.end();
+      conn.release();
       res.json({ tasks, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load compliance tasks", details: err.message });
@@ -701,7 +872,7 @@ async function startServer() {
          VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`,
         [id, entityId, title, category, dueDate, priority || "MEDIUM", assigneeId || null, notes || null, now, now]
       );
-      await conn.end();
+      conn.release();
       res.json({ success: true, id });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to create compliance task", details: err.message });
@@ -720,7 +891,7 @@ async function startServer() {
       if (priority) { sets.push("priority = ?"); vals.push(priority); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`ComplianceTask\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to update compliance task", details: err.message });
@@ -794,7 +965,7 @@ async function startServer() {
       const [[stats]]: any = await conn.query("SELECT COUNT(CASE WHEN status='DRAFT' THEN 1 END) as draft, COUNT(CASE WHEN status='UNDER_REVIEW' THEN 1 END) as underReview, COUNT(CASE WHEN status='APPROVED' THEN 1 END) as approved, COUNT(CASE WHEN status='REJECTED' THEN 1 END) as rejected FROM `Document`");
       // Folder counts
       const [folderCounts]: any = await conn.query("SELECT folder, COUNT(*) as count FROM `Document` GROUP BY folder");
-      await conn.end();
+      conn.release();
       res.json({ documents, total, page: Number(page), pages: Math.ceil(total / Number(limit)), stats, folderCounts, folders: DOCUMENT_FOLDERS });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -836,7 +1007,7 @@ async function startServer() {
       await conn.query("INSERT INTO `AuditLog` (id, userId, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?, ?)",
         ["aud_" + Date.now().toString(36), null, "document_uploaded", `Document: ${title}`, JSON.stringify({ docId: id, fileName: file.originalname, size: file.size, folder: docFolder }), now]);
 
-      await conn.end();
+      conn.release();
       res.json({ success: true, id, storageKey, publicUrl, fileName: file.originalname, size: file.size });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -846,7 +1017,7 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName FROM `Document` WHERE id = ?", [req.params.id]);
-      if (docs.length === 0) { await conn.end(); return res.status(404).json({ error: "Document not found" }); }
+      if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Document not found" }); }
       const doc = docs[0];
 
       let downloadUrl = doc.publicUrl;
@@ -858,7 +1029,7 @@ async function startServer() {
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
         ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, downloadUrl, fileName: doc.fileName });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -879,7 +1050,7 @@ async function startServer() {
       // Audit log
       await conn.query("INSERT INTO `AuditLog` (id, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?)",
         ["aud_" + Date.now().toString(36), `document_${status?.toLowerCase() || "updated"}`, req.params.id, JSON.stringify({ status, note: internalNote }), now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -889,7 +1060,7 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [docs]: any = await conn.query("SELECT storageKey, storageProvider, title FROM `Document` WHERE id = ?", [req.params.id]);
-      if (docs.length === 0) { await conn.end(); return res.status(404).json({ error: "Not found" }); }
+      if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Not found" }); }
       const doc = docs[0];
 
       // Delete from R2
@@ -903,7 +1074,7 @@ async function startServer() {
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query("INSERT INTO `AuditLog` (id, action, resource, details, createdAt) VALUES (?, ?, ?, ?, ?)",
         ["aud_" + Date.now().toString(36), "document_deleted", `Document: ${doc.title}`, JSON.stringify({ storageKey: doc.storageKey }), now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -924,7 +1095,7 @@ async function startServer() {
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE ${where}`, params);
       const [invoices]: any = await conn.query(`SELECT i.*, c.companyName as clientName FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE ${where} ORDER BY i.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
       const [[totals]]: any = await conn.query("SELECT COALESCE(SUM(total),0) as totalRev, COALESCE(SUM(CASE WHEN status IN ('PENDING','SENT','OVERDUE') THEN total ELSE 0 END),0) as outstanding, COALESCE(SUM(CASE WHEN status='PAID' AND MONTH(paidAt)=MONTH(NOW()) THEN total ELSE 0 END),0) as paidThisMonth, COALESCE(SUM(CASE WHEN status='OVERDUE' THEN total ELSE 0 END),0) as overdue FROM `Invoice`");
-      await conn.end();
+      conn.release();
       res.json({ invoices, total, page: Number(page), pages: Math.ceil(total / Number(limit)), totals: { totalRevenue: Number(totals.totalRev), outstanding: Number(totals.outstanding), paidThisMonth: Number(totals.paidThisMonth), overdue: Number(totals.overdue) } });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -940,7 +1111,7 @@ async function startServer() {
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(`INSERT INTO \`Invoice\` (id, clientId, invoiceNo, amount, tax, total, status, dueDate, description, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`,
         [id, clientId, invoiceNo, amount, tax || 0, totalAmt, dueDate, description || null, now, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, id, invoiceNo });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -955,7 +1126,7 @@ async function startServer() {
       if (status === "PAID") { sets.push("paidAt = ?"); vals.push(now); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Invoice\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -973,7 +1144,7 @@ async function startServer() {
       const offset = (Number(page) - 1) * Number(limit);
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Ticket\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where}`, params);
       const [tickets]: any = await conn.query(`SELECT t.*, c.companyName as clientName FROM \`Ticket\` t LEFT JOIN \`Client\` c ON t.clientId = c.id WHERE ${where} ORDER BY FIELD(t.priority,'CRITICAL','HIGH','MEDIUM','LOW'), t.createdAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
-      await conn.end();
+      conn.release();
       res.json({ tickets, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -987,7 +1158,7 @@ async function startServer() {
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(`INSERT INTO \`Ticket\` (id, clientId, subject, description, priority, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, 'OPEN', ?, ?)`,
         [id, clientId, subject, description || null, priority || "MEDIUM", now, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, id });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1003,7 +1174,7 @@ async function startServer() {
       if (assigneeId) { sets.push("assigneeId = ?"); vals.push(assigneeId); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Ticket\` SET ${sets.join(", ")} WHERE id = ?`, vals);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1020,7 +1191,7 @@ async function startServer() {
       const offset = (Number(page) - 1) * Number(limit);
       const [[{ total }]]: any = await conn.query(`SELECT COUNT(*) as total FROM \`Consultation\` con LEFT JOIN \`Client\` c ON con.clientId = c.id WHERE ${where}`, params);
       const [consultations]: any = await conn.query(`SELECT con.*, c.companyName as clientName FROM \`Consultation\` con LEFT JOIN \`Client\` c ON con.clientId = c.id WHERE ${where} ORDER BY con.scheduledAt DESC LIMIT ? OFFSET ?`, [...params, Number(limit), offset]);
-      await conn.end();
+      conn.release();
       res.json({ consultations, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1034,7 +1205,7 @@ async function startServer() {
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(`INSERT INTO \`Consultation\` (id, clientId, topic, advisorId, scheduledAt, duration, status, meetingLink, notes, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?)`,
         [id, clientId, topic, advisorId || null, scheduledAt, duration || 30, meetingLink || null, notes || null, now, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, id });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1045,7 +1216,7 @@ async function startServer() {
       const conn = await getPlatformConnection();
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query("UPDATE `Consultation` SET status = ?, updatedAt = ? WHERE id = ?", [status, now, req.params.id]);
-      await conn.end();
+      conn.release();
       res.json({ success: true });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1063,25 +1234,24 @@ async function startServer() {
         const [[clientCount]]: any = await conn.query("SELECT COUNT(DISTINCT clientId) as c FROM `ServiceRequest` WHERE assignedMgrId = ? OR assignedExecId = ?", [member.id, member.id]);
         workload.push({ ...member, activeTasks: (taskCount.c || 0) + (compCount.c || 0), clients: clientCount.c || 0 });
       }
-      await conn.end();
+      conn.release();
       res.json({ team: workload });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
   app.post("/api/admin/team/invite", async (req, res) => {
     try {
-      const bcrypt = require("bcryptjs");
       const { email, firstName, lastName, role, phone, password } = req.body;
       if (!email || !firstName || !role) return res.status(400).json({ error: "email, firstName, role required" });
       const conn = await getPlatformConnection();
       const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
-      if (existing.length > 0) { await conn.end(); return res.status(409).json({ error: "Email already exists" }); }
+      if (existing.length > 0) { conn.release(); return res.status(409).json({ error: "Email already exists" }); }
       const id = "tm_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const passwordHash = await bcrypt.hash(password || "Team@2026", 12);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(`INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?)`,
         [id, email, passwordHash, firstName, lastName || "", phone || null, role, now, now]);
-      await conn.end();
+      conn.release();
       res.json({ success: true, id, credentials: { email, password: password || "Team@2026" } });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1104,7 +1274,7 @@ async function startServer() {
       const [[tickets]]: any = await conn.query("SELECT COUNT(*) as total, COUNT(CASE WHEN status IN ('RESOLVED','CLOSED') THEN 1 END) as resolved, ROUND(AVG(CASE WHEN resolvedAt IS NOT NULL THEN TIMESTAMPDIFF(HOUR, createdAt, resolvedAt) END),1) as avgHoursToResolve FROM `Ticket`");
       // Monthly revenue trend (last 6 months)
       const [monthlyRevenue]: any = await conn.query("SELECT DATE_FORMAT(createdAt, '%Y-%m') as month, SUM(CASE WHEN status='PAID' THEN total ELSE 0 END) as paid, SUM(total) as billed FROM `Invoice` WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY month");
-      await conn.end();
+      conn.release();
       res.json({
         clients: { total: clientStats.total, active: clientStats.active, newThisMonth: clientStats.newThisMonth },
         revenue: { collected: Number(revenue.collected), outstanding: Number(revenue.outstanding), totalBilled: Number(revenue.totalBilled) },
@@ -1122,7 +1292,7 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [trademarks]: any = await conn.query("SELECT tm.*, c.companyName as clientName FROM `TrademarkApp` tm LEFT JOIN `Client` c ON tm.clientId = c.id ORDER BY tm.createdAt DESC");
-      await conn.end();
+      conn.release();
       res.json({ trademarks });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1132,7 +1302,7 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [matters]: any = await conn.query("SELECT lm.*, c.companyName as clientName FROM `LegalMatter` lm LEFT JOIN `Client` c ON lm.clientId = c.id ORDER BY lm.createdAt DESC");
-      await conn.end();
+      conn.release();
       res.json({ matters });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1142,26 +1312,43 @@ async function startServer() {
     try {
       const conn = await getPlatformConnection();
       const [logs]: any = await conn.query("SELECT a.*, u.email as userEmail FROM `AuditLog` a LEFT JOIN `User` u ON a.userId = u.id ORDER BY a.createdAt DESC LIMIT 50");
-      await conn.end();
+      conn.release();
       res.json({ logs });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
   // ═══ CLIENT PORTAL APIs ═══
 
-  // Portal Dashboard — get logged-in user's data
-  app.get("/api/portal/dashboard", async (req, res) => {
+  // Auth middleware for portal routes
+  const requireAuth = async (req: any, res: any, next: any) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
       const token = authHeader.slice(7);
-      const secret = process.env.JWT_SECRET || "incroute-jwt-secret-2026";
-      const decoded: any = jwt.verify(token, secret);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch {
+      res.status(401).json({ error: "Invalid or expired token" });
+    }
+  };
+
+  // Apply auth to ALL /api/portal/* routes
+  app.use("/api/portal", requireAuth);
+
+  // Portal Dashboard — get logged-in user's data
+  app.get("/api/portal/dashboard", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+const secret = JWT_SECRET;
+      const decoded: any = jwt.verify(token, JWT_SECRET);
       
       const conn = await getPlatformConnection();
       const [users]: any = await conn.query("SELECT id, firstName, lastName, email, role FROM `User` WHERE id = ?", [decoded.userId]);
-      if (users.length === 0) { await conn.end(); return res.status(404).json({ error: "User not found" }); }
+      if (users.length === 0) { conn.release(); return res.status(404).json({ error: "User not found" }); }
       const user = users[0];
 
       // Get entities for this user's client record
@@ -1172,7 +1359,7 @@ async function startServer() {
       const [recentCompliance]: any = await conn.query("SELECT ct.title, ct.dueDate, ct.status, ct.assigneeId, e.name as entityName FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? AND ct.status != 'COMPLETED' ORDER BY ct.dueDate ASC LIMIT 5", [user.email]);
       const [activities]: any = await conn.query("SELECT a.title, a.type, a.createdAt FROM `Activity` a JOIN `Client` c ON a.clientId = c.id WHERE c.contactEmail = ? ORDER BY a.createdAt DESC LIMIT 5", [user.email]);
 
-      await conn.end();
+      conn.release();
       res.json({
         user: { firstName: user.firstName, lastName: user.lastName, email: user.email },
         metrics: { entities: entities[0].count, compliance: compliance[0].count, documents: docs[0].count, openTickets: tickets[0].count },
@@ -1185,14 +1372,13 @@ async function startServer() {
   // Portal entities
   app.get("/api/portal/entities", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
       const [entities]: any = await conn.query("SELECT e.* FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?", [user[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ entities });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1200,14 +1386,13 @@ async function startServer() {
   // Portal compliance
   app.get("/api/portal/compliance", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
       const [tasks]: any = await conn.query("SELECT ct.*, e.name as entityName FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? ORDER BY ct.dueDate ASC", [user[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ tasks });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1215,14 +1400,13 @@ async function startServer() {
   // Portal documents
   app.get("/api/portal/documents", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
       const [docs]: any = await conn.query("SELECT d.* FROM `Document` d JOIN `Client` c ON d.clientId = c.id WHERE c.contactEmail = ? ORDER BY d.createdAt DESC", [user[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ documents: docs });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1230,14 +1414,13 @@ async function startServer() {
   // Portal invoices
   app.get("/api/portal/invoices", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
       const [invoices]: any = await conn.query("SELECT i.* FROM `Invoice` i JOIN `Client` c ON i.clientId = c.id WHERE c.contactEmail = ? ORDER BY i.createdAt DESC", [user[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ invoices });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1245,14 +1428,13 @@ async function startServer() {
   // Portal tickets
   app.get("/api/portal/tickets", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
       const [tickets]: any = await conn.query("SELECT t.* FROM `Ticket` t JOIN `Client` c ON t.clientId = c.id WHERE c.contactEmail = ? ORDER BY t.createdAt DESC", [user[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ tickets });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1260,14 +1442,13 @@ async function startServer() {
   // Portal profile
   app.get("/api/portal/profile", async (req, res) => {
     try {
-      const jwt = require("jsonwebtoken");
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
-      const decoded: any = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET || "incroute-jwt-secret-2026");
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [users]: any = await conn.query("SELECT id, firstName, lastName, email, phone, role, createdAt, lastLoginAt FROM `User` WHERE id = ?", [decoded.userId]);
       const [clients]: any = await conn.query("SELECT * FROM `Client` WHERE contactEmail = ? LIMIT 1", [users[0]?.email]);
-      await conn.end();
+      conn.release();
       res.json({ user: users[0] || null, client: clients[0] || null });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -2365,33 +2546,12 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   }
 
-  // Helpers for Firestore REST API
-  function toFirestoreValue(val: any): any {
-    if (val === null || val === undefined) return { nullValue: null };
-    if (typeof val === "string") return { stringValue: val };
-    if (typeof val === "number") return { integerValue: val.toString() };
-    if (typeof val === "boolean") return { booleanValue: val };
-    if (Array.isArray(val)) {
-      return {
-        arrayValue: {
-          values: val.map(toFirestoreValue)
-        }
-      };
-    }
-    return { stringValue: JSON.stringify(val) };
-  }
 
-  function toFirestoreFields(obj: any): any {
-    const fields: any = {};
-    for (const key in obj) {
-      if (obj[key] !== undefined && key !== "id") {
-        fields[key] = toFirestoreValue(obj[key]);
-      }
-    }
-    return { fields };
-  }
 
-  // Blog endpoints
+  // Blog endpoints — with GitHub sync cache (sync every 5 min, not every request)
+  let lastBlogSyncTime = 0;
+  const BLOG_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
   app.get("/api/blog/posts", async (req, res) => {
     const token = req.query.token || req.headers["x-admin-token"];
 
@@ -2419,6 +2579,8 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     console.log("🟢 Fetching latest blogs from GitHub and merging local/DB view counts...");
     let fetchedFromGitHub = false;
+    const shouldSyncFromGitHub = Date.now() - lastBlogSyncTime > BLOG_SYNC_INTERVAL;
+    if (shouldSyncFromGitHub) {
     try {
       const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/blog-posts.json";
       const response = await fetch(githubUrl);
@@ -2489,6 +2651,8 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     } catch (err: any) {
       console.error("🔴 Failed to fetch blogs from GitHub:", err.message);
     }
+    lastBlogSyncTime = Date.now();
+    } // end shouldSyncFromGitHub
 
     if (!fetchedFromGitHub) {
       console.log("🟢 GitHub raw fetch unavailable. Loading blogs from local disk cache...");
@@ -2529,13 +2693,14 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     }
   });
 
-  app.post("/api/admin/login", (req, res) => {
+  // Legacy blog admin login (used by BlogPage for inline editing)
+  app.post("/api/blog/admin-login", (req, res) => {
     const { password } = req.body;
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const adminPassword = process.env.ADMIN_PASSWORD || "Admin@2026";
     if (password === adminPassword) {
       res.json({ success: true, token: "admin-session-secure-token" });
     } else {
-      res.status(401).json({ success: false, error: "Incorrect administrative password." });
+      res.status(401).json({ success: false, error: "Incorrect password." });
     }
   });
 
@@ -2850,8 +3015,11 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   }
 
   // Testimonials public and admin fetch endpoint
+  let lastTestimonialSyncTime = 0;
   app.get("/api/testimonials", async (req, res) => {
-    // Try to load latest testimonials from GitHub raw
+    // Sync from GitHub only every 5 minutes
+    const shouldSync = Date.now() - lastTestimonialSyncTime > BLOG_SYNC_INTERVAL;
+    if (shouldSync) {
     try {
       const githubUrl = "https://raw.githubusercontent.com/advocatedevbhushan-cpu/incrouteweb/main/testimonials.json";
       const response = await fetch(githubUrl);
@@ -2873,6 +3041,8 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     } catch (err: any) {
       console.warn("Failed to synchronize testimonials from GitHub raw:", err.message);
     }
+    lastTestimonialSyncTime = Date.now();
+    } // end shouldSync
 
     res.json({ success: true, count: testimonials.length, testimonials });
   });
@@ -3363,62 +3533,12 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     return transformed;
   }
 
-  // Helper to parse Firestore REST API JSON structure
-  function parseFirestoreDocument(doc: any): any {
-    const fields = doc.fields || {};
-    const result: any = {};
-    const nameParts = doc.name ? doc.name.split("/") : [];
-    result.id = nameParts[nameParts.length - 1] || "";
-
-    for (const key in fields) {
-      const valObj = fields[key];
-      if (valObj && typeof valObj === "object") {
-        if ("stringValue" in valObj) {
-          result[key] = valObj.stringValue;
-        } else if ("integerValue" in valObj) {
-          result[key] = parseInt(valObj.integerValue, 10);
-        } else if ("doubleValue" in valObj) {
-          result[key] = parseFloat(valObj.doubleValue);
-        } else if ("booleanValue" in valObj) {
-          result[key] = valObj.booleanValue;
-        } else if ("arrayValue" in valObj) {
-          const values = valObj.arrayValue.values || [];
-          result[key] = values.map((v: any) => {
-            if ("stringValue" in v) return v.stringValue;
-            if ("integerValue" in v) return parseInt(v.integerValue, 10);
-            return JSON.stringify(v);
-          });
-        } else {
-          result[key] = valObj;
-        }
-      }
-    }
-    return result;
-  }
-
   // Dynamic Blog Post Route Handler for SEO crawler support
   const handleBlogPostRoute = async (req: any, res: any, next: any, isDev: boolean, vite?: any) => {
     const { slug } = req.params;
 
-    let post: any = null;
-    try {
-      const firestoreUrl = "https://firestore.googleapis.com/v1/projects/legiscorp-registrations/databases/(default)/documents/blogs";
-      const response = await fetch(firestoreUrl);
-      if (response.ok) {
-        const data: any = await response.json();
-        const firestoreDocs = data.documents || [];
-        const parsedPosts = firestoreDocs.map(parseFirestoreDocument);
-        post = parsedPosts.find((p: any) => p.slug === slug && p.status === "published");
-      } else {
-        console.error(`🔴 Firestore REST API returned status ${response.status}`);
-      }
-    } catch (err: any) {
-      console.error("🔴 Failed to fetch blog post from Firestore REST API:", err.message);
-    }
-
-    if (!post) {
-      post = blogPosts.find((p) => p.slug === slug && p.status === "published");
-    }
+    // Look up blog post from the local in-memory store (synced from GitHub/local JSON)
+    const post = blogPosts.find((p) => p.slug === slug && p.status === "published");
 
     if (!post) {
       return next(); // Fallback to standard client router or 404
@@ -3672,9 +3792,15 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       }
     });
 
-    // Static file serving
-    app.use(express.static(resolvedDistPath));
-    app.use(express.static(path.join(process.cwd(), "public")));
+    // Static file serving with cache headers
+    app.use(express.static(resolvedDistPath, {
+      maxAge: '1y',
+      immutable: true,
+      index: false  // Don't serve index.html from static — SPA fallback handles it
+    }));
+    app.use(express.static(path.join(process.cwd(), "public"), {
+      maxAge: '7d'
+    }));
 
     // SPA fallback — serve index.html for ALL non-API, non-file routes
     app.get("*", (req, res) => {
