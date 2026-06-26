@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth, TimelineMilestone, getDefaultTimeline, checkAccountExpiration } from "../lib/AuthContext";
-import { db } from "../lib/firebase";
-import { 
-  doc as firestoreDoc, 
-  getDoc, 
-  updateDoc,
-  serverTimestamp
-} from "firebase/firestore";
+import { useAuth, getDefaultTimeline, checkAccountExpiration } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -62,12 +55,7 @@ export default function PartnerCustomerDetail({ customerId }: PartnerCustomerDet
           const interval = setInterval(fetchMockData, 1000);
           return () => clearInterval(interval);
         } else {
-          // Real Firebase customer metadata fetch
-          const userDocRef = firestoreDoc(db, "users", customerId);
-          const userSnap = await getDoc(userDocRef);
-          if (userSnap.exists() && active) {
-            setCustomer(userSnap.data());
-          }
+          // Data now comes from MySQL via API — this legacy component is unused
           if (active) setLoading(false);
         }
       } catch (err) {
@@ -166,13 +154,7 @@ export default function PartnerCustomerDetail({ customerId }: PartnerCustomerDet
           completedAt: newCompletedAt
         });
       } else {
-        const userDocRef = firestoreDoc(db, "users", customerId);
-        await updateDoc(userDocRef, {
-          timeline: updatedTimeline,
-          progress: newProgress,
-          projectStatus: newStatus,
-          completedAt: newCompletedAt
-        });
+        // Data updates now go to MySQL via API — this legacy component is unused
         setCustomer({
           ...customer,
           timeline: updatedTimeline,

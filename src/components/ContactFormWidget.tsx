@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Settings, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { googleSignIn } from "../lib/firebase";
-import { createGoogleForm } from "../lib/forms";
 
 interface ContactFormWidgetProps {
   initialMessage?: string;
@@ -40,22 +38,8 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
   }, []);
 
   const handleSetupGoogleForm = async () => {
-    setIsSettingUpForm(true);
-    setContactError("");
-    try {
-      await googleSignIn();
-      const uri = await createGoogleForm();
-      setFormUri(uri);
-      await fetch("/api/config/contact-form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uri })
-      });
-    } catch (err: any) {
-      setContactError("Form connection failed: " + err.message);
-    } finally {
-      setIsSettingUpForm(false);
-    }
+    // Google Form setup is no longer available — contact form submits directly to API
+    setContactError("Google Form setup is not available. Contact form submits directly to the server.");
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth, getDefaultTimeline, AdminCreateUserResult } from "../lib/AuthContext";
-import { db } from "../lib/firebase";
-import { collection, query, onSnapshot } from "firebase/firestore";
+import { useAuth, getDefaultTimeline } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Search, ChevronRight, Mail, Calendar, CheckCircle, Clock,
@@ -406,20 +404,12 @@ export default function PartnerDashboard() {
             setLoading(false);
           }
         } else {
-          const q = query(collection(db, "users"));
-          const unsub = onSnapshot(q, (snapshot) => {
-            const all: any[] = [];
-            snapshot.forEach((doc) => all.push({ uid: doc.id, ...doc.data() }));
-            if (active) {
-              setCustomers(all.filter((p) => p.role === "customer"));
-              setPartners(all.filter((p) => p.role === "partner"));
-              setLoading(false);
-            }
-          }, (err) => {
-            console.error("Error listening to users:", err);
-            if (active) setLoading(false);
-          });
-          return unsub;
+          // Data now comes from MySQL via API — this legacy component is unused
+          if (active) {
+            setCustomers([]);
+            setPartners([]);
+            setLoading(false);
+          }
         }
       } catch (err) {
         console.error("Error loading dashboard:", err);
