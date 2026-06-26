@@ -88,7 +88,7 @@ export default function AdminShell({ activeScreen, setActiveScreen, children }: 
         </nav>
 
         {!collapsed && (
-          <div className="p-4 border-t border-[var(--border-subtle)]">
+          <div className="p-4 border-t border-[var(--border-subtle)] space-y-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] flex items-center justify-center text-white text-[11px] font-bold">A</div>
               <div className="min-w-0">
@@ -96,6 +96,33 @@ export default function AdminShell({ activeScreen, setActiveScreen, children }: 
                 <p className="text-[10px] text-[var(--text-tertiary)]">Super Admin</p>
               </div>
             </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem("incroute_access_token");
+                localStorage.removeItem("incroute_refresh_token");
+                localStorage.removeItem("incroute_user");
+                window.location.href = "/login";
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="p-3 border-t border-[var(--border-subtle)]">
+            <button
+              onClick={() => {
+                localStorage.removeItem("incroute_access_token");
+                localStorage.removeItem("incroute_refresh_token");
+                localStorage.removeItem("incroute_user");
+                window.location.href = "/login";
+              }}
+              className="w-full flex justify-center p-2 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </aside>
@@ -114,7 +141,7 @@ export default function AdminShell({ activeScreen, setActiveScreen, children }: 
             <button aria-label="Notifications" className="relative p-2 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer">
               <Bell className="w-[18px] h-[18px]" /><span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--warning)]" />
             </button>
-            <button aria-label="Settings" className="p-2 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer"><Settings className="w-[18px] h-[18px]" /></button>
+            <button aria-label="Settings" onClick={() => setActiveScreen("settings")} className="p-2 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer"><Settings className="w-[18px] h-[18px]" /></button>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 overflow-auto"><div className="max-w-[1400px] mx-auto w-full">{children}</div></main>

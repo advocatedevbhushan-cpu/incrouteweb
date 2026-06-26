@@ -1121,3 +1121,43 @@ body { overflow-x: hidden; max-width: 100vw; }
 @media (max-width: 640px) {
   footer a { min-height: auto !important; min-width: auto !important; }
 }
+
+
+/* ═══ PERFORMANCE — Reduce CLS & Improve Rendering ═══ */
+
+/* Reserve space for images to prevent layout shift */
+img {
+  content-visibility: auto;
+}
+
+/* Below-the-fold sections render lazily */
+.content-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Reduce paint complexity on animations */
+.hero-section,
+[class*="motion"] {
+  will-change: transform, opacity;
+}
+
+/* Font fallback to prevent FOIT flash */
+body {
+  font-display: swap;
+}
+
+/* Optimize compositing for animated elements */
+.logo-ticker-track,
+.animate-spin,
+[class*="animate-"] {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* GPU acceleration for smooth scrolling sections */
+.timeline-snap-container,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+}

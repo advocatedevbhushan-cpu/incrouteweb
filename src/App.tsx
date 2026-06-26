@@ -132,10 +132,10 @@ export default function App() {
 
       // Redirect authenticated user away from login pages
       if (currentTab === "login" || currentTab === "auth") {
-        if (profile.role === "partner" || profile.role === "admin") {
-          navigate("/dashboard/partner");
+        if (profile.role === "admin") {
+          navigate("/admin");
         } else {
-          navigate("/dashboard/customer");
+          navigate("/portal");
         }
       } 
       // Force correct role routing for dashboards
@@ -767,7 +767,7 @@ export default function App() {
             <div className="col-span-1 sm:col-span-2 md:col-span-1 space-y-4 flex flex-col items-center md:items-start">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full overflow-hidden">
-                  <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
+                  <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" loading="lazy" />
                 </div>
                 <span className="text-[16px] font-extrabold text-white tracking-tight">
                   INC<span className="text-[#6C7CFF] italic font-bold">route</span>

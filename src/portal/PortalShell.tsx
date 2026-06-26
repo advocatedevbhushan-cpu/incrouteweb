@@ -97,7 +97,7 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
 
         {/* Footer */}
         {!collapsed && (
-          <div className="p-4 border-t border-[var(--border-subtle)]">
+          <div className="p-4 border-t border-[var(--border-subtle)] space-y-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
                 {displayName.charAt(0)}
@@ -107,6 +107,33 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
                 <p className="text-[10px] text-[var(--text-tertiary)] truncate">{displayCompany}</p>
               </div>
             </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem("incroute_access_token");
+                localStorage.removeItem("incroute_refresh_token");
+                localStorage.removeItem("incroute_user");
+                window.location.href = "/login";
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="p-3 border-t border-[var(--border-subtle)]">
+            <button
+              onClick={() => {
+                localStorage.removeItem("incroute_access_token");
+                localStorage.removeItem("incroute_refresh_token");
+                localStorage.removeItem("incroute_user");
+                window.location.href = "/login";
+              }}
+              className="w-full flex justify-center p-2 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </aside>

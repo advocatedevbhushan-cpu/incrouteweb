@@ -647,6 +647,54 @@ const secret = JWT_SECRET;
       );
 
       conn.release();
+      
+      // Send welcome email to new client
+      if (emailTransporter) {
+        try {
+          await emailTransporter.sendMail({
+            from: `"INCroute" <${process.env.SMTP_USER || "notifications@incroute.com"}>`,
+            to: contactEmail,
+            subject: "Welcome to INCroute — Your Business Compliance Partner 🎉",
+            html: `
+              <div style="font-family:'Inter',system-ui,sans-serif;max-width:600px;margin:0 auto;background:#15131F;border-radius:16px;overflow:hidden;border:1px solid rgba(108,124,255,0.15);">
+                <div style="background:linear-gradient(135deg,#5B6CFF,#7C5CF6);padding:32px 24px;text-align:center;">
+                  <img src="https://incroute.com/incroute_logo.png" width="48" height="48" style="border-radius:50%;border:2px solid rgba(255,255,255,0.3);" alt="INCroute" />
+                  <h1 style="color:#FFFFFF;font-size:22px;margin:16px 0 4px;font-weight:700;">Welcome to INCroute!</h1>
+                  <p style="color:rgba(255,255,255,0.8);font-size:14px;margin:0;">Your compliance journey starts here</p>
+                </div>
+                <div style="padding:32px 24px;color:#F2EFFB;">
+                  <p style="font-size:15px;margin-bottom:16px;">Hi <strong>${contactName}</strong>,</p>
+                  <p style="font-size:14px;color:#A5A3B5;line-height:1.6;margin-bottom:20px;">
+                    Thank you for joining INCroute! We're excited to partner with <strong style="color:#F2EFFB;">${companyName}</strong> on your business compliance and registration needs.
+                  </p>
+                  <p style="font-size:14px;color:#A5A3B5;margin-bottom:20px;">Here are your portal login credentials:</p>
+                  <div style="background:#241F38;border:1px solid rgba(108,124,255,0.15);border-radius:12px;padding:20px;margin-bottom:24px;">
+                    <p style="font-size:12px;color:#6C7CFF;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Login URL</p>
+                    <p style="font-size:14px;color:#F2EFFB;margin-bottom:16px;"><a href="https://incroute.com/login" style="color:#6C7CFF;">https://incroute.com/login</a></p>
+                    <p style="font-size:12px;color:#6C7CFF;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Email</p>
+                    <p style="font-size:14px;color:#F2EFFB;margin-bottom:16px;font-family:monospace;">${contactEmail}</p>
+                    <p style="font-size:12px;color:#6C7CFF;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Password</p>
+                    <p style="font-size:14px;color:#F2EFFB;font-family:monospace;">${loginPassword}</p>
+                  </div>
+                  <p style="font-size:13px;color:#A5A3B5;line-height:1.6;margin-bottom:24px;">
+                    From your portal you can track compliance deadlines, view documents, manage entities, and communicate directly with our team.
+                  </p>
+                  <a href="https://incroute.com/login" style="display:inline-block;background:linear-gradient(135deg,#5B6CFF,#7C5CF6);color:#FFFFFF;padding:12px 28px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600;">Login to Your Portal →</a>
+                  <p style="font-size:12px;color:#5A5E78;margin-top:24px;">Please change your password after first login for security.</p>
+                </div>
+                <div style="padding:16px 24px;border-top:1px solid rgba(108,124,255,0.1);text-align:center;">
+                  <p style="font-size:11px;color:#5A5E78;">© ${new Date().getFullYear()} INCroute — Make It Right</p>
+                  <p style="font-size:10px;color:#5A5E78;margin-top:4px;">info@incroute.com | +91 870 755 2183</p>
+                </div>
+              </div>
+            `
+          });
+          console.log(`✉️ Welcome email sent to ${contactEmail}`);
+        } catch (emailErr: any) {
+          console.error(`⚠️ Failed to send welcome email to ${contactEmail}:`, emailErr.message);
+        }
+      }
+
       res.json({ success: true, id: clientId, message: "Client created with login credentials", credentials: { email: contactEmail, password: loginPassword } });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to create client", details: err.message });

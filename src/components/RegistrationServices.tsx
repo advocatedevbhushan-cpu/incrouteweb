@@ -1691,7 +1691,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-5 pb-5 hero-section"
+            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-5 pb-5 hero-section min-h-[500px] lg:min-h-[600px]"
           >
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
@@ -2329,6 +2329,10 @@ export default function RegistrationServices({
                         <img
                           src={service.image}
                           alt={service.name}
+                          width={800}
+                          height={450}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                         />
                       </div>

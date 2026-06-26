@@ -10,6 +10,85 @@ import TeamManagement from "./screens/TeamManagement";
 import ServiceRequestOps from "./screens/ServiceRequestOps";
 import { TicketOps, ConsultationOps, TrademarkOps, LegalOps, ReportingDashboard, AuditCenter } from "./screens/OpsScreens";
 
+function AdminSettings() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Password updated successfully.");
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        setMessage(data.error || "Failed to update password.");
+      }
+    } catch {
+      setMessage("Network error.");
+    }
+    setSaving(false);
+  };
+
+  const user = (() => { try { return JSON.parse(localStorage.getItem("incroute_user") || "{}"); } catch { return {}; } })();
+
+  return (
+    <div className="space-y-8 max-w-2xl">
+      <div>
+        <h1 className="text-xl font-bold text-[var(--text-primary)]">Settings</h1>
+        <p className="text-[13px] text-[var(--text-secondary)] mt-1">Manage your account and preferences.</p>
+      </div>
+
+      {/* Account Info */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
+        <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">Account Information</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
+          <div><span className="text-[var(--text-tertiary)]">Email:</span> <span className="text-[var(--text-primary)] font-medium ml-1">{user.email || "—"}</span></div>
+          <div><span className="text-[var(--text-tertiary)]">Name:</span> <span className="text-[var(--text-primary)] font-medium ml-1">{user.firstName} {user.lastName}</span></div>
+          <div><span className="text-[var(--text-tertiary)]">Role:</span> <span className="text-[var(--text-primary)] font-medium ml-1">{user.role || "—"}</span></div>
+        </div>
+      </div>
+
+      {/* Change Password */}
+      <form onSubmit={handleChangePassword} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
+        <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">Change Password</h2>
+        {message && <p className={`text-[12px] ${message.includes("success") ? "text-green-500" : "text-red-400"}`}>{message}</p>}
+        <div className="space-y-3">
+          <input type="password" placeholder="Current password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
+            className="w-full px-4 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)]" />
+          <input type="password" placeholder="New password (min 8 chars)" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+            className="w-full px-4 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)]" />
+        </div>
+        <button type="submit" disabled={saving || !currentPassword || !newPassword || newPassword.length < 8}
+          className="px-5 py-2.5 bg-[var(--accent)] text-white text-[13px] font-semibold rounded-xl disabled:opacity-50 cursor-pointer hover:bg-[var(--accent-deep)] transition-colors">
+          {saving ? "Saving..." : "Update Password"}
+        </button>
+      </form>
+
+      {/* Danger Zone */}
+      <div className="bg-[var(--bg-surface)] border border-red-500/20 rounded-2xl p-6 space-y-3">
+        <h2 className="text-[14px] font-semibold text-red-400">Danger Zone</h2>
+        <button onClick={() => { localStorage.clear(); window.location.href = "/login"; }}
+          className="px-4 py-2 border border-red-500/30 text-red-400 text-[12px] font-medium rounded-xl hover:bg-red-500/10 cursor-pointer transition-colors">
+          Sign Out & Clear Session
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPortal() {
   const [screen, setScreen] = useState("dashboard");
 
@@ -29,6 +108,7 @@ export default function AdminPortal() {
       case "legal": return <LegalOps />;
       case "reports": return <ReportingDashboard />;
       case "audit": return <AuditCenter />;
+      case "settings": return <AdminSettings />;
       default: return <AdminDashboard onNavigate={setScreen} />;
     }
   };

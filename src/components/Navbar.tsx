@@ -54,7 +54,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           {/* Logo */}
           <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
             <div className="w-9 h-9 rounded-full overflow-hidden">
-              <img src="/incroute_logo.png" className="w-full h-full object-cover" alt="INCroute Logo" />
+              <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" />
             </div>
             <div className="flex flex-col select-none leading-none">
               <span className="text-[16px] font-extrabold logo-text-inc tracking-tight">
