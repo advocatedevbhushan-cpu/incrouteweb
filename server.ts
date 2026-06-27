@@ -1077,6 +1077,47 @@ const secret = JWT_SECRET;
   });
 
   // Get signed download URL
+  // Debug endpoint — shows what files exist on disk and what DB expects (remove in production later)
+  app.get("/api/admin/documents/debug-storage", async (req, res) => {
+    try {
+      const uploadsDir = path.join(process.cwd(), "uploads");
+      const allFiles: string[] = [];
+
+      // Recursively scan uploads directory
+      const scanDir = (dir: string) => {
+        if (!fs.existsSync(dir)) return;
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) scanDir(fullPath);
+          else allFiles.push(fullPath.replace(uploadsDir, "").replace(/\\/g, "/"));
+        }
+      };
+      scanDir(uploadsDir);
+
+      // Get DB records
+      const conn = await getPlatformConnection();
+      const [docs]: any = await conn.query("SELECT id, title, storageKey, publicUrl, storageProvider, fileName, originalName FROM `Document` ORDER BY createdAt DESC LIMIT 50");
+      conn.release();
+
+      res.json({
+        cwd: process.cwd(),
+        uploadsPath: uploadsDir,
+        uploadsExists: fs.existsSync(uploadsDir),
+        filesOnDisk: allFiles,
+        dbRecords: docs.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          storageKey: d.storageKey,
+          publicUrl: d.publicUrl,
+          storageProvider: d.storageProvider,
+          fileName: d.fileName,
+          expectedPath: d.storageKey ? `/uploads/${d.storageKey.replace(/^clients\//, "")}` : d.publicUrl,
+        })),
+      });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   app.get("/api/admin/documents/:id/download", async (req, res) => {
     try {
       const conn = await getPlatformConnection();
