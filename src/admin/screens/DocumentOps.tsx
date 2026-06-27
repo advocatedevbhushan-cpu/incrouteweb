@@ -50,29 +50,22 @@ export default function DocumentOps() {
       const res = await fetch(`/api/admin/documents/${id}/download`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      // If the response is a file stream (Content-Disposition header present), download it
-      if (res.headers.get("Content-Disposition")) {
-        const blob = await res.blob();
-        const fileName = res.headers.get("Content-Disposition")?.match(/filename="?(.+?)"?$/)?.[1] || "download";
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else {
-        // JSON response with downloadUrl
-        const d = await res.json();
-        if (d.downloadUrl) {
-          const a = document.createElement("a");
-          a.href = d.downloadUrl;
-          a.download = d.fileName || "download";
-          a.target = "_blank";
-          a.click();
-        } else {
-          alert("Download failed: " + (d.error || "File not found"));
-        }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Download failed" }));
+        alert("Download failed: " + (err.error || "Unknown error"));
+        return;
       }
+      const blob = await res.blob();
+      const contentDisp = res.headers.get("Content-Disposition") || "";
+      const fileName = contentDisp.match(/filename="?(.+?)"?$/)?.[1] || "download";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       alert("Download failed. Please check your connection.");
     }
@@ -103,11 +96,30 @@ export default function DocumentOps() {
 
   const formatSize = (bytes: number) => { if (!bytes) return "—"; if (bytes < 1024) return bytes + " B"; if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB"; return (bytes/(1024*1024)).toFixed(1) + " MB"; };
 
+  // Client-grouped view
+  const [viewMode, setViewMode] = useState<"list" | "clients">("clients");
+  const [expandedClient, setExpandedClient] = useState<string | null>(null);
+
+  // Group documents by client
+  const clientGroups = docs.reduce((acc: Record<string, { name: string; id: string; docs: any[] }>, d) => {
+    const key = d.clientId || "unknown";
+    if (!acc[key]) acc[key] = { name: d.clientName || "Unknown Client", id: key, docs: [] };
+    acc[key].docs.push(d);
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Document Center</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{total} documents · Cloudflare R2 Storage</p></div>
-        <button onClick={() => { setShowUpload(true); loadClients(); }} className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer"><Upload className="w-3.5 h-3.5" /> Upload</button>
+        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Document Center</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{total} documents · R2 Storage</p></div>
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex rounded-lg border border-[var(--border-subtle)] overflow-hidden">
+            <button onClick={() => setViewMode("clients")} className={`px-3 py-1.5 text-[10px] font-semibold cursor-pointer ${viewMode === "clients" ? "bg-[var(--accent)] text-white" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"}`}>By Client</button>
+            <button onClick={() => setViewMode("list")} className={`px-3 py-1.5 text-[10px] font-semibold cursor-pointer ${viewMode === "list" ? "bg-[var(--accent)] text-white" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)]"}`}>List View</button>
+          </div>
+          <button onClick={() => { setShowUpload(true); loadClients(); }} className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer"><Upload className="w-3.5 h-3.5" /> Upload</button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -134,7 +146,71 @@ export default function DocumentOps() {
         <div className="flex flex-wrap gap-1">{STATUSES.slice(0, 5).map(s => <FilterPill key={s} label={s === "ALL" ? "All" : s.replace(/_/g, " ")} active={statusFilter === s} onClick={() => setStatusFilter(s)} />)}</div>
       </div>
 
-      {loading ? <Loading /> : docs.length === 0 ? <EmptyState icon={FileText} title="No documents" description="Upload documents for clients to start the verification workflow." action={{ label: "Upload Document", onClick: () => { setShowUpload(true); loadClients(); } }} /> : (
+      {loading ? <Loading /> : docs.length === 0 ? <EmptyState icon={FileText} title="No documents" description="Upload documents for clients to start the verification workflow." action={{ label: "Upload Document", onClick: () => { setShowUpload(true); loadClients(); } }} /> : viewMode === "clients" ? (
+        /* ═══ CLIENT-GROUPED VIEW ═══ */
+        <div className="space-y-3">
+          {Object.values(clientGroups).map((group: any) => (
+            <div key={group.id} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
+              {/* Client header — click to expand */}
+              <button
+                onClick={() => setExpandedClient(expandedClient === group.id ? null : group.id)}
+                className="w-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-[var(--accent-soft)] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] font-bold text-[14px]">
+                    {group.name.charAt(0)}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[14px] font-bold text-[var(--text-primary)]">{group.name}</p>
+                    <p className="text-[11px] text-[var(--text-tertiary)]">{group.docs.length} document{group.docs.length !== 1 ? "s" : ""}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1">
+                    {group.docs.filter((d: any) => d.status === "UNDER_REVIEW").length > 0 && (
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 font-semibold">{group.docs.filter((d: any) => d.status === "UNDER_REVIEW").length} pending</span>
+                    )}
+                    {group.docs.filter((d: any) => d.status === "APPROVED").length > 0 && (
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 font-semibold">{group.docs.filter((d: any) => d.status === "APPROVED").length} approved</span>
+                    )}
+                  </div>
+                  <svg className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${expandedClient === group.id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </button>
+
+              {/* Expanded docs list */}
+              {expandedClient === group.id && (
+                <div className="border-t border-[var(--border-subtle)]">
+                  <table className="w-full text-left">
+                    <thead><tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface-alt)]">
+                      {["Document", "Folder", "Size", "Status", "Date", "Actions"].map(h => <th key={h} className="px-4 py-2 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}
+                    </tr></thead>
+                    <tbody>{group.docs.map((d: any) => (
+                      <tr key={d.id} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors">
+                        <td className="px-4 py-3"><p className="text-[12px] font-medium text-[var(--text-primary)]">{d.title}</p><p className="text-[9px] text-[var(--text-tertiary)]">{d.originalName || d.fileName}</p></td>
+                        <td className="px-4 py-3"><span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">{d.folder || d.category}</span></td>
+                        <td className="px-4 py-3 text-[10px] text-[var(--text-tertiary)]">{formatSize(d.fileSize || d.size)}</td>
+                        <td className="px-4 py-3"><StatusBadge status={d.status} /></td>
+                        <td className="px-4 py-3 text-[10px] text-[var(--text-tertiary)]">{new Date(d.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</td>
+                        <td className="px-4 py-3"><div className="flex items-center gap-1">
+                          <button onClick={() => downloadDoc(d.id)} title="Download" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-tertiary)] hover:text-[var(--accent)] cursor-pointer"><Download className="w-3.5 h-3.5" /></button>
+                          {d.status === "UNDER_REVIEW" && (<>
+                            <button onClick={() => updateStatus(d.id, "APPROVED")} title="Approve" className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[var(--text-tertiary)] hover:text-[var(--success)] cursor-pointer"><CheckCircle2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => updateStatus(d.id, "REJECTED")} title="Reject" className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,#EF4444_12%,transparent)] text-[var(--text-tertiary)] hover:text-[#EF4444] cursor-pointer"><XCircle className="w-3.5 h-3.5" /></button>
+                          </>)}
+                          <button onClick={() => deleteDoc(d.id, d.title)} title="Delete" className="p-1.5 rounded-lg hover:bg-[color-mix(in_srgb,#EF4444_12%,transparent)] text-[var(--text-tertiary)] hover:text-[#EF4444] cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div></td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ))}
+          <Pagination page={page} pages={pages} onPage={setPage} />
+        </div>
+      ) : (
+        /* ═══ FLAT LIST VIEW ═══ */
         <>
           <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-[var(--border-subtle)]">
             {["Document", "Client", "Folder", "Size", "Status", "Actions"].map(h => <th key={h} className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{h}</th>)}

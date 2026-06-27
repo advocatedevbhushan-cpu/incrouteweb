@@ -1131,46 +1131,53 @@ const secret = JWT_SECRET;
   app.get("/api/admin/documents/:id/download", async (req, res) => {
     try {
       const conn = await getPlatformConnection();
-      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName, originalName FROM `Document` WHERE id = ?", [req.params.id]);
+      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName, originalName, mimeType FROM `Document` WHERE id = ?", [req.params.id]);
       if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Document not found" }); }
       const doc = docs[0];
+      const fileName = doc.originalName || doc.fileName || "download";
 
-      let downloadUrl = doc.publicUrl || "";
-
-      if (doc.storageProvider === "cloudflare_r2" || doc.storageProvider === "r2") {
-        // Files stored in R2 — generate signed download URL
-        if (doc.storageKey && r2Client) {
+      // R2 storage — stream file directly from R2 to client (forces download)
+      if ((doc.storageProvider === "cloudflare_r2" || doc.storageProvider === "r2") && doc.storageKey) {
+        const r2 = r2Client || (process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+          ? new S3Client({ region: "auto", endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID, secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY } })
+          : null);
+        
+        if (r2) {
           try {
-            if (R2_PUBLIC_URL) {
-              downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
-            } else {
-              // Generate a signed URL (valid for 1 hour)
-              downloadUrl = await getSignedDownloadUrl(doc.storageKey, 3600);
-            }
-          } catch (r2Err: any) {
-            console.error("Failed to generate R2 download URL:", r2Err.message);
-          }
-        }
-        // If r2Client isn't available here but was during upload, try to create one on the fly
-        if (!downloadUrl && doc.storageKey && process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
-          try {
-            const tempR2 = new S3Client({
-              region: "auto",
-              endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-              credentials: {
-                accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-                secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-              },
-            });
             const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey });
-            downloadUrl = await getSignedUrl(tempR2, command, { expiresIn: 3600 });
-          } catch (tempErr: any) {
-            console.error("Fallback R2 signed URL failed:", tempErr.message);
+            const response = await r2.send(command);
+            
+            // Audit log
+            const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+            await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
+              ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
+            conn.release();
+
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+            res.setHeader("Content-Type", doc.mimeType || response.ContentType || "application/octet-stream");
+            if (response.ContentLength) res.setHeader("Content-Length", String(response.ContentLength));
+            
+            // Stream R2 response body to client
+            const stream = response.Body as any;
+            if (stream?.pipe) {
+              stream.pipe(res);
+            } else if (stream?.transformToByteArray) {
+              const bytes = await stream.transformToByteArray();
+              res.send(Buffer.from(bytes));
+            } else {
+              res.send(stream);
+            }
+            return;
+          } catch (r2Err: any) {
+            console.error("R2 download stream failed:", r2Err.message);
           }
         }
-      } else if (doc.storageProvider === "local" || !doc.storageProvider) {
-        // For local storage, serve the file directly from disk
-        // Try multiple path strategies to find the file
+        conn.release();
+        return res.status(404).json({ error: "Could not retrieve file from storage. Check R2 credentials." });
+      }
+      
+      // Local storage — stream from disk
+      if (doc.storageProvider === "local" || !doc.storageProvider) {
         const possiblePaths = [
           doc.storageKey ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, "")) : null,
           doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null,
@@ -1178,57 +1185,25 @@ const secret = JWT_SECRET;
           doc.fileName ? path.join(process.cwd(), "uploads", doc.fileName) : null,
         ].filter(Boolean) as string[];
 
-        let localPath: string | null = null;
         for (const p of possiblePaths) {
-          if (fs.existsSync(p)) { localPath = p; break; }
-        }
-
-        if (localPath) {
-          // Audit log
-          const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-          await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
-            ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
-          conn.release();
-          const fileName = doc.originalName || doc.fileName || "download";
-          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-          res.setHeader("Content-Type", "application/octet-stream");
-          return fs.createReadStream(localPath).pipe(res);
-        }
-
-        // If file not found locally, try serving via publicUrl (for static serving)
-        downloadUrl = doc.publicUrl || "";
-      }
-
-      if (!downloadUrl) {
-        // Last resort: try to construct a download URL from storageKey
-        if (doc.storageKey) {
-          const fallbackUrl = `/uploads/${doc.storageKey.replace(/^clients\//, "")}`;
-          const fallbackPath = path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""));
-          if (fs.existsSync(fallbackPath)) {
-            const now2 = new Date().toISOString().slice(0, 23).replace("T", " ");
+          if (fs.existsSync(p)) {
+            const now = new Date().toISOString().slice(0, 23).replace("T", " ");
             await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
-              ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now2]);
+              ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
             conn.release();
-            const fileName2 = doc.originalName || doc.fileName || "download";
-            res.setHeader("Content-Disposition", `attachment; filename="${fileName2}"`);
-            res.setHeader("Content-Type", "application/octet-stream");
-            return fs.createReadStream(fallbackPath).pipe(res);
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+            res.setHeader("Content-Type", doc.mimeType || "application/octet-stream");
+            return fs.createReadStream(p).pipe(res);
           }
         }
-        conn.release();
-        return res.status(404).json({ error: "File not found on server. The file may have been uploaded to a different storage location." });
       }
 
-      // Audit log
-      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-      await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
-        ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
       conn.release();
-      res.json({ success: true, downloadUrl, fileName: doc.originalName || doc.fileName });
+      return res.status(404).json({ error: "File not found on server." });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
-  // Portal download endpoint (for clients)
+  // Portal download endpoint (for clients) — proxies file from R2
   app.get("/api/portal/documents/:id/download", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
@@ -1236,49 +1211,54 @@ const secret = JWT_SECRET;
       const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
       const conn = await getPlatformConnection();
       const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
-      // Verify document belongs to this client
       const [docs]: any = await conn.query(
-        `SELECT d.storageKey, d.storageProvider, d.publicUrl, d.title, d.fileName, d.originalName 
+        `SELECT d.storageKey, d.storageProvider, d.publicUrl, d.title, d.fileName, d.originalName, d.mimeType
          FROM \`Document\` d JOIN \`Client\` c ON d.clientId = c.id 
          WHERE d.id = ? AND c.contactEmail = ?`,
         [req.params.id, user[0]?.email]
       );
       if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Document not found" }); }
       const doc = docs[0];
+      const fileName = doc.originalName || doc.fileName || "download";
 
-      let downloadUrl = doc.publicUrl || "";
+      // R2 — stream directly
       if ((doc.storageProvider === "cloudflare_r2" || doc.storageProvider === "r2") && doc.storageKey) {
-        if (r2Client && R2_PUBLIC_URL) {
-          downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
-        } else if (r2Client) {
-          try { downloadUrl = await getSignedDownloadUrl(doc.storageKey, 3600); } catch {}
-        }
-        if (!downloadUrl && process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+        const r2 = r2Client || (process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+          ? new S3Client({ region: "auto", endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID, secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY } })
+          : null);
+        if (r2) {
           try {
-            const tempR2 = new S3Client({ region: "auto", endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID, secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY } });
-            downloadUrl = await getSignedUrl(tempR2, new GetObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey }), { expiresIn: 3600 });
+            const response = await r2.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey }));
+            conn.release();
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+            res.setHeader("Content-Type", doc.mimeType || response.ContentType || "application/octet-stream");
+            if (response.ContentLength) res.setHeader("Content-Length", String(response.ContentLength));
+            const stream = response.Body as any;
+            if (stream?.pipe) return stream.pipe(res);
+            if (stream?.transformToByteArray) { const bytes = await stream.transformToByteArray(); return res.send(Buffer.from(bytes)); }
+            return res.send(stream);
           } catch {}
         }
-      } else if (doc.storageProvider === "local" || !doc.storageProvider) {
+      }
+
+      // Local — stream from disk
+      if (doc.storageProvider === "local" || !doc.storageProvider) {
         const possiblePaths = [
           doc.storageKey ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, "")) : null,
           doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null,
-          doc.storageKey ? path.join(process.cwd(), "uploads", path.basename(doc.storageKey)) : null,
         ].filter(Boolean) as string[];
-        let localPath: string | null = null;
-        for (const p of possiblePaths) { if (fs.existsSync(p)) { localPath = p; break; } }
-        if (localPath) {
-          conn.release();
-          const fileName = doc.originalName || doc.fileName || "download";
-          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-          res.setHeader("Content-Type", "application/octet-stream");
-          return fs.createReadStream(localPath).pipe(res);
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) {
+            conn.release();
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+            res.setHeader("Content-Type", doc.mimeType || "application/octet-stream");
+            return fs.createReadStream(p).pipe(res);
+          }
         }
-        downloadUrl = doc.publicUrl || "";
       }
+
       conn.release();
-      if (!downloadUrl) return res.status(404).json({ error: "File not found" });
-      res.json({ success: true, downloadUrl, fileName: doc.originalName || doc.fileName });
+      return res.status(404).json({ error: "File not found" });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
