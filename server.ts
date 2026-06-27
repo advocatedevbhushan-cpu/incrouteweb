@@ -1076,9 +1076,13 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
-  // Get signed download URL
-  // Debug endpoint — shows what files exist on disk and what DB expects (remove in production later)
-  app.get("/api/admin/documents/debug-storage", async (req, res) => {
+  // Debug endpoint — shows what files exist on disk and what DB expects
+  // Access via: /api/debug/storage?key=incroute2026
+  app.get("/api/debug/storage", async (req, res) => {
+    // Simple secret key check (not behind requireAdmin)
+    if (req.query.key !== (process.env.CMS_PASSWORD || "incroute2026")) {
+      return res.status(403).json({ error: "Invalid key" });
+    }
     try {
       const uploadsDir = path.join(process.cwd(), "uploads");
       const allFiles: string[] = [];
@@ -1105,6 +1109,7 @@ const secret = JWT_SECRET;
         uploadsPath: uploadsDir,
         uploadsExists: fs.existsSync(uploadsDir),
         filesOnDisk: allFiles,
+        totalFilesOnDisk: allFiles.length,
         dbRecords: docs.map((d: any) => ({
           id: d.id,
           title: d.title,
@@ -1112,10 +1117,15 @@ const secret = JWT_SECRET;
           publicUrl: d.publicUrl,
           storageProvider: d.storageProvider,
           fileName: d.fileName,
-          expectedPath: d.storageKey ? `/uploads/${d.storageKey.replace(/^clients\//, "")}` : d.publicUrl,
         })),
       });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get signed download URL
+  // Debug endpoint (admin-protected version — kept for reference)
+  app.get("/api/admin/documents/debug-storage", async (req, res) => {
+    return res.redirect(`/api/debug/storage?key=${process.env.CMS_PASSWORD || "incroute2026"}`);
   });
 
   app.get("/api/admin/documents/:id/download", async (req, res) => {
