@@ -1195,6 +1195,211 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // Get single invoice with client details (for PDF/preview)
+  app.get("/api/admin/invoices/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [rows]: any = await conn.query(
+        `SELECT i.*, c.companyName, c.contactEmail, c.contactPhone, c.address, c.gstin
+         FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE i.id = ?`,
+        [req.params.id]
+      );
+      conn.release();
+      if (rows.length === 0) return res.status(404).json({ error: "Invoice not found" });
+      // Parse line items from description if stored as JSON
+      const invoice = rows[0];
+      try { invoice.lineItems = JSON.parse(invoice.description); } catch { invoice.lineItems = null; }
+      res.json({ invoice });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Enhanced invoice creation with line items (Zoho/Tally style)
+  app.post("/api/admin/invoices/create", async (req, res) => {
+    try {
+      const { clientId, lineItems, notes, dueDate, bankDetails, gstRate } = req.body;
+      if (!clientId || !lineItems || !Array.isArray(lineItems) || lineItems.length === 0 || !dueDate) {
+        return res.status(400).json({ error: "clientId, lineItems (array), and dueDate are required" });
+      }
+      // Calculate totals from line items
+      let subtotal = 0;
+      const processedItems = lineItems.map((item: any, idx: number) => {
+        const qty = Number(item.quantity) || 1;
+        const rate = Number(item.rate) || 0;
+        const amount = qty * rate;
+        subtotal += amount;
+        return { sno: idx + 1, description: item.description || "", hsn: item.hsn || "", quantity: qty, rate, amount };
+      });
+      const taxRate = Number(gstRate) || 18;
+      const taxAmount = Math.round(subtotal * taxRate / 100);
+      const total = subtotal + taxAmount;
+
+      const conn = await getPlatformConnection();
+      const id = "inv_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const invoiceNo = "INV-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 9000) + 1000);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+
+      // Store line items as JSON in description field
+      const invoiceData = JSON.stringify({ items: processedItems, notes: notes || "", bankDetails: bankDetails || "", gstRate: taxRate });
+
+      await conn.query(
+        `INSERT INTO \`Invoice\` (id, clientId, invoiceNo, amount, tax, total, status, dueDate, description, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, ?)`,
+        [id, clientId, invoiceNo, subtotal, taxAmount, total, dueDate, invoiceData, now, now]
+      );
+      conn.release();
+      res.json({ success: true, id, invoiceNo, subtotal, tax: taxAmount, total });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Send invoice via email to client
+  app.post("/api/admin/invoices/:id/send", async (req, res) => {
+    try {
+      const { recipientEmail, subject, message } = req.body;
+      const conn = await getPlatformConnection();
+      const [rows]: any = await conn.query(
+        `SELECT i.*, c.companyName, c.contactEmail, c.contactPhone, c.address, c.gstin
+         FROM \`Invoice\` i LEFT JOIN \`Client\` c ON i.clientId = c.id WHERE i.id = ?`,
+        [req.params.id]
+      );
+      if (rows.length === 0) { conn.release(); return res.status(404).json({ error: "Invoice not found" }); }
+      const invoice = rows[0];
+      const toEmail = recipientEmail || invoice.contactEmail;
+      if (!toEmail) { conn.release(); return res.status(400).json({ error: "No recipient email provided or found for client" }); }
+
+      // Parse line items
+      let lineItems: any[] = [];
+      let notes = "";
+      let bankDetails = "";
+      let gstRate = 18;
+      try {
+        const parsed = JSON.parse(invoice.description);
+        lineItems = parsed.items || [];
+        notes = parsed.notes || "";
+        bankDetails = parsed.bankDetails || "";
+        gstRate = parsed.gstRate || 18;
+      } catch {}
+
+      // Build HTML email with professional invoice layout
+      const itemRows = lineItems.map((item: any) => `
+        <tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;">${item.sno}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;">${item.description}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;text-align:center;">${item.hsn || '-'}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;text-align:center;">${item.quantity}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;text-align:right;">₹${Number(item.rate).toLocaleString("en-IN")}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;text-align:right;font-weight:600;">₹${Number(item.amount).toLocaleString("en-IN")}</td>
+        </tr>
+      `).join("");
+
+      const invoiceHtml = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:700px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <!-- Header -->
+          <div style="background:#1a1a2e;padding:28px 32px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h1 style="margin:0;font-size:22px;color:#d4af37;font-weight:700;">INCroute</h1>
+              <p style="margin:4px 0 0;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:1px;">CORPORATE REGISTRATIONS & COMPLIANCE</p>
+            </div>
+            <div style="text-align:right;">
+              <p style="margin:0;font-size:24px;font-weight:800;color:#fff;">INVOICE</p>
+              <p style="margin:4px 0 0;font-size:13px;color:#d4af37;">${invoice.invoiceNo}</p>
+            </div>
+          </div>
+
+          <!-- Bill To / Invoice Meta -->
+          <div style="padding:24px 32px;display:flex;justify-content:space-between;border-bottom:1px solid #eee;">
+            <div>
+              <p style="margin:0;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:1px;font-weight:600;">Bill To</p>
+              <p style="margin:6px 0 0;font-size:15px;font-weight:700;color:#1a1a2e;">${invoice.companyName || 'Client'}</p>
+              ${invoice.address ? `<p style="margin:4px 0 0;font-size:12px;color:#555;">${invoice.address}</p>` : ''}
+              ${invoice.gstin ? `<p style="margin:4px 0 0;font-size:11px;color:#666;">GSTIN: ${invoice.gstin}</p>` : ''}
+              ${toEmail ? `<p style="margin:4px 0 0;font-size:11px;color:#666;">${toEmail}</p>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <p style="margin:0;font-size:11px;color:#888;"><strong>Invoice Date:</strong> ${new Date(invoice.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
+              <p style="margin:6px 0 0;font-size:11px;color:#888;"><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</p>
+              <p style="margin:12px 0 0;padding:6px 12px;background:${invoice.status === 'PAID' ? '#dcfce7' : invoice.status === 'OVERDUE' ? '#fef2f2' : '#fef9c3'};border-radius:6px;font-size:11px;font-weight:700;color:${invoice.status === 'PAID' ? '#166534' : invoice.status === 'OVERDUE' ? '#991b1b' : '#854d0e'};display:inline-block;">${invoice.status}</p>
+            </div>
+          </div>
+
+          <!-- Line Items Table -->
+          <div style="padding:0 32px;">
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+              <thead>
+                <tr style="background:#f8f9fa;">
+                  <th style="padding:12px;text-align:left;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">S.No</th>
+                  <th style="padding:12px;text-align:left;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">Description</th>
+                  <th style="padding:12px;text-align:center;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">HSN/SAC</th>
+                  <th style="padding:12px;text-align:center;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">Qty</th>
+                  <th style="padding:12px;text-align:right;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">Rate</th>
+                  <th style="padding:12px;text-align:right;font-size:10px;text-transform:uppercase;color:#666;letter-spacing:0.5px;border-bottom:2px solid #e0e0e0;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>${itemRows}</tbody>
+            </table>
+          </div>
+
+          <!-- Totals -->
+          <div style="padding:0 32px 24px;display:flex;justify-content:flex-end;">
+            <div style="width:260px;">
+              <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#555;">
+                <span>Subtotal</span><span>₹${Number(invoice.amount).toLocaleString("en-IN")}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#555;border-bottom:1px solid #eee;">
+                <span>GST (${gstRate}%)</span><span>₹${Number(invoice.tax).toLocaleString("en-IN")}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:17px;font-weight:800;color:#1a1a2e;">
+                <span>Total</span><span>₹${Number(invoice.total).toLocaleString("en-IN")}</span>
+              </div>
+            </div>
+          </div>
+
+          ${bankDetails ? `
+          <!-- Bank Details -->
+          <div style="padding:16px 32px;background:#f8f9fa;border-top:1px solid #eee;">
+            <p style="margin:0 0 8px;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:1px;font-weight:600;">Bank Details</p>
+            <p style="margin:0;font-size:12px;color:#333;white-space:pre-line;">${bankDetails}</p>
+          </div>` : ''}
+
+          ${notes ? `
+          <!-- Notes -->
+          <div style="padding:16px 32px;border-top:1px solid #eee;">
+            <p style="margin:0 0 6px;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:1px;font-weight:600;">Notes</p>
+            <p style="margin:0;font-size:12px;color:#555;">${notes}</p>
+          </div>` : ''}
+
+          <!-- Footer -->
+          <div style="padding:16px 32px;background:#1a1a2e;text-align:center;">
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.5);">Thank you for your business • INCroute Corporate Services • incroute.com</p>
+          </div>
+        </div>
+      `;
+
+      if (!emailTransporter) {
+        conn.release();
+        return res.status(503).json({ error: "Email service not configured. Set SMTP credentials in .env" });
+      }
+
+      await emailTransporter.sendMail({
+        from: `"INCroute Billing" <${process.env.SMTP_USER}>`,
+        to: toEmail,
+        subject: subject || `Invoice ${invoice.invoiceNo} from INCroute`,
+        html: `
+          <div style="font-family:'Segoe UI',sans-serif;max-width:700px;margin:0 auto;">
+            ${message ? `<p style="font-size:14px;color:#333;margin-bottom:24px;">${message}</p>` : `<p style="font-size:14px;color:#333;margin-bottom:24px;">Please find your invoice attached below. Payment is due by ${new Date(invoice.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}.</p>`}
+            ${invoiceHtml}
+          </div>
+        `
+      });
+
+      // Update status to SENT
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `Invoice` SET status = 'SENT', updatedAt = ? WHERE id = ? AND status IN ('DRAFT','PENDING')", [now, req.params.id]);
+      conn.release();
+
+      res.json({ success: true, message: `Invoice sent to ${toEmail}` });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // ─── TICKETS (enhanced) ───
   app.get("/api/admin/tickets", async (req, res) => {
     try {
