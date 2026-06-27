@@ -1137,12 +1137,36 @@ const secret = JWT_SECRET;
 
       let downloadUrl = doc.publicUrl || "";
 
-      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
-        // Generate signed URL for private R2 buckets, or use public URL
-        if (R2_PUBLIC_URL) {
-          downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
-        } else {
-          downloadUrl = await getSignedDownloadUrl(doc.storageKey);
+      if (doc.storageProvider === "cloudflare_r2" || doc.storageProvider === "r2") {
+        // Files stored in R2 — generate signed download URL
+        if (doc.storageKey && r2Client) {
+          try {
+            if (R2_PUBLIC_URL) {
+              downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
+            } else {
+              // Generate a signed URL (valid for 1 hour)
+              downloadUrl = await getSignedDownloadUrl(doc.storageKey, 3600);
+            }
+          } catch (r2Err: any) {
+            console.error("Failed to generate R2 download URL:", r2Err.message);
+          }
+        }
+        // If r2Client isn't available here but was during upload, try to create one on the fly
+        if (!downloadUrl && doc.storageKey && process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+          try {
+            const tempR2 = new S3Client({
+              region: "auto",
+              endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+              credentials: {
+                accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+                secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+              },
+            });
+            const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey });
+            downloadUrl = await getSignedUrl(tempR2, command, { expiresIn: 3600 });
+          } catch (tempErr: any) {
+            console.error("Fallback R2 signed URL failed:", tempErr.message);
+          }
         }
       } else if (doc.storageProvider === "local" || !doc.storageProvider) {
         // For local storage, serve the file directly from disk
@@ -1223,8 +1247,18 @@ const secret = JWT_SECRET;
       const doc = docs[0];
 
       let downloadUrl = doc.publicUrl || "";
-      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
-        downloadUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${doc.storageKey}` : await getSignedDownloadUrl(doc.storageKey);
+      if ((doc.storageProvider === "cloudflare_r2" || doc.storageProvider === "r2") && doc.storageKey) {
+        if (r2Client && R2_PUBLIC_URL) {
+          downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
+        } else if (r2Client) {
+          try { downloadUrl = await getSignedDownloadUrl(doc.storageKey, 3600); } catch {}
+        }
+        if (!downloadUrl && process.env.CLOUDFLARE_R2_ACCESS_KEY_ID && process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
+          try {
+            const tempR2 = new S3Client({ region: "auto", endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID, secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY } });
+            downloadUrl = await getSignedUrl(tempR2, new GetObjectCommand({ Bucket: R2_BUCKET, Key: doc.storageKey }), { expiresIn: 3600 });
+          } catch {}
+        }
       } else if (doc.storageProvider === "local" || !doc.storageProvider) {
         const possiblePaths = [
           doc.storageKey ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, "")) : null,
