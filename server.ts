@@ -1050,11 +1050,11 @@ const secret = JWT_SECRET;
       if (r2Client) {
         publicUrl = await uploadToR2(storageKey, file.buffer, file.mimetype);
       } else {
-        // Fallback: save locally
-        const localDir = path.join(process.cwd(), "uploads", clientId);
-        if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
-        fs.writeFileSync(path.join(localDir, path.basename(storageKey)), file.buffer);
-        publicUrl = `/uploads/${clientId}/${path.basename(storageKey)}`;
+        // Fallback: save locally — use storageKey path structure for consistent retrieval
+        const localFilePath = path.join(process.cwd(), "uploads", storageKey.replace(/^clients\//, ""));
+        fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
+        fs.writeFileSync(localFilePath, file.buffer);
+        publicUrl = `/uploads/${storageKey.replace(/^clients\//, "")}`;
       }
 
       // Save metadata to MySQL
@@ -1095,13 +1095,20 @@ const secret = JWT_SECRET;
         }
       } else if (doc.storageProvider === "local" || !doc.storageProvider) {
         // For local storage, serve the file directly from disk
-        const localPath = doc.storageKey
-          ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""))
-          : doc.publicUrl?.startsWith("/uploads")
-            ? path.join(process.cwd(), doc.publicUrl)
-            : null;
+        // Try multiple path strategies to find the file
+        const possiblePaths = [
+          doc.storageKey ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, "")) : null,
+          doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null,
+          doc.storageKey ? path.join(process.cwd(), "uploads", path.basename(doc.storageKey)) : null,
+          doc.fileName ? path.join(process.cwd(), "uploads", doc.fileName) : null,
+        ].filter(Boolean) as string[];
 
-        if (localPath && fs.existsSync(localPath)) {
+        let localPath: string | null = null;
+        for (const p of possiblePaths) {
+          if (fs.existsSync(p)) { localPath = p; break; }
+        }
+
+        if (localPath) {
           // Audit log
           const now = new Date().toISOString().slice(0, 23).replace("T", " ");
           await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
@@ -1112,13 +1119,29 @@ const secret = JWT_SECRET;
           res.setHeader("Content-Type", "application/octet-stream");
           return fs.createReadStream(localPath).pipe(res);
         }
-        // Fallback: return the public URL path (works if /uploads is served statically)
-        downloadUrl = doc.publicUrl || `/uploads/${doc.storageKey?.replace(/^clients\//, "")}`;
+
+        // If file not found locally, try serving via publicUrl (for static serving)
+        downloadUrl = doc.publicUrl || "";
       }
 
       if (!downloadUrl) {
+        // Last resort: try to construct a download URL from storageKey
+        if (doc.storageKey) {
+          const fallbackUrl = `/uploads/${doc.storageKey.replace(/^clients\//, "")}`;
+          const fallbackPath = path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""));
+          if (fs.existsSync(fallbackPath)) {
+            const now2 = new Date().toISOString().slice(0, 23).replace("T", " ");
+            await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
+              ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now2]);
+            conn.release();
+            const fileName2 = doc.originalName || doc.fileName || "download";
+            res.setHeader("Content-Disposition", `attachment; filename="${fileName2}"`);
+            res.setHeader("Content-Type", "application/octet-stream");
+            return fs.createReadStream(fallbackPath).pipe(res);
+          }
+        }
         conn.release();
-        return res.status(404).json({ error: "File not found or storage not configured" });
+        return res.status(404).json({ error: "File not found on server. The file may have been uploaded to a different storage location." });
       }
 
       // Audit log
@@ -1152,17 +1175,21 @@ const secret = JWT_SECRET;
       if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
         downloadUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${doc.storageKey}` : await getSignedDownloadUrl(doc.storageKey);
       } else if (doc.storageProvider === "local" || !doc.storageProvider) {
-        const localPath = doc.storageKey
-          ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""))
-          : doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null;
-        if (localPath && fs.existsSync(localPath)) {
+        const possiblePaths = [
+          doc.storageKey ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, "")) : null,
+          doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null,
+          doc.storageKey ? path.join(process.cwd(), "uploads", path.basename(doc.storageKey)) : null,
+        ].filter(Boolean) as string[];
+        let localPath: string | null = null;
+        for (const p of possiblePaths) { if (fs.existsSync(p)) { localPath = p; break; } }
+        if (localPath) {
           conn.release();
           const fileName = doc.originalName || doc.fileName || "download";
           res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
           res.setHeader("Content-Type", "application/octet-stream");
           return fs.createReadStream(localPath).pipe(res);
         }
-        downloadUrl = doc.publicUrl || `/uploads/${doc.storageKey?.replace(/^clients\//, "")}`;
+        downloadUrl = doc.publicUrl || "";
       }
       conn.release();
       if (!downloadUrl) return res.status(404).json({ error: "File not found" });
@@ -1866,17 +1893,19 @@ const secret = JWT_SECRET;
           }
         } catch (r2Err: any) {
           console.error("R2 upload failed, falling back to local:", r2Err.message);
-          // Fallback: save locally
-          const localDir = path.join(process.cwd(), "uploads", clientId, category);
-          fs.mkdirSync(localDir, { recursive: true });
-          fs.writeFileSync(path.join(localDir, `${Date.now()}${fileExt}`), file.buffer);
+          // Fallback: save locally — use storageKey path for consistency
+          const localFilePath = path.join(process.cwd(), "uploads", storageKey.replace(/^clients\//, ""));
+          fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
+          fs.writeFileSync(localFilePath, file.buffer);
           storageProvider = "local";
+          publicUrl = `/uploads/${storageKey.replace(/^clients\//, "")}`;
         }
       } else {
-        // Save locally if R2 not configured
-        const localDir = path.join(process.cwd(), "uploads", clientId, category);
-        fs.mkdirSync(localDir, { recursive: true });
-        fs.writeFileSync(path.join(localDir, `${Date.now()}${fileExt}`), file.buffer);
+        // Save locally if R2 not configured — use storageKey path for consistency
+        const localFilePath = path.join(process.cwd(), "uploads", storageKey.replace(/^clients\//, ""));
+        fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
+        fs.writeFileSync(localFilePath, file.buffer);
+        publicUrl = `/uploads/${storageKey.replace(/^clients\//, "")}`;
       }
 
       // Save metadata to DB
