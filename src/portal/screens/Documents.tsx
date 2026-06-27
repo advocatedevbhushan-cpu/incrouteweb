@@ -114,6 +114,34 @@ export default function Documents() {
     }
   };
 
+  const handleDownloadPortal = async (docId: string) => {
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch(`/api/portal/documents/${docId}/download`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.headers.get("Content-Disposition")) {
+        const blob = await res.blob();
+        const fileName = res.headers.get("Content-Disposition")?.match(/filename="?(.+?)"?$/)?.[1] || "download";
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const d = await res.json();
+        if (d.downloadUrl) {
+          const a = document.createElement("a");
+          a.href = d.downloadUrl;
+          a.download = d.fileName || "download";
+          a.target = "_blank";
+          a.click();
+        }
+      }
+    } catch {}
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "APPROVED": return <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />;
@@ -147,7 +175,7 @@ export default function Documents() {
             <h1 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight flex items-center gap-2">
               <span>{serviceInfo?.icon}</span> {serviceInfo?.label || activeFolder}
             </h1>
-            <p className="text-[12px] text-[var(--text-secondary)]">{folderDocs.length} of {serviceInfo?.docs.length || 0} documents uploaded</p>
+            <p className="text-[12px] text-[var(--text-secondary)]">{folderDocs.length} of {serviceInfo?.docs.length || 0} document types covered</p>
           </div>
         </div>
 
@@ -162,42 +190,62 @@ export default function Documents() {
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[12px] font-medium text-[var(--text-secondary)]">Upload Progress</span>
-            <span className="text-[12px] font-bold text-[var(--accent)]">{folderDocs.length}/{serviceInfo?.docs.length || 0}</span>
+            <span className="text-[12px] font-bold text-[var(--accent)]">{new Set(folderDocs.map(d => d.title)).size}/{serviceInfo?.docs.length || 0}</span>
           </div>
           <div className="h-2 bg-[var(--bg-surface-alt)] rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-full transition-all duration-500" style={{ width: `${serviceInfo?.docs.length ? (folderDocs.length / serviceInfo.docs.length * 100) : 0}%` }} />
+            <div className="h-full bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-full transition-all duration-500" style={{ width: `${serviceInfo?.docs.length ? (new Set(folderDocs.map(d => d.title)).size / serviceInfo.docs.length * 100) : 0}%` }} />
           </div>
         </div>
 
-        {/* Required documents list */}
+        {/* Required documents list — supports multiple uploads per slot */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[var(--border-subtle)]">
             <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Required Documents</h3>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">For documents like PAN or Aadhaar, upload one per director/partner</p>
           </div>
           <div className="divide-y divide-[var(--border-subtle)]">
             {serviceInfo?.docs.map((docName, i) => {
-              const uploaded = folderDocs.find(d => d.title === docName);
+              const matchingDocs = folderDocs.filter(d => d.title === docName || d.title.startsWith(docName.split(" (")[0]));
+              const isMultiPerson = docName.includes("All Directors") || docName.includes("All Partners");
               return (
-                <div key={i} className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    {uploaded ? getStatusIcon(uploaded.status) : <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--border-subtle)]" />}
-                    <div>
-                      <p className={`text-[13px] font-medium ${uploaded ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{docName}</p>
-                      {uploaded && <p className="text-[10px] text-[var(--text-tertiary)]">{uploaded.fileName} · {getStatusLabel(uploaded.status)}</p>}
+                <div key={i} className="px-5 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {matchingDocs.length > 0 ? getStatusIcon(matchingDocs[0].status) : <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--border-subtle)]" />}
+                      <div>
+                        <p className={`text-[13px] font-medium ${matchingDocs.length > 0 ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{docName}</p>
+                        {isMultiPerson && <p className="text-[9px] text-[var(--text-tertiary)] mt-0.5">Upload one for each person (director/partner)</p>}
+                      </div>
                     </div>
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors">
+                      <Plus className="w-3 h-3" /> {matchingDocs.length > 0 ? "Add More" : "Upload"}
+                      <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder, docName)} disabled={uploading} />
+                    </label>
                   </div>
-                  <div>
-                    {uploaded ? (
-                      <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${uploaded.status === "APPROVED" ? "bg-green-500/10 text-green-500" : uploaded.status === "REJECTED" ? "bg-red-500/10 text-red-400" : "bg-yellow-500/10 text-yellow-600"}`}>
-                        {getStatusLabel(uploaded.status)}
-                      </span>
-                    ) : (
-                      <label className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors">
-                        <Upload className="w-3 h-3" /> Upload
-                        <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder, docName)} disabled={uploading} />
-                      </label>
-                    )}
-                  </div>
+                  {/* Show all uploaded files for this document type */}
+                  {matchingDocs.length > 0 && (
+                    <div className="mt-3 pl-6 space-y-2">
+                      {matchingDocs.map((uploadedDoc, idx) => (
+                        <div key={uploadedDoc.id} className="flex items-center justify-between bg-[var(--bg-surface-alt)] rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />
+                            <div>
+                              <p className="text-[11px] font-medium text-[var(--text-primary)]">{uploadedDoc.fileName}</p>
+                              <p className="text-[9px] text-[var(--text-tertiary)]">
+                                {new Date(uploadedDoc.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} · {getStatusLabel(uploadedDoc.status)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {getStatusIcon(uploadedDoc.status)}
+                            <button onClick={() => handleDownloadPortal(uploadedDoc.id)} className="p-1 rounded hover:bg-[var(--accent-soft)] cursor-pointer" title="Download">
+                              <Download className="w-3 h-3 text-[var(--text-tertiary)]" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}

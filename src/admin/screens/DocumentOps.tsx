@@ -44,7 +44,39 @@ export default function DocumentOps() {
 
   const updateStatus = async (id: string, status: string, note?: string) => { await api(`/api/admin/documents/${id}`, { method: "PATCH", body: JSON.stringify({ status, internalNote: note }) }); fetchData(); };
   const deleteDoc = async (id: string, title: string) => { if (!confirm(`Delete "${title}"?`)) return; await api(`/api/admin/documents/${id}`, { method: "DELETE" }); fetchData(); };
-  const downloadDoc = async (id: string) => { const d = await api(`/api/admin/documents/${id}/download`); if (d.downloadUrl) window.open(d.downloadUrl, "_blank"); };
+  const downloadDoc = async (id: string) => {
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      const res = await fetch(`/api/admin/documents/${id}/download`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      // If the response is a file stream (Content-Disposition header present), download it
+      if (res.headers.get("Content-Disposition")) {
+        const blob = await res.blob();
+        const fileName = res.headers.get("Content-Disposition")?.match(/filename="?(.+?)"?$/)?.[1] || "download";
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        // JSON response with downloadUrl
+        const d = await res.json();
+        if (d.downloadUrl) {
+          const a = document.createElement("a");
+          a.href = d.downloadUrl;
+          a.download = d.fileName || "download";
+          a.target = "_blank";
+          a.click();
+        } else {
+          alert("Download failed: " + (d.error || "File not found"));
+        }
+      }
+    } catch (err) {
+      alert("Download failed. Please check your connection.");
+    }
+  };
   const loadClients = async () => { const d = await api("/api/admin/clients"); setClients(d.clients || []); };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -110,9 +142,9 @@ export default function DocumentOps() {
           <tbody>{docs.map(d => (
             <tr key={d.id} className="border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--accent-soft)] transition-colors">
               <td className="px-4 py-3"><p className="text-[12px] font-medium text-[var(--text-primary)]">{d.title}</p><p className="text-[9px] text-[var(--text-tertiary)]">{d.originalName || d.fileName} · v{d.version || 1}</p></td>
-              <td className="px-4 py-3 text-[11px] text-[var(--text-secondary)]">{d.clientName || "—"}</td>
+              <td className="px-4 py-3"><p className="text-[12px] font-semibold text-[var(--accent)]">{d.clientName || "—"}</p></td>
               <td className="px-4 py-3"><span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">{d.folder || d.category}</span></td>
-              <td className="px-4 py-3 text-[10px] text-[var(--text-tertiary)]">{formatSize(d.fileSize)}</td>
+              <td className="px-4 py-3 text-[10px] text-[var(--text-tertiary)]">{formatSize(d.fileSize || d.size)}</td>
               <td className="px-4 py-3"><StatusBadge status={d.status} /></td>
               <td className="px-4 py-3"><div className="flex items-center gap-1">
                 <button onClick={() => downloadDoc(d.id)} title="Download" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-tertiary)] hover:text-[var(--accent)] cursor-pointer"><Download className="w-3.5 h-3.5" /></button>

@@ -1080,13 +1080,45 @@ const secret = JWT_SECRET;
   app.get("/api/admin/documents/:id/download", async (req, res) => {
     try {
       const conn = await getPlatformConnection();
-      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName FROM `Document` WHERE id = ?", [req.params.id]);
+      const [docs]: any = await conn.query("SELECT storageKey, storageProvider, publicUrl, title, fileName, originalName FROM `Document` WHERE id = ?", [req.params.id]);
       if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Document not found" }); }
       const doc = docs[0];
 
-      let downloadUrl = doc.publicUrl;
-      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client && !R2_PUBLIC_URL) {
-        downloadUrl = await getSignedDownloadUrl(doc.storageKey);
+      let downloadUrl = doc.publicUrl || "";
+
+      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
+        // Generate signed URL for private R2 buckets, or use public URL
+        if (R2_PUBLIC_URL) {
+          downloadUrl = `${R2_PUBLIC_URL}/${doc.storageKey}`;
+        } else {
+          downloadUrl = await getSignedDownloadUrl(doc.storageKey);
+        }
+      } else if (doc.storageProvider === "local" || !doc.storageProvider) {
+        // For local storage, serve the file directly from disk
+        const localPath = doc.storageKey
+          ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""))
+          : doc.publicUrl?.startsWith("/uploads")
+            ? path.join(process.cwd(), doc.publicUrl)
+            : null;
+
+        if (localPath && fs.existsSync(localPath)) {
+          // Audit log
+          const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+          await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
+            ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
+          conn.release();
+          const fileName = doc.originalName || doc.fileName || "download";
+          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+          res.setHeader("Content-Type", "application/octet-stream");
+          return fs.createReadStream(localPath).pipe(res);
+        }
+        // Fallback: return the public URL path (works if /uploads is served statically)
+        downloadUrl = doc.publicUrl || `/uploads/${doc.storageKey?.replace(/^clients\//, "")}`;
+      }
+
+      if (!downloadUrl) {
+        conn.release();
+        return res.status(404).json({ error: "File not found or storage not configured" });
       }
 
       // Audit log
@@ -1094,7 +1126,47 @@ const secret = JWT_SECRET;
       await conn.query("INSERT INTO `AuditLog` (id, action, resource, createdAt) VALUES (?, ?, ?, ?)",
         ["aud_" + Date.now().toString(36), "document_downloaded", `Document: ${doc.title}`, now]);
       conn.release();
-      res.json({ success: true, downloadUrl, fileName: doc.fileName });
+      res.json({ success: true, downloadUrl, fileName: doc.originalName || doc.fileName });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal download endpoint (for clients)
+  app.get("/api/portal/documents/:id/download", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      // Verify document belongs to this client
+      const [docs]: any = await conn.query(
+        `SELECT d.storageKey, d.storageProvider, d.publicUrl, d.title, d.fileName, d.originalName 
+         FROM \`Document\` d JOIN \`Client\` c ON d.clientId = c.id 
+         WHERE d.id = ? AND c.contactEmail = ?`,
+        [req.params.id, user[0]?.email]
+      );
+      if (docs.length === 0) { conn.release(); return res.status(404).json({ error: "Document not found" }); }
+      const doc = docs[0];
+
+      let downloadUrl = doc.publicUrl || "";
+      if (doc.storageProvider === "cloudflare_r2" && doc.storageKey && r2Client) {
+        downloadUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${doc.storageKey}` : await getSignedDownloadUrl(doc.storageKey);
+      } else if (doc.storageProvider === "local" || !doc.storageProvider) {
+        const localPath = doc.storageKey
+          ? path.join(process.cwd(), "uploads", doc.storageKey.replace(/^clients\//, ""))
+          : doc.publicUrl?.startsWith("/uploads") ? path.join(process.cwd(), doc.publicUrl) : null;
+        if (localPath && fs.existsSync(localPath)) {
+          conn.release();
+          const fileName = doc.originalName || doc.fileName || "download";
+          res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+          res.setHeader("Content-Type", "application/octet-stream");
+          return fs.createReadStream(localPath).pipe(res);
+        }
+        downloadUrl = doc.publicUrl || `/uploads/${doc.storageKey?.replace(/^clients\//, "")}`;
+      }
+      conn.release();
+      if (!downloadUrl) return res.status(404).json({ error: "File not found" });
+      res.json({ success: true, downloadUrl, fileName: doc.originalName || doc.fileName });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
