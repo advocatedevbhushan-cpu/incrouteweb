@@ -95,11 +95,11 @@ export default function Documents() {
       if (d.services && d.services.length > 0) {
         setAllowedServices(d.services);
       } else {
-        // Fallback: show all if nothing configured
-        setAllowedServices(Object.keys(ALL_SERVICE_DOCUMENTS));
+        // No services configured — show empty state (admin needs to assign services)
+        setAllowedServices([]);
       }
     } catch {
-      setAllowedServices(Object.keys(ALL_SERVICE_DOCUMENTS));
+      setAllowedServices([]);
     }
   };
 
@@ -370,11 +370,22 @@ export default function Documents() {
       )}
 
       {/* Service folders grid — only shows allowed services */}
+      {Object.keys(SERVICE_DOCUMENTS).length === 0 ? (
+        <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] rounded-2xl p-10 text-center">
+          <FolderOpen className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-3" />
+          <h3 className="text-[15px] font-bold text-[var(--text-primary)]">No Services Assigned</h3>
+          <p className="text-[12px] text-[var(--text-secondary)] mt-1 max-w-sm mx-auto">
+            Your document folders will appear here once your advisor assigns the relevant services to your account.
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {Object.entries(SERVICE_DOCUMENTS).map(([key, service]) => {
-          const count = docs.filter(d => d.category === key || d.folder === key).length;
+          const folderDocs = docs.filter(d => d.category === key || d.folder === key);
+          // Count unique document TYPES covered (not total files — 2 PAN cards = 1 type)
+          const uniqueTypesUploaded = new Set(folderDocs.map(d => d.title)).size;
           const total = service.docs.length;
-          const progress = total > 0 ? Math.round((count / total) * 100) : 0;
+          const progress = total > 0 ? Math.round((uniqueTypesUploaded / total) * 100) : 0;
           return (
             <button
               key={key}
@@ -386,7 +397,7 @@ export default function Documents() {
                 <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--accent)] transition-colors" />
               </div>
               <p className="text-[13px] font-bold text-[var(--text-primary)] mb-1">{service.label}</p>
-              <p className="text-[11px] text-[var(--text-tertiary)] mb-3">{count}/{total} documents</p>
+              <p className="text-[11px] text-[var(--text-tertiary)] mb-3">{uniqueTypesUploaded}/{total} document types</p>
               <div className="h-1.5 bg-[var(--bg-surface-alt)] rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all ${progress === 100 ? "bg-green-500" : "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)]"}`} style={{ width: `${progress}%` }} />
               </div>
@@ -394,7 +405,7 @@ export default function Documents() {
           );
         })}
       </div>
-
+      )}
       {/* Recent uploads */}
       {docs.length > 0 && (
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">

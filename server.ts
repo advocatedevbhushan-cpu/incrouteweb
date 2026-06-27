@@ -623,20 +623,40 @@ const secret = JWT_SECRET;
 
   app.post("/api/admin/clients", async (req, res) => {
     try {
-      const { companyName, contactName, contactEmail, contactPhone, industry, notes, password } = req.body;
+      const { companyName, contactName, contactEmail, contactPhone, industry, notes, password, services, entityType } = req.body;
       if (!companyName || !contactName || !contactEmail) {
         return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
       }
       const conn = await getPlatformConnection();
       
+      // Build notes JSON with allowed services
+      let notesJson: any = {};
+      if (notes) {
+        try { notesJson = JSON.parse(notes); } catch { notesJson = { text: notes }; }
+      }
+      if (services && Array.isArray(services) && services.length > 0) {
+        notesJson.allowedServices = services;
+      }
+      const notesStr = Object.keys(notesJson).length > 0 ? JSON.stringify(notesJson) : null;
+
       // Create client record
       const clientId = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(
         `INSERT INTO \`Client\` (id, companyName, contactName, contactEmail, contactPhone, industry, notes, status, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
-        [clientId, companyName, contactName, contactEmail, contactPhone || null, industry || null, notes || null, now, now]
+        [clientId, companyName, contactName, contactEmail, contactPhone || null, industry || null, notesStr, now, now]
       );
+
+      // If entityType is provided, auto-create an Entity for this client
+      if (entityType) {
+        const entityId = "ent_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        await conn.query(
+          `INSERT INTO \`Entity\` (id, clientId, name, type, status, complianceScore, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, 'ACTIVE', 100, ?, ?)`,
+          [entityId, clientId, companyName, entityType, now, now]
+        );
+      }
 
       // Create user account for the client (so they can login to portal)
       const loginPassword = password || "Welcome@123";
@@ -2029,7 +2049,6 @@ const secret = JWT_SECRET;
 
       // Check for admin-configured allowed services (stored in Client.notes as JSON)
       const [clients]: any = await conn.query("SELECT notes FROM `Client` WHERE contactEmail = ?", [user[0].email]);
-      conn.release();
 
       let services: string[] = [];
 
@@ -2053,6 +2072,18 @@ const secret = JWT_SECRET;
         }
       }
 
+      // If still nothing, auto-detect from uploaded documents
+      if (services.length === 0) {
+        const [docCategories]: any = await conn.query(
+          "SELECT DISTINCT d.category FROM `Document` d JOIN `Client` c ON d.clientId = c.id WHERE c.contactEmail = ?",
+          [user[0].email]
+        );
+        if (docCategories.length > 0) {
+          services = docCategories.map((dc: any) => dc.category).filter((c: string) => c && c !== "Other");
+        }
+      }
+
+      conn.release();
       res.json({ services });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
