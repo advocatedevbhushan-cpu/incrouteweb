@@ -101,6 +101,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logoutUser = async () => {
+    // Invalidate session on server
+    try {
+      const token = localStorage.getItem("incroute_access_token");
+      if (token) {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+      }
+    } catch {}
+    
+    // Clear all stored session data
     localStorage.removeItem("incroute_access_token");
     localStorage.removeItem("incroute_refresh_token");
     localStorage.removeItem("incroute_user");

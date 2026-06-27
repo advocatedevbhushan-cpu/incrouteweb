@@ -192,6 +192,22 @@ async function startServer() {
     loginAttempts.delete(identifier);
   }
 
+  // Prevent browser/CDN caching on all auth endpoints
+  app.use("/api/auth", (req, res, next) => {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+  });
+
+  // Prevent caching on admin API responses (session-sensitive data)
+  app.use("/api/admin", (req, res, next) => {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+  });
+
   // Login endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -3432,9 +3448,9 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       keywords: "online pvt ltd registration price, instant llp registration, how long does online company registration take, documents needed for online opc registration, Delhi company registration, Gurgaon company setup"
     },
     "/faq": {
-      title: "Filing Q&A Answer Hub: AEO & GEO-Optimized Company Registration FAQs | INCroute",
-      description: "Get instant BLUF-optimized answers on company registration timelines, document checklists, Pvt Ltd vs LLP comparison, OPC registration costs, and Section 8 NGO tax exemptions. Optimized for Google AI Overviews and voice search.",
-      keywords: "how long does online company registration take, documents needed for online opc registration, pvt ltd vs llp for startup, online pvt ltd registration price, Section 8 NGO tax exemption, company registration FAQ India"
+      title: "Company Registration FAQs India — 48 Expert Answers on Pvt Ltd, LLP, GST, MSME, FSSAI | INCroute",
+      description: "Get instant expert answers on company registration timelines, document checklists, Pvt Ltd vs LLP comparison, OPC registration costs, GST thresholds, MSME Udyam benefits, FSSAI food license, and trademark registration. Optimized for Google AI Overviews.",
+      keywords: "how long does online company registration take, documents needed for online opc registration, pvt ltd vs llp for startup, online pvt ltd registration price, Section 8 NGO tax exemption, MSME registration benefits, FSSAI license India, company registration FAQ India, GST registration mandatory, trademark registration India"
     }
   };
 
@@ -3693,48 +3709,35 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     "/faq": {
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How long does online company registration take in India?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Online Pvt Ltd company registration in India takes 7 to 10 working days. This timeline includes acquiring Digital Signature Certificates (DSC), obtaining name approvals via SPICe+ Part A, and submitting final SPICe+ Part B forms to the Registrar of Companies."
+      "mainEntity": (() => {
+        // Dynamically load all FAQs from the data file for full Schema.org FAQPage coverage
+        try {
+          const faqFilePath = path.join(process.cwd(), "src", "lib", "faq-data.ts");
+          const faqContent = fs.readFileSync(faqFilePath, "utf-8");
+          // Extract question and bluf pairs using regex (lightweight — no TS compilation needed)
+          const entries: any[] = [];
+          const questionRegex = /question:\s*"([^"]+)"/g;
+          const blufRegex = /bluf:\s*"([^"]+)"/g;
+          const questions: string[] = [];
+          const blufs: string[] = [];
+          let match;
+          while ((match = questionRegex.exec(faqContent)) !== null) questions.push(match[1]);
+          while ((match = blufRegex.exec(faqContent)) !== null) blufs.push(match[1]);
+          for (let i = 0; i < questions.length; i++) {
+            entries.push({
+              "@type": "Question",
+              "name": questions[i],
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": blufs[i] || ""
+              }
+            });
           }
-        },
-        {
-          "@type": "Question",
-          "name": "What documents are needed for online OPC registration?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Online OPC registration requires the director's PAN card, Aadhaar card, photo, and bank statement (under 2 months old). The registered office requires a utility bill (electricity or water) and a signed No Objection Certificate (NOC) from the property owner."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Pvt Ltd vs LLP for startup: Which structure is best?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Pvt Ltd is the best structure for raising venture capital, issuing ESOPs, and rapid scaling. Choose an LLP if you want limited liability with low annual compliance (audits are optional below 25 Lakh capital or 40 Lakh turnover) and do not need immediate VC funding."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What is the actual online Pvt Ltd registration price?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The total online Pvt Ltd registration price starts at Rs 5,999 (inclusive of professional fees, DSC for two directors, and government filing charges). The price varies by state depending on authorized share capital brackets and regional MCA stamp duty schedules."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What are the tax exemptions for a Section 8 NGO?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Section 8 NGOs enjoy 100% tax exemptions on donations under Section 12A and Section 80G of the Income Tax Act, 1961. The entity is also exempt from minimum capital criteria, stamp duty levies on incorporation, and corporate dividend distribution taxes."
-          }
+          return entries;
+        } catch {
+          return [];
         }
-      ]
+      })()
     }
   };
 

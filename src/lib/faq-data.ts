@@ -1,7 +1,7 @@
-// FAQ Knowledge Base — 35 questions across 7 categories
+// FAQ Knowledge Base — comprehensive questions across all service categories
 export interface FAQQuestion {
   id: string;
-  category: "pvt-ltd" | "llp" | "opc" | "section8" | "gst-tax" | "roc" | "trademark";
+  category: "pvt-ltd" | "llp" | "opc" | "section8" | "gst-tax" | "roc" | "trademark" | "msme" | "fssai" | "general";
   question: string;
   bluf: string;
   detail: string; // HTML-safe markdown-like content
@@ -12,15 +12,17 @@ export interface FAQQuestion {
   lastUpdated: string;
 }
 
-export const FAQ_CATEGORIES = [
-  { id: "all", label: "All Topics", count: 35 },
-  { id: "pvt-ltd", label: "Pvt Ltd Company", count: 8 },
-  { id: "llp", label: "LLP Partnership", count: 6 },
-  { id: "opc", label: "OPC (One Person)", count: 5 },
-  { id: "section8", label: "Section 8 NGO", count: 4 },
-  { id: "gst-tax", label: "GST & Tax", count: 5 },
-  { id: "roc", label: "ROC Compliance", count: 4 },
-  { id: "trademark", label: "Trademark", count: 3 },
+const FAQ_CATEGORY_META = [
+  { id: "pvt-ltd", label: "Pvt Ltd Company" },
+  { id: "llp", label: "LLP Partnership" },
+  { id: "opc", label: "OPC (One Person)" },
+  { id: "section8", label: "Section 8 NGO" },
+  { id: "gst-tax", label: "GST & Tax" },
+  { id: "roc", label: "ROC Compliance" },
+  { id: "trademark", label: "Trademark" },
+  { id: "msme", label: "MSME & Udyam" },
+  { id: "fssai", label: "FSSAI & Food License" },
+  { id: "general", label: "General" },
 ] as const;
 
 export const FAQ_DATA: FAQQuestion[] = [
@@ -80,7 +82,7 @@ export const FAQ_DATA: FAQQuestion[] = [
     bluf: "Total cost ranges from ₹6,000 to ₹15,000 depending on state stamp duty, authorized capital, and professional fees. Government fees alone are ₹3,000–₹5,000.",
     detail: `Cost Breakdown:\n• ROC filing fee: ₹1,000 (fixed)\n• Stamp duty: ₹1,000–₹5,000 (varies by state & capital)\n• DSC: ₹1,500–₹3,000 (for 2 directors)\n• PAN/TAN application: ₹150\n• Professional fee (Incroute): ₹999\n\nState-wise stamp duty varies significantly. Maharashtra and Karnataka charge higher rates. Use our Stamp Duty Calculator for exact estimates.`,
     relatedIds: ["pvt-2", "pvt-1", "pvt-6"],
-    serviceLink: "/tools",
+    serviceLink: "/services",
     serviceName: "Use Stamp Duty Calculator",
     tags: ["cost", "fees", "stamp duty"],
     lastUpdated: "2026-05-31",
@@ -451,4 +453,185 @@ export const FAQ_DATA: FAQQuestion[] = [
     tags: ["trademark", "symbols", "registration", "IP"],
     lastUpdated: "2026-05-31",
   },
+  // ═══ MSME & UDYAM (4) ═══
+  {
+    id: "msme-1",
+    category: "msme",
+    question: "What is MSME Udyam Registration and who is eligible?",
+    bluf: "Udyam Registration is the government's free online MSME registration. Any micro, small, or medium enterprise with investment up to ₹50 Cr and turnover up to ₹250 Cr is eligible. It's linked to your Aadhaar and PAN.",
+    detail: `Eligibility criteria (revised 2020):\n\nMicro Enterprise:\n• Investment up to ₹1 Crore\n• Turnover up to ₹5 Crore\n\nSmall Enterprise:\n• Investment up to ₹10 Crore\n• Turnover up to ₹50 Crore\n\nMedium Enterprise:\n• Investment up to ₹50 Crore\n• Turnover up to ₹250 Crore\n\nKey facts:\n• Registration is completely FREE on udyamregistration.gov.in\n• Self-declaration based (no documents needed to upload)\n• Linked to Aadhaar + PAN + GST (if applicable)\n• Lifetime validity (no renewal needed)\n• Both manufacturing and service enterprises qualify`,
+    relatedIds: ["msme-2", "msme-3", "gst-1"],
+    serviceLink: "/services",
+    serviceName: "MSME Udyam Registration",
+    tags: ["MSME", "Udyam", "micro", "small", "medium", "registration"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "msme-2",
+    category: "msme",
+    question: "What are the benefits of MSME Udyam Registration?",
+    bluf: "MSME registration unlocks subsidized bank loans (up to 1.5% interest concession), priority sector lending, government tender preferences, and protection against delayed payments from buyers.",
+    detail: `Key benefits:\n\n1. Collateral-free loans under CGTMSE scheme (up to ₹5 Cr)\n2. Interest subvention of 1-1.5% on bank loans\n3. Priority in government procurement (25% reservation in tenders)\n4. Protection under MSMED Act 2006 for delayed payments (buyers must pay within 45 days or pay compound interest)\n5. ISO certification reimbursement\n6. Patent and trademark fee subsidy (50% rebate)\n7. Electricity bill concession in many states\n8. Capital gains tax exemption under Section 54GB\n9. Easier environmental clearances\n10. Direct benefit under PM Vishwakarma, MUDRA, and Stand-Up India schemes\n\nNote: Benefits are automatic once Udyam number is issued — no additional applications needed for most schemes.`,
+    relatedIds: ["msme-1", "msme-3", "msme-4"],
+    serviceLink: "/services",
+    serviceName: "MSME Registration Benefits",
+    tags: ["MSME", "benefits", "loans", "subsidy", "CGTMSE"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "msme-3",
+    category: "msme",
+    question: "How to register for Udyam online? What is the process?",
+    bluf: "Visit udyamregistration.gov.in, enter your Aadhaar, verify OTP, fill business details (PAN, GSTIN, investment, turnover), and submit. Certificate is generated instantly — no documents to upload.",
+    detail: `Step-by-step process:\n\n1. Visit https://udyamregistration.gov.in\n2. Select 'For New Entrepreneurs' or 'For those having UAM' (migration)\n3. Enter Aadhaar Number + Name → Verify via OTP\n4. Choose: Proprietorship, Partnership, Pvt Ltd, LLP, etc.\n5. Enter PAN (auto-validates with CBDT)\n6. Enter GSTIN (if applicable — auto-fetches turnover data from GST portal)\n7. Fill NIC codes (business activity classification)\n8. Declare investment in plant/machinery and annual turnover\n9. Submit — Udyam Registration Certificate generated immediately\n\nProcessing time: Instant (real-time)\nCost: FREE (government portal has zero fees)\nValidity: Lifetime (no renewal)\n\nCommon mistake: Using personal PAN instead of business PAN. Use the entity's PAN for Pvt Ltd/LLP.`,
+    relatedIds: ["msme-1", "msme-2", "gst-1"],
+    serviceLink: "/services",
+    serviceName: "Udyam Registration Assistance",
+    tags: ["Udyam", "online", "process", "registration", "free"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "msme-4",
+    category: "msme",
+    question: "Can a Private Limited Company get MSME registration?",
+    bluf: "Yes, any business entity — Pvt Ltd, LLP, OPC, Partnership, or Proprietorship — can get MSME Udyam registration if it meets the investment and turnover thresholds.",
+    detail: `Eligible entity types:\n• Proprietorship\n• Hindu Undivided Family (HUF)\n• Partnership Firm\n• LLP (Limited Liability Partnership)\n• Private Limited Company\n• One Person Company (OPC)\n• Co-operative Society\n• Trust (engaged in manufacturing/services)\n\nKey requirements for companies:\n• Use company PAN (not director's personal PAN)\n• Investment calculated on plant & machinery/equipment only\n• Turnover is from GST returns (auto-fetched if GSTIN linked)\n• Each unit/branch can have separate Udyam registration\n\nNote: Subsidiary companies of large enterprises are NOT eligible if the parent crosses medium enterprise limits.`,
+    relatedIds: ["msme-1", "pvt-1", "llp-1"],
+    serviceLink: "/services",
+    serviceName: "MSME for Companies",
+    tags: ["MSME", "Pvt Ltd", "company", "eligibility"],
+    lastUpdated: "2026-06-15",
+  },
+  // ═══ FSSAI & FOOD LICENSE (4) ═══
+  {
+    id: "fssai-1",
+    category: "fssai",
+    question: "Who needs an FSSAI food license in India?",
+    bluf: "Any person or entity involved in manufacturing, processing, packaging, storage, distribution, or sale of food products needs an FSSAI license. This includes restaurants, cloud kitchens, food delivery apps, and even home-based food businesses.",
+    detail: `FSSAI license is mandatory for:\n• Restaurants, cafés, dhabas, street food vendors\n• Cloud kitchens and food delivery services\n• Food manufacturers and processors\n• Packaged food sellers (including Amazon/Flipkart sellers)\n• Dairy farms, meat shops, bakeries\n• Food importers and exporters\n• Catering services\n• Food storage and warehousing\n• Home-based food businesses (cottage industry)\n• Food supplements and nutraceuticals\n\nExemption: Farmers selling unprocessed farm produce directly to consumers.\n\nPenalty for operating without license: Up to ₹5 lakhs fine and/or 6 months imprisonment under FSS Act 2006.`,
+    relatedIds: ["fssai-2", "fssai-3", "fssai-4"],
+    serviceLink: "/services",
+    serviceName: "FSSAI License Registration",
+    tags: ["FSSAI", "food license", "restaurant", "food business"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "fssai-2",
+    category: "fssai",
+    question: "What are the different types of FSSAI licenses?",
+    bluf: "There are 3 types: Basic Registration (turnover up to ₹12 lakhs), State License (₹12 lakhs to ₹20 crores), and Central License (above ₹20 crores or multi-state operations). The type depends on your business size.",
+    detail: `FSSAI License Types:\n\n1. Basic Registration (Form A):\n• Turnover up to ₹12 lakhs/year\n• Small retailers, hawkers, petty food business\n• Validity: 1-5 years\n• Fee: ₹100/year\n\n2. State License (Form B):\n• Turnover ₹12 lakhs to ₹20 crores\n• Medium-sized manufacturers, restaurants, storage\n• Validity: 1-5 years\n• Fee: ₹2,000-₹5,000/year\n\n3. Central License (Form B):\n• Turnover above ₹20 crores\n• Multi-state operations, importers, 100% EOU\n• Airports, seaports, railways catering\n• Validity: 1-5 years\n• Fee: ₹7,500/year\n\nNote: Operating with wrong license type is a violation — upgrade when you cross the threshold.`,
+    relatedIds: ["fssai-1", "fssai-3", "fssai-4"],
+    serviceLink: "/services",
+    serviceName: "FSSAI License Types",
+    tags: ["FSSAI", "basic", "state", "central", "license type"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "fssai-3",
+    category: "fssai",
+    question: "What documents are required for FSSAI license?",
+    bluf: "You need identity proof (Aadhaar/PAN), business proof (incorporation certificate), address proof (utility bill + rent agreement), food safety plan, and product list with brand name.",
+    detail: `Documents required:\n\nIdentity & Business:\n• PAN Card of the entity\n• Aadhaar of proprietor/directors\n• Incorporation Certificate / Partnership Deed\n• GST Registration (if applicable)\n\nPremises:\n• Rent Agreement or Ownership Proof\n• NOC from municipality/local authority\n• Blueprint/layout of the processing unit\n\nFood-specific:\n• List of food products to be manufactured/sold\n• Food safety management plan (FSMS)\n• Water test report (for manufacturers)\n• Pesticide residue report (if applicable)\n• NOC from Fire Department (for large units)\n• Import-Export Code (for importers)\n\nPhotographs:\n• Passport-size photo of FBO (Food Business Operator)\n• Photos of the premises (interior + exterior)`,
+    relatedIds: ["fssai-1", "fssai-2", "fssai-4"],
+    serviceLink: "/services",
+    serviceName: "FSSAI Documentation Help",
+    tags: ["FSSAI", "documents", "requirements", "food safety"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "fssai-4",
+    category: "fssai",
+    question: "How long does FSSAI registration take and what is the cost?",
+    bluf: "Basic Registration takes 7 days, State License takes 30-60 days, and Central License takes 30-60 days. Government fees range from ₹100/year (basic) to ₹7,500/year (central).",
+    detail: `Timeline and costs:\n\nBasic Registration:\n• Processing time: 7 working days\n• Government fee: ₹100/year\n• Professional fee (Incroute): ₹999\n\nState License:\n• Processing time: 30-60 days\n• Government fee: ₹2,000-₹5,000/year\n• Professional fee (Incroute): ₹2,499\n• Inspection may be required\n\nCentral License:\n• Processing time: 30-60 days\n• Government fee: ₹7,500/year\n• Professional fee (Incroute): ₹4,999\n• Physical inspection mandatory\n\nRenewal:\n• Apply 30 days before expiry\n• Same fees as original application\n• Late renewal penalty: ₹100/day\n\nTip: Apply for 5-year validity to save on renewal hassle and get a slight fee discount.`,
+    relatedIds: ["fssai-1", "fssai-2", "fssai-3"],
+    serviceLink: "/services",
+    serviceName: "FSSAI Registration",
+    tags: ["FSSAI", "timeline", "cost", "fees", "processing"],
+    lastUpdated: "2026-06-15",
+  },
+  // ═══ GENERAL (5) ═══
+  {
+    id: "gen-1",
+    category: "general",
+    question: "What is a Digital Signature Certificate (DSC) and why is it needed?",
+    bluf: "A DSC is an electronic equivalent of a physical signature used to sign ROC, GST, and income tax filings online. Class 3 DSC is mandatory for company directors, designated partners, and authorized signatories.",
+    detail: `DSC details:\n\nWhat it does:\n• Authenticates the identity of the signer\n• Ensures document integrity (tamper-proof)\n• Legally valid under IT Act 2000, Section 5\n\nWho needs it:\n• Directors of Pvt Ltd / OPC / Public companies\n• Designated Partners of LLP\n• Authorized signatories for GST returns\n• CA/CS professionals for e-filing\n• Bidders in government e-tenders\n\nTypes:\n• Class 3 (most common for business): ₹1,500-₹3,000\n• DGFT DSC (for import-export): ₹3,000-₹5,000\n\nValidity: 1-3 years (renewable)\nIssuing authorities: eMudhra, Sify, CDAC, nCode\n\nProcess: Apply online → Video verification (5 min) → DSC issued via USB token or cloud-based signing.`,
+    relatedIds: ["pvt-1", "llp-1", "opc-1"],
+    serviceLink: "/services",
+    serviceName: "DSC Application",
+    tags: ["DSC", "digital signature", "e-filing", "ROC"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "gen-2",
+    category: "general",
+    question: "What is the difference between PAN and TAN?",
+    bluf: "PAN (Permanent Account Number) is for income tax identification. TAN (Tax Deduction Account Number) is specifically for deducting and depositing TDS. Every company needs both — PAN for filing returns, TAN for salary/vendor TDS.",
+    detail: `PAN vs TAN:\n\nPAN (Permanent Account Number):\n• Issued by: CBDT (Central Board of Direct Taxes)\n• Format: 10-character alphanumeric (e.g., AABCI1234D)\n• Used for: Filing ITR, opening bank accounts, investments, property transactions\n• Allotted during: Company incorporation (via SPICe+ form)\n• Cost: ₹93 (NSDL) / ₹66 (UTIITSL)\n\nTAN (Tax Deduction Account Number):\n• Issued by: CBDT\n• Format: 10-character alphanumeric (e.g., DELI12345F)\n• Used for: Deducting TDS on salary, rent, professional fees, contractor payments\n• Applied via: Form 49B or during SPICe+ incorporation\n• Cost: ₹65\n\nKey rule: Every payment where TDS applies MUST quote TAN. Using PAN instead of TAN attracts ₹10,000 penalty.`,
+    relatedIds: ["gst-4", "pvt-1", "gen-1"],
+    serviceLink: "/services",
+    serviceName: "PAN & TAN Application",
+    tags: ["PAN", "TAN", "TDS", "tax", "identity"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "gen-3",
+    category: "general",
+    question: "How to open a current account for a newly registered company?",
+    bluf: "You need the Certificate of Incorporation, PAN card, MOA & AOA, board resolution for authorized signatories, and address proof. Most banks take 3-7 days to activate after KYC verification.",
+    detail: `Documents required:\n\n• Certificate of Incorporation (COI)\n• Company PAN Card\n• MOA & AOA (Memorandum & Articles of Association)\n• Board Resolution authorizing account opening and naming signatories\n• Director KYC: PAN + Aadhaar + Photo of all directors\n• Registered office address proof (utility bill + rent agreement)\n• GST Registration Certificate (if available)\n• Udyam/MSME Certificate (if available)\n\nBest banks for startups:\n• ICICI Bank (fastest onboarding — 3 days)\n• HDFC Bank (good for payment gateways)\n• Kotak Mahindra (zero balance current account for startups)\n• RazorpayX (neobank with instant activation)\n\nTip: Maintain minimum ₹10,000-₹25,000 balance. Apply for bank account within 30 days of incorporation to comply with MCA timelines.`,
+    relatedIds: ["pvt-1", "llp-1", "gen-1"],
+    serviceLink: "/services",
+    serviceName: "Company Bank Account Setup",
+    tags: ["bank account", "current account", "startup", "KYC"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "gen-4",
+    category: "general",
+    question: "What is the Shops and Establishment Act registration?",
+    bluf: "Every business with employees operating from a physical premises must register under the Shops & Establishment Act of the respective state within 30 days of starting operations. It governs working hours, holidays, and employee welfare.",
+    detail: `Key details:\n\nWho must register:\n• Shops (retail/wholesale)\n• Commercial establishments (offices, IT companies)\n• Hotels, restaurants, theatres\n• Any place where business/trade is carried on with employees\n\nWhat it governs:\n• Working hours (usually 9 hours/day, 48 hours/week)\n• Rest intervals and weekly holidays\n• Payment of wages timelines\n• Leave entitlements (earned, sick, casual)\n• Employment of women (night shift provisions)\n• Termination notice periods\n\nRegistration process:\n• Apply to local municipal corporation / labour department\n• Submit: Business proof, address proof, employee list, PAN\n• Fee: ₹500-₹5,000 (varies by state and employee count)\n• Timeline: 7-15 days\n• Validity: Permanent in most states (annual renewal in some)\n\nPenalty for non-registration: ₹1,000-₹25,000 depending on state.`,
+    relatedIds: ["gen-3", "gen-5", "pvt-1"],
+    serviceLink: "/services",
+    serviceName: "Shop Act Registration",
+    tags: ["shop act", "establishment", "employees", "labour law"],
+    lastUpdated: "2026-06-15",
+  },
+  {
+    id: "gen-5",
+    category: "general",
+    question: "What is the difference between a company and a startup under Indian law?",
+    bluf: "A 'company' is any entity registered under the Companies Act. A 'startup' is a DPIIT-recognized company or LLP that is less than 10 years old, has turnover under ₹100 Cr, and works on innovation or scalable business models.",
+    detail: `Legal definition of Startup (DPIIT):\n\n• Entity type: Pvt Ltd, LLP, or Partnership Firm\n• Age: Less than 10 years from date of incorporation\n• Turnover: Below ₹100 Crore in any financial year\n• Innovation: Working towards innovation, development, or improvement of products/services/processes\n• Not formed by splitting/reconstruction of existing business\n\nHow to get DPIIT Startup Recognition:\n1. Register on https://startupindia.gov.in\n2. Upload incorporation certificate\n3. Describe innovation/scalability of your product\n4. Self-certify that entity meets eligibility\n5. Recognition certificate issued in 2-3 days\n\nBenefits of recognition:\n• Tax holiday eligibility (Section 80-IAC)\n• Angel tax exemption\n• Fast-track patent processing\n• Self-certification under labour laws\n• Access to Fund of Funds (₹10,000 Cr corpus)\n• Easier winding up under Insolvency Code (90 days)`,
+    relatedIds: ["gst-5", "pvt-1", "gen-4"],
+    serviceLink: "/services",
+    serviceName: "Startup India Registration",
+    tags: ["startup", "DPIIT", "recognition", "innovation", "eligibility"],
+    lastUpdated: "2026-06-15",
+  },
 ];
+
+// Dynamic category counts — automatically stays in sync when FAQs are added/removed
+export const FAQ_CATEGORIES = [
+  { id: "all" as const, label: "All Topics", count: FAQ_DATA.length },
+  ...FAQ_CATEGORY_META.map(cat => ({
+    id: cat.id,
+    label: cat.label,
+    count: FAQ_DATA.filter(q => q.category === cat.id).length,
+  })),
+];
+
+// Validate relatedIds at build time — warns if any referenced FAQ doesn't exist
+if (typeof window === "undefined") {
+  const allIds = new Set(FAQ_DATA.map(q => q.id));
+  FAQ_DATA.forEach(q => {
+    q.relatedIds.forEach(refId => {
+      if (!allIds.has(refId)) {
+        console.warn(`⚠️ FAQ "${q.id}" references non-existent relatedId: "${refId}"`);
+      }
+    });
+  });
+}
