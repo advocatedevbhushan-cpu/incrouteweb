@@ -13,12 +13,12 @@ interface PortalShellProps {
 }
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "dashboard", label: "Overview", icon: LayoutDashboard },
   { id: "entities", label: "My Entities", icon: Building2 },
   { id: "compliance", label: "Compliance", icon: CalendarCheck },
   { id: "documents", label: "Documents", icon: FileText },
+  { id: "trademark", label: "Trademarks", icon: Shield },
   { id: "legal", label: "Legal", icon: Scale },
-  { id: "trademark", label: "Trademark", icon: Shield },
   { id: "tax", label: "Tax & GST", icon: Database },
   { id: "consultations", label: "Consultations", icon: Users },
   { id: "invoices", label: "Invoices", icon: Receipt },
@@ -146,7 +146,7 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
             <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
           <div className="hidden sm:block">
-            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{displayCompany}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">Business Command Center</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setActiveScreen("notifications")} aria-label="View notifications" className="relative p-2 rounded-lg hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] cursor-pointer">
