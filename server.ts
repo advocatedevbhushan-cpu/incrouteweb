@@ -1855,13 +1855,35 @@ const secret = JWT_SECRET;
       const [tickets]: any = await conn.query("SELECT COUNT(*) as count FROM `Ticket` t JOIN `Client` c ON t.clientId = c.id WHERE c.contactEmail = ? AND t.status IN ('OPEN','IN_PROGRESS')", [user.email]);
       const [recentCompliance]: any = await conn.query("SELECT ct.title, ct.dueDate, ct.status, ct.assigneeId, e.name as entityName FROM `ComplianceTask` ct JOIN `Entity` e ON ct.entityId = e.id JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ? AND ct.status != 'COMPLETED' ORDER BY ct.dueDate ASC LIMIT 5", [user.email]);
       const [activities]: any = await conn.query("SELECT a.title, a.type, a.createdAt FROM `Activity` a JOIN `Client` c ON a.clientId = c.id WHERE c.contactEmail = ? ORDER BY a.createdAt DESC LIMIT 5", [user.email]);
+      const [entityList]: any = await conn.query("SELECT e.id, e.name, e.type, e.status FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?", [user.email]);
+
+      // If no specific compliance tasks exist, generate generic upcoming deadlines based on entity type
+      let complianceToShow = recentCompliance;
+      if (recentCompliance.length === 0) {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const entityName = entityList.length > 0 ? entityList[0].name : "Your Company";
+        // Standard compliance calendar for Indian companies
+        const genericTasks = [
+          { title: "DIR-3 KYC (Annual Director Verification)", dueDate: new Date(currentYear, 8, 30).toISOString(), status: currentMonth > 8 ? "OVERDUE" : "PENDING", entityName },
+          { title: "GST Return - GSTR 1", dueDate: new Date(currentYear, currentMonth, 11).toISOString(), status: now.getDate() > 11 ? "OVERDUE" : "PENDING", entityName },
+          { title: "GST Return - GSTR 3B", dueDate: new Date(currentYear, currentMonth, 20).toISOString(), status: now.getDate() > 20 ? "OVERDUE" : "PENDING", entityName },
+          { title: "TDS Payment (Monthly)", dueDate: new Date(currentYear, currentMonth + 1, 7).toISOString(), status: "PENDING", entityName },
+          { title: "Board Meeting (Quarterly)", dueDate: new Date(currentYear, Math.ceil((currentMonth + 1) / 3) * 3, 15).toISOString(), status: "PENDING", entityName },
+          { title: "ROC Annual Filing - AOC-4", dueDate: new Date(currentYear, 10, 30).toISOString(), status: currentMonth > 10 ? "OVERDUE" : "PENDING", entityName },
+          { title: "ROC Annual Return - MGT-7", dueDate: new Date(currentYear, 11, 31).toISOString(), status: "PENDING", entityName },
+        ].filter(t => new Date(t.dueDate) >= new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)); // Show items from 7 days ago onwards
+        complianceToShow = genericTasks.slice(0, 5);
+      }
 
       conn.release();
       res.json({
         user: { firstName: user.firstName, lastName: user.lastName, email: user.email },
-        metrics: { entities: entities[0].count, compliance: compliance[0].count, documents: docs[0].count, openTickets: tickets[0].count },
-        recentCompliance,
-        recentActivity: activities
+        metrics: { entities: entities[0].count, compliance: compliance[0].count || complianceToShow.length, documents: docs[0].count, openTickets: tickets[0].count },
+        recentCompliance: complianceToShow,
+        recentActivity: activities,
+        entities: entityList
       });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
@@ -1987,6 +2009,145 @@ const secret = JWT_SECRET;
     } catch (err: any) {
       res.status(500).json({ error: "Upload failed: " + err.message });
     }
+  });
+
+  // Portal — get allowed services for document center (based on client's entities + admin config)
+  app.get("/api/portal/allowed-services", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      if (!user[0]) { conn.release(); return res.json({ services: [] }); }
+
+      // Get entity types for this client
+      const [entities]: any = await conn.query(
+        "SELECT DISTINCT e.type FROM `Entity` e JOIN `Client` c ON e.clientId = c.id WHERE c.contactEmail = ?",
+        [user[0].email]
+      );
+
+      // Check for admin-configured allowed services (stored in Client.notes as JSON)
+      const [clients]: any = await conn.query("SELECT notes FROM `Client` WHERE contactEmail = ?", [user[0].email]);
+      conn.release();
+
+      let services: string[] = [];
+
+      // First priority: admin-configured services from client notes
+      if (clients[0]?.notes) {
+        try {
+          const parsed = JSON.parse(clients[0].notes);
+          if (parsed.allowedServices && Array.isArray(parsed.allowedServices)) {
+            services = parsed.allowedServices;
+          }
+        } catch {} // notes is not JSON, ignore
+      }
+
+      // If no admin config, derive from entity types
+      if (services.length === 0 && entities.length > 0) {
+        services = entities.map((e: any) => e.type);
+        // Also include common add-ons for companies
+        if (services.includes("PVT_LTD") || services.includes("LLP") || services.includes("OPC")) {
+          if (!services.includes("GST")) services.push("GST");
+          if (!services.includes("ROC_FILING")) services.push("ROC_FILING");
+        }
+      }
+
+      res.json({ services });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Portal — company notes (AOA/MOA input from client)
+  app.get("/api/portal/company-notes", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [clients]: any = await conn.query("SELECT notes FROM `Client` WHERE contactEmail = ?", [user[0]?.email]);
+      conn.release();
+
+      let notes = { aoa: "", moa: "" };
+      if (clients[0]?.notes) {
+        try {
+          const parsed = JSON.parse(clients[0].notes);
+          notes = { aoa: parsed.aoa || "", moa: parsed.moa || "" };
+        } catch {}
+      }
+      res.json({ notes });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/portal/company-notes", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const { aoa, moa } = req.body;
+
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [clients]: any = await conn.query("SELECT id, notes FROM `Client` WHERE contactEmail = ?", [user[0]?.email]);
+
+      if (!clients[0]) { conn.release(); return res.status(404).json({ error: "Client not found" }); }
+
+      // Merge with existing notes (preserve admin-set fields like allowedServices)
+      let existingNotes: any = {};
+      if (clients[0].notes) {
+        try { existingNotes = JSON.parse(clients[0].notes); } catch {}
+      }
+      existingNotes.aoa = aoa || "";
+      existingNotes.moa = moa || "";
+      existingNotes.notesUpdatedAt = new Date().toISOString();
+
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `Client` SET notes = ?, updatedAt = ? WHERE id = ?", [JSON.stringify(existingNotes), now, clients[0].id]);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Admin — configure allowed services for a client
+  app.post("/api/admin/clients/:id/services", async (req, res) => {
+    try {
+      const { services } = req.body;
+      if (!Array.isArray(services)) return res.status(400).json({ error: "services must be an array" });
+
+      const conn = await getPlatformConnection();
+      const [clients]: any = await conn.query("SELECT notes FROM `Client` WHERE id = ?", [req.params.id]);
+      if (!clients[0]) { conn.release(); return res.status(404).json({ error: "Client not found" }); }
+
+      let existingNotes: any = {};
+      if (clients[0].notes) {
+        try { existingNotes = JSON.parse(clients[0].notes); } catch {}
+      }
+      existingNotes.allowedServices = services;
+
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `Client` SET notes = ?, updatedAt = ? WHERE id = ?", [JSON.stringify(existingNotes), now, req.params.id]);
+      conn.release();
+      res.json({ success: true, services });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Admin — get client's allowed services & AOA/MOA notes
+  app.get("/api/admin/clients/:id/services", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [clients]: any = await conn.query("SELECT notes FROM `Client` WHERE id = ?", [req.params.id]);
+      conn.release();
+      if (!clients[0]) return res.status(404).json({ error: "Client not found" });
+
+      let data: any = { services: [], aoa: "", moa: "" };
+      if (clients[0].notes) {
+        try {
+          const parsed = JSON.parse(clients[0].notes);
+          data = { services: parsed.allowedServices || [], aoa: parsed.aoa || "", moa: parsed.moa || "" };
+        } catch {}
+      }
+      res.json(data);
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
   // Portal invoices

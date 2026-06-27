@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, X, AlertTriangle, Download, ChevronRight, Plus } from "lucide-react";
+import { FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, X, AlertTriangle, Download, ChevronRight, Plus, Edit3, Save } from "lucide-react";
 
-// Service categories with their required documents
-const SERVICE_DOCUMENTS: Record<string, { label: string; icon: string; docs: string[] }> = {
+// All possible service categories with their required documents
+const ALL_SERVICE_DOCUMENTS: Record<string, { label: string; icon: string; docs: string[] }> = {
   "PVT_LTD": {
     label: "Private Limited Company",
     icon: "🏢",
@@ -68,9 +68,16 @@ export default function Documents() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [search, setSearch] = useState("");
+  const [allowedServices, setAllowedServices] = useState<string[]>([]);
+  const [companyNotes, setCompanyNotes] = useState<{ aoa: string; moa: string }>({ aoa: "", moa: "" });
+  const [showNotes, setShowNotes] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSaved, setNotesSaved] = useState(false);
 
   useEffect(() => {
     fetchDocs();
+    fetchAllowedServices();
+    fetchCompanyNotes();
   }, []);
 
   const fetchDocs = async () => {
@@ -80,6 +87,47 @@ export default function Documents() {
       if (d.documents) setDocs(d.documents);
     } catch {} finally { setLoading(false); }
   };
+
+  const fetchAllowedServices = async () => {
+    try {
+      const r = await fetch("/api/portal/allowed-services", { headers: authHeaders() });
+      const d = await r.json();
+      if (d.services && d.services.length > 0) {
+        setAllowedServices(d.services);
+      } else {
+        // Fallback: show all if nothing configured
+        setAllowedServices(Object.keys(ALL_SERVICE_DOCUMENTS));
+      }
+    } catch {
+      setAllowedServices(Object.keys(ALL_SERVICE_DOCUMENTS));
+    }
+  };
+
+  const fetchCompanyNotes = async () => {
+    try {
+      const r = await fetch("/api/portal/company-notes", { headers: authHeaders() });
+      const d = await r.json();
+      if (d.notes) setCompanyNotes({ aoa: d.notes.aoa || "", moa: d.notes.moa || "" });
+    } catch {}
+  };
+
+  const saveCompanyNotes = async () => {
+    setSavingNotes(true);
+    try {
+      await fetch("/api/portal/company-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(companyNotes),
+      });
+      setNotesSaved(true);
+      setTimeout(() => setNotesSaved(false), 3000);
+    } catch {} finally { setSavingNotes(false); }
+  };
+
+  // Filter SERVICE_DOCUMENTS to only show allowed services
+  const SERVICE_DOCUMENTS = Object.fromEntries(
+    Object.entries(ALL_SERVICE_DOCUMENTS).filter(([key]) => allowedServices.includes(key))
+  );
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string, docName: string) => {
     const file = e.target.files?.[0];
@@ -267,17 +315,61 @@ export default function Documents() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Document Center</h1>
-          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Upload and manage documents for each service</p>
+          <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Upload and manage documents for your services</p>
         </div>
-        {docs.length > 0 && (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-            <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-[13px] bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] w-[200px]" />
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowNotes(!showNotes)} className="flex items-center gap-1.5 px-3 py-2 border border-[var(--border-subtle)] text-[var(--text-secondary)] text-[11px] font-semibold rounded-xl cursor-pointer hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors">
+            <Edit3 className="w-3.5 h-3.5" /> AOA / MOA Notes
+          </button>
+          {docs.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+              <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-4 py-2 text-[13px] bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] w-[200px]" />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Service folders grid */}
+      {/* AOA / MOA Notes Section */}
+      {showNotes && (
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Company Formation Notes</h3>
+              <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Tell us what to include in your MOA & AOA. Your advisor will review this.</p>
+            </div>
+            <button onClick={() => setShowNotes(false)} className="text-[var(--text-tertiary)] cursor-pointer hover:text-[var(--text-primary)]"><X className="w-4 h-4" /></button>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Memorandum of Association (MOA) — Objects & Activities</label>
+            <textarea
+              value={companyNotes.moa}
+              onChange={e => setCompanyNotes({ ...companyNotes, moa: e.target.value })}
+              rows={4}
+              placeholder="Describe your company's main objects/activities (e.g., 'IT consulting, software development, digital marketing services'). List additional objects if any."
+              className="w-full mt-1.5 px-4 py-3 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] resize-none"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Articles of Association (AOA) — Special Clauses</label>
+            <textarea
+              value={companyNotes.aoa}
+              onChange={e => setCompanyNotes({ ...companyNotes, aoa: e.target.value })}
+              rows={4}
+              placeholder="Any specific clauses you want? (e.g., 'Restrict share transfer to existing members only', 'ESOP pool of 15%', 'Vesting schedule for founders', 'Special rights for Class A shareholders')."
+              className="w-full mt-1.5 px-4 py-3 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] resize-none"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={saveCompanyNotes} disabled={savingNotes} className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer disabled:opacity-50 transition-colors">
+              <Save className="w-3.5 h-3.5" /> {savingNotes ? "Saving..." : "Save Notes"}
+            </button>
+            {notesSaved && <span className="text-[11px] text-[var(--success)] font-medium">✓ Saved — your advisor will review this</span>}
+          </div>
+        </div>
+      )}
+
+      {/* Service folders grid — only shows allowed services */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {Object.entries(SERVICE_DOCUMENTS).map(([key, service]) => {
           const count = docs.filter(d => d.category === key || d.folder === key).length;
