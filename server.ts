@@ -1584,6 +1584,94 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // ─── MEMBERS (Directors / Partners / Shareholders) ───
+  app.get("/api/admin/members", async (req, res) => {
+    try {
+      const { clientId, entityId, role } = req.query as any;
+      const conn = await getPlatformConnection();
+      let where = "1=1";
+      const params: any[] = [];
+      if (clientId) { where += " AND m.clientId = ?"; params.push(clientId); }
+      if (entityId) { where += " AND m.entityId = ?"; params.push(entityId); }
+      if (role) { where += " AND m.role = ?"; params.push(role); }
+      const [members]: any = await conn.query(
+        `SELECT m.*, c.companyName as clientName, e.name as entityName,
+         (SELECT COUNT(*) FROM \`Document\` d WHERE d.memberId = m.id) as documentCount
+         FROM \`Member\` m 
+         LEFT JOIN \`Client\` c ON m.clientId = c.id 
+         LEFT JOIN \`Entity\` e ON m.entityId = e.id 
+         WHERE ${where} ORDER BY m.createdAt DESC`,
+        params
+      );
+      conn.release();
+      res.json({ members });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/members", async (req, res) => {
+    try {
+      const { clientId, entityId, fullName, role, email, phone, pan, aadhaar, din, dpin, address, isResident, shareholding } = req.body;
+      if (!clientId || !fullName || !role) return res.status(400).json({ error: "clientId, fullName, and role are required" });
+      const conn = await getPlatformConnection();
+      const id = "mem_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query(
+        `INSERT INTO \`Member\` (id, clientId, entityId, fullName, role, email, phone, pan, aadhaar, din, dpin, address, isResident, shareholding, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
+        [id, clientId, entityId || null, fullName, role, email || null, phone || null, pan || null, aadhaar || null, din || null, dpin || null, address || null, isResident !== false ? 1 : 0, shareholding || null, now, now]
+      );
+      conn.release();
+      res.json({ success: true, id, fullName, role });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/admin/members/:id", async (req, res) => {
+    try {
+      const updates = req.body;
+      const conn = await getPlatformConnection();
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const allowed = ["fullName", "role", "email", "phone", "pan", "aadhaar", "din", "dpin", "address", "isResident", "shareholding", "status", "dscExpiry", "entityId"];
+      const sets: string[] = ["updatedAt = ?"];
+      const vals: any[] = [now];
+      for (const key of allowed) {
+        if (updates[key] !== undefined) { sets.push(`\`${key}\` = ?`); vals.push(updates[key]); }
+      }
+      vals.push(req.params.id);
+      await conn.query(`UPDATE \`Member\` SET ${sets.join(", ")} WHERE id = ?`, vals);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.delete("/api/admin/members/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      await conn.query("DELETE FROM `Member` WHERE id = ?", [req.params.id]);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Get members for a client (portal-side)
+  app.get("/api/portal/members", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+      const conn = await getPlatformConnection();
+      const [user]: any = await conn.query("SELECT email FROM `User` WHERE id = ?", [decoded.userId]);
+      const [members]: any = await conn.query(
+        `SELECT m.id, m.fullName, m.role, m.email, m.phone, m.status,
+         (SELECT COUNT(*) FROM \`Document\` d WHERE d.memberId = m.id) as documentCount
+         FROM \`Member\` m JOIN \`Client\` c ON m.clientId = c.id 
+         WHERE c.contactEmail = ? AND m.status = 'ACTIVE' ORDER BY m.role, m.fullName`,
+        [user[0]?.email]
+      );
+      conn.release();
+      res.json({ members });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // ─── TICKETS (enhanced) ───
   app.get("/api/admin/tickets", async (req, res) => {
     try {
@@ -1959,7 +2047,7 @@ const secret = JWT_SECRET;
       
       if (!req.file) return res.status(400).json({ error: "No file provided" });
       
-      const { title, category, folder } = req.body;
+      const { title, category, folder, memberId } = req.body;
       if (!title || !category) return res.status(400).json({ error: "Title and category are required" });
 
       const conn = await getPlatformConnection();
@@ -2019,9 +2107,9 @@ const secret = JWT_SECRET;
       const docId = "doc_" + Date.now().toString(36) + crypto.randomBytes(4).toString("hex");
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(
-        `INSERT INTO \`Document\` (id, clientId, title, category, folder, fileName, originalName, mimeType, size, storageKey, storageProvider, publicUrl, status, uploadedBy, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
-        [docId, clientId, title, category, folder || category, file.originalname, file.originalname, file.mimetype, file.size, storageKey, storageProvider, publicUrl, decoded.userId, now, now]
+        `INSERT INTO \`Document\` (id, clientId, memberId, title, category, folder, fileName, originalName, mimeType, size, storageKey, storageProvider, publicUrl, status, uploadedBy, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?)`,
+        [docId, clientId, memberId || null, title, category, folder || category, file.originalname, file.originalname, file.mimetype, file.size, storageKey, storageProvider, publicUrl, decoded.userId, now, now]
       );
       conn.release();
 

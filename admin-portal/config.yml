@@ -3,6 +3,8 @@ backend:
   repo: advocatedevbhushan-cpu/incrouteweb
   branch: main
   site_domain: incroute.com
+  base_url: https://incroute.com
+  auth_endpoint: api/auth
   commit_messages:
     create: "content: create {{collection}} — {{slug}}"
     update: "content: update {{collection}} — {{slug}}"

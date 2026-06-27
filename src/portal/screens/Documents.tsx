@@ -54,12 +54,25 @@ interface Doc {
   status: string;
   createdAt: string;
   size?: number;
+  memberId?: string;
+  memberName?: string;
+}
+
+interface Member {
+  id: string;
+  fullName: string;
+  role: string;
+  documentCount: number;
 }
 
 const authHeaders = () => {
   const t = localStorage.getItem("incroute_access_token");
   return t ? { Authorization: `Bearer ${t}` } : {};
 };
+
+// Documents that are per-person (director/partner specific)
+const PERSONAL_DOCS = ["PAN Card", "Aadhaar Card", "Passport Size Photo", "Address Proof", "Bank Statement", "Photo", "DSC"];
+const isPersonalDoc = (title: string) => PERSONAL_DOCS.some(pd => title.includes(pd));
 
 export default function Documents() {
   const [docs, setDocs] = useState<Doc[]>([]);
@@ -69,6 +82,7 @@ export default function Documents() {
   const [uploadError, setUploadError] = useState("");
   const [search, setSearch] = useState("");
   const [allowedServices, setAllowedServices] = useState<string[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [companyNotes, setCompanyNotes] = useState<{ aoa: string; moa: string }>({ aoa: "", moa: "" });
   const [showNotes, setShowNotes] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
@@ -78,6 +92,7 @@ export default function Documents() {
     fetchDocs();
     fetchAllowedServices();
     fetchCompanyNotes();
+    fetchMembers();
   }, []);
 
   const fetchDocs = async () => {
@@ -111,6 +126,14 @@ export default function Documents() {
     } catch {}
   };
 
+  const fetchMembers = async () => {
+    try {
+      const r = await fetch("/api/portal/members", { headers: authHeaders() });
+      const d = await r.json();
+      if (d.members) setMembers(d.members);
+    } catch {}
+  };
+
   const saveCompanyNotes = async () => {
     setSavingNotes(true);
     try {
@@ -129,7 +152,7 @@ export default function Documents() {
     Object.entries(ALL_SERVICE_DOCUMENTS).filter(([key]) => allowedServices.includes(key))
   );
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string, docName: string) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: string, docName: string, memberId?: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) { setUploadError("File too large (max 10MB)"); return; }
@@ -141,6 +164,7 @@ export default function Documents() {
     formData.append("title", docName);
     formData.append("category", category);
     formData.append("folder", activeFolder || category);
+    if (memberId) formData.append("memberId", memberId);
 
     try {
       const token = localStorage.getItem("incroute_access_token");
@@ -245,14 +269,63 @@ export default function Documents() {
           </div>
         </div>
 
-        {/* Required documents list — supports multiple uploads per slot */}
+        {/* Required documents list — with member sub-directories */}
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[var(--border-subtle)]">
             <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Required Documents</h3>
-            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">For documents like PAN or Aadhaar, upload one per director/partner</p>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
+              {members.length > 0 ? "Personal documents are organized by director/partner below." : "Upload one document per type. For multi-person docs, upload each separately."}
+            </p>
           </div>
+
+          {/* Member-specific documents (PAN, Aadhaar, Photo per person) */}
+          {members.length > 0 && serviceInfo?.docs.some(d => isPersonalDoc(d)) && (
+            <div className="border-b border-[var(--border-subtle)]">
+              <div className="px-5 py-3 bg-[var(--bg-surface-alt)]">
+                <p className="text-[11px] font-semibold text-[var(--accent)] uppercase tracking-wider">Per Director / Partner</p>
+              </div>
+              {members.map(member => {
+                const memberDocs = folderDocs.filter(d => d.memberId === member.id);
+                const personalDocTypes = serviceInfo?.docs.filter(d => isPersonalDoc(d)) || [];
+                const completedTypes = new Set(memberDocs.map(d => d.title)).size;
+                return (
+                  <div key={member.id} className="border-b border-[var(--border-subtle)] last:border-0">
+                    <div className="px-5 py-3 flex items-center justify-between bg-[var(--bg-surface)]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] text-[11px] font-bold">{member.fullName.charAt(0)}</div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-[var(--text-primary)]">{member.fullName}</p>
+                          <p className="text-[9px] text-[var(--text-tertiary)]">{member.role} · {completedTypes}/{personalDocTypes.length} docs</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pl-12 pr-5 pb-3 space-y-1.5">
+                      {personalDocTypes.map((docName, j) => {
+                        const uploaded = memberDocs.filter(d => d.title === docName);
+                        return (
+                          <div key={j} className="flex items-center justify-between py-1.5">
+                            <div className="flex items-center gap-2">
+                              {uploaded.length > 0 ? getStatusIcon(uploaded[0].status) : <div className="w-3 h-3 rounded-full border-2 border-[var(--border-subtle)]" />}
+                              <span className={`text-[12px] ${uploaded.length > 0 ? "text-[var(--text-primary)]" : "text-[var(--text-tertiary)]"}`}>{docName.replace(/ \(All.*\)/, "")}</span>
+                              {uploaded.length > 0 && <span className="text-[9px] text-[var(--text-tertiary)]">({uploaded[0].fileName})</span>}
+                            </div>
+                            <label className="text-[10px] text-[var(--accent)] font-semibold cursor-pointer hover:underline">
+                              {uploaded.length > 0 ? "Replace" : "Upload"}
+                              <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder!, docName.replace(/ \(All.*\)/, ""), member.id)} disabled={uploading} />
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Entity-level documents (NOC, Rent Agreement, etc.) */}
           <div className="divide-y divide-[var(--border-subtle)]">
-            {serviceInfo?.docs.map((docName, i) => {
+            {serviceInfo?.docs.filter(d => members.length === 0 || !isPersonalDoc(d)).map((docName, i) => {
               const matchingDocs = folderDocs.filter(d => d.title === docName || d.title.startsWith(docName.split(" (")[0]));
               const isMultiPerson = docName.includes("All Directors") || docName.includes("All Partners");
               return (
@@ -267,7 +340,7 @@ export default function Documents() {
                     </div>
                     <label className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors">
                       <Plus className="w-3 h-3" /> {matchingDocs.length > 0 ? "Add More" : "Upload"}
-                      <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder, docName)} disabled={uploading} />
+                      <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => handleUpload(e, activeFolder!, docName)} disabled={uploading} />
                     </label>
                   </div>
                   {/* Show all uploaded files for this document type */}
