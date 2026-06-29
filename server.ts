@@ -3679,7 +3679,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
       );
 
       if (needsMigrationSave) {
-        fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+        fs.writeFileSync(BLOG_FILE, JSON.stringify({posts: blogPosts}, null, 2), "utf-8");
         console.log(`🟢 MIGRATED LOCAL BLOG DATABASE WITH SANITIZED ENTRIES`);
       }
     } catch (err: any) {
@@ -3689,7 +3689,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
   } else {
     blogPosts = defaultBlogs.map(sanitizeBlogPost);
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(blogPosts, null, 2), "utf-8");
+      fs.writeFileSync(BLOG_FILE, JSON.stringify({posts: blogPosts}, null, 2), "utf-8");
       console.log(`🟢 INITIALIZED SEED BLOG POSTS ON DISK`);
     } catch (err: any) {
       console.error("Failed to write seed blog posts to disk:", err.message);
@@ -3790,7 +3790,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
           saveViewsMap(localPostsViews);
           // Save to local cache with views reset to 0 to prevent git tracked file modifications
           try {
-            fs.writeFileSync(BLOG_FILE, JSON.stringify(posts.map(p => ({ ...p, views: 0 })), null, 2), "utf-8");
+            fs.writeFileSync(BLOG_FILE, JSON.stringify({posts: posts.map(p => ({ ...p, views: 0 }))}, null, 2), "utf-8");
           } catch (err: any) {
             console.error("Failed to write blog cache to disk:", err.message);
           }
@@ -3903,7 +3903,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     // Always save locally to make sure it persists locally
     posts.unshift(newPost);
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+      fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
       blogPosts = posts;
     } catch (err: any) {
       console.error("Failed to write new blog to local database file:", err.message);
@@ -3965,7 +3965,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
     // Always update local cache file
     posts[existingPostIndex] = updatedPost;
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+      fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
       blogPosts = posts;
     } catch (err: any) {
       console.error("Failed to write edited blog to local database file:", err.message);
@@ -4011,7 +4011,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     // Always update local disk cache
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+      fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
       blogPosts = posts;
     } catch (err: any) {
       console.error("Failed to write blog status to local database file:", err.message);
@@ -4098,7 +4098,7 @@ A Private Limited Company is a highly regulated corporate body with a distinct l
 
     // Always save local disk cache
     try {
-      fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2), "utf-8");
+      fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
       blogPosts = posts;
     } catch (err: any) {
       console.error("Failed to delete blog from local database file:", err.message);
