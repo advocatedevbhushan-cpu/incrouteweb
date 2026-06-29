@@ -12,8 +12,6 @@ backend:
     uploadMedia: "media: upload {{path}}"
     deleteMedia: "media: delete {{path}}"
 
-local_backend: true
-
 media_folder: "public/blog-images"
 public_folder: "/blog-images"
 

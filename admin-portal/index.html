@@ -134,5 +134,15 @@
     <script>
       CMS.init();
     </script>
+    <noscript>
+      <p style="padding:2rem;text-align:center;font-family:sans-serif;">
+        <strong>Decap CMS requires JavaScript enabled.</strong><br><br>
+        If the CMS is not loading content, ensure GitHub OAuth is configured:<br>
+        1. Create a GitHub OAuth App at github.com/settings/developers<br>
+        2. Set callback URL to: https://incroute.com/api/auth/callback<br>
+        3. Add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to your .env<br><br>
+        Alternatively, use the Admin Panel's built-in blog editor at /admin → Blog section.
+      </p>
+    </noscript>
   </body>
 </html>

@@ -890,6 +890,26 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
+  // Delete entity
+  app.delete("/api/admin/entities/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      await conn.query("DELETE FROM `Entity` WHERE id = ?", [req.params.id]);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Delete service request
+  app.delete("/api/admin/service-requests/:id", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      await conn.query("DELETE FROM `ServiceRequest` WHERE id = ?", [req.params.id]);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // ─── TASKS CRUD ───
   app.get("/api/admin/tasks", async (req, res) => {
     try {
@@ -3591,6 +3611,42 @@ Format your response in structured sections:
   // Blog endpoints — with GitHub sync cache (sync every 5 min, not every request)
   let lastBlogSyncTime = 0;
   const BLOG_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+  // Blog image upload endpoint (used by CMS and admin)
+  app.post("/api/blog/upload-image", upload.single("file"), async (req: any, res) => {
+    try {
+      // Verify admin auth
+      const authHeader = req.headers.authorization;
+      const adminToken = req.headers["x-admin-token"] || req.query.token;
+      let isAdmin = false;
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+          isAdmin = ["SUPER_ADMIN", "ADMIN", "TEAM_MEMBER"].includes(decoded.role);
+        } catch {}
+      }
+      if (!isAdmin && adminToken === (process.env.ADMIN_PASSWORD || "Admin@2026")) isAdmin = true;
+      if (!isAdmin) return res.status(403).json({ error: "Admin access required" });
+
+      if (!req.file) return res.status(400).json({ error: "No file provided" });
+      const file = req.file;
+      
+      // Only allow images
+      if (!file.mimetype.startsWith("image/")) return res.status(400).json({ error: "Only image files allowed" });
+
+      const ext = path.extname(file.originalname) || ".webp";
+      const filename = `blog-${Date.now()}${ext}`;
+      const imgDir = path.join(process.cwd(), "public", "blog-images");
+      if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
+      fs.writeFileSync(path.join(imgDir, filename), file.buffer);
+
+      const publicUrl = `/blog-images/${filename}`;
+      res.json({ success: true, url: publicUrl, filename });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Serve blog images statically
+  app.use("/blog-images", express.static(path.join(process.cwd(), "public", "blog-images")));
 
   app.get("/api/blog/posts", async (req, res) => {
     const token = req.query.token || req.headers["x-admin-token"];

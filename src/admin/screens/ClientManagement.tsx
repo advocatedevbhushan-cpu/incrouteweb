@@ -145,6 +145,18 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
     fetchDetail();
   };
 
+  const deleteEntity = async (id: string, name: string) => {
+    if (!confirm(`Delete entity "${name}"? This cannot be undone.`)) return;
+    await fetch(`/api/admin/entities/${id}`, { method: "DELETE", headers: authHeaders() });
+    fetchDetail();
+  };
+
+  const deleteService = async (id: string, type: string) => {
+    if (!confirm(`Delete service "${type.replace(/_/g, " ")}"?`)) return;
+    await fetch(`/api/admin/service-requests/${id}`, { method: "DELETE", headers: authHeaders() });
+    fetchDetail();
+  };
+
   const toggleService = async (svc: string) => {
     const current = data?.allowedServices || [];
     const updated = current.includes(svc) ? current.filter((s: string) => s !== svc) : [...current, svc];
@@ -181,7 +193,10 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
           <div className="space-y-2">{data.entities.map((e: any) => (
             <div key={e.id} className="flex items-center justify-between py-2.5 px-3 border border-[var(--border-subtle)] rounded-xl">
               <div className="flex items-center gap-3"><Building2 className="w-4 h-4 text-[var(--accent)]" /><div><p className="text-[13px] font-medium text-[var(--text-primary)]">{e.name}</p><p className="text-[10px] text-[var(--text-tertiary)]">{e.type.replace(/_/g, " ")} {e.cin ? `· CIN: ${e.cin}` : ""}</p></div></div>
-              <span className="text-[10px] font-semibold text-[var(--success)]">{e.complianceScore}%</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold text-[var(--success)]">{e.complianceScore}%</span>
+                <button onClick={() => deleteEntity(e.id, e.name)} className="p-1 rounded hover:bg-red-500/10 text-[var(--text-tertiary)] hover:text-red-400 cursor-pointer" title="Delete"><Trash2 className="w-3 h-3" /></button>
+              </div>
             </div>
           ))}</div>
         )}
@@ -217,6 +232,7 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
                     <option value="CANCELLED">Cancelled</option>
                   </select>
                 )}
+                <button onClick={() => deleteService(sr.id, sr.serviceType)} className="p-1 rounded hover:bg-red-500/10 text-[var(--text-tertiary)] hover:text-red-400 cursor-pointer" title="Delete"><Trash2 className="w-3 h-3" /></button>
               </div>
             </div>
           ))}</div>

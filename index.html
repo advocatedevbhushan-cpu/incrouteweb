@@ -41,15 +41,21 @@
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" /></noscript>
 
-  <!-- Organization Schema (Global) -->
+  <!-- Organization Schema (Global) — tells Google about logo -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Incroute",
+    "name": "INCroute",
     "url": "https://incroute.com",
-    "logo": "https://incroute.com/incroute_logo.png",
-    "description": "Premium corporate registration and compliance advisory platform for startups, SMEs, and professionals in India.",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://incroute.com/incroute_logo.png",
+      "width": 512,
+      "height": 512
+    },
+    "image": "https://incroute.com/incroute_logo.png",
+    "description": "India's most trusted platform for business incorporation, compliance & advisory.",
     "founder": {
       "@type": "Person",
       "name": "D Bhushan"
@@ -60,10 +66,25 @@
       "@type": "ContactPoint",
       "telephone": "+91-8707552183",
       "contactType": "customer service",
-      "email": "d.bhushan@incroute.com",
+      "email": "info@incroute.com",
       "availableLanguage": ["English", "Hindi"]
     },
     "sameAs": []
+  }
+  </script>
+
+  <!-- WebSite Schema — enables sitelinks in search -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "INCroute",
+    "url": "https://incroute.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://incroute.com/blog/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
   }
   </script>
   <script>
