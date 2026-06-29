@@ -779,8 +779,41 @@ const secret = JWT_SECRET;
       const [serviceRequests]: any = await conn.query("SELECT * FROM `ServiceRequest` WHERE clientId = ? ORDER BY createdAt DESC", [req.params.id]);
       const [invoices]: any = await conn.query("SELECT id, invoiceNo, total, status, dueDate FROM `Invoice` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
       const [tickets]: any = await conn.query("SELECT id, subject, status, createdAt FROM `Ticket` WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5", [req.params.id]);
+      
+      // Members (directors/partners)
+      let members: any[] = [];
+      try {
+        const [rows]: any = await conn.query(
+          `SELECT m.*, (SELECT COUNT(*) FROM \`Document\` d WHERE d.memberId = m.id) as documentCount FROM \`Member\` m WHERE m.clientId = ? ORDER BY m.role, m.fullName`,
+          [req.params.id]
+        );
+        members = rows;
+      } catch {} // Table might not exist yet
+
+      // Documents for this client
+      let documents: any[] = [];
+      try {
+        const [rows]: any = await conn.query(
+          `SELECT d.id, d.title, d.fileName, d.originalName, d.status, d.folder, d.memberId, d.createdAt,
+           m.fullName as memberName
+           FROM \`Document\` d LEFT JOIN \`Member\` m ON d.memberId = m.id
+           WHERE d.clientId = ? ORDER BY d.createdAt DESC LIMIT 20`,
+          [req.params.id]
+        );
+        documents = rows;
+      } catch {}
+
+      // Allowed services config
+      let allowedServices: string[] = [];
+      if (clients[0].notes) {
+        try {
+          const parsed = JSON.parse(clients[0].notes);
+          allowedServices = parsed.allowedServices || [];
+        } catch {}
+      }
+
       conn.release();
-      res.json({ client: clients[0], entities, serviceRequests, invoices, tickets });
+      res.json({ client: clients[0], entities, serviceRequests, invoices, tickets, members, documents, allowedServices });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
@@ -1581,6 +1614,152 @@ const secret = JWT_SECRET;
       conn.release();
 
       res.json({ success: true, message: `Invoice sent to ${toEmail}` });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  // ─── PROFORMA INVOICES / QUOTATIONS ───
+  app.get("/api/admin/proforma", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      // Try to query ProformaInvoice table — create it if it doesn't exist
+      try {
+        const [proformas]: any = await conn.query(
+          `SELECT p.*, c.companyName as clientName, c.contactEmail as clientEmail 
+           FROM \`ProformaInvoice\` p LEFT JOIN \`Client\` c ON p.clientId = c.id 
+           ORDER BY p.createdAt DESC`
+        );
+        conn.release();
+        res.json({ proformas });
+      } catch (tableErr: any) {
+        // Table doesn't exist — create it
+        if (tableErr.message?.includes("doesn't exist")) {
+          await conn.query(`
+            CREATE TABLE IF NOT EXISTS \`ProformaInvoice\` (
+              \`id\` VARCHAR(30) NOT NULL,
+              \`clientId\` VARCHAR(30) NOT NULL,
+              \`proformaNo\` VARCHAR(50) NOT NULL,
+              \`items\` JSON NOT NULL,
+              \`subtotal\` DECIMAL(12,2) NOT NULL,
+              \`tax\` DECIMAL(12,2) NOT NULL DEFAULT 0,
+              \`total\` DECIMAL(12,2) NOT NULL,
+              \`gstRate\` INT NOT NULL DEFAULT 18,
+              \`validUntil\` DATE NOT NULL,
+              \`notes\` TEXT NULL,
+              \`bankDetails\` TEXT NULL,
+              \`status\` ENUM('DRAFT','SENT','VIEWED','ACCEPTED','REJECTED','EXPIRED','CONVERTED') NOT NULL DEFAULT 'DRAFT',
+              \`convertedInvoiceId\` VARCHAR(30) NULL,
+              \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+              \`updatedAt\` DATETIME(3) NOT NULL,
+              PRIMARY KEY (\`id\`),
+              INDEX \`ProformaInvoice_clientId_idx\` (\`clientId\`),
+              INDEX \`ProformaInvoice_status_idx\` (\`status\`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+          `);
+          conn.release();
+          res.json({ proformas: [] });
+        } else {
+          conn.release();
+          throw tableErr;
+        }
+      }
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/proforma", async (req, res) => {
+    try {
+      const { clientId, lineItems, notes, validUntil, gstRate, bankDetails } = req.body;
+      if (!clientId || !lineItems || !Array.isArray(lineItems) || lineItems.length === 0 || !validUntil) {
+        return res.status(400).json({ error: "clientId, lineItems, and validUntil required" });
+      }
+      let subtotal = 0;
+      const processedItems = lineItems.map((item: any, idx: number) => {
+        const qty = Number(item.quantity) || 1;
+        const rate = Number(item.rate) || 0;
+        subtotal += qty * rate;
+        return { sno: idx + 1, name: item.name, description: item.description || "", hsn: item.hsn || "998313", quantity: qty, rate, amount: qty * rate };
+      });
+      const taxRate = Number(gstRate) || 18;
+      const taxAmount = Math.round(subtotal * taxRate / 100);
+      const total = subtotal + taxAmount;
+
+      const conn = await getPlatformConnection();
+      const id = "pf_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const proformaNo = "QTN-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 9000) + 1000);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+
+      await conn.query(
+        `INSERT INTO \`ProformaInvoice\` (id, clientId, proformaNo, items, subtotal, tax, total, gstRate, validUntil, notes, bankDetails, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?)`,
+        [id, clientId, proformaNo, JSON.stringify(processedItems), subtotal, taxAmount, total, taxRate, validUntil, notes || null, bankDetails || null, now, now]
+      );
+      conn.release();
+      res.json({ success: true, id, proformaNo, total });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/proforma/:id/send", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [rows]: any = await conn.query(
+        `SELECT p.*, c.companyName, c.contactEmail, c.contactName FROM \`ProformaInvoice\` p JOIN \`Client\` c ON p.clientId = c.id WHERE p.id = ?`,
+        [req.params.id]
+      );
+      if (rows.length === 0) { conn.release(); return res.status(404).json({ error: "Quotation not found" }); }
+      const p = rows[0];
+      if (!p.contactEmail) { conn.release(); return res.status(400).json({ error: "Client has no email configured" }); }
+      if (!emailTransporter) { conn.release(); return res.status(503).json({ error: "Email not configured" }); }
+
+      const items = JSON.parse(p.items);
+      const itemRows = items.map((i: any) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">${i.sno}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;"><strong style="font-size:13px;">${i.name}</strong>${i.description ? `<br/><span style="font-size:11px;color:#666;">${i.description}</span>` : ""}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;font-size:12px;">${i.quantity}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-size:13px;">₹${Number(i.rate).toLocaleString("en-IN")}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-size:13px;font-weight:600;">₹${Number(i.amount).toLocaleString("en-IN")}</td></tr>`).join("");
+
+      await emailTransporter.sendMail({
+        from: `"INCroute" <${process.env.SMTP_USER}>`,
+        to: p.contactEmail,
+        subject: `Quotation ${p.proformaNo} — Service Pricing from INCroute`,
+        html: `<div style="font-family:'Segoe UI',sans-serif;max-width:700px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+          <div style="background:#1a1a2e;padding:24px 32px;"><h1 style="margin:0;font-size:20px;color:#d4af37;">INCroute</h1><p style="margin:4px 0 0;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1px;">CORPORATE REGISTRATIONS & COMPLIANCE</p></div>
+          <div style="padding:24px 32px;">
+            <p style="font-size:14px;color:#333;">Dear ${p.contactName || "Client"},</p>
+            <p style="font-size:13px;color:#555;margin:12px 0 20px;">Please find below the pricing quotation for the services discussed. This quotation is valid until <strong>${new Date(p.validUntil).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}</strong>.</p>
+            <p style="font-size:11px;color:#888;margin-bottom:8px;">Quotation No: <strong style="color:#333;">${p.proformaNo}</strong></p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0;"><thead><tr style="background:#f8f9fa;"><th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#666;border-bottom:2px solid #e0e0e0;">#</th><th style="padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#666;border-bottom:2px solid #e0e0e0;">Service</th><th style="padding:10px 12px;text-align:center;font-size:10px;text-transform:uppercase;color:#666;border-bottom:2px solid #e0e0e0;">Qty</th><th style="padding:10px 12px;text-align:right;font-size:10px;text-transform:uppercase;color:#666;border-bottom:2px solid #e0e0e0;">Rate</th><th style="padding:10px 12px;text-align:right;font-size:10px;text-transform:uppercase;color:#666;border-bottom:2px solid #e0e0e0;">Amount</th></tr></thead><tbody>${itemRows}</tbody></table>
+            <div style="text-align:right;padding:12px 0;"><p style="font-size:13px;color:#555;">Subtotal: ₹${Number(p.subtotal).toLocaleString("en-IN")}</p><p style="font-size:13px;color:#555;">GST (${p.gstRate}%): ₹${Number(p.tax).toLocaleString("en-IN")}</p><p style="font-size:18px;font-weight:800;color:#1a1a2e;margin-top:8px;">Total: ₹${Number(p.total).toLocaleString("en-IN")}</p></div>
+            ${p.notes ? `<div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><p style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:8px;">Terms & Conditions</p><pre style="font-size:11px;color:#555;margin:0;white-space:pre-wrap;">${p.notes}</pre></div>` : ""}
+          </div>
+          <div style="padding:16px 32px;background:#1a1a2e;text-align:center;"><p style="margin:0;font-size:11px;color:rgba(255,255,255,0.4);">This is a quotation/proforma invoice, not a tax invoice. • INCroute • incroute.com</p></div>
+        </div>`
+      });
+
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      await conn.query("UPDATE `ProformaInvoice` SET status = 'SENT', updatedAt = ? WHERE id = ?", [now, req.params.id]);
+      conn.release();
+      res.json({ success: true, sentTo: p.contactEmail });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/admin/proforma/:id/convert", async (req, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const [rows]: any = await conn.query("SELECT * FROM `ProformaInvoice` WHERE id = ?", [req.params.id]);
+      if (rows.length === 0) { conn.release(); return res.status(404).json({ error: "Not found" }); }
+      const p = rows[0];
+
+      // Create a real invoice from this proforma
+      const invoiceId = "inv_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const invoiceNo = "INV-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 9000) + 1000);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 23).replace("T", " ");
+
+      const invoiceData = JSON.stringify({ items: JSON.parse(p.items), notes: p.notes || "", bankDetails: p.bankDetails || "", gstRate: p.gstRate });
+      await conn.query(
+        `INSERT INTO \`Invoice\` (id, clientId, invoiceNo, amount, tax, total, status, dueDate, description, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`,
+        [invoiceId, p.clientId, invoiceNo, p.subtotal, p.tax, p.total, dueDate, invoiceData, now, now]
+      );
+
+      // Update proforma status
+      await conn.query("UPDATE `ProformaInvoice` SET status = 'CONVERTED', convertedInvoiceId = ?, updatedAt = ? WHERE id = ?", [invoiceId, now, req.params.id]);
+      conn.release();
+      res.json({ success: true, invoiceId, invoiceNo });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
@@ -2733,11 +2912,13 @@ const secret = JWT_SECRET;
       const protocol = req.secure || req.headers["x-forwarded-proto"] === "https" ? "https" : "http";
       const hostUrl = `${protocol}://${req.headers.host}`;
       
-      // Inject base_url and auth_endpoint parameters for Decap CMS GitHub integration
-      configContent = configContent.replace(
-        "name: github",
-        `name: github\n  base_url: ${hostUrl}\n  auth_endpoint: api/auth`
-      );
+      // Inject base_url and auth_endpoint only if not already present
+      if (!configContent.includes("base_url")) {
+        configContent = configContent.replace(
+          "name: github",
+          `name: github\n  base_url: ${hostUrl}\n  auth_endpoint: api/auth`
+        );
+      }
       
       res.type("yaml").send(configContent);
     } catch (err: any) {

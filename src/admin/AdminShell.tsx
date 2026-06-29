@@ -22,6 +22,7 @@ const navSections = [
   { label: "Operations", items: [
     { id: "documents", label: "Documents", icon: FileText },
     { id: "invoices", label: "Invoices", icon: Receipt },
+    { id: "proforma", label: "Proforma / Quotation", icon: FileText },
     { id: "trademarks", label: "Trademarks", icon: Shield },
     { id: "legal", label: "Legal", icon: Scale },
     { id: "consultations", label: "Consultations", icon: Database },

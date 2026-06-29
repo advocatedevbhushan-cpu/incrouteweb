@@ -118,8 +118,10 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
   const [loading, setLoading] = useState(true);
   const [showAddEntity, setShowAddEntity] = useState(false);
   const [showAddService, setShowAddService] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [entityForm, setEntityForm] = useState({ name: "", type: "PVT_LTD", cin: "", pan: "", gstin: "" });
   const [serviceForm, setServiceForm] = useState({ serviceType: "PVT_LTD_INCORPORATION", notes: "" });
+  const [memberForm, setMemberForm] = useState({ fullName: "", role: "DIRECTOR", email: "", pan: "", din: "" });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchDetail(); }, [clientId]);
@@ -128,6 +130,27 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
   const addEntity = async (e: React.FormEvent) => { e.preventDefault(); setSaving(true); try { await fetch("/api/admin/entities", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ ...entityForm, clientId }) }); setShowAddEntity(false); setEntityForm({ name: "", type: "PVT_LTD", cin: "", pan: "", gstin: "" }); fetchDetail(); } catch {} finally { setSaving(false); } };
   const addService = async (e: React.FormEvent) => { e.preventDefault(); setSaving(true); try { await fetch("/api/admin/service-requests", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ ...serviceForm, clientId, companyName: data?.client?.companyName }) }); setShowAddService(false); setServiceForm({ serviceType: "PVT_LTD_INCORPORATION", notes: "" }); fetchDetail(); } catch {} finally { setSaving(false); } };
   const updateServiceStatus = async (id: string, status: string) => { await fetch(`/api/admin/service-requests/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ status }) }); fetchDetail(); };
+
+  const addMember = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true);
+    try {
+      await fetch("/api/admin/members", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ ...memberForm, clientId }) });
+      setShowAddMember(false); setMemberForm({ fullName: "", role: "DIRECTOR", email: "", pan: "", din: "" }); fetchDetail();
+    } catch {} finally { setSaving(false); }
+  };
+
+  const deleteMember = async (id: string, name: string) => {
+    if (!confirm(`Remove "${name}" from this client?`)) return;
+    await fetch(`/api/admin/members/${id}`, { method: "DELETE", headers: authHeaders() });
+    fetchDetail();
+  };
+
+  const toggleService = async (svc: string) => {
+    const current = data?.allowedServices || [];
+    const updated = current.includes(svc) ? current.filter((s: string) => s !== svc) : [...current, svc];
+    await fetch(`/api/admin/clients/${clientId}/services`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ services: updated }) });
+    fetchDetail();
+  };
 
   if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>;
   const client = data?.client;
@@ -199,6 +222,92 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
           ))}</div>
         )}
       </div>
+
+      {/* Members (Directors/Partners) Section */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Directors & Partners</h3>
+          <button onClick={() => setShowAddMember(true)} className="flex items-center gap-1 px-3 py-1.5 bg-[var(--accent)] text-white text-[11px] font-semibold rounded-lg cursor-pointer hover:bg-[var(--accent-deep)]"><Plus className="w-3 h-3" /> Add Member</button>
+        </div>
+        {(!data.members || data.members.length === 0) ? <p className="text-[12px] text-[var(--text-tertiary)] text-center py-4">No directors or partners added. Add members to enable per-person document uploads.</p> : (
+          <div className="space-y-2">{data.members.map((m: any) => (
+            <div key={m.id} className="flex items-center justify-between py-2.5 px-3 border border-[var(--border-subtle)] rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] text-[11px] font-bold">{m.fullName.charAt(0)}</div>
+                <div>
+                  <p className="text-[13px] font-medium text-[var(--text-primary)]">{m.fullName}</p>
+                  <p className="text-[10px] text-[var(--text-tertiary)]">{m.role} {m.din ? `· DIN: ${m.din}` : ""} {m.pan ? `· PAN: ${m.pan}` : ""}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[var(--text-tertiary)]">{m.documentCount || 0} docs</span>
+                <button onClick={() => deleteMember(m.id, m.fullName)} className="p-1 rounded hover:bg-red-500/10 text-[var(--text-tertiary)] hover:text-red-400 cursor-pointer"><Trash2 className="w-3 h-3" /></button>
+              </div>
+            </div>
+          ))}</div>
+        )}
+      </div>
+
+      {/* Client Documents Section */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Documents</h3>
+          <span className="text-[11px] text-[var(--text-tertiary)]">{data.documents?.length || 0} uploaded</span>
+        </div>
+        {(!data.documents || data.documents.length === 0) ? <p className="text-[12px] text-[var(--text-tertiary)] text-center py-4">No documents uploaded for this client yet.</p> : (
+          <div className="space-y-2">{data.documents.slice(0, 10).map((d: any) => (
+            <div key={d.id} className="flex items-center justify-between py-2 px-3 border border-[var(--border-subtle)] rounded-xl">
+              <div className="flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />
+                <div>
+                  <p className="text-[12px] font-medium text-[var(--text-primary)]">{d.title}</p>
+                  <p className="text-[9px] text-[var(--text-tertiary)]">{d.originalName || d.fileName} · {d.memberName || "Entity level"}</p>
+                </div>
+              </div>
+              <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${d.status === "APPROVED" ? "bg-green-500/10 text-green-500" : d.status === "REJECTED" ? "bg-red-500/10 text-red-400" : "bg-yellow-500/10 text-yellow-600"}`}>{d.status}</span>
+            </div>
+          ))}</div>
+        )}
+      </div>
+
+      {/* Allowed Services Config */}
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Document Center Config</h3>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Choose which document folders this client can see in their portal</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {["PVT_LTD", "LLP", "OPC", "GST", "TRADEMARK", "MSME", "ROC_FILING", "INCOME_TAX"].map(svc => {
+            const isActive = (data.allowedServices || []).includes(svc);
+            return (
+              <button key={svc} onClick={() => toggleService(svc)} className={`text-[10px] font-semibold px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${isActive ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:border-[var(--accent)]"}`}>
+                {svc.replace(/_/g, " ")}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Add Member Modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowAddMember(false)}>
+          <form onSubmit={addMember} onClick={e => e.stopPropagation()} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 w-full max-w-md space-y-4">
+            <div className="flex items-center justify-between"><h3 className="text-[16px] font-bold text-[var(--text-primary)]">Add Director / Partner</h3><button type="button" onClick={() => setShowAddMember(false)} className="cursor-pointer text-[var(--text-tertiary)]"><X className="w-4 h-4" /></button></div>
+            <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Full Name *</label><input required value={memberForm.fullName} onChange={e => setMemberForm({...memberForm, fullName: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Role *</label><select value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none"><option value="DIRECTOR">Director</option><option value="PARTNER">Partner</option><option value="SHAREHOLDER">Shareholder</option><option value="NOMINEE">Nominee</option><option value="AUTHORIZED_SIGNATORY">Auth. Signatory</option></select></div>
+              <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Email</label><input value={memberForm.email} onChange={e => setMemberForm({...memberForm, email: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">PAN</label><input value={memberForm.pan} onChange={e => setMemberForm({...memberForm, pan: e.target.value})} placeholder="ABCDE1234F" className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" /></div>
+              <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">DIN</label><input value={memberForm.din} onChange={e => setMemberForm({...memberForm, din: e.target.value})} placeholder="Optional" className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" /></div>
+            </div>
+            <button type="submit" disabled={saving} className="w-full py-2.5 bg-[var(--accent)] text-white text-[13px] font-semibold rounded-xl cursor-pointer disabled:opacity-50">{saving ? "Adding..." : "Add Member"}</button>
+          </form>
+        </div>
+      )}
 
       {/* Add Entity Modal */}
       {showAddEntity && (
