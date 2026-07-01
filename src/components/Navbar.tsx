@@ -223,7 +223,7 @@ function NavDropdown({ label, active, open, onOpen, onClose, children }: { label
             transition={{ duration: 0.12 }}
             className="absolute top-full left-0 pt-2 z-50"
           >
-            <div className="w-[280px] border border-[rgba(108,124,255,0.12)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.10)] p-1.5 space-y-0.5" style={{ background: "var(--bg-surface)" }}>
+            <div className="w-[280px] border border-[rgba(108,124,255,0.12)] rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.15)] p-1.5 space-y-0.5 bg-[var(--bg-page)]" style={{ background: "var(--bg-page)", backdropFilter: "none" }}>
               {children}
             </div>
           </motion.div>

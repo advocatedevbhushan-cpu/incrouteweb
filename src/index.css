@@ -84,7 +84,7 @@
 
 [data-theme="light"] {
   --bg-page: #FAFAFD;
-  --bg-surface: rgba(255, 255, 255, 0.90);
+  --bg-surface: #FFFFFF;
   --bg-surface-alt: #F0EEFF;
   --border-subtle: rgba(91, 108, 255, 0.13);
   --text-primary: #0F1128;

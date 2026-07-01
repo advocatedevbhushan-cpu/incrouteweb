@@ -8,39 +8,45 @@ import {
 } from "lucide-react";
 import jsPDF from "jspdf";
 
-// India Stamp Duty Rates (State-wise)
-const STATE_STAMP_RATES: Record<string, { pvtLtdBase: number; pvtLtdPercent: number; llpBase: number }> = {
-  "Andaman & Nicobar Islands": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Andhra Pradesh": { pvtLtdBase: 1000, pvtLtdPercent: 0.005, llpBase: 500 },
-  "Arunachal Pradesh": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Assam": { pvtLtdBase: 1000, pvtLtdPercent: 0.002, llpBase: 500 },
-  "Bihar": { pvtLtdBase: 1500, pvtLtdPercent: 0.003, llpBase: 750 },
-  "Chandigarh": { pvtLtdBase: 1000, pvtLtdPercent: 0.002, llpBase: 500 },
-  "Chhattisgarh": { pvtLtdBase: 1000, pvtLtdPercent: 0.003, llpBase: 500 },
-  "Delhi": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Goa": { pvtLtdBase: 1000, pvtLtdPercent: 0.003, llpBase: 500 },
-  "Gujarat": { pvtLtdBase: 1000, pvtLtdPercent: 0.003, llpBase: 500 },
-  "Haryana": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Himachal Pradesh": { pvtLtdBase: 1000, pvtLtdPercent: 0.002, llpBase: 500 },
-  "Jharkhand": { pvtLtdBase: 1000, pvtLtdPercent: 0.002, llpBase: 500 },
-  "Karnataka": { pvtLtdBase: 1500, pvtLtdPercent: 0.005, llpBase: 750 },
-  "Kerala": { pvtLtdBase: 1500, pvtLtdPercent: 0.005, llpBase: 750 },
-  "Madhya Pradesh": { pvtLtdBase: 1000, pvtLtdPercent: 0.003, llpBase: 500 },
-  "Maharashtra": { pvtLtdBase: 2000, pvtLtdPercent: 0.005, llpBase: 1000 },
-  "Manipur": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Meghalaya": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Mizoram": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Nagaland": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Odisha": { pvtLtdBase: 1000, pvtLtdPercent: 0.003, llpBase: 500 },
-  "Punjab": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Rajasthan": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Sikkim": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Tamil Nadu": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Telangana": { pvtLtdBase: 1500, pvtLtdPercent: 0.005, llpBase: 750 },
-  "Tripura": { pvtLtdBase: 500, pvtLtdPercent: 0.001, llpBase: 250 },
-  "Uttar Pradesh": { pvtLtdBase: 1500, pvtLtdPercent: 0.004, llpBase: 750 },
-  "Uttarakhand": { pvtLtdBase: 1000, pvtLtdPercent: 0.002, llpBase: 500 },
-  "West Bengal": { pvtLtdBase: 1500, pvtLtdPercent: 0.0045, llpBase: 750 },
+// India Stamp Duty Rates on MOA/AOA (State-wise, as per MCA eStamp & state amendments)
+// Rate = percentage of authorized capital. Most states follow 0.15% (MCA standard).
+// Sources: MCA eStamp portal, State Stamp Acts, Companies (Registration) Rules 2014
+const STATE_STAMP_RATES: Record<string, { rate: number; maxCap: number; label: string }> = {
+  "Andhra Pradesh": { rate: 0.0015, maxCap: 500000, label: "0.15% (max ₹5L)" },
+  "Arunachal Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Assam": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Bihar": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Chandigarh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Chhattisgarh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Delhi": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Goa": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Gujarat": { rate: 0.005, maxCap: 500000, label: "0.50% (max ₹5L)" },
+  "Haryana": { rate: 0.003, maxCap: 2500000, label: "0.30% (max ₹25L)" },
+  "Himachal Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Jharkhand": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Karnataka": { rate: 0.005, maxCap: 3000000, label: "0.50% (max ₹30L)" },
+  "Kerala": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Madhya Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Maharashtra": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Manipur": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Meghalaya": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Mizoram": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Nagaland": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Odisha": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Punjab": { rate: 0.003, maxCap: 2500000, label: "0.30% (max ₹25L)" },
+  "Rajasthan": { rate: 0.005, maxCap: 2500000, label: "0.50% (max ₹25L)" },
+  "Sikkim": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Tamil Nadu": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Telangana": { rate: 0.0015, maxCap: 500000, label: "0.15% (max ₹5L)" },
+  "Tripura": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Uttar Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Uttarakhand": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "West Bengal": { rate: 0.002, maxCap: 2500000, label: "0.20% (max ₹25L)" },
+  "Andaman & Nicobar": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Puducherry": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Lakshadweep": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Ladakh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+  "Jammu & Kashmir": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
 };
 
 export default function StatutoryTools() {
@@ -82,20 +88,12 @@ export default function StatutoryTools() {
 
   // Calculate fees (detailed breakdown)
   const getCalculatedFees = () => {
-    const govBaseFee = entityType === "Pvt Ltd" ? 1000 : entityType === "LLP" ? 500 : 800;
-    const stateRules = STATE_STAMP_RATES[calcState] || STATE_STAMP_RATES["Maharashtra"];
-    let stampDuty = 0;
-    if (entityType === "Pvt Ltd" || entityType === "OPC") {
-      stampDuty = stateRules.pvtLtdBase + (authorizedCapital * stateRules.pvtLtdPercent);
-    } else {
-      stampDuty = stateRules.llpBase + (authorizedCapital * 0.001);
-    }
-    const dscCost = entityType === "LLP" ? 1500 : 3000;
-    const panTanGovFee = 150;
-    const professionalFee = entityType === "Pvt Ltd" ? 999 : entityType === "LLP" ? 1499 : 1299;
-    const totalGovernmentFees = govBaseFee + Math.round(stampDuty) + panTanGovFee;
-    const totalFinal = totalGovernmentFees + dscCost + professionalFee;
-    return { govBaseFee, stampDuty: Math.round(stampDuty), dscCost, panTanGovFee, professionalFee, totalGovernmentFees: Math.round(totalGovernmentFees), totalFinal: Math.round(totalFinal) };
+    const stateRules = STATE_STAMP_RATES[calcState] || STATE_STAMP_RATES["Delhi"];
+    const rawStampDuty = authorizedCapital * stateRules.rate;
+    const stampDuty = Math.min(Math.round(rawStampDuty), stateRules.maxCap);
+    // Minimum stamp duty is ₹200 for most states
+    const finalStampDuty = Math.max(stampDuty, 200);
+    return { stampDuty: finalStampDuty, rate: stateRules.label, maxCap: stateRules.maxCap };
   };
 
   const fees = getCalculatedFees();
@@ -332,24 +330,11 @@ Founder A Signature                     Founder B Signature`;
                   </select>
                 </div>
 
-                {/* Entity Type Buttons */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">Entity Framework</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {["Pvt Ltd", "LLP", "OPC"].map((type) => (
-                      <button key={type} type="button" onClick={() => setEntityType(type)} className={`py-3 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${entityType === type ? "bg-brand-gold/15 text-brand-gold border-brand-gold/45 shadow" : "bg-brand-bg border-brand-border text-brand-text-muted hover:text-brand-text"}`}>
-                        {type === "Pvt Ltd" ? <Building2 className="w-4 h-4 inline-block mr-1.5" /> : type === "LLP" ? <Users className="w-4 h-4 inline-block mr-1.5" /> : <Scale className="w-4 h-4 inline-block mr-1.5" />}
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Capital Slider */}
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest">
-                    <span className="text-brand-gold font-bold">Proposed Authorized Capital* (Estimated)</span>
-                    <span className="text-brand-text font-bold">₹{authorizedCapital.toLocaleString()}*</span>
+                    <span className="text-brand-gold font-bold">Authorized Capital</span>
+                    <span className="text-brand-text font-bold">₹{authorizedCapital.toLocaleString()}</span>
                   </div>
                   <input type="range" min="100000" max="10000000" step="50000" value={authorizedCapital} onChange={(e) => setAuthorizedCapital(Number(e.target.value))} className="w-full h-1 bg-brand-border rounded-lg appearance-none cursor-pointer accent-brand-gold" />
                   <div className="flex justify-between text-[9px] text-brand-text-muted/60 font-mono">
@@ -366,29 +351,42 @@ Founder A Signature                     Founder B Signature`;
               <div className="absolute top-0 right-0 w-24 h-24 bg-brand-gold/5 blur-3xl rounded-full" />
               <div className="space-y-4 relative z-10">
                 <div className="border-b border-brand-border pb-3 text-center">
-                  <span className="text-[9px] font-mono bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded border border-brand-gold/20 uppercase tracking-widest font-bold">Statutory Receipt Draft</span>
-                  <h4 className="text-lg font-light text-brand-text serif mt-2">{entityType} Incorporation Cost*</h4>
+                  <span className="text-[9px] font-mono bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded border border-brand-gold/20 uppercase tracking-widest font-bold">Stamp Duty Calculator</span>
+                  <h4 className="text-lg font-light text-brand-text serif mt-2">Stamp Duty on MOA & AOA</h4>
                   <p className="text-[9px] text-brand-text-muted/60 font-mono tracking-wider">State: {calcState}</p>
                 </div>
 
-                <div className="space-y-3 font-mono text-[10px]">
-                  <div className="flex justify-between text-brand-text-muted"><span>ROC Registration Base Fee*:</span><span>₹{fees.govBaseFee.toLocaleString()}*</span></div>
-                  <div className="flex justify-between text-brand-text-muted"><span>State Stamp Duty*:</span><span>₹{fees.stampDuty.toLocaleString()}*</span></div>
-                  <div className="flex justify-between text-brand-text-muted"><span>PAN/TAN Application Fee*:</span><span>₹{fees.panTanGovFee.toLocaleString()}*</span></div>
-                  <div className="border-t border-brand-border/40 pt-2 flex justify-between text-brand-text font-semibold">
-                    <span>Total Gov Statutory Fees*:</span>
-                    <span className="text-brand-gold">₹{fees.totalGovernmentFees.toLocaleString()}*</span>
+                <div className="space-y-4">
+                  {/* Main Result — Stamp Duty */}
+                  <div className="text-center py-5 bg-brand-bg border border-brand-gold/20 rounded-2xl">
+                    <p className="text-[10px] font-mono uppercase text-brand-text-muted tracking-widest mb-1">Stamp Duty Payable</p>
+                    <p className="text-3xl font-extrabold text-brand-gold tracking-tight">₹{fees.stampDuty.toLocaleString()}</p>
+                    <p className="text-[10px] text-brand-text-muted mt-2">Rate: {fees.rate}</p>
                   </div>
-                  <div className="border-t border-brand-border/40 pt-3 flex justify-between text-brand-text-muted"><span>Digital Signature (DSC)*:</span><span>₹{fees.dscCost.toLocaleString()}*</span></div>
 
-                  <div className="border-t border-brand-gold/30 border-dashed pt-4 mt-2 flex justify-between text-xs font-bold text-brand-text">
-                    <span className="flex items-center gap-1"><Scale className="w-3.5 h-3.5 text-brand-gold" /> Estimated Total*:</span>
-                    <span className="text-brand-gold text-sm font-bold">₹{fees.totalFinal.toLocaleString()}*</span>
+                  {/* Details */}
+                  <div className="space-y-2 font-mono text-[10px]">
+                    <div className="flex justify-between text-brand-text-muted">
+                      <span>Authorized Capital:</span>
+                      <span className="text-brand-text">₹{authorizedCapital.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-brand-text-muted">
+                      <span>State:</span>
+                      <span className="text-brand-text">{calcState}</span>
+                    </div>
+                    <div className="flex justify-between text-brand-text-muted">
+                      <span>Applicable Rate:</span>
+                      <span className="text-brand-text">{fees.rate}</span>
+                    </div>
+                    <div className="flex justify-between text-brand-text-muted">
+                      <span>Maximum Cap:</span>
+                      <span className="text-brand-text">₹{fees.maxCap.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="bg-brand-bg border border-brand-border rounded-xl p-3.5 text-[9px] text-brand-text-muted/80 leading-relaxed font-sans mt-3">
-                  <span className="font-bold text-brand-gold">Statutory Disclaimer:</span> Fees above are automated estimates* based on current state stamp laws and MCA guidelines. Government portals may vary slightly.
+                  <span className="font-bold text-brand-gold">Note:</span> Stamp duty is charged on authorized capital at the time of company incorporation (SPICe+ filing). Paid electronically via MCA21 eStamp. Rates as per respective State Stamp Acts.
                 </div>
               </div>
             </div>
