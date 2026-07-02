@@ -394,21 +394,321 @@ a, button, input, select, textarea {
 /* THE GRADIENT — rich lavender periwinkle hero, fades to white */
 [data-theme="light"] .homepage-shell {
   background:
-    radial-gradient(ellipse 80% 55% at 8% -5%, rgba(91,108,255,0.28) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 92% -8%, rgba(139,92,246,0.22) 0%, transparent 52%),
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(120,100,255,0.12) 0%, transparent 45%),
-    linear-gradient(
-      180deg,
-      #DBD7FF 0%,
-      #E5E2FF 8%,
-      #EDEBFF 18%,
-      #F3F1FF 32%,
-      #F8F7FF 50%,
-      #FBFAFE 68%,
-      #FDFCFF 84%,
-      #FFFFFF 100%
-    ) !important;
+    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.20), transparent 35%),
+    radial-gradient(circle at 10% 15%, rgba(139, 92, 246, 0.16), transparent 32%),
+    linear-gradient(135deg, #F4F1FF 0%, #EEF2FF 45%, #F8FAFF 100%) !important;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Abstract design details */
+.dotted-pattern-overlay {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 320px;
+  height: 320px;
+  background-image: radial-gradient(rgba(99, 102, 241, 0.12) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  opacity: 0.8;
+  pointer-events: none;
+  mask-image: radial-gradient(circle at bottom left, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at bottom left, black 20%, transparent 75%);
+  z-index: 1;
+}
+
+.wave-pattern-overlay {
+  position: absolute;
+  top: 8%;
+  right: 0;
+  width: 500px;
+  height: 550px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 400 500'%3E%3Cpath d='M 100,-10 C 200,100 250,50 350,180 C 450,300 380,420 500,500' fill='none' stroke='rgba(99, 102, 241, 0.08)' stroke-width='2.5'/%3E%3Cpath d='M 130,-10 C 230,120 280,70 380,200 C 480,320 410,440 530,520' fill='none' stroke='rgba(99, 102, 241, 0.05)' stroke-width='2'/%3E%3Cpath d='M 160,-10 C 260,140 310,90 410,220 C 510,340 440,460 560,540' fill='none' stroke='rgba(139, 92, 246, 0.04)' stroke-width='1.5'/%3E%3Cpath d='M 190,-10 C 290,160 340,110 440,240 C 540,360 470,480 590,560' fill='none' stroke='rgba(139, 92, 246, 0.03)' stroke-width='1'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-glow-bg {
+  position: absolute;
+  top: 15%;
+  right: 5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.16) 0%, transparent 65%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hero Typography */
+.hero-title {
+  font-size: clamp(2.4rem, 4.8vw, 3.8rem) !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  color: #080F2A !important;
+}
+
+.hero-highlight-text {
+  background: linear-gradient(90deg, #3B5BFF 0%, #7357FF 55%, #8B5CF6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.hero-desc {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  color: #475569 !important;
+  font-weight: 450 !important;
+}
+
+/* Business Command Center 3D Mockup */
+.business-command-3d-container {
+  position: relative;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  z-index: 10;
+  padding-bottom: 40px;
+}
+
+.business-command-3d {
+  position: relative;
+  transform: rotateY(-7deg) rotateX(2deg);
+  transform-style: preserve-3d;
+  border-radius: 32px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(244, 247, 255, 0.82)
+  );
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  box-shadow:
+    0 35px 80px rgba(31, 41, 95, 0.22),
+    0 10px 30px rgba(99, 102, 241, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.business-command-3d-container:hover .business-command-3d {
+  transform: rotateY(-4deg) rotateX(1deg) translateY(-6px);
+  box-shadow:
+    0 45px 95px rgba(31, 41, 95, 0.25),
+    0 15px 35px rgba(99, 102, 241, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.business-command-3d::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.55),
+    rgba(255, 255, 255, 0.2),
+    rgba(79, 70, 229, 0.45)
+  );
+  z-index: -1;
+  filter: blur(1px);
+}
+
+.dashboard-platform {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -32px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    rgba(129, 140, 248, 0.22)
+  );
+  box-shadow:
+    0 30px 60px rgba(79, 70, 229, 0.28),
+    inset 0 2px 10px rgba(255, 255, 255, 0.85);
+  filter: blur(0.2px);
+  z-index: -2;
+  transform: rotateX(70deg);
+}
+
+/* Mockup Internal Cards */
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.86) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 14px 32px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 38px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Buttons */
+.primary-button {
+  background: linear-gradient(135deg, #3B5BFF 0%, #6D5DFF 100%) !important;
+  color: white !important;
+  border-radius: 14px !important;
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.28) !important;
+  border: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(79, 70, 229, 0.35) !important;
+}
+
+.secondary-button {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border: 1px solid rgba(99, 102, 241, 0.22) !important;
+  color: #0F172A !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(14px) !important;
+  transition: transform 0.2s ease, background 0.2s ease !important;
+}
+
+.secondary-button:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Search module dark navy card styling */
+.business-search-card {
+  background: linear-gradient(135deg, #07152F 0%, #0B173D 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 24px 50px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #FFFFFF !important;
+}
+
+.business-search-card input,
+.business-search-card select {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(226, 232, 240, 0.24) !important;
+  color: #FFFFFF !important;
+  border-radius: 12px !important;
+}
+
+.business-search-card select option {
+  background: #07152F !important;
+  color: #FFFFFF !important;
+}
+
+/* Floating label and icon contrast inside dark search card */
+.business-search-card .floating-label-group label {
+  color: rgba(226, 232, 240, 0.5) !important;
+}
+
+.business-search-card .floating-label-group input:focus ~ label,
+.business-search-card .floating-label-group input:not(:placeholder-shown) ~ label,
+.business-search-card .floating-label-group select ~ label {
+  color: #8B9CFF !important;
+  opacity: 1 !important;
+}
+
+.business-search-card .floating-label-group svg {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.business-search-card form button[type="submit"] {
+  background: linear-gradient(135deg, #3B5BFF, #6D5DFF) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(59, 91, 255, 0.35) !important;
+}
+
+.business-search-card form button[type="submit"]:hover {
+  background: linear-gradient(135deg, #4F6CFF, #7D6EFF) !important;
+  box-shadow: 0 6px 18px rgba(59, 91, 255, 0.5) !important;
+}
+
+/* Stats strip wide card */
+.stats-strip {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.stats-strip .stat-icon-wrapper {
+  background: rgba(59, 91, 255, 0.1) !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  color: #3B5BFF !important;
+}
+
+.stats-strip .stat-number {
+  color: #0F172A !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+}
+
+.stats-strip .stat-label {
+  color: #64748B !important;
+  font-size: 11px !important;
+}
+
+@media (min-width: 1025px) {
+  .stats-strip .stat-item:not(:last-child) {
+    border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
+    padding-right: 20px !important;
+  }
+}
+
+/* Feature blocks strip styling */
+.features-strip-container {
+  padding-top: 30px !important;
+  padding-bottom: 30px !important;
+}
+
+.feature-block-item {
+  padding: 16px !important;
+  transition: transform 0.25s ease !important;
+}
+
+.feature-block-item:hover {
+  transform: translateY(-2px) !important;
+}
+
+.feature-block-icon {
+  color: #3B5BFF !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-bottom: 8px !important;
+}
+
+.feature-block-title {
+  color: #0F172A !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  margin-bottom: 4px !important;
+}
+
+.feature-block-desc {
+  color: #64748B !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
 
 [data-theme="dark"] .homepage-shell {
   background: var(--bg-page) !important;
@@ -561,6 +861,16 @@ a, button, input, select, textarea {
 
 [data-theme="dark"] .nav-link.active-nav::after {
   background: linear-gradient(90deg, #9D85F2, #E08AEC) !important;
+}
+
+/* Dropdown panel — must be opaque to avoid see-through */
+.nav-dropdown-panel {
+  background: #FFFFFF;
+  backdrop-filter: blur(12px);
+}
+
+[data-theme="dark"] .nav-dropdown-panel {
+  background: #1B1828;
 }
 
 /* Login Button */

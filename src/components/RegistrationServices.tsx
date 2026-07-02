@@ -1683,7 +1683,10 @@ export default function RegistrationServices({
   const isIncorporation = ["pvt-ltd", "llp", "opc", "partnership", "section8", "public-ltd"].includes(selectedEntity.id);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 relative">
+      <div className="dotted-pattern-overlay" />
+      <div className="wave-pattern-overlay" />
+      <div className="dashboard-glow-bg" />
       {viewMode === "grid" ? (
         <>
           {/* ═══ HERO ═══ */}
@@ -1695,16 +1698,16 @@ export default function RegistrationServices({
           >
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
-              <div className="inline-flex items-center gap-2 text-[12px] text-[var(--accent)] font-medium tracking-wide">
+              <div className="trust-badge">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
               </div>
 
-              <h1 className="text-4xl sm:text-[3.5rem] font-extrabold text-[var(--text-primary)] tracking-[-0.04em] leading-[1.05]">
+              <h1 className="hero-title">
                 Start, Manage &<br />Stay Compliant —<br />
-                <span className="bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">All in One Platform.</span>
+                <span className="hero-highlight-text">All in One Platform.</span>
               </h1>
               
-              <p className="text-[15px] text-[var(--text-secondary)] font-normal leading-relaxed max-w-md">
+              <p className="hero-desc leading-relaxed max-w-md">
                 Incorporate your company, track ROC & GST filings, avoid penalties, and manage compliance — without chaos.
               </p>
 
@@ -1712,7 +1715,7 @@ export default function RegistrationServices({
               <RotatingInsight />
 
               {/* Bullet points */}
-              <ul className="space-y-2 text-[13px] text-[var(--text-secondary)]">
+              <ul className="space-y-2 text-[13px] text-[#475569] font-medium">
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Entity Incorporation (Pvt Ltd, LLP, OPC)</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Compliance Calendar & Reminders</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> ROC, GST, Tax & Legal Filings</li>
@@ -1722,13 +1725,13 @@ export default function RegistrationServices({
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button 
                   onClick={() => navigateToTab("catalog")}
-                  className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] hover:scale-[1.02] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-[0_0_20px_-4px_var(--accent)]"
+                  className="primary-button px-6 py-3 font-semibold text-sm cursor-pointer flex items-center gap-2"
                 >
                   Start Your Business <ArrowRight className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => navigateToTab("portal")}
-                  className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:scale-[1.02] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all duration-200 cursor-pointer bg-transparent flex items-center gap-2"
+                  className="secondary-button px-6 py-3 font-semibold text-sm cursor-pointer flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Explore The Platform
                 </button>
@@ -1749,10 +1752,11 @@ export default function RegistrationServices({
             </div>
 
             {/* RIGHT: Dashboard Mockup */}
-            <div className="relative hidden lg:block mt-2">
+            <div className="relative hidden lg:block mt-2 business-command-3d-container">
               <div className="dashboard-halo" />
-              <div className="rounded-[24px] overflow-hidden border border-[rgba(108,124,255,0.12)] shadow-[0_36px_90px_rgba(28,32,64,0.06),0_10px_30px_rgba(108,124,255,0.04)] flex scale-[1.05] origin-top-right bg-white" style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)" }}>
-                <div className="w-[140px] shrink-0 bg-[#F8FAFC] border-r border-slate-100 p-4 flex flex-col">
+              <div className="dashboard-platform" />
+              <div className="business-command-3d overflow-hidden flex scale-[1.05] origin-top-right" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.78) 100%)" }}>
+                <div className="w-[140px] shrink-0 bg-white/30 backdrop-blur-md border-r border-slate-100/50 p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
                     <span className="text-[11px] font-bold text-slate-800 tracking-tight">INC<span className="font-normal italic text-[var(--accent)]">route</span></span>
@@ -1782,7 +1786,7 @@ export default function RegistrationServices({
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {[{ label: "Incorporation", value: "3 / 3", note: "Completed", noteColor: "#059669" }, { label: "ROC Compliance", value: "12", note: "Upcoming", noteColor: "#64748B" }, { label: "GST Filings", value: "2", note: "Due This Month", noteColor: "#D97706" }, { label: "Trademarks", value: "5", note: "Active", noteColor: "#64748B" }].map((s, i) => (
-                      <div key={i} className="bg-white border border-slate-100 rounded-xl p-2.5 space-y-1 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                      <div key={i} className="dashboard-card p-2.5 space-y-1">
                         <span className="text-[7px] text-slate-400 font-medium">{s.label}</span>
                         <p className="text-[16px] font-extrabold text-slate-800 tracking-tight leading-none">{s.value}</p>
                         <p className="text-[7px]" style={{ color: s.noteColor }}>{s.note}</p>
@@ -1790,13 +1794,13 @@ export default function RegistrationServices({
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white border border-slate-100 rounded-xl p-3 space-y-2 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                    <div className="dashboard-card p-3 space-y-2">
                       <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-slate-800">Upcoming Compliance</span><span className="text-[7px] text-[var(--accent)] font-medium">View All</span></div>
                       {[{ t: "DIN KYC", d: "Due in 5 days" }, { t: "Board Meeting", d: "Due in 8 days" }, { t: "GST Return - GSTR 1", d: "Due in 12 days" }].map((c, i) => (
                         <div key={i} className="flex items-center justify-between"><span className="text-[8px] font-semibold text-slate-700">{c.t}</span><span className="text-[6.5px] text-amber-600 font-medium">{c.d}</span></div>
                       ))}
                     </div>
-                    <div className="bg-white border border-slate-100 rounded-xl p-3 space-y-2 shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                    <div className="dashboard-card p-3 space-y-2">
                       <div className="flex items-center justify-between"><span className="text-[9px] font-semibold text-slate-800">Entity Overview</span><span className="text-[7px] text-[var(--accent)] font-medium">View All</span></div>
                       <div className="flex items-center gap-3">
                         <div className="relative w-[50px] h-[50px]"><svg viewBox="0 0 36 36" className="w-full h-full -rotate-90"><circle cx="18" cy="18" r="15.5" fill="none" stroke="#E2E8F0" strokeWidth="4" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#6C7CFF" strokeWidth="4" strokeDasharray="58 100" strokeLinecap="round" /><circle cx="18" cy="18" r="15.5" fill="none" stroke="#A78BFA" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-58" strokeLinecap="round" /></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-[12px] font-extrabold text-slate-800">5</span><span className="text-[5px] text-slate-400">Total</span></div></div>
@@ -1808,7 +1812,7 @@ export default function RegistrationServices({
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between shadow-[0_2px_8px_rgba(91,108,255,0.02)]">
+                  <div className="dashboard-card p-3 flex items-center justify-between">
                     <div><p className="text-[9px] font-semibold text-slate-800">Your Compliance Health</p><p className="text-[7px] text-slate-400">Everything looks good. Keep it up!</p></div>
                     <div className="text-right"><p className="text-[14px] font-extrabold text-emerald-600">98%</p><p className="text-[7px] text-slate-400 font-medium">Compliant</p></div>
                   </div>
@@ -1822,12 +1826,12 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-5xl mx-auto z-20 px-4 sm:px-6 mt-[28px] pb-4 business-setup-section"
+            className="relative max-w-[1320px] mx-auto z-20 px-4 sm:px-6 mt-[-10px] md:mt-[-30px] pb-4 business-setup-section"
           >
-            <div className="premium-advisor-card border border-[rgba(108,124,255,0.12)] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-[0_24px_70px_rgba(40,40,80,0.10)] space-y-5" style={{ background: "rgba(255,255,255,0.88)" }}>
+            <div className="business-search-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-5">
               {/* Header */}
-              <div className="flex items-center gap-2 text-[10px] font-medium tracking-wider text-[var(--text-secondary)] uppercase text-left pl-1">
-                <Search className="w-3.5 h-3.5 text-[var(--accent)]" /> Find the Right Business Setup
+              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase text-left pl-1">
+                <Search className="w-3.5 h-3.5 text-[#8B9CFF]" /> Find the Right Business Setup
               </div>
               
               {/* Search form controls */}
@@ -1956,7 +1960,7 @@ export default function RegistrationServices({
               
               {/* Interactive clearance ledger */}
               {checkReport && (
-                <div className="space-y-4 border-t border-brand-border/60 pt-5">
+                <div className="space-y-4 border-t border-slate-800 pt-5">
                   {/* Highlighted AI Disclaimer Box */}
                   <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl text-[10px] leading-relaxed flex items-start gap-2.5 text-left relative z-10">
                     <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
@@ -1981,39 +1985,39 @@ export default function RegistrationServices({
                     transition={{ duration: 0.45, ease: "easeOut" }}
                     className="grid grid-cols-1 md:grid-cols-3 gap-5"
                   >
-                    <div className="flex flex-col items-center justify-center p-5 bg-brand-bg-lighter rounded-xl border border-brand-border/60 shadow-sm min-h-[120px]">
-                      <span className="text-[8px] uppercase tracking-widest text-[#9E896A] font-bold font-mono mb-1">Suitability Score</span>
+                    <div className="flex flex-col items-center justify-center p-5 bg-slate-900/60 rounded-xl border border-slate-800/80 shadow-sm min-h-[120px]">
+                      <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold font-mono mb-1">Suitability Score</span>
                       <div className="text-center">
                         <span className="text-4xl font-light text-red-500 font-serif italic block leading-none">
                           {checkReport.score}
                         </span>
-                        <span className="text-[9px] text-brand-text-muted font-mono tracking-wider block mt-1">out of 100</span>
+                        <span className="text-[9px] text-slate-400 font-mono tracking-wider block mt-1">out of 100</span>
                       </div>
                     </div>
                     
-                    <div className="text-left space-y-3 bg-red-50/20 p-4.5 rounded-xl border border-red-500/10">
-                      <span className="text-[8px] uppercase tracking-widest text-red-500 font-bold font-mono flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" /> Issues Found
+                    <div className="text-left space-y-3 bg-red-950/25 p-4.5 rounded-xl border border-red-500/20">
+                      <span className="text-[8px] uppercase tracking-widest text-red-400 font-bold font-mono flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /> Issues Found
                       </span>
                       <ul className="space-y-1.5">
                         {checkReport.conflicts.map((conf: string, i: number) => (
-                          <li key={i} className="text-xs text-brand-text-muted flex items-start gap-1.5 leading-relaxed font-sans">
-                            <span className="text-red-500 text-sm font-bold leading-none shrink-0 mt-0.5">•</span>
+                          <li key={i} className="text-xs text-slate-300 flex items-start gap-1.5 leading-relaxed font-sans">
+                            <span className="text-red-400 text-sm font-bold leading-none shrink-0 mt-0.5">•</span>
                             <span>{conf}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                     
-                    <div className="text-left space-y-3 bg-emerald-50/25 p-4.5 rounded-xl border border-emerald-500/10 flex flex-col justify-between">
+                    <div className="text-left space-y-3 bg-emerald-950/20 p-4.5 rounded-xl border border-emerald-500/20 flex flex-col justify-between">
                       <div>
-                        <span className="text-[8px] uppercase tracking-widest text-emerald-600 font-bold font-mono flex items-center gap-1.5 mb-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Suggestions
+                        <span className="text-[8px] uppercase tracking-widest text-emerald-400 font-bold font-mono flex items-center gap-1.5 mb-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Suggestions
                         </span>
                         <div className="space-y-2">
                           {checkReport.suggestions.slice(0, 3).map((sug: string, i: number) => (
-                            <div key={i} className="flex items-center justify-between gap-2 p-2 bg-brand-bg border border-brand-border rounded-lg group">
-                              <span className="text-[10px] font-mono font-semibold text-brand-text truncate">{sug}</span>
+                            <div key={i} className="flex items-center justify-between gap-2 p-2 bg-slate-900/50 border border-slate-800/80 rounded-lg group">
+                              <span className="text-[10px] font-mono font-semibold text-slate-200 truncate">{sug}</span>
                               <button
                                 type="button"
                                 onClick={() => {
@@ -2021,7 +2025,7 @@ export default function RegistrationServices({
                                   setShowOnboardModal(true);
                                 }}
                                 title="Register this name"
-                                className="px-2 py-1 bg-brand-gold hover:bg-white text-black font-mono text-[8px] font-bold uppercase rounded transition-colors cursor-pointer shrink-0"
+                                className="px-2 py-1 bg-[#3B5BFF] hover:bg-[#5B7CFF] text-white font-mono text-[8px] font-bold uppercase rounded transition-colors cursor-pointer shrink-0"
                               >
                                 Register
                               </button>
@@ -2040,9 +2044,9 @@ export default function RegistrationServices({
           <LogoTicker />
 
           {/* ═══ TRUST METRICS ROW ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto trust-strip">
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl px-6 py-5 shadow-[0_4px_24px_rgba(108,124,255,0.04)]">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+          <div className="w-full max-w-[1320px] mx-auto trust-strip pt-4">
+            <div className="stats-strip px-6 py-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
                 {[
                   { icon: Users, value: "2,000+", label: "Businesses Served" },
                   { icon: FileText, value: "10,000+", label: "Compliance Filings" },
@@ -2051,13 +2055,13 @@ export default function RegistrationServices({
                   { icon: Award, value: "12+", label: "Years Expertise" },
                   { icon: Clock, value: "24/7", label: "Expert Support" },
                 ].map((m, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center shrink-0">
-                      <m.icon className="w-4 h-4 text-[var(--accent)]" />
+                  <div key={i} className="flex items-center gap-3.5 stat-item">
+                    <div className="stat-icon-wrapper shrink-0">
+                      <m.icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[16px] font-extrabold text-[var(--text-primary)] leading-none">{m.value}</p>
-                      <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{m.label}</p>
+                      <p className="stat-number leading-none">{m.value}</p>
+                      <p className="stat-label mt-1">{m.label}</p>
                     </div>
                   </div>
                 ))}
@@ -2066,19 +2070,17 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ FEATURES STRIP — Built for Modern Businesses ═══ */}
-          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 py-2">
+          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 features-strip-container">
             {[
               { icon: Shield, title: "Secure & Reliable", desc: "Bank-grade security for all your documents" },
               { icon: Clock, title: "Stay Ahead", desc: "Smart reminders to never miss a deadline" },
               { icon: Users, title: "Expert Support", desc: "Dedicated professionals by your side" },
               { icon: Database, title: "All in One Place", desc: "Manage legal, tax & compliance needs" },
             ].map((f, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-2 p-3">
-                <div className="w-10 h-10 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center">
-                  <f.icon className="w-5 h-5 text-[var(--accent)]" />
-                </div>
-                <h4 className="text-[12px] font-bold text-[var(--text-primary)]">{f.title}</h4>
-                <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">{f.desc}</p>
+              <div key={i} className="flex flex-col items-center text-center gap-2 feature-block-item">
+                <f.icon className="feature-block-icon" />
+                <h4 className="feature-block-title">{f.title}</h4>
+                <p className="feature-block-desc">{f.desc}</p>
               </div>
             ))}
           </div>
