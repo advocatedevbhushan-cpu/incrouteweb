@@ -713,7 +713,7 @@ Founder A Signature                     Founder B Signature`;
                 </div>
 
                 {/* Toggles Row */}
-                <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                   <div className="bg-white border border-slate-100 rounded-2xl p-3 flex flex-col justify-between gap-2 shadow-sm text-left">
                     <span className="text-[8px] font-mono uppercase text-slate-400 font-bold block">Includes Premium</span>
                     <div className="flex items-center justify-between">

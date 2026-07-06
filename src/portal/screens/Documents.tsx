@@ -5,42 +5,42 @@ import { FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, X, 
 const ALL_SERVICE_DOCUMENTS: Record<string, { label: string; icon: string; docs: string[] }> = {
   "PVT_LTD": {
     label: "Private Limited Company",
-    icon: "🏢",
+    icon: "PL",
     docs: ["PAN Card (All Directors)", "Aadhaar Card (All Directors)", "Passport Size Photo", "Address Proof (Utility Bill)", "Bank Statement", "NOC from Property Owner", "Rent Agreement", "Digital Signature Certificate (DSC)"]
   },
   "LLP": {
     label: "LLP Registration",
-    icon: "🤝",
+    icon: "LLP",
     docs: ["PAN Card (All Partners)", "Aadhaar Card (All Partners)", "Address Proof", "Bank Statement", "Registered Office Proof", "LLP Agreement Draft", "DSC of Designated Partners"]
   },
   "OPC": {
     label: "One Person Company",
-    icon: "👤",
+    icon: "OPC",
     docs: ["PAN Card (Director)", "Aadhaar Card (Director)", "Photo", "Address Proof", "Bank Statement", "NOC from Owner", "Nominee Consent (Form INC-3)"]
   },
   "GST": {
     label: "GST Registration",
-    icon: "📊",
+    icon: "GST",
     docs: ["PAN Card (Business)", "Aadhaar Card (Authorized Signatory)", "Address Proof of Business", "Bank Account Statement/Cancelled Cheque", "Electricity Bill", "Rent Agreement/Ownership Proof", "Photo of Signatory", "Authorization Letter"]
   },
   "TRADEMARK": {
     label: "Trademark Registration",
-    icon: "™️",
+    icon: "TM",
     docs: ["Trademark Logo (High Resolution)", "Applicant ID Proof", "Address Proof", "Business Registration Certificate", "Authorization Letter (TM-48)", "User Affidavit (if claiming prior use)"]
   },
   "MSME": {
     label: "MSME / Udyam Registration",
-    icon: "🏭",
+    icon: "MSME",
     docs: ["Aadhaar Card (Owner)", "PAN Card (Business)", "GST Certificate (if applicable)", "Bank Account Details", "Business Address Proof"]
   },
   "ROC_FILING": {
     label: "Annual ROC Filing",
-    icon: "📋",
+    icon: "ROC",
     docs: ["Audited Financial Statements", "Board Resolution", "Director Report", "AGM Minutes", "Form AOC-4 Data", "Form MGT-7 Data"]
   },
   "INCOME_TAX": {
     label: "Income Tax Return",
-    icon: "💰",
+    icon: "ITR",
     docs: ["Form 16 / Salary Slips", "Bank Statements (All Accounts)", "Investment Proofs", "TDS Certificates", "Capital Gains Statement", "Rental Income Proof", "Business P&L Statement"]
   },
 };
@@ -110,7 +110,7 @@ export default function Documents() {
       if (d.services && d.services.length > 0) {
         setAllowedServices(d.services);
       } else {
-        // No services configured — show empty state (admin needs to assign services)
+        // No services configured - show empty state (admin needs to assign services)
         setAllowedServices([]);
       }
     } catch {

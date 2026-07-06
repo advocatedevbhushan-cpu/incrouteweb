@@ -51,8 +51,10 @@ export default function LoginPage({ setActiveTab }: LoginPageProps) {
       localStorage.setItem("incroute_user", JSON.stringify(data.user));
       
       // Redirect based on role
-      if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN" || data.user?.role === "TEAM_MEMBER") {
+      if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN") {
         window.location.href = "/admin";
+      } else if (data.user?.role === "TEAM_MEMBER") {
+        window.location.href = "/partner";
       } else {
         window.location.href = "/portal";
       }

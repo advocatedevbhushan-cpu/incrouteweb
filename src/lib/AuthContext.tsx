@@ -47,6 +47,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const mapApiRole = (role?: string): UserProfile["role"] => {
+  if (role === "SUPER_ADMIN" || role === "ADMIN") return "admin";
+  if (role === "TEAM_MEMBER") return "partner";
+  return "customer";
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -64,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile({
           uid: parsed.id,
           email: parsed.email,
-          role: parsed.role === "SUPER_ADMIN" || parsed.role === "ADMIN" || parsed.role === "TEAM_MEMBER" ? "admin" : "customer",
+          role: mapApiRole(parsed.role),
           fullName: `${parsed.firstName || ""} ${parsed.lastName || ""}`.trim(),
           createdAt: parsed.createdAt || new Date().toISOString(),
         });
@@ -88,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile({
       uid: data.user.id,
       email: data.user.email,
-      role: data.user.role === "SUPER_ADMIN" || data.user.role === "ADMIN" || data.user.role === "TEAM_MEMBER" ? "admin" : "customer",
+      role: mapApiRole(data.user.role),
       fullName: `${data.user.firstName || ""} ${data.user.lastName || ""}`.trim(),
       createdAt: new Date().toISOString(),
     });
@@ -146,7 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const activateMockSession = (email: string, role: "customer" | "partner" | "admin", fullName?: string) => {
-    const mockUser = { id: "mock_" + Date.now(), email, firstName: fullName || email.split("@")[0], lastName: "", role: role === "admin" ? "SUPER_ADMIN" : "CLIENT" };
+    const mockUser = { id: "mock_" + Date.now(), email, firstName: fullName || email.split("@")[0], lastName: "", role: role === "admin" ? "SUPER_ADMIN" : role === "partner" ? "TEAM_MEMBER" : "CLIENT" };
     const mockProfile: UserProfile = { uid: mockUser.id, email, role, fullName: fullName || email, createdAt: new Date().toISOString() };
     setUser(mockUser);
     setProfile(mockProfile);

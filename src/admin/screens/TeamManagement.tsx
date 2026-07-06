@@ -3,10 +3,18 @@ import { Users, Plus, X, Copy, Check } from "lucide-react";
 import { Loading, EmptyState, api } from "../shared";
 
 const ROLES = [
-  { value: "TEAM_MEMBER", label: "Team Member" },
+  { value: "TEAM_MEMBER", label: "Partner" },
   { value: "ADMIN", label: "Admin" },
   { value: "SUPER_ADMIN", label: "Super Admin" },
 ];
+
+const roleLabel = (role: string) => ROLES.find(r => r.value === role)?.label || role.replace(/_/g, " ");
+
+const roleHelp: Record<string, string> = {
+  TEAM_MEMBER: "Partner access: can log in at /partner and see only assigned clients, document reviews, and compliance work.",
+  ADMIN: "Admin access: can manage clients, partners, documents, billing, and operations.",
+  SUPER_ADMIN: "Super admin access: full platform control. Use sparingly.",
+};
 
 export default function TeamManagement() {
   const [team, setTeam] = useState<any[]>([]);
@@ -37,8 +45,14 @@ export default function TeamManagement() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Team & Workload</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{team.length} members · {totalTasks} active tasks · {totalClients} client assignments</p></div>
-        <button onClick={() => { setShowInvite(true); setCredentials(null); }} className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer"><Plus className="w-3.5 h-3.5" /> Add Member</button>
+        <div><h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Team & Partner Access</h1><p className="text-[13px] text-[var(--text-secondary)] mt-0.5">{team.length} users · {totalTasks} active tasks · {totalClients} client assignments</p></div>
+        <button onClick={() => { setShowInvite(true); setCredentials(null); }} className="flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[12px] font-semibold rounded-xl cursor-pointer"><Plus className="w-3.5 h-3.5" /> Add Partner</button>
+      </div>
+
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4">
+        <p className="text-[12px] text-[var(--text-secondary)]">
+          Create a <span className="font-semibold text-[var(--accent)]">Partner</span> login for internal or external partners. Assign clients from Client Management; partners will only see their assigned clients in the Partner Portal.
+        </p>
       </div>
 
       {/* Workload overview */}
@@ -69,13 +83,13 @@ export default function TeamManagement() {
       )}
 
       {/* Team cards */}
-      {team.length === 0 ? <EmptyState icon={Users} title="No team members" description="Invite your first team member to start delegating work." action={{ label: "Add Member", onClick: () => setShowInvite(true) }} /> : (
+      {team.length === 0 ? <EmptyState icon={Users} title="No partners or team users" description="Create a partner login to start assigning client work." action={{ label: "Add Partner", onClick: () => setShowInvite(true) }} /> : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {team.map(m => (
             <div key={m.id} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent)] transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] flex items-center justify-center text-white text-[12px] font-bold">{m.firstName?.charAt(0)}</div>
-                <div><p className="text-[13px] font-semibold text-[var(--text-primary)]">{m.firstName} {m.lastName}</p><p className="text-[10px] text-[var(--text-tertiary)]">{m.role.replace(/_/g, " ")} · {m.email}</p></div>
+                <div><p className="text-[13px] font-semibold text-[var(--text-primary)]">{m.firstName} {m.lastName}</p><p className="text-[10px] text-[var(--text-tertiary)]">{roleLabel(m.role)} · {m.email}</p></div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center border-t border-[var(--border-subtle)] pt-3">
                 <div><p className="text-[14px] font-bold text-[var(--text-primary)]">{m.activeTasks}</p><p className="text-[9px] text-[var(--text-tertiary)] uppercase">Tasks</p></div>
@@ -91,7 +105,7 @@ export default function TeamManagement() {
       {showInvite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => { setShowInvite(false); setCredentials(null); }}>
           <div onClick={e => e.stopPropagation()} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between"><h3 className="text-[16px] font-bold text-[var(--text-primary)]">{credentials ? "Member Added!" : "Add Team Member"}</h3><button onClick={() => { setShowInvite(false); setCredentials(null); }} className="cursor-pointer text-[var(--text-tertiary)]"><X className="w-4 h-4" /></button></div>
+            <div className="flex items-center justify-between"><h3 className="text-[16px] font-bold text-[var(--text-primary)]">{credentials ? "Login Created!" : "Create Partner Login"}</h3><button onClick={() => { setShowInvite(false); setCredentials(null); }} className="cursor-pointer text-[var(--text-tertiary)]"><X className="w-4 h-4" /></button></div>
             {credentials ? (
               <div className="space-y-4">
                 <p className="text-[13px] text-[var(--text-secondary)]">Share these login credentials:</p>
@@ -99,6 +113,7 @@ export default function TeamManagement() {
                   <div className="flex items-center justify-between"><div><p className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Email</p><p className="text-[14px] font-medium text-[var(--text-primary)]">{credentials.email}</p></div><button onClick={() => copyText(credentials.email, "e")} className="p-2 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer">{copied === "e" ? <Check className="w-4 h-4 text-[var(--success)]" /> : <Copy className="w-4 h-4 text-[var(--text-tertiary)]" />}</button></div>
                   <div className="flex items-center justify-between"><div><p className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Password</p><p className="text-[14px] font-medium text-[var(--text-primary)] font-mono">{credentials.password}</p></div><button onClick={() => copyText(credentials.password, "p")} className="p-2 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer">{copied === "p" ? <Check className="w-4 h-4 text-[var(--success)]" /> : <Copy className="w-4 h-4 text-[var(--text-tertiary)]" />}</button></div>
                 </div>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Partner Portal URL: /partner</p>
                 <button onClick={() => { setShowInvite(false); setCredentials(null); }} className="w-full py-2.5 bg-[var(--accent)] text-white text-[13px] font-semibold rounded-xl cursor-pointer">Done</button>
               </div>
             ) : (
@@ -112,8 +127,9 @@ export default function TeamManagement() {
                   <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Role *</label><select required value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none">{ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}</select></div>
                   <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Phone</label><input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none" /></div>
                 </div>
+                <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-alt)] p-3 text-[11px] text-[var(--text-secondary)]">{roleHelp[form.role]}</div>
                 <div><label className="text-[10px] uppercase text-[var(--text-tertiary)] font-semibold">Password (default: Team@2026)</label><input value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="Team@2026" className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none" /></div>
-                <button type="submit" disabled={saving} className="w-full py-2.5 bg-[var(--accent)] text-white text-[13px] font-semibold rounded-xl cursor-pointer disabled:opacity-50">{saving ? "Adding..." : "Add Team Member"}</button>
+                <button type="submit" disabled={saving} className="w-full py-2.5 bg-[var(--accent)] text-white text-[13px] font-semibold rounded-xl cursor-pointer disabled:opacity-50">{saving ? "Creating..." : form.role === "TEAM_MEMBER" ? "Create Partner Login" : "Create Admin Login"}</button>
               </form>
             )}
           </div>

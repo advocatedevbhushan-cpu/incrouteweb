@@ -106,12 +106,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         </div>
 
         {/* ─── Right: Utilities ─── */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="hidden sm:flex p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
+            className="flex p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
           >
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -120,7 +120,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <button
             onClick={() => setLang(lang === "en" ? "hi" : "en")}
             aria-label="Switch language"
-            className="hidden sm:flex items-center gap-1 p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
+            className="flex items-center gap-1 p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
           >
             <Globe className="w-3.5 h-3.5" />
             {lang === "en" ? "हिं" : "EN"}

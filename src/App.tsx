@@ -16,6 +16,7 @@ const CustomerDashboard = lazy(() => import("./components/CustomerDashboard"));
 const PartnerDashboard = lazy(() => import("./components/PartnerDashboard"));
 const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDetail"));
 const ClientPortal = lazy(() => import("./portal/ClientPortal"));
+const PartnerPortal = lazy(() => import("./partner/PartnerPortal"));
 const AdminPortal = lazy(() => import("./admin/AdminPortal"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
@@ -53,7 +54,16 @@ import {
   ShieldCheck,
   Check,
   X,
-  UserCheck
+  UserCheck,
+  Mail,
+  Phone,
+  Clock,
+  MapPin,
+  Send,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Instagram
 } from "lucide-react";
 
 export default function App() {
@@ -120,7 +130,10 @@ export default function App() {
     const isDashboardRoute = [
       "dashboard-customer",
       "dashboard-partner",
-      "dashboard-partner-customer-detail"
+      "dashboard-partner-customer-detail",
+      "portal",
+      "partner",
+      "admin"
     ].includes(currentTab);
 
     if (!user) {
@@ -135,13 +148,24 @@ export default function App() {
       if (currentTab === "login" || currentTab === "auth") {
         if (profile.role === "admin") {
           navigate("/admin");
+        } else if (profile.role === "partner") {
+          navigate("/partner");
         } else {
           navigate("/portal");
         }
       } 
+      else if (currentTab === "admin" && profile.role !== "admin") {
+        navigate(profile.role === "partner" ? "/partner" : "/portal");
+      }
+      else if (currentTab === "partner" && profile.role !== "partner") {
+        navigate(profile.role === "admin" ? "/admin" : "/portal");
+      }
+      else if (currentTab === "portal" && profile.role !== "customer") {
+        navigate(profile.role === "admin" ? "/admin" : "/partner");
+      }
       // Force correct role routing for dashboards
       else if (currentTab === "dashboard-customer" && profile.role !== "customer") {
-        navigate("/dashboard/partner");
+        navigate(profile.role === "admin" ? "/admin" : "/partner");
       } 
       else if ((currentTab === "dashboard-partner" || currentTab === "dashboard-partner-customer-detail") && profile.role === "customer") {
         navigate("/dashboard/customer");
@@ -275,8 +299,8 @@ export default function App() {
     fetchCalendar();
   }, []);
 
-  // Check if we're in a full-screen portal mode (portal/admin have their own shell)
-  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin";
+  // Check if we're in a full-screen portal mode (portal/admin/partner have their own shell)
+  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin" || activeTab === "partner";
 
   // Check if user is authenticated for portal/admin access
   const isAuthenticated = (() => {
@@ -286,7 +310,7 @@ export default function App() {
     } catch { return false; }
   })();
 
-  // Redirect to login if trying to access portal/admin without auth
+  // Redirect to login if trying to access portal/admin/partner without auth
   useEffect(() => {
     if (isFullScreenPortal && !isAuthenticated && !loading) {
       navigate("/login");
@@ -304,7 +328,7 @@ export default function App() {
     }
     return (
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>}>
-        {activeTab === "portal" ? <ClientPortal /> : <AdminPortal />}
+        {activeTab === "portal" ? <ClientPortal /> : activeTab === "partner" ? <PartnerPortal /> : <AdminPortal />}
       </Suspense>
     );
   }
@@ -667,9 +691,11 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
+              className="w-full compliance-section-bg relative"
             >
-              <ComplianceCalendarSection />
+              <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left relative z-10">
+                <ComplianceCalendarSection />
+              </div>
             </motion.div>
           )}
 
@@ -766,7 +792,7 @@ export default function App() {
           )}
 
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","admin"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>
@@ -776,11 +802,11 @@ export default function App() {
       {/* Footer segment */}
       {/* Footer segment */}
       <footer className="footer-dark border-t border-slate-800/80 py-12 md:py-16 mt-auto text-slate-400 font-sans">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 text-left">
+        <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 md:gap-10 text-left">
             
             {/* Brand Column */}
-            <div className="space-y-4">
+            <div className="lg:col-span-3 space-y-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
                   <img src="/incroute_logo.png" width="32" height="32" className="w-full h-full object-cover" alt="INCroute Logo" loading="lazy" />
@@ -789,44 +815,64 @@ export default function App() {
                   INC<span className="text-[#4F46E5] italic font-bold">route</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed max-w-[200px]">
-                India's most trusted platform for business incorporation, compliance & advisory.
+              <p className="text-[11px] text-slate-400 leading-relaxed max-w-[240px]">
+                India's most trusted platform for business compliance and governance. Simplifying compliance. Powering responsible growth.
               </p>
-              <div className="flex items-center gap-3 pt-1">
-                {["f", "in", "x", "✉"].map((s, i) => (
-                  <div key={i} className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 hover:text-[#4F46E5] hover:border-[#4F46E5] cursor-pointer transition-colors font-bold">{s}</div>
+              <div className="flex items-center gap-2 pt-1">
+                {[
+                  { icon: Linkedin, link: "#" },
+                  { icon: Twitter, link: "#" },
+                  { icon: Youtube, link: "#" },
+                  { icon: Instagram, link: "#" }
+                ].map((s, i) => (
+                  <a key={i} href={s.link} className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#4F46E5] hover:border-[#4F46E5] cursor-pointer transition-all duration-200">
+                    <s.icon className="w-3.5 h-3.5" />
+                  </a>
                 ))}
               </div>
             </div>
 
             {/* Our Services Column */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Our Services</h4>
+            <div className="lg:col-span-2 space-y-3">
+              <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Our Services</h4>
               <div className="space-y-2 text-[11px] font-medium text-slate-400">
-                {["Company Incorporation", "Compliance Management", "GST Services", "ROC Filings", "Trademark Registration", "Legal Advisory"].map(s => (
-                  <p key={s} className="hover:text-white cursor-pointer transition-colors">{s}</p>
+                {[
+                  { label: "Company Incorporation", tab: "services" },
+                  { label: "Compliance Management", tab: "compliance" },
+                  { label: "ROC Filings", tab: "services" },
+                  { label: "GST & Taxation", tab: "services" },
+                  { label: "Payroll & Labour Compliance", tab: "services" },
+                  { label: "Audit & Assurance", tab: "services" }
+                ].map(s => (
+                  <p key={s.label} onClick={() => { setActiveTab(s.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white cursor-pointer transition-colors">{s.label}</p>
                 ))}
               </div>
             </div>
 
             {/* Important Links Column */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Important Links</h4>
+            <div className="lg:col-span-2 space-y-3">
+              <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Important Links</h4>
               <div className="space-y-2 text-[11px] font-medium text-slate-400">
-                {["About Us", "Blog", "Resources", "Careers", "Contact Us"].map(s => (
-                  <p key={s} className="hover:text-white cursor-pointer transition-colors">{s}</p>
+                {[
+                  { label: "About Us", tab: "about" },
+                  { label: "Resources", tab: "faq" },
+                  { label: "Careers", tab: "about" },
+                  { label: "Pricing", tab: "pricing" },
+                  { label: "Partner With Us", tab: "about" }
+                ].map(s => (
+                  <p key={s.label} onClick={() => { if(s.tab) setActiveTab(s.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white cursor-pointer transition-colors">{s.label}</p>
                 ))}
               </div>
             </div>
 
             {/* Legal & Policies Column */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Legal & Policies</h4>
-              <div className="space-y-2 text-[11px] font-medium text-slate-400 font-sans flex flex-col items-start">
-                {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Disclaimer"].map(s => (
+            <div className="lg:col-span-2 space-y-3">
+              <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Legal & Policies</h4>
+              <div className="space-y-2 text-[11px] font-medium text-slate-400 font-sans flex flex-col items-start gap-2">
+                {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Disclaimer", "Sitemap"].map(s => (
                   <button 
                     key={s} 
-                    onClick={() => setActiveTab("policies")}
+                    onClick={() => { setActiveTab("policies"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     className="block text-left hover:text-white cursor-pointer transition-colors border-none bg-transparent p-0 text-[11px] font-medium text-slate-400 outline-none"
                   >
                     {s}
@@ -836,33 +882,75 @@ export default function App() {
             </div>
 
             {/* Contact Column */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Contact Us</h4>
-              <div className="space-y-2 text-[11px] font-medium text-slate-400">
-                <p>Email: info@incroute.com</p>
-                <p>Phone: +91 870 755 2183</p>
+            <div className="lg:col-span-3 space-y-3">
+              <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Contact Us</h4>
+              <div className="space-y-2.5 text-[11px] font-medium text-slate-400">
+                <a href="mailto:hello@incroute.com" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
+                  <Mail className="w-3.5 h-3.5 shrink-0 text-[#4F46E5] dark:text-[#9D85F2]" />
+                  <span>hello@incroute.com</span>
+                </a>
+                <a href="tel:+911234567890" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
+                  <Phone className="w-3.5 h-3.5 shrink-0 text-[#4F46E5] dark:text-[#9D85F2]" />
+                  <span>+91 12345 67890</span>
+                </a>
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Clock className="w-3.5 h-3.5 shrink-0 text-slate-650" />
+                  <span>Mon - Fri: 9:30 AM - 6:30 PM IST</span>
+                </div>
+                <div className="flex items-start gap-2 text-slate-500">
+                  <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-slate-650" />
+                  <span>IncRoute Tech Pvt. Ltd. Bangalore, Karnataka, India</span>
+                </div>
               </div>
             </div>
+
           </div>
 
-          {/* Compliance & Certification Badges Strip */}
-          <div className="mt-12 pt-6 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-[10px] font-semibold text-slate-500 font-mono tracking-wider">
-              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">🛡 ISO 27001 Certified</span>
-              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">🔒 Bank-grade Security</span>
-              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">✓ 100% Compliance Guarantees</span>
-            </div>
+          {/* Newsletter Stay Compliance-Ready Strip Block */}
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-slate-800/40 items-center">
             
-            <div className="flex items-center gap-4 text-[10px] text-slate-500 font-medium font-sans">
-              <span>© {new Date().getFullYear()} INCroute. All rights reserved.</span>
-              <button
-                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-colors cursor-pointer"
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                aria-label="Scroll to top"
-              >
-                ▲
-              </button>
+            {/* Stay Compliance-Ready Newsletter Card */}
+            <div className="lg:col-span-7 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 text-left">
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-white tracking-wide">Stay Compliance-Ready</h4>
+                <p className="text-[11px] text-slate-400 leading-relaxed max-w-sm">
+                  Subscribe to get compliance updates and legal insights.
+                </p>
+              </div>
+              <form onSubmit={(e) => { e.preventDefault(); alert("Successfully subscribed to compliance newsletter!"); }} className="relative flex items-center w-full md:w-72 shrink-0">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  className="w-full bg-slate-900/60 border border-slate-800 focus:border-[#4F46E5] text-xs text-slate-200 pl-3.5 pr-10 py-2.5 rounded-xl outline-none placeholder-slate-600 transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 p-1.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-lg transition-colors border-none cursor-pointer outline-none flex items-center justify-center"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
             </div>
+
+            {/* Compliance Certifications (Right of Newsletter) */}
+            <div className="lg:col-span-5 flex flex-wrap items-center justify-center lg:justify-end gap-3 text-[10px] font-semibold text-slate-500 font-mono tracking-wider">
+              <span className="flex items-center gap-1.5 border border-slate-850 px-2.5 py-1 rounded bg-slate-900/40">🛡 ISO 27001 Certified</span>
+              <span className="flex items-center gap-1.5 border border-slate-850 px-2.5 py-1 rounded bg-slate-900/40">🔒 Bank-grade Security</span>
+            </div>
+
+          </div>
+
+          {/* Copyright & Scroll Top Strip */}
+          <div className="mt-8 pt-6 border-t border-slate-800/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-[10px] text-slate-500 font-medium">© {new Date().getFullYear()} INCroute Tech Pvt. Ltd. All rights reserved.</span>
+            <button
+              className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-colors cursor-pointer border-none outline-none"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              aria-label="Scroll to top"
+            >
+              ▲
+            </button>
           </div>
         </div>
       </footer>
@@ -878,7 +966,7 @@ export default function App() {
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }, 300);
           }}
-          className="bg-[#2B5B84] text-white font-mono uppercase tracking-widest"
+          className="bg-[#4F46E5] text-white font-mono uppercase tracking-widest"
         >
           Start Registration
         </button>

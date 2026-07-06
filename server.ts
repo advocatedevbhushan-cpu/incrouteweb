@@ -489,10 +489,10 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
-  // Register endpoint (for new users)
+  // Register endpoint (public clients, admin-created team members)
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName, phone } = req.body;
+      const { email, password, firstName, lastName, phone, role } = req.body;
       
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ error: "Email, password, firstName, and lastName are required" });
@@ -513,6 +513,24 @@ const secret = JWT_SECRET;
         return res.status(400).json({ error: "Password too long (max 128 characters)" });
       }
 
+      let requesterRole = "";
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const decoded: any = jwt.verify(authHeader.slice(7), JWT_SECRET);
+          requesterRole = decoded.role || "";
+        } catch {}
+      }
+
+      const requestedRole = ["CLIENT", "TEAM_MEMBER", "ADMIN", "SUPER_ADMIN"].includes(role) ? role : "CLIENT";
+      const canCreatePrivilegedRole = ["SUPER_ADMIN", "ADMIN"].includes(requesterRole);
+      if (requestedRole !== "CLIENT" && !canCreatePrivilegedRole) {
+        return res.status(403).json({ error: "Only admins can create partner or admin accounts" });
+      }
+      if (requestedRole === "SUPER_ADMIN" && requesterRole !== "SUPER_ADMIN") {
+        return res.status(403).json({ error: "Only super admins can create super admin accounts" });
+      }
+
       const conn = await getPlatformConnection();
       const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
       if (existing.length > 0) {
@@ -527,11 +545,16 @@ const secret = JWT_SECRET;
       await conn.query(
         `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, email, passwordHash, firstName, lastName, phone || null, "CLIENT", 1, 0, now, now]
+        [id, email, passwordHash, firstName, lastName, phone || null, requestedRole, 1, canCreatePrivilegedRole ? 1 : 0, now, now]
       );
       conn.release();
 
-      res.json({ success: true, message: "Account created", userId: id });
+      res.json({
+        success: true,
+        message: "Account created",
+        userId: id,
+        user: { id, email, firstName, lastName, role: requestedRole }
+      });
     } catch (err: any) {
       const isDuplicate = err.message?.includes("Duplicate");
       res.status(500).json({ error: isDuplicate ? "An account with this email already exists" : "Registration failed" });
@@ -550,7 +573,7 @@ const secret = JWT_SECRET;
       const token = authHeader.slice(7);
 const secret = JWT_SECRET;
       const decoded: any = jwt.verify(token, JWT_SECRET);
-      if (!["SUPER_ADMIN", "ADMIN", "TEAM_MEMBER"].includes(decoded.role)) {
+      if (!["SUPER_ADMIN", "ADMIN"].includes(decoded.role)) {
         return res.status(403).json({ error: "Insufficient permissions" });
       }
       req.user = decoded;
@@ -611,8 +634,13 @@ const secret = JWT_SECRET;
       const [clients]: any = await conn.query(
         `SELECT c.*, 
          (SELECT COUNT(*) FROM \`Entity\` WHERE clientId = c.id) as entityCount,
-         (SELECT AVG(complianceScore) FROM \`Entity\` WHERE clientId = c.id) as avgHealth
-         FROM \`Client\` c ORDER BY c.createdAt DESC`
+         (SELECT AVG(complianceScore) FROM \`Entity\` WHERE clientId = c.id) as avgHealth,
+         u.firstName as relationshipMgrFirstName,
+         u.lastName as relationshipMgrLastName,
+         u.email as relationshipMgrEmail
+         FROM \`Client\` c
+         LEFT JOIN \`User\` u ON c.relationshipMgrId = u.id
+         ORDER BY c.createdAt DESC`
       );
       conn.release();
       res.json({ clients });
@@ -623,7 +651,7 @@ const secret = JWT_SECRET;
 
   app.post("/api/admin/clients", async (req, res) => {
     try {
-      const { companyName, contactName, contactEmail, contactPhone, industry, notes, password, services, entityType } = req.body;
+      const { companyName, contactName, contactEmail, contactPhone, industry, notes, password, services, entityType, relationshipMgrId } = req.body;
       if (!companyName || !contactName || !contactEmail) {
         return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
       }
@@ -643,9 +671,9 @@ const secret = JWT_SECRET;
       const clientId = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       await conn.query(
-        `INSERT INTO \`Client\` (id, companyName, contactName, contactEmail, contactPhone, industry, notes, status, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
-        [clientId, companyName, contactName, contactEmail, contactPhone || null, industry || null, notesStr, now, now]
+        `INSERT INTO \`Client\` (id, companyName, contactName, contactEmail, contactPhone, industry, relationshipMgrId, notes, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)`,
+        [clientId, companyName, contactName, contactEmail, contactPhone || null, industry || null, relationshipMgrId || null, notesStr, now, now]
       );
 
       // If entityType is provided, auto-create an Entity for this client
@@ -750,7 +778,7 @@ const secret = JWT_SECRET;
   // Update client
   app.patch("/api/admin/clients/:id", async (req, res) => {
     try {
-      const { companyName, contactName, contactEmail, contactPhone, industry, status, notes } = req.body;
+      const { companyName, contactName, contactEmail, contactPhone, industry, status, notes, relationshipMgrId } = req.body;
       const conn = await getPlatformConnection();
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       const sets: string[] = ["updatedAt = ?"];
@@ -762,6 +790,7 @@ const secret = JWT_SECRET;
       if (industry) { sets.push("industry = ?"); vals.push(industry); }
       if (status) { sets.push("status = ?"); vals.push(status); }
       if (notes !== undefined) { sets.push("notes = ?"); vals.push(notes); }
+      if (relationshipMgrId !== undefined) { sets.push("relationshipMgrId = ?"); vals.push(relationshipMgrId || null); }
       vals.push(req.params.id);
       await conn.query(`UPDATE \`Client\` SET ${sets.join(", ")} WHERE id = ?`, vals);
       conn.release();
@@ -1971,7 +2000,7 @@ const secret = JWT_SECRET;
       for (const member of team) {
         const [[taskCount]]: any = await conn.query("SELECT COUNT(*) as c FROM `Task` WHERE assigneeId = ? AND status NOT IN ('COMPLETED')", [member.id]);
         const [[compCount]]: any = await conn.query("SELECT COUNT(*) as c FROM `ComplianceTask` WHERE assigneeId = ? AND status NOT IN ('COMPLETED')", [member.id]);
-        const [[clientCount]]: any = await conn.query("SELECT COUNT(DISTINCT clientId) as c FROM `ServiceRequest` WHERE assignedMgrId = ? OR assignedExecId = ?", [member.id, member.id]);
+        const [[clientCount]]: any = await conn.query("SELECT COUNT(*) as c FROM `Client` WHERE relationshipMgrId = ?", [member.id]);
         workload.push({ ...member, activeTasks: (taskCount.c || 0) + (compCount.c || 0), clients: clientCount.c || 0 });
       }
       conn.release();
@@ -1979,10 +2008,16 @@ const secret = JWT_SECRET;
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
-  app.post("/api/admin/team/invite", async (req, res) => {
+  app.post("/api/admin/team/invite", async (req: any, res) => {
     try {
       const { email, firstName, lastName, role, phone, password } = req.body;
       if (!email || !firstName || !role) return res.status(400).json({ error: "email, firstName, role required" });
+      if (!["TEAM_MEMBER", "ADMIN", "SUPER_ADMIN"].includes(role)) {
+        return res.status(400).json({ error: "Invalid team role" });
+      }
+      if (role === "SUPER_ADMIN" && req.user?.role !== "SUPER_ADMIN") {
+        return res.status(403).json({ error: "Only super admins can create super admin accounts" });
+      }
       const conn = await getPlatformConnection();
       const [existing]: any = await conn.query("SELECT id FROM `User` WHERE email = ?", [email]);
       if (existing.length > 0) { conn.release(); return res.status(409).json({ error: "Email already exists" }); }
@@ -1992,7 +2027,7 @@ const secret = JWT_SECRET;
       await conn.query(`INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?)`,
         [id, email, passwordHash, firstName, lastName || "", phone || null, role, now, now]);
       conn.release();
-      res.json({ success: true, id, credentials: { email, password: password || "Team@2026" } });
+      res.json({ success: true, id, role, credentials: { email, password: password || "Team@2026" } });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
@@ -2122,6 +2157,162 @@ const secret = JWT_SECRET;
   });
 
   // ═══ CLIENT PORTAL APIs ═══
+
+  // Partner portal APIs
+  const requirePartner = async (req: any, res: any, next: any) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
+      const token = authHeader.slice(7);
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      if (!["TEAM_MEMBER", "ADMIN", "SUPER_ADMIN"].includes(decoded.role)) {
+        return res.status(403).json({ error: "Partner access required" });
+      }
+      req.user = decoded;
+      next();
+    } catch {
+      res.status(401).json({ error: "Invalid or expired token" });
+    }
+  };
+
+  app.use("/api/partner", requirePartner);
+
+  const assignedClientWhere = (user: any) => {
+    if (["SUPER_ADMIN", "ADMIN"].includes(user.role)) {
+      return { where: "1=1", params: [] as any[] };
+    }
+    return { where: "c.relationshipMgrId = ?", params: [user.userId] as any[] };
+  };
+
+  app.get("/api/partner/dashboard", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const scope = assignedClientWhere(req.user);
+      const [[clientCount]]: any = await conn.query(`SELECT COUNT(*) as count FROM \`Client\` c WHERE ${scope.where}`, scope.params);
+      const [[serviceCount]]: any = await conn.query(`SELECT COUNT(*) as count FROM \`ServiceRequest\` sr JOIN \`Client\` c ON sr.clientId = c.id WHERE ${scope.where} AND sr.status NOT IN ('COMPLETED','CANCELLED')`, scope.params);
+      const [[documentCount]]: any = await conn.query(`SELECT COUNT(*) as count FROM \`Document\` d JOIN \`Client\` c ON d.clientId = c.id WHERE ${scope.where} AND d.status IN ('PENDING','UNDER_REVIEW')`, scope.params);
+      const [[complianceCount]]: any = await conn.query(`SELECT COUNT(*) as count FROM \`ComplianceTask\` ct JOIN \`Entity\` e ON ct.entityId = e.id JOIN \`Client\` c ON e.clientId = c.id WHERE ${scope.where} AND ct.status NOT IN ('COMPLETED')`, scope.params);
+      const [clients]: any = await conn.query(
+        `SELECT c.id, c.companyName, c.contactName, c.contactEmail, c.status, c.createdAt,
+         (SELECT COUNT(*) FROM \`ServiceRequest\` sr WHERE sr.clientId = c.id AND sr.status NOT IN ('COMPLETED','CANCELLED')) as openServices,
+         (SELECT COUNT(*) FROM \`Document\` d WHERE d.clientId = c.id AND d.status IN ('PENDING','UNDER_REVIEW')) as pendingDocuments
+         FROM \`Client\` c WHERE ${scope.where} ORDER BY c.createdAt DESC LIMIT 8`,
+        scope.params
+      );
+      const [documentsForReview]: any = await conn.query(
+        `SELECT d.id, d.title, d.category, d.folder, d.status, d.originalName, d.fileName, d.createdAt, c.companyName as clientName
+         FROM \`Document\` d JOIN \`Client\` c ON d.clientId = c.id
+         WHERE ${scope.where} AND d.status IN ('PENDING','UNDER_REVIEW')
+         ORDER BY d.createdAt DESC LIMIT 8`,
+        scope.params
+      );
+      const [upcomingCompliance]: any = await conn.query(
+        `SELECT ct.id, ct.title, ct.dueDate, ct.priority, ct.status, e.name as entityName, c.companyName as clientName
+         FROM \`ComplianceTask\` ct JOIN \`Entity\` e ON ct.entityId = e.id JOIN \`Client\` c ON e.clientId = c.id
+         WHERE ${scope.where} AND ct.status NOT IN ('COMPLETED')
+         ORDER BY ct.dueDate ASC LIMIT 8`,
+        scope.params
+      );
+      conn.release();
+      res.json({
+        stats: {
+          clients: clientCount.count || 0,
+          openServices: serviceCount.count || 0,
+          documentsForReview: documentCount.count || 0,
+          upcomingCompliance: complianceCount.count || 0,
+        },
+        clients,
+        documentsForReview,
+        upcomingCompliance,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load partner dashboard", details: err.message });
+    }
+  });
+
+  app.get("/api/partner/clients", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const scope = assignedClientWhere(req.user);
+      const [clients]: any = await conn.query(
+        `SELECT c.*,
+         (SELECT COUNT(*) FROM \`Entity\` e WHERE e.clientId = c.id) as entityCount,
+         (SELECT COUNT(*) FROM \`ServiceRequest\` sr WHERE sr.clientId = c.id AND sr.status NOT IN ('COMPLETED','CANCELLED')) as openServices,
+         (SELECT COUNT(*) FROM \`Document\` d WHERE d.clientId = c.id AND d.status IN ('PENDING','UNDER_REVIEW')) as pendingDocuments,
+         (SELECT COUNT(*) FROM \`ComplianceTask\` ct JOIN \`Entity\` e ON ct.entityId = e.id WHERE e.clientId = c.id AND ct.status NOT IN ('COMPLETED')) as openCompliance
+         FROM \`Client\` c
+         WHERE ${scope.where}
+         ORDER BY c.createdAt DESC`,
+        scope.params
+      );
+      conn.release();
+      res.json({ clients });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load assigned clients", details: err.message });
+    }
+  });
+
+  app.get("/api/partner/documents", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const scope = assignedClientWhere(req.user);
+      const [documents]: any = await conn.query(
+        `SELECT d.*, c.companyName as clientName
+         FROM \`Document\` d JOIN \`Client\` c ON d.clientId = c.id
+         WHERE ${scope.where}
+         ORDER BY FIELD(d.status,'UNDER_REVIEW','PENDING','REJECTED','APPROVED'), d.createdAt DESC
+         LIMIT 100`,
+        scope.params
+      );
+      conn.release();
+      res.json({ documents });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load documents", details: err.message });
+    }
+  });
+
+  app.patch("/api/partner/documents/:id", async (req: any, res) => {
+    try {
+      const { status, internalNote } = req.body;
+      if (!["APPROVED", "REJECTED", "UNDER_REVIEW"].includes(status)) {
+        return res.status(400).json({ error: "Invalid document status" });
+      }
+      const conn = await getPlatformConnection();
+      const scope = assignedClientWhere(req.user);
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const params = [status, req.user.userId, status === "APPROVED" ? now : null, internalNote || null, now, req.params.id, ...scope.params];
+      const [result]: any = await conn.query(
+        `UPDATE \`Document\` d JOIN \`Client\` c ON d.clientId = c.id
+         SET d.status = ?, d.approvedBy = ?, d.approvedAt = ?, d.internalNote = ?, d.updatedAt = ?
+         WHERE d.id = ? AND ${scope.where}`,
+        params
+      );
+      conn.release();
+      if (result.affectedRows === 0) return res.status(404).json({ error: "Document not found for assigned client" });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update document", details: err.message });
+    }
+  });
+
+  app.get("/api/partner/compliance", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const scope = assignedClientWhere(req.user);
+      const [tasks]: any = await conn.query(
+        `SELECT ct.*, e.name as entityName, c.companyName as clientName
+         FROM \`ComplianceTask\` ct JOIN \`Entity\` e ON ct.entityId = e.id JOIN \`Client\` c ON e.clientId = c.id
+         WHERE ${scope.where}
+         ORDER BY FIELD(ct.priority,'CRITICAL','HIGH','MEDIUM','LOW'), ct.dueDate ASC
+         LIMIT 100`,
+        scope.params
+      );
+      conn.release();
+      res.json({ tasks });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load compliance tasks", details: err.message });
+    }
+  });
 
   // Auth middleware for portal routes
   const requireAuth = async (req: any, res: any, next: any) => {

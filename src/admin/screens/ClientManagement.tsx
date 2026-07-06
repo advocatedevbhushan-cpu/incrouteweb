@@ -40,16 +40,18 @@ export default function ClientManagement() {
   const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
   const [copied, setCopied] = useState("");
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
-  const [form, setForm] = useState({ companyName: "", contactName: "", contactEmail: "", contactPhone: "", industry: "", password: "" });
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [form, setForm] = useState({ companyName: "", contactName: "", contactEmail: "", contactPhone: "", industry: "", password: "", relationshipMgrId: "" });
 
-  useEffect(() => { fetchClients(); }, []);
+  useEffect(() => { fetchClients(); fetchTeamMembers(); }, []);
   const fetchClients = async () => { try { const r = await fetch("/api/admin/clients", { headers: authHeaders() }); const d = await r.json(); if (d.clients) setClients(d.clients); } catch {} finally { setLoading(false); } };
+  const fetchTeamMembers = async () => { try { const r = await fetch("/api/admin/team", { headers: authHeaders() }); const d = await r.json(); if (d.team) setTeamMembers(d.team.filter((m: any) => m.role === "TEAM_MEMBER")); } catch {} };
 
-  const handleAdd = async (e: React.FormEvent) => { e.preventDefault(); setSaving(true); try { const res = await fetch("/api/admin/clients", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(form) }); const data = await res.json(); if (data.success) { setCredentials(data.credentials); setForm({ companyName: "", contactName: "", contactEmail: "", contactPhone: "", industry: "", password: "" }); fetchClients(); } } catch {} finally { setSaving(false); } };
+  const handleAdd = async (e: React.FormEvent) => { e.preventDefault(); setSaving(true); try { const res = await fetch("/api/admin/clients", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(form) }); const data = await res.json(); if (data.success) { setCredentials(data.credentials); setForm({ companyName: "", contactName: "", contactEmail: "", contactPhone: "", industry: "", password: "", relationshipMgrId: "" }); fetchClients(); } } catch {} finally { setSaving(false); } };
   const handleDelete = async (id: string, name: string) => { if (!confirm(`Delete "${name}"?`)) return; await fetch(`/api/admin/clients/${id}`, { method: "DELETE", headers: authHeaders() }); fetchClients(); };
   const copyText = (text: string, field: string) => { navigator.clipboard.writeText(text); setCopied(field); setTimeout(() => setCopied(""), 2000); };
 
-  if (selectedClient) return <ClientDetail clientId={selectedClient} onBack={() => { setSelectedClient(null); fetchClients(); }} />;
+  if (selectedClient) return <ClientDetail clientId={selectedClient} teamMembers={teamMembers} onBack={() => { setSelectedClient(null); fetchClients(); }} />;
   if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>;
 
   const filtered = clients.filter(c => c.companyName.toLowerCase().includes(search.toLowerCase()) || c.contactName.toLowerCase().includes(search.toLowerCase()));
@@ -84,6 +86,7 @@ export default function ClientManagement() {
                 {[{ key: "companyName", label: "Company Name *", type: "text" }, { key: "contactName", label: "Contact Person *", type: "text" }, { key: "contactEmail", label: "Email (Login ID) *", type: "email" }, { key: "contactPhone", label: "Phone", type: "text" }, { key: "industry", label: "Industry", type: "text" }].map(f => (
                   <div key={f.key}><label className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] font-semibold">{f.label}</label><input type={f.type} required={f.label.includes("*")} value={(form as any)[f.key]} onChange={e => setForm({...form, [f.key]: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]" /></div>
                 ))}
+                <div><label className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] font-semibold">Assign Partner</label><select value={form.relationshipMgrId} onChange={e => setForm({...form, relationshipMgrId: e.target.value})} className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"><option value="">Unassigned</option>{teamMembers.map(m => <option key={m.id} value={m.id}>{m.firstName} {m.lastName} ({m.email})</option>)}</select></div>
                 <div><label className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)] font-semibold">Password (default: Welcome@123)</label><input type="text" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="Welcome@123" className="w-full mt-1 px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)]" /></div>
                 <button type="submit" disabled={saving} className="w-full py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-semibold rounded-xl cursor-pointer disabled:opacity-50">{saving ? "Creating..." : "Create Client & Account"}</button>
               </form>
@@ -113,7 +116,7 @@ export default function ClientManagement() {
 }
 
 // ─── CLIENT DETAIL VIEW ───
-function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => void }) {
+function ClientDetail({ clientId, teamMembers, onBack }: { clientId: string; teamMembers: any[]; onBack: () => void }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAddEntity, setShowAddEntity] = useState(false);
@@ -164,6 +167,11 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
     fetchDetail();
   };
 
+  const assignPartner = async (relationshipMgrId: string) => {
+    await fetch(`/api/admin/clients/${clientId}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ relationshipMgrId }) });
+    fetchDetail();
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>;
   const client = data?.client;
   if (!client) return <div className="text-center py-12"><p className="text-[var(--text-secondary)]">Client not found</p><button onClick={onBack} className="mt-3 text-[var(--accent)] text-[12px] cursor-pointer">← Back</button></div>;
@@ -181,6 +189,19 @@ function ClientDetail({ clientId, onBack }: { clientId: string; onBack: () => vo
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[10px] text-[var(--text-tertiary)] uppercase">Entities</p><p className="text-[14px] font-bold text-[var(--text-primary)] mt-1">{data.entities?.length || 0}</p></div>
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[10px] text-[var(--text-tertiary)] uppercase">Services</p><p className="text-[14px] font-bold text-[var(--text-primary)] mt-1">{data.serviceRequests?.length || 0}</p></div>
         <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4"><p className="text-[10px] text-[var(--text-tertiary)] uppercase">Industry</p><p className="text-[14px] font-bold text-[var(--text-primary)] mt-1">{client.industry || "—"}</p></div>
+      </div>
+
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Partner Assignment</h3>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Controls who sees this client in the /partner portal</p>
+          </div>
+          <select value={client.relationshipMgrId || ""} onChange={e => assignPartner(e.target.value)} className="px-3 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] min-w-[260px]">
+            <option value="">Unassigned</option>
+            {teamMembers.map(m => <option key={m.id} value={m.id}>{m.firstName} {m.lastName} ({m.email})</option>)}
+          </select>
+        </div>
       </div>
 
       {/* Entities Section */}
