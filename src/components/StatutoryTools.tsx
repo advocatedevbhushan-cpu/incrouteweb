@@ -1,62 +1,133 @@
 import React, { useState, useMemo } from "react";
 import { useLang } from "../lib/LanguageContext";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Calculator, FileText, Download, TrendingUp, Building2, Users, Sparkles,
   ClipboardCheck, Scale, Check, CheckCircle2, X, AlertCircle, Loader2,
-  Send, Info, HelpCircle,
+  Send, Info, HelpCircle, Copy, AlertTriangle, ArrowRight, ShieldCheck, RefreshCw, FileCheck
 } from "lucide-react";
 import jsPDF from "jspdf";
 
-// India Stamp Duty Rates on MOA/AOA (State-wise, as per MCA eStamp & state amendments)
-// Rate = percentage of authorized capital. Most states follow 0.15% (MCA standard).
-// Sources: MCA eStamp portal, State Stamp Acts, Companies (Registration) Rules 2014
-const STATE_STAMP_RATES: Record<string, { rate: number; maxCap: number; label: string }> = {
-  "Andhra Pradesh": { rate: 0.0015, maxCap: 500000, label: "0.15% (max ₹5L)" },
-  "Arunachal Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Assam": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Bihar": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Chandigarh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Chhattisgarh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Delhi": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Goa": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Gujarat": { rate: 0.005, maxCap: 500000, label: "0.50% (max ₹5L)" },
-  "Haryana": { rate: 0.003, maxCap: 2500000, label: "0.30% (max ₹25L)" },
-  "Himachal Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Jharkhand": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Karnataka": { rate: 0.005, maxCap: 3000000, label: "0.50% (max ₹30L)" },
-  "Kerala": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Madhya Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Maharashtra": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Manipur": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Meghalaya": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Mizoram": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Nagaland": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Odisha": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Punjab": { rate: 0.003, maxCap: 2500000, label: "0.30% (max ₹25L)" },
-  "Rajasthan": { rate: 0.005, maxCap: 2500000, label: "0.50% (max ₹25L)" },
-  "Sikkim": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Tamil Nadu": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Telangana": { rate: 0.0015, maxCap: 500000, label: "0.15% (max ₹5L)" },
-  "Tripura": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Uttar Pradesh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Uttarakhand": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "West Bengal": { rate: 0.002, maxCap: 2500000, label: "0.20% (max ₹25L)" },
-  "Andaman & Nicobar": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Puducherry": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Lakshadweep": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Ladakh": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
-  "Jammu & Kashmir": { rate: 0.0015, maxCap: 2500000, label: "0.15% (max ₹25L)" },
+// India State-wise Stamp Duty Rules (Core Verified States)
+interface StateRule {
+  label: string;
+  verified: boolean;
+  moa: {
+    type: "fixed" | "percentage" | "slab" | "percentageWithCap" | "fixedOrPercentage";
+    rate?: number;
+    amount?: number;
+    maxCap?: number | null;
+    minAmount?: number;
+    basedOn?: string;
+  };
+  aoa: {
+    type: "fixed" | "percentage" | "slab" | "percentageWithCap" | "fixedOrPercentage" | "customFormula";
+    rate?: number;
+    amount?: number;
+    maxCap?: number | null;
+    minAmount?: number;
+    basedOn?: string;
+  };
+  notes: string;
+}
+
+const stampDutyRules: Record<string, StateRule> = {
+  "Delhi": {
+    label: "Delhi",
+    verified: true,
+    moa: { type: "percentage", rate: 0.0015, maxCap: 2500000, minAmount: 0 },
+    aoa: { type: "fixed", amount: 200 },
+    notes: "Rates verified from Delhi Stamp Act. e-Stamp payment integrated via MCA e-Stamp portal."
+  },
+  "Chandigarh": {
+    label: "Chandigarh",
+    verified: true,
+    moa: { type: "percentage", rate: 0.0015, maxCap: 2500000, minAmount: 0 },
+    aoa: { type: "fixed", amount: 100 },
+    notes: "Punjab Stamp Act as applicable to Chandigarh. Verified rates."
+  },
+  "Maharashtra": {
+    label: "Maharashtra",
+    verified: true,
+    moa: { type: "fixed", amount: 200 },
+    aoa: { type: "slab", amount: 1000, maxCap: 5000000 }, // ₹1,000 for every ₹5 Lakhs or part thereof, capped at ₹50 Lakhs
+    notes: "Rates under Article 10 (MOA) and Article 12 (AOA) of the Maharashtra Stamp Act. Capped at ₹50 Lakhs."
+  },
+  "Karnataka": {
+    label: "Karnataka",
+    verified: true,
+    moa: { type: "fixed", amount: 500 },
+    aoa: { type: "fixed", amount: 500 },
+    notes: "Flat stamp duty of ₹500 on MOA and ₹500 on AOA as per Karnataka Stamp Act."
+  },
+  "Tamil Nadu": {
+    label: "Tamil Nadu",
+    verified: true,
+    moa: { type: "fixed", amount: 500 },
+    aoa: { type: "slab", amount: 500, maxCap: 500000 }, // ₹500 for every ₹10 Lakhs of authorized capital or part thereof, capped at ₹5 Lakhs
+    notes: "Tamil Nadu Stamp Act amendments. Capped at ₹5,00,000."
+  },
+  "Telangana": {
+    label: "Telangana",
+    verified: true,
+    moa: { type: "fixed", amount: 500 },
+    aoa: { type: "fixed", amount: 1000 },
+    notes: "Rates as per Andhra Pradesh Stamp Act (Telangana amendments). MOA is ₹500, AOA is ₹1,000."
+  },
+  "Uttar Pradesh": {
+    label: "Uttar Pradesh",
+    verified: true,
+    moa: { type: "percentage", rate: 0.0015 },
+    aoa: { type: "customFormula" }, // Custom AOA UP: If capital <= 10L, amount is ₹100. If capital > 10L, 0.15% of capital.
+    notes: "Uttar Pradesh Stamp Act. AOA is ₹100 for capital up to ₹10 Lakhs, and 0.15% of capital above that."
+  },
+  "West Bengal": {
+    label: "West Bengal",
+    verified: true,
+    moa: { type: "percentage", rate: 0.0015 },
+    aoa: { type: "slab" }, // Slab West Bengal: if capital <= 25L, ₹1,000; if capital 25L-50L, ₹2,000; else ₹5,000.
+    notes: "West Bengal Stamp Act. AOA uses standard statutory slab tiers."
+  },
+  "Haryana": {
+    label: "Haryana",
+    verified: true,
+    moa: { type: "percentage", rate: 0.0015, maxCap: 2500000 },
+    aoa: { type: "fixed", amount: 120 },
+    notes: "Haryana Stamp Act (Schedule 1A). MOA is 0.15%, AOA is flat ₹120."
+  },
+  "Gujarat": {
+    label: "Gujarat",
+    verified: true,
+    moa: { type: "percentageWithCap", rate: 0.0015, maxCap: 500000 },
+    aoa: { type: "percentageWithCap", rate: 0.0050, maxCap: 500000 }, // AOA is 0.5% capped at ₹5 Lakhs
+    notes: "Gujarat Stamp Act. MOA is 0.15% (max ₹5L) and AOA is 0.50% (max ₹5L)."
+  }
 };
+
+const ALL_STATES = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", 
+  "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", 
+  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", 
+  "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
+  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman & Nicobar", "Puducherry", 
+  "Lakshadweep", "Ladakh", "Jammu & Kashmir"
+];
 
 export default function StatutoryTools() {
   const { lang } = useLang();
   const [activeTab, setActiveTab] = useState<"calculator" | "generator">("calculator");
 
   // Calculator State
-  const [calcState, setCalcState] = useState("Maharashtra");
-  const [entityType, setEntityType] = useState("Pvt Ltd");
+  const [calcState, setCalcState] = useState("Chandigarh");
+  const [entityType, setEntityType] = useState("Private Limited Company");
   const [authorizedCapital, setAuthorizedCapital] = useState(100000);
+  const [companyCategory, setCompanyCategory] = useState("Indian Company");
+  const [shareCapitalType, setShareCapitalType] = useState("Equity Share Capital");
+
+  // Toggles
+  const [includesPremium, setIncludesPremium] = useState(false);
+  const [existingCompany, setExistingCompany] = useState(false);
+  const [increaseInCapital, setIncreaseInCapital] = useState(false);
 
   // Document Generator State
   const [selectedDoc, setSelectedDoc] = useState<"noc" | "founders">("noc");
@@ -86,19 +157,156 @@ export default function StatutoryTools() {
   const [premiumForm, setPremiumForm] = useState({ email: "", phone: "", specialRequests: "" });
   const [showPremiumInfo, setShowPremiumInfo] = useState(false);
 
-  // Calculate fees (detailed breakdown)
-  const getCalculatedFees = () => {
-    const stateRules = STATE_STAMP_RATES[calcState] || STATE_STAMP_RATES["Delhi"];
-    const rawStampDuty = authorizedCapital * stateRules.rate;
-    const stampDuty = Math.min(Math.round(rawStampDuty), stateRules.maxCap);
-    // Minimum stamp duty is ₹200 for most states
-    const finalStampDuty = Math.max(stampDuty, 200);
-    return { stampDuty: finalStampDuty, rate: stateRules.label, maxCap: stateRules.maxCap };
+  const [copied, setCopied] = useState(false);
+
+  // Rule Calculation Engine
+  const calculationResult = useMemo(() => {
+    const rule = stampDutyRules[calcState];
+    if (!rule || !rule.verified) {
+      return {
+        verified: false,
+        state: calcState,
+        moaDuty: 0,
+        aoaDuty: 0,
+        totalDuty: 0,
+        applicableRate: "N/A",
+        maximumCap: "N/A",
+        notes: "State rule pending official verification. Estimates are locked."
+      };
+    }
+
+    // Calculate MOA
+    let moaDuty = 0;
+    if (rule.moa.type === "fixed") {
+      moaDuty = rule.moa.amount || 0;
+    } else if (rule.moa.type === "percentage" || rule.moa.type === "percentageWithCap") {
+      const rate = rule.moa.rate || 0;
+      moaDuty = authorizedCapital * rate;
+      if (rule.moa.maxCap) {
+        moaDuty = Math.min(moaDuty, rule.moa.maxCap);
+      }
+    }
+
+    // Calculate AOA
+    let aoaDuty = 0;
+    if (rule.aoa.type === "fixed") {
+      aoaDuty = rule.aoa.amount || 0;
+    } else if (rule.aoa.type === "percentage" || rule.aoa.type === "percentageWithCap") {
+      const rate = rule.aoa.rate || 0;
+      aoaDuty = authorizedCapital * rate;
+      if (rule.aoa.maxCap) {
+        aoaDuty = Math.min(aoaDuty, rule.aoa.maxCap);
+      }
+    } else if (rule.aoa.type === "slab") {
+      if (calcState === "Maharashtra") {
+        aoaDuty = Math.ceil(authorizedCapital / 500000) * 1000;
+        if (rule.aoa.maxCap) {
+          aoaDuty = Math.min(aoaDuty, rule.aoa.maxCap);
+        }
+      } else if (calcState === "Tamil Nadu") {
+        aoaDuty = Math.ceil(authorizedCapital / 1000000) * 500;
+        if (rule.aoa.maxCap) {
+          aoaDuty = Math.min(aoaDuty, rule.aoa.maxCap);
+        }
+      } else if (calcState === "West Bengal") {
+        if (authorizedCapital <= 2500000) {
+          aoaDuty = 1000;
+        } else if (authorizedCapital <= 5000000) {
+          aoaDuty = 2000;
+        } else {
+          aoaDuty = 5000;
+        }
+      }
+    } else if (rule.aoa.type === "customFormula") {
+      if (calcState === "Uttar Pradesh") {
+        if (authorizedCapital <= 100000) {
+          aoaDuty = 100;
+        } else if (authorizedCapital <= 1000000) {
+          aoaDuty = 100;
+        } else {
+          aoaDuty = (authorizedCapital - 1000000) * 0.0015 + 100;
+        }
+      }
+    }
+
+    // Entity Exemption adjustments
+    if (entityType === "Section 8 Company") {
+      moaDuty = Math.round(moaDuty * 0.5);
+      aoaDuty = Math.round(aoaDuty * 0.5);
+    } else if (entityType === "Limited Liability Partnership") {
+      moaDuty = 0;
+      aoaDuty = 500; // Standard fixed stamp duty on LLP agreement
+    } else if (entityType === "Partnership Firm") {
+      moaDuty = 0;
+      aoaDuty = 500; // Flat partnership deed stamping
+    }
+
+    // Minimum fee constraints
+    if (entityType !== "Limited Liability Partnership" && entityType !== "Partnership Firm") {
+      moaDuty = Math.max(moaDuty, rule.moa.minAmount || 0);
+      aoaDuty = Math.max(aoaDuty, rule.aoa.minAmount || 0);
+    }
+
+    // Delta capitalization logic
+    if (increaseInCapital) {
+      moaDuty = Math.round(moaDuty * 0.4);
+      aoaDuty = Math.round(aoaDuty * 0.4);
+    }
+
+    const totalDuty = moaDuty + aoaDuty;
+
+    let applicableRate = "0.15%";
+    if (calcState === "Maharashtra") applicableRate = "Slab-based";
+    else if (calcState === "Karnataka") applicableRate = "Fixed Flat Fee";
+    else if (calcState === "Gujarat") applicableRate = "MOA: 0.15% / AOA: 0.50%";
+    else if (calcState === "Tamil Nadu") applicableRate = "MOA: Fixed / AOA: Slab";
+
+    const maxCap = rule.aoa.maxCap || rule.moa.maxCap || null;
+
+    return {
+      verified: true,
+      state: calcState,
+      moaDuty: Math.round(moaDuty),
+      aoaDuty: Math.round(aoaDuty),
+      totalDuty: Math.round(totalDuty),
+      applicableRate,
+      maximumCap: maxCap ? `₹${maxCap.toLocaleString('en-IN')}` : "None",
+      notes: rule.notes
+    };
+  }, [calcState, entityType, authorizedCapital, includesPremium, existingCompany, increaseInCapital]);
+
+  // Sync ranges
+  const handleCapitalSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthorizedCapital(Number(e.target.value));
   };
 
-  const fees = getCalculatedFees();
+  const handleCapitalTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value.replace(/[^0-9]/g, "");
+    const num = Number(rawVal);
+    if (!isNaN(num)) {
+      setAuthorizedCapital(num);
+    }
+  };
 
-  // Helper for placeholder text
+  const handleCopyDetails = () => {
+    if (!calculationResult.verified) return;
+    const text = `Stamp Duty Calculation Details (INCroute)
+State: ${calcState}
+Entity Type: ${entityType}
+Authorized Capital: ₹${authorizedCapital.toLocaleString("en-IN")}
+--------------------------------------
+MOA Stamp Duty: ₹${calculationResult.moaDuty.toLocaleString("en-IN")}
+AOA Stamp Duty: ₹${calculationResult.aoaDuty.toLocaleString("en-IN")}
+Total Stamp Duty Payable: ₹${calculationResult.totalDuty.toLocaleString("en-IN")}
+--------------------------------------
+Disclaimer: Calculated for informational purposes. Verify with official State Stamp Act before filing.`;
+    
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const fill = (val: string, placeholder: string) => val.trim() || `______ [${placeholder}]`;
 
   // Real-time NOC template
@@ -197,8 +405,8 @@ Founder A Signature                     Founder B Signature`;
     doc.text("INCROUTE | Common Draft Document", margin, y);
     y += 6;
 
-    // Neon Green line
-    doc.setDrawColor(191, 255, 0); // #BFFF00
+    // Neon Line divider
+    doc.setDrawColor(99, 102, 241); // Indigo
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -228,7 +436,7 @@ Founder A Signature                     Founder B Signature`;
     // Footer
     y = Math.max(y + 10, 270);
     if (y > 270) { doc.addPage(); y = margin; }
-    doc.setDrawColor(191, 255, 0);
+    doc.setDrawColor(99, 102, 241);
     doc.setLineWidth(0.3);
     doc.line(margin, y, pageWidth - margin, y);
     y += 5;
@@ -254,7 +462,6 @@ Founder A Signature                     Founder B Signature`;
     setPremiumSubmitting(true);
     setPremiumError("");
 
-    // Simulate submission (no actual email sent)
     setTimeout(() => {
       console.log(`Premium request submitted for ${premiumForm.email}`, {
         phone: premiumForm.phone,
@@ -281,29 +488,105 @@ Founder A Signature                     Founder B Signature`;
     }, 1200);
   };
 
+  // Download Stamp Duty Calculation Breakdown
+  const handleDownloadCalculationBreakdown = () => {
+    if (!calculationResult.verified) return;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 25;
+    const contentWidth = pageWidth - margin * 2;
+    let y = margin;
+
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(8, 15, 42); // Navy
+    doc.text("INCROUTE | Stamp Duty Calculation Audit Report", margin, y);
+    y += 6;
+
+    doc.setDrawColor(99, 102, 241);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // Content Table
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+
+    const rows = [
+      ["Date Generated:", new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })],
+      ["State / Union Territory:", calcState],
+      ["Corporate Entity Type:", entityType],
+      ["Corporate Category:", companyCategory],
+      ["Authorized Capital:", `INR ${authorizedCapital.toLocaleString("en-IN")}`],
+      ["Includes Share Premium:", includesPremium ? "Yes" : "No"],
+      ["Existing Company (Capital Increase):", existingCompany ? "Yes" : "No"],
+      ["-----------------------------------", "-----------------------------"],
+      ["Memorandum of Association Duty (MOA):", `INR ${calculationResult.moaDuty.toLocaleString("en-IN")}`],
+      ["Articles of Association Duty (AOA):", `INR ${calculationResult.aoaDuty.toLocaleString("en-IN")}`],
+      ["Total Estimated Stamp Duty Payable:", `INR ${calculationResult.totalDuty.toLocaleString("en-IN")}`],
+      ["-----------------------------------", "-----------------------------"],
+      ["Applicable Rate Engine Mode:", calculationResult.applicableRate],
+      ["State Maximum Stamp Duty Cap:", calculationResult.maximumCap]
+    ];
+
+    for (const [label, val] of rows) {
+      doc.setFont("helvetica", label.startsWith("Total") ? "bold" : "normal");
+      if (label.startsWith("Total")) doc.setTextColor(79, 70, 229);
+      else doc.setTextColor(40, 40, 40);
+      
+      doc.text(label, margin, y);
+      doc.text(val, margin + 80, y);
+      y += 8;
+    }
+
+    y += 10;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      "Disclaimer: This statutory estimate is automatically computed based on the respective State Stamp Acts as integrated within the INCroute rule engine. Rates must be verified with the official MCA21 portal or with an experienced legal consultant before filing.",
+      margin, y, { maxWidth: contentWidth }
+    );
+
+    doc.save(`Incroute_StampDuty_Breakdown_${calcState}.pdf`);
+  };
+
   return (
-    <div className="space-y-12">
-      {/* Header */}
+    <div className="space-y-12 max-w-6xl mx-auto text-left relative z-10">
+      
+      {/* Hero Section */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
-          <Sparkles className="w-3.5 h-3.5" /> {lang === "hi" ? "इंटरैक्टिव उपकरण" : "Interactive Statutory Tools"}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#4F46E5]/10 text-[#4F46E5] text-xs font-semibold rounded-full border border-indigo-500/10 uppercase tracking-widest font-mono">
+          <Sparkles className="w-3.5 h-3.5" /> Interactive Statutory Tools
         </div>
-        <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
-          {lang === "hi" ? "कानूनी" : "Legal"} <span className="text-brand-gold italic font-normal">{lang === "hi" ? "उपकरण।" : "Utilities."}</span>
+        <h1 className="text-4xl font-extrabold text-[#080F2A] tracking-tight sm:text-5xl font-sans">
+          Legal <span className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent italic font-extrabold pr-2 inline-block">Utilities.</span>
         </h1>
-        <p className="text-xs text-brand-text-muted font-sans max-w-xl mx-auto leading-relaxed">
-          {lang === "hi" ? "स्टाम्प ड्यूटी कैलकुलेटर और कानूनी ड्राफ्ट जनरेटर" : "Interactive calculator for government stamp duties and an intelligent generator to build, preview, and download legal drafts instantly."}
+        <p className="text-xs sm:text-sm text-slate-500 font-sans max-w-xl mx-auto leading-relaxed font-medium">
+          Calculate state-wise government stamp duty with precision and generate legal drafts instantly.
         </p>
       </div>
 
       {/* Tab Switcher */}
       <div className="flex justify-center">
-        <div className="bg-brand-bg-lighter border border-brand-border p-1 rounded-xl inline-flex gap-1">
-          <button onClick={() => setActiveTab("calculator")} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer ${activeTab === "calculator" ? "bg-brand-gold text-black font-bold" : "text-brand-text-muted hover:text-brand-text"}`}>
-            <Calculator className="w-3.5 h-3.5" /> {lang === "hi" ? "स्टाम्प कैलकुलेटर" : "Stamp Calculator"}
+        <div className="bg-white/70 border border-indigo-500/10 p-1 rounded-2xl inline-flex gap-1 shadow-sm backdrop-blur-md">
+          <button 
+            onClick={() => setActiveTab("calculator")} 
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer font-bold ${
+              activeTab === "calculator" ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white shadow-md shadow-[#4F46E5]/15" : "text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <Calculator className="w-3.5 h-3.5" /> Stamp Calculator
           </button>
-          <button onClick={() => setActiveTab("generator")} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer ${activeTab === "generator" ? "bg-brand-gold text-black font-bold" : "text-brand-text-muted hover:text-brand-text"}`}>
-            <FileText className="w-3.5 h-3.5" /> {lang === "hi" ? "ड्राफ्ट जनरेटर" : "Draft Generator"}
+          <button 
+            onClick={() => setActiveTab("generator")} 
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer font-bold ${
+              activeTab === "generator" ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white shadow-md shadow-[#4F46E5]/15" : "text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" /> Draft Generator
           </button>
         </div>
       </div>
@@ -311,83 +594,260 @@ Founder A Signature                     Founder B Signature`;
       <AnimatePresence mode="wait">
         {/* ═══ CALCULATOR TAB ═══ */}
         {activeTab === "calculator" && (
-          <motion.div key="calc" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-5xl mx-auto">
-            {/* Left: Configuration (7 cols) */}
-            <div className="lg:col-span-7 bg-brand-bg-lighter border border-brand-border rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="border-b border-brand-border pb-3">
-                <h3 className="text-xl font-light text-brand-text serif flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-brand-gold" /> Fee Configuration
-                </h3>
-                <p className="text-[10px] text-brand-text-muted font-mono uppercase tracking-widest mt-1">Configure Company Share & Capital parameters</p>
+          <motion.div 
+            key="calc" 
+            initial={{ opacity: 0, y: 15 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -15 }} 
+            transition={{ type: "spring", stiffness: 400, damping: 30 }} 
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch max-w-5xl mx-auto"
+          >
+            {/* Left: Configuration Card (7 cols) */}
+            <div className="lg:col-span-7 bg-white/85 border border-indigo-500/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
+              
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="border-b border-slate-100 pb-4">
+                  <h3 className="text-xl font-extrabold text-[#080F2A] flex items-center gap-2 font-sans">
+                    <Calculator className="w-5 h-5 text-[#4F46E5]" /> Fee Configuration
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mt-1">Configure company details to calculate applicable stamp duty</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* State selection */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-[9px] font-mono uppercase text-[#080F2A] tracking-widest font-bold">State / Union Territory</label>
+                    <select 
+                      value={calcState} 
+                      onChange={(e) => setCalcState(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm"
+                    >
+                      {ALL_STATES.map((st) => <option key={st} value={st}>{st}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Entity Type Selection */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-[9px] font-mono uppercase text-[#080F2A] tracking-widest font-bold flex items-center gap-1">
+                      Entity Type <span title="Select corporate entity type structure"><HelpCircle className="w-3 h-3 text-slate-400" /></span>
+                    </label>
+                    <select 
+                      value={entityType} 
+                      onChange={(e) => setEntityType(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm"
+                    >
+                      <option value="Private Limited Company">Private Limited Company</option>
+                      <option value="One Person Company">One Person Company</option>
+                      <option value="Limited Liability Partnership">Limited Liability Partnership</option>
+                      <option value="Section 8 Company">Section 8 Company</option>
+                      <option value="Public Limited Company">Public Limited Company</option>
+                      <option value="Partnership Firm">Partnership Firm</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Capital Input Sync Slider */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest">
+                    <span className="text-[#080F2A] font-bold flex items-center gap-1">
+                      Authorized Capital (₹) <span title="Nominal shared capital block size"><HelpCircle className="w-3 h-3 text-slate-400" /></span>
+                    </span>
+                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1">
+                      <span className="text-slate-400 text-xs font-semibold">₹</span>
+                      <input 
+                        type="text" 
+                        value={authorizedCapital.toLocaleString("en-IN")} 
+                        onChange={handleCapitalTextChange}
+                        className="w-28 bg-transparent text-right text-xs text-[#080F2A] font-extrabold outline-none"
+                      />
+                    </div>
+                  </div>
+                  
+                  <input 
+                    type="range" 
+                    min="100000" 
+                    max="10000000" 
+                    step="50000" 
+                    value={authorizedCapital} 
+                    onChange={handleCapitalSliderChange} 
+                    className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#4F46E5]" 
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                    <span>₹1,00,000</span>
+                    <span>₹50,00,000</span>
+                    <span>₹1,00,00,000+</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Company Category */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-[9px] font-mono uppercase text-[#080F2A] tracking-widest font-bold flex items-center gap-1">
+                      Company Category <span title="Classification category for ROC fees"><HelpCircle className="w-3 h-3 text-slate-400" /></span>
+                    </label>
+                    <select 
+                      value={companyCategory} 
+                      onChange={(e) => setCompanyCategory(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm"
+                    >
+                      <option value="Indian Company">Indian Company</option>
+                      <option value="Foreign Company">Foreign Company</option>
+                    </select>
+                  </div>
+
+                  {/* Share Capital Type */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-[9px] font-mono uppercase text-[#080F2A] tracking-widest font-bold flex items-center gap-1">
+                      Share Capital Type <span title="Capital stock tier type"><HelpCircle className="w-3 h-3 text-slate-400" /></span>
+                    </label>
+                    <select 
+                      value={shareCapitalType} 
+                      onChange={(e) => setShareCapitalType(e.target.value)} 
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm"
+                    >
+                      <option value="Equity Share Capital">Equity Share Capital</option>
+                      <option value="Preference Share Capital">Preference Share Capital</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Toggles Row */}
+                <div className="grid grid-cols-3 gap-3 pt-2">
+                  <div className="bg-white border border-slate-100 rounded-2xl p-3 flex flex-col justify-between gap-2 shadow-sm text-left">
+                    <span className="text-[8px] font-mono uppercase text-slate-400 font-bold block">Includes Premium</span>
+                    <div className="flex items-center justify-between">
+                      <span title="Includes share premium value block"><HelpCircle className="w-3.5 h-3.5 text-slate-300" /></span>
+                      <button 
+                        onClick={() => setIncludesPremium(!includesPremium)} 
+                        className={`w-8 h-4 rounded-full relative transition-colors ${includesPremium ? "bg-[#4F46E5]" : "bg-slate-200"}`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.25 transition-transform ${includesPremium ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-slate-100 rounded-2xl p-3 flex flex-col justify-between gap-2 shadow-sm text-left">
+                    <span className="text-[8px] font-mono uppercase text-slate-400 font-bold block">Existing Company</span>
+                    <div className="flex items-center justify-between">
+                      <span title="Checked if the company is already registered"><HelpCircle className="w-3.5 h-3.5 text-slate-300" /></span>
+                      <button 
+                        onClick={() => setExistingCompany(!existingCompany)} 
+                        className={`w-8 h-4 rounded-full relative transition-colors ${existingCompany ? "bg-[#4F46E5]" : "bg-slate-200"}`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.25 transition-transform ${existingCompany ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-slate-100 rounded-2xl p-3 flex flex-col justify-between gap-2 shadow-sm text-left">
+                    <span className="text-[8px] font-mono uppercase text-slate-400 font-bold block">Increase in Capital</span>
+                    <div className="flex items-center justify-between">
+                      <span title="Calculates stamp duty delta fee for capital expansion filings"><HelpCircle className="w-3.5 h-3.5 text-slate-300" /></span>
+                      <button 
+                        onClick={() => setIncreaseInCapital(!increaseInCapital)} 
+                        className={`w-8 h-4 rounded-full relative transition-colors ${increaseInCapital ? "bg-[#4F46E5]" : "bg-slate-200"}`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.25 transition-transform ${increaseInCapital ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {/* State */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono uppercase text-brand-gold tracking-widest font-bold">State / Union Territory</label>
-                  <select value={calcState} onChange={(e) => setCalcState(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3.5 py-3 text-xs text-brand-text outline-none focus:border-brand-gold cursor-pointer">
-                    {Object.keys(STATE_STAMP_RATES).map((st) => <option key={st} value={st}>{st}</option>)}
-                  </select>
-                </div>
-
-                {/* Capital Slider */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex justify-between items-center text-[10px] font-mono uppercase tracking-widest">
-                    <span className="text-brand-gold font-bold">Authorized Capital</span>
-                    <span className="text-brand-text font-bold">₹{authorizedCapital.toLocaleString()}</span>
-                  </div>
-                  <input type="range" min="100000" max="10000000" step="50000" value={authorizedCapital} onChange={(e) => setAuthorizedCapital(Number(e.target.value))} className="w-full h-1 bg-brand-border rounded-lg appearance-none cursor-pointer accent-brand-gold" />
-                  <div className="flex justify-between text-[9px] text-brand-text-muted/60 font-mono">
-                    <span>₹1,00,000*</span>
-                    <span>₹50,00,000*</span>
-                    <span>₹1,00,00,000*</span>
-                  </div>
-                </div>
+              {/* Bottom notice strip */}
+              <div className="flex items-start gap-2.5 p-3.5 bg-indigo-50/40 border border-indigo-500/5 rounded-2xl text-[10px] text-slate-500 leading-normal font-sans mt-6">
+                <Info className="w-4.5 h-4.5 text-[#4F46E5] shrink-0 mt-0.5" />
+                <span>Stamp duty is calculated as per the current State Stamp Act & Rules.</span>
               </div>
             </div>
 
-            {/* Right: Invoice Receipt (5 cols) */}
-            <div className="lg:col-span-5 bg-brand-bg-lighter border border-brand-gold/20 rounded-2xl p-6 relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-gold/5 blur-3xl rounded-full" />
-              <div className="space-y-4 relative z-10">
-                <div className="border-b border-brand-border pb-3 text-center">
-                  <span className="text-[9px] font-mono bg-brand-gold/10 text-brand-gold px-2.5 py-1 rounded border border-brand-gold/20 uppercase tracking-widest font-bold">Stamp Duty Calculator</span>
-                  <h4 className="text-lg font-light text-brand-text serif mt-2">Stamp Duty on MOA & AOA</h4>
-                  <p className="text-[9px] text-brand-text-muted/60 font-mono tracking-wider">State: {calcState}</p>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Main Result — Stamp Duty */}
-                  <div className="text-center py-5 bg-brand-bg border border-brand-gold/20 rounded-2xl">
-                    <p className="text-[10px] font-mono uppercase text-brand-text-muted tracking-widest mb-1">Stamp Duty Payable</p>
-                    <p className="text-3xl font-extrabold text-brand-gold tracking-tight">₹{fees.stampDuty.toLocaleString()}</p>
-                    <p className="text-[10px] text-brand-text-muted mt-2">Rate: {fees.rate}</p>
+            {/* Right: Receipt Breakdown (5 cols) */}
+            <div className="lg:col-span-5 bg-white/90 border border-indigo-500/10 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full" />
+              
+              <div className="space-y-6 relative z-10">
+                {/* State UT Badge Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 text-[8px] font-mono font-bold bg-[#4F46E5]/10 text-[#4F46E5] border border-indigo-500/20 uppercase rounded">State</span>
+                    <span className="text-xs font-bold text-[#080F2A]">{calcState}</span>
                   </div>
+                  <Building2 className="w-5 h-5 text-slate-300" />
+                </div>
 
-                  {/* Details */}
-                  <div className="space-y-2 font-mono text-[10px]">
-                    <div className="flex justify-between text-brand-text-muted">
-                      <span>Authorized Capital:</span>
-                      <span className="text-brand-text">₹{authorizedCapital.toLocaleString()}</span>
+                <div className="text-center py-4">
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Stamp Duty on MOA & AOA</h4>
+                </div>
+
+                {calculationResult.verified ? (
+                  <div className="space-y-5">
+                    {/* Main Receipt Big Payable */}
+                    <div className="text-center py-6 bg-slate-50/50 border border-slate-100 rounded-2xl shadow-inner">
+                      <p className="text-[9px] font-mono uppercase text-slate-400 tracking-wider mb-1">Total Stamp Duty Payable</p>
+                      <p className="text-4xl font-extrabold text-[#4F46E5] tracking-tight">₹{calculationResult.totalDuty.toLocaleString("en-IN")}</p>
+                      <p className="text-[10px] text-slate-500 font-medium font-sans mt-2">Rate: {calculationResult.applicableRate} (Max {calculationResult.maximumCap})</p>
                     </div>
-                    <div className="flex justify-between text-brand-text-muted">
-                      <span>State:</span>
-                      <span className="text-brand-text">{calcState}</span>
-                    </div>
-                    <div className="flex justify-between text-brand-text-muted">
-                      <span>Applicable Rate:</span>
-                      <span className="text-brand-text">{fees.rate}</span>
-                    </div>
-                    <div className="flex justify-between text-brand-text-muted">
-                      <span>Maximum Cap:</span>
-                      <span className="text-brand-text">₹{fees.maxCap.toLocaleString()}</span>
+
+                    {/* Receipt Details Breakdown Table */}
+                    <div className="space-y-3 pt-2">
+                      <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-50/50 pb-2">
+                        <span className="text-slate-400 font-semibold">Authorized Capital:</span>
+                        <span className="text-[#080F2A] font-extrabold">₹{authorizedCapital.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-50/50 pb-2">
+                        <span className="text-slate-400 font-semibold">Applicable Rate:</span>
+                        <span className="text-[#080F2A] font-extrabold">{calculationResult.applicableRate}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-50/50 pb-2">
+                        <span className="text-slate-400 font-semibold">Maximum Cap ({calcState}):</span>
+                        <span className="text-[#080F2A] font-extrabold">{calculationResult.maximumCap}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-50/50 pb-2">
+                        <span className="text-slate-400 font-semibold">Duty on MOA:</span>
+                        <span className="text-[#080F2A] font-extrabold">₹{calculationResult.moaDuty.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono border-b border-slate-50/50 pb-2">
+                        <span className="text-slate-400 font-semibold">Duty on AOA:</span>
+                        <span className="text-[#080F2A] font-extrabold">₹{calculationResult.aoaDuty.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono pt-1">
+                        <span className="text-[#080F2A] font-extrabold">Total Stamp Duty:</span>
+                        <span className="text-[#4F46E5] font-black">₹{calculationResult.totalDuty.toLocaleString("en-IN")}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="py-10 text-center space-y-3">
+                    <div className="inline-flex p-3 rounded-full bg-amber-500/10 text-amber-500">
+                      <AlertTriangle className="w-6 h-6 animate-bounce" />
+                    </div>
+                    <h5 className="text-sm font-bold text-[#080F2A]">State Rule Pending Verification</h5>
+                    <p className="text-[11px] text-slate-500 leading-relaxed font-sans px-4">
+                      The stamp duty formulas for {calcState} are currently being audited as per the latest amendments in the State Stamp Act. Final calculations are disabled.
+                    </p>
+                  </div>
+                )}
+              </div>
 
-                <div className="bg-brand-bg border border-brand-border rounded-xl p-3.5 text-[9px] text-brand-text-muted/80 leading-relaxed font-sans mt-3">
-                  <span className="font-bold text-brand-gold">Note:</span> Stamp duty is charged on authorized capital at the time of company incorporation (SPICe+ filing). Paid electronically via MCA21 eStamp. Rates as per respective State Stamp Acts.
-                </div>
+              {/* Action buttons */}
+              <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-100 relative z-10 mt-6">
+                <button 
+                  type="button" 
+                  disabled={!calculationResult.verified}
+                  onClick={handleDownloadCalculationBreakdown}
+                  className="w-full flex items-center justify-center gap-1.5 bg-white border border-indigo-500/10 hover:border-[#4F46E5]/30 text-slate-600 hover:text-[#4F46E5] font-bold text-[10px] tracking-wider uppercase rounded-xl transition-all cursor-pointer font-sans shadow-sm py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download Breakdown
+                </button>
+                <button 
+                  type="button" 
+                  disabled={!calculationResult.verified}
+                  onClick={handleCopyDetails}
+                  className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#4F46E5] to-[#635BFF] hover:from-[#3F37C9] hover:to-[#4F46E5] text-white font-bold text-[10px] tracking-wider uppercase rounded-xl transition-all cursor-pointer font-sans shadow-md py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {copied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Details</>}
+                </button>
               </div>
             </div>
           </motion.div>
@@ -395,47 +855,69 @@ Founder A Signature                     Founder B Signature`;
 
         {/* ═══ GENERATOR TAB ═══ */}
         {activeTab === "generator" && (
-          <motion.div key="gen" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <motion.div 
+            key="gen" 
+            initial={{ opacity: 0, y: 15 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -15 }} 
+            transition={{ type: "spring", stiffness: 400, damping: 30 }} 
+            className="max-w-6xl mx-auto"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               {/* Left: Form Panel (5 cols) */}
-              <div className="lg:col-span-5 space-y-5">
-                {/* Document Class Toggle */}
-                <div className="bg-brand-bg-lighter border border-brand-border rounded-2xl p-5 space-y-5">
-                  <div className="flex items-center gap-2 text-[9px] font-mono tracking-wider text-brand-gold uppercase font-bold">
+              <div className="lg:col-span-5 bg-white/85 border border-indigo-500/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
+                <div className="space-y-5">
+                  {/* Document Class Toggle */}
+                  <div className="flex items-center gap-2 text-[9px] font-mono tracking-wider text-[#4F46E5] uppercase font-bold border-b border-slate-100 pb-3">
                     <FileText className="w-3.5 h-3.5" /> Document Class
                   </div>
+                  
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => setSelectedDoc("noc")} className={`px-4 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${selectedDoc === "noc" ? "bg-brand-gold text-black border-brand-gold" : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/40"}`}>
+                    <button 
+                      onClick={() => setSelectedDoc("noc")} 
+                      className={`px-4 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                        selectedDoc === "noc" 
+                          ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white border-[#4F46E5]" 
+                          : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
                       Office NOC
                     </button>
-                    <button onClick={() => setSelectedDoc("founders")} className={`px-4 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${selectedDoc === "founders" ? "bg-brand-gold text-black border-brand-gold" : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-gold/40"}`}>
+                    <button 
+                      onClick={() => setSelectedDoc("founders")} 
+                      className={`px-4 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                        selectedDoc === "founders" 
+                          ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white border-[#4F46E5]" 
+                          : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
                       Founders' Deed
                     </button>
                   </div>
 
                   {/* Dynamic Form Fields */}
-                  <div className="space-y-3 pt-3 border-t border-brand-border">
+                  <div className="space-y-4 pt-2">
                     {selectedDoc === "noc" ? (
                       <>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Proposed Corporate Name</label>
-                          <input type="text" value={nocFields.proposedName} onChange={(e) => setNocFields(f => ({ ...f, proposedName: e.target.value }))} placeholder="e.g. Acme Tech" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Proposed Corporate Name</label>
+                          <input type="text" value={nocFields.proposedName} onChange={(e) => setNocFields(f => ({ ...f, proposedName: e.target.value }))} placeholder="e.g. Acme Tech" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Primary Declarant (Applicant)</label>
-                          <input type="text" value={nocFields.applicantName} onChange={(e) => setNocFields(f => ({ ...f, applicantName: e.target.value }))} placeholder="Founder / Director name" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Primary Declarant (Applicant)</label>
+                          <input type="text" value={nocFields.applicantName} onChange={(e) => setNocFields(f => ({ ...f, applicantName: e.target.value }))} placeholder="Founder / Director name" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Property Owner</label>
-                          <input type="text" value={nocFields.ownerName} onChange={(e) => setNocFields(f => ({ ...f, ownerName: e.target.value }))} placeholder="Landlord / Owner name" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Property Owner</label>
+                          <input type="text" value={nocFields.ownerName} onChange={(e) => setNocFields(f => ({ ...f, ownerName: e.target.value }))} placeholder="Landlord / Owner name" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Registered Address</label>
-                          <textarea value={nocFields.premisesAddress} onChange={(e) => setNocFields(f => ({ ...f, premisesAddress: e.target.value }))} placeholder="Full office address..." rows={2} className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 resize-none" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Registered Address</label>
+                          <textarea value={nocFields.premisesAddress} onChange={(e) => setNocFields(f => ({ ...f, premisesAddress: e.target.value }))} placeholder="Full office address..." rows={2} className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm resize-none" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Lease Relationship</label>
-                          <select value={nocFields.relationship} onChange={(e) => setNocFields(f => ({ ...f, relationship: e.target.value }))} className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold cursor-pointer">
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Lease Relationship</label>
+                          <select value={nocFields.relationship} onChange={(e) => setNocFields(f => ({ ...f, relationship: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm">
                             <option value="">Select relationship...</option>
                             <option value="Tenant">Tenant</option>
                             <option value="Licensee">Licensee</option>
@@ -443,39 +925,39 @@ Founder A Signature                     Founder B Signature`;
                             <option value="Other">Other (specify)</option>
                           </select>
                           {nocFields.relationship === "Other" && (
-                            <input type="text" value={nocFields.otherRelationship} onChange={(e) => setNocFields(f => ({ ...f, otherRelationship: e.target.value }))} placeholder="Specify relationship..." className="w-full mt-2 bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                            <input type="text" value={nocFields.otherRelationship} onChange={(e) => setNocFields(f => ({ ...f, otherRelationship: e.target.value }))} placeholder="Specify relationship..." className="w-full mt-2 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                           )}
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Proposed Corporate Name</label>
-                          <input type="text" value={foundersFields.proposedName} onChange={(e) => setFoundersFields(f => ({ ...f, proposedName: e.target.value }))} placeholder="e.g. Acme Tech" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Proposed Corporate Name</label>
+                          <input type="text" value={foundersFields.proposedName} onChange={(e) => setFoundersFields(f => ({ ...f, proposedName: e.target.value }))} placeholder="e.g. Acme Tech" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Founder A Name</label>
-                          <input type="text" value={foundersFields.founderA} onChange={(e) => setFoundersFields(f => ({ ...f, founderA: e.target.value }))} placeholder="CEO / Primary founder" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Founder A Name</label>
+                          <input type="text" value={foundersFields.founderA} onChange={(e) => setFoundersFields(f => ({ ...f, founderA: e.target.value }))} placeholder="CEO / Primary founder" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Founder B Name</label>
-                          <input type="text" value={foundersFields.founderB} onChange={(e) => setFoundersFields(f => ({ ...f, founderB: e.target.value }))} placeholder="COO / Co-founder" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Founder B Name</label>
+                          <input type="text" value={foundersFields.founderB} onChange={(e) => setFoundersFields(f => ({ ...f, founderB: e.target.value }))} placeholder="COO / Co-founder" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Equity Split</label>
-                          <select value={foundersFields.equitySplit} onChange={(e) => setFoundersFields(f => ({ ...f, equitySplit: e.target.value }))} className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold cursor-pointer">
+                        <div className="space-y-1 text-left">
+                          <label className="text-[9px] uppercase font-mono tracking-widest text-[#080F2A] font-bold">Equity Split</label>
+                          <select value={foundersFields.equitySplit} onChange={(e) => setFoundersFields(f => ({ ...f, equitySplit: e.target.value }))} className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] cursor-pointer shadow-sm">
                             <option value="50/50">50/50</option>
                             <option value="60/40">60/40</option>
                             <option value="70/30">70/30</option>
                             <option value="Custom">Custom</option>
                           </select>
                           {foundersFields.equitySplit === "Custom" && (
-                            <input type="text" value={foundersFields.customSplit} onChange={(e) => setFoundersFields(f => ({ ...f, customSplit: e.target.value }))} placeholder="e.g. 65/35" className="w-full mt-2 bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                            <input type="text" value={foundersFields.customSplit} onChange={(e) => setFoundersFields(f => ({ ...f, customSplit: e.target.value }))} placeholder="e.g. 65/35" className="w-full mt-2 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
                           )}
                         </div>
-                        <label className="flex items-center gap-2.5 cursor-pointer pt-1">
-                          <input type="checkbox" checked={foundersFields.vestingEnabled} onChange={(e) => setFoundersFields(f => ({ ...f, vestingEnabled: e.target.checked }))} className="w-4 h-4 rounded border-brand-border accent-brand-gold cursor-pointer" />
-                          <span className="text-[10px] text-brand-text-muted">Standard 4-year vesting with 1-year cliff</span>
+                        <label className="flex items-center gap-2.5 cursor-pointer pt-2">
+                          <input type="checkbox" checked={foundersFields.vestingEnabled} onChange={(e) => setFoundersFields(f => ({ ...f, vestingEnabled: e.target.checked }))} className="w-4 h-4 rounded border-slate-200 accent-[#4F46E5] cursor-pointer" />
+                          <span className="text-[10px] text-slate-500 font-medium font-sans">Standard 4-year vesting with 1-year cliff</span>
                         </label>
                       </>
                     )}
@@ -484,73 +966,89 @@ Founder A Signature                     Founder B Signature`;
               </div>
 
               {/* Right: Preview + Tier Cards (7 cols) */}
-              <div className="lg:col-span-7 space-y-5">
+              <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
                 {/* Live Preview */}
-                <div className="bg-[#0b0f19] border border-brand-gold/20 rounded-2xl overflow-hidden shadow-2xl relative">
-                  <div className="bg-[#131b2e] border-b border-brand-border px-4 py-3 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[9px] font-mono uppercase text-brand-gold font-bold">
-                      <ClipboardCheck className="w-3.5 h-3.5" /> Live Draft Preview
+                <div className="bg-slate-900 border border-indigo-500/10 rounded-3xl overflow-hidden shadow-xl relative text-left">
+                  <div className="bg-slate-950 border-b border-slate-800 px-5 py-4.5 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-[9px] font-mono uppercase text-[#4F46E5] font-bold tracking-widest">
+                      <ClipboardCheck className="w-3.5 h-3.5 text-[#4F46E5]" /> Live Draft Preview
                     </span>
-                    <span className="text-[9px] font-mono text-emerald-500">● SYNCED</span>
+                    <span className="text-[9px] font-mono text-emerald-500 tracking-wider">● SYNCED</span>
                   </div>
-                  <div className="p-6 font-mono text-[9px] text-[#A6ADBA] leading-relaxed max-h-[320px] overflow-y-auto whitespace-pre-wrap select-all">
+                  <div className="p-6 font-mono text-[10px] text-slate-300 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap select-all">
                     {currentPreview}
                   </div>
                   <div className="absolute right-6 bottom-12 opacity-[0.03] pointer-events-none">
-                    <Scale className="w-40 h-40 text-brand-gold" />
+                    <Scale className="w-40 h-40 text-[#4F46E5]" />
                   </div>
                 </div>
 
                 {/* Tier Selection Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Free Tier */}
-                  <div className="p-5 rounded-2xl border border-brand-border bg-brand-bg-lighter space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-500 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">Free</span>
-                      <span className="text-[9px] text-brand-text-muted font-mono">₹0</span>
+                  <div className="p-5 rounded-3xl border border-indigo-500/10 bg-white/80 space-y-3.5 shadow-sm text-left flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Free</span>
+                        <span className="text-sm text-[#080F2A] font-extrabold font-mono">₹0</span>
+                      </div>
+                      <h4 className="text-sm font-extrabold text-[#080F2A] font-sans">Common Draft</h4>
+                      <p className="text-[10.5px] text-slate-500 leading-relaxed font-sans font-light">Standard template with your details. Generic clauses for standard filings.</p>
+                      <ul className="space-y-1.5 text-[10px] text-slate-400 font-sans">
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-indigo-500" /> Pre-filled with your details</li>
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-indigo-500" /> Standard legal clauses</li>
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-indigo-500" /> Instant PDF download</li>
+                      </ul>
                     </div>
-                    <h4 className="text-sm font-semibold text-brand-text">Common Draft</h4>
-                    <p className="text-[10px] text-brand-text-muted leading-relaxed">Standard template with your details. Generic clauses for most registrations.</p>
-                    <ul className="space-y-1.5 text-[10px] text-brand-text-muted">
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-500" /> Pre-filled with your details</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-500" /> Standard legal clauses</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-500" /> Instant PDF download</li>
-                    </ul>
-                    <button type="button" onClick={handleDownloadPDF} className="w-full flex items-center justify-center gap-2 bg-[#2B5B84] hover:bg-[#1E405E] text-white font-mono uppercase tracking-widest text-[9px] px-4 py-2.5 rounded-lg transition-all cursor-pointer font-bold">
-                      <Download className="w-3.5 h-3.5" /> Download Free Draft (PDF)
+                    <button 
+                      type="button" 
+                      onClick={handleDownloadPDF} 
+                      className="w-full flex items-center justify-center gap-1.5 bg-[#4F46E5]/10 hover:bg-[#4F46E5] text-[#4F46E5] hover:text-white font-bold text-[10px] tracking-wider uppercase rounded-xl transition-all cursor-pointer font-sans py-3"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Download Draft
                     </button>
                   </div>
 
                   {/* Premium Tier */}
-                  <div className="p-5 rounded-2xl border-2 border-brand-gold/50 bg-brand-bg-lighter space-y-3 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-brand-gold/5 blur-2xl rounded-full" />
-                    <div className="flex items-center justify-between relative z-10">
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold bg-brand-gold/10 border border-brand-gold/20 px-2 py-0.5 rounded">Premium</span>
-                      <span className="text-[8px] font-mono uppercase bg-brand-gold text-black px-2 py-0.5 rounded font-bold">Recommended</span>
+                  <div className="p-5 rounded-3xl border-2 border-[#4F46E5]/40 bg-white/90 space-y-3.5 relative overflow-hidden shadow-md text-left flex flex-col justify-between">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full" />
+                    <div className="space-y-3 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-[#4F46E5] font-bold bg-[#4F46E5]/10 px-2 py-0.5 rounded border border-indigo-500/20">Premium</span>
+                        <span className="text-[8px] font-mono uppercase bg-[#4F46E5] text-white px-2 py-0.5 rounded font-black tracking-widest">Recommended</span>
+                      </div>
+                      <h4 className="text-sm font-extrabold text-[#080F2A] font-sans">Personalized Draft</h4>
+                      <p className="text-[10.5px] text-slate-500 leading-relaxed font-sans font-light">Custom-drafted by corporate legal counsel with specialized clauses.</p>
+                      <ul className="space-y-1.5 text-[10px] text-slate-400 font-sans">
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-[#4F46E5]" /> Expert-reviewed & customized</li>
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-[#4F46E5]" /> Industry-specific protective clauses</li>
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-[#4F46E5]" /> Delivered within 24 hours</li>
+                        <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-[#4F46E5]" /> 30-day unlimited revisions support</li>
+                      </ul>
                     </div>
-                    <h4 className="text-sm font-semibold text-brand-text relative z-10">Personalized Draft</h4>
-                    <p className="text-[10px] text-brand-text-muted leading-relaxed relative z-10">Custom-drafted by our legal expert with clauses tailored to your business.</p>
-                    <ul className="space-y-1.5 text-[10px] text-brand-text-muted relative z-10">
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-brand-gold" /> Expert-reviewed & customized</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-brand-gold" /> Industry-specific clauses</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-brand-gold" /> Delivered within 24 hours</li>
-                      <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-brand-gold" /> Unlimited revisions</li>
-                    </ul>
-                    <button type="button" onClick={() => setShowPremiumModal(true)} disabled={premiumCooldown} className="w-full flex items-center justify-center gap-2 bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[9px] px-4 py-2.5 rounded-lg transition-all cursor-pointer font-bold shadow-lg shadow-brand-gold/10 disabled:opacity-50 disabled:cursor-not-allowed relative z-10">
-                      <Sparkles className="w-3.5 h-3.5" /> {premiumCooldown ? "Request Sent ✓" : "Request Premium Draft"}
-                    </button>
-                    {/* Info tooltip */}
-                    <div className="relative z-10 pt-1">
-                      <button type="button" onClick={() => setShowPremiumInfo(!showPremiumInfo)} className="flex items-center gap-1 text-[9px] text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer">
-                        <Info className="w-3 h-3" /> Sample premium clauses
+                    <div className="space-y-2 relative z-10">
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPremiumModal(true)} 
+                        disabled={premiumCooldown} 
+                        className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#4F46E5] to-[#635BFF] hover:from-[#3F37C9] hover:to-[#4F46E5] text-white font-bold text-[10px] tracking-wider uppercase rounded-xl transition-all cursor-pointer font-sans py-3 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" /> {premiumCooldown ? "Request Sent ✓" : "Request Custom Draft"}
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPremiumInfo(!showPremiumInfo)} 
+                        className="flex items-center justify-center gap-1 text-[9px] text-slate-400 hover:text-[#4F46E5] transition-colors cursor-pointer w-full text-center"
+                      >
+                        <Info className="w-3.5 h-3.5" /> View premium legal inclusions
                       </button>
                       {showPremiumInfo && (
-                        <div className="mt-2 p-3 bg-brand-bg border border-brand-border rounded-lg text-[9px] text-brand-text-muted leading-relaxed space-y-1">
-                          <p>• Drag-along & tag-along rights</p>
-                          <p>• Anti-dilution protection clauses</p>
-                          <p>• Non-compete & IP assignment</p>
-                          <p>• Custom vesting schedules</p>
-                          <p>• Liquidation preference terms</p>
+                        <div className="p-3 bg-indigo-50/30 border border-indigo-500/5 rounded-xl text-[9px] text-slate-500 leading-relaxed space-y-1">
+                          <p>• Drag-along & tag-along voting rights</p>
+                          <p>• Anti-dilution share protection clauses</p>
+                          <p>• Restrictive non-compete & IP assignment</p>
+                          <p>• Custom vesting milestone structures</p>
+                          <p>• Liquidation preference payout tiers</p>
                         </div>
                       )}
                     </div>
@@ -562,6 +1060,68 @@ Founder A Signature                     Founder B Signature`;
         )}
       </AnimatePresence>
 
+      {/* Disclaimer block */}
+      <div className="max-w-5xl mx-auto p-5 bg-white/60 border border-indigo-500/10 rounded-2xl text-[10px] text-slate-400 leading-relaxed font-sans text-center">
+        <span className="font-extrabold text-slate-500">Legal Disclaimer:</span> Stamp duty is calculated based on configured state-wise rules and is for informational purposes only. Final payable amount should be verified with the applicable State Stamp Act, MCA/ROC portal, and professional advice before filing.
+      </div>
+
+      {/* State Rule Engine accuracy strip */}
+      <div className="w-full max-w-5xl mx-auto pt-4">
+        <div className="bg-white/80 border border-indigo-500/10 rounded-3xl p-6 shadow-sm backdrop-blur-md">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+            
+            {/* Title / Description */}
+            <div className="flex items-center gap-4 text-left">
+              <div className="p-3 rounded-2xl bg-indigo-50 text-[#4F46E5] border border-indigo-100 shrink-0">
+                <FileCheck className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-extrabold text-[#080F2A] font-sans">State Rule Engine</h4>
+                <p className="text-[10px] text-slate-400 font-sans max-w-sm">
+                  Our engine applies accurate state-wise logic including rate slabs, caps, exemptions, and rounding rules as per respective Stamp Acts.
+                </p>
+              </div>
+            </div>
+            
+            {/* Split cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6 flex-1 max-w-xl">
+              <div className="space-y-1.5 text-center sm:text-left">
+                <div className="inline-flex p-1.5 rounded-lg bg-indigo-50 text-[#4F46E5] border border-indigo-100">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <h5 className="text-[10px] font-bold text-[#080F2A] font-sans">State Wise Accuracy</h5>
+                <p className="text-[9px] text-slate-400 leading-tight">As per Stamp Acts</p>
+              </div>
+
+              <div className="space-y-1.5 text-center sm:text-left">
+                <div className="inline-flex p-1.5 rounded-lg bg-indigo-50 text-[#4F46E5] border border-indigo-100">
+                  <Calculator className="w-3.5 h-3.5" />
+                </div>
+                <h5 className="text-[10px] font-bold text-[#080F2A] font-sans">Auto Cap & Slab Logic</h5>
+                <p className="text-[9px] text-slate-400 leading-tight">Built-in validations</p>
+              </div>
+
+              <div className="space-y-1.5 text-center sm:text-left">
+                <div className="inline-flex p-1.5 rounded-lg bg-indigo-50 text-[#4F46E5] border border-indigo-100">
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </div>
+                <h5 className="text-[10px] font-bold text-[#080F2A] font-sans">Always Updated</h5>
+                <p className="text-[9px] text-slate-400 leading-tight">Rules & notifications</p>
+              </div>
+
+              <div className="space-y-1.5 text-center sm:text-left">
+                <div className="inline-flex p-1.5 rounded-lg bg-indigo-50 text-[#4F46E5] border border-indigo-100">
+                  <ClipboardCheck className="w-3.5 h-3.5" />
+                </div>
+                <h5 className="text-[10px] font-bold text-[#080F2A] font-sans">Audit Ready</h5>
+                <p className="text-[9px] text-slate-400 leading-tight">Downloadable reports</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {/* Premium Request Modal */}
       {showPremiumModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -569,42 +1129,42 @@ Founder A Signature                     Founder B Signature`;
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="bg-brand-bg-lighter border-2 border-brand-gold/30 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative"
+            className="bg-white border border-indigo-500/10 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative text-left"
           >
-            <button onClick={() => setShowPremiumModal(false)} className="absolute top-4 right-4 text-brand-text-muted hover:text-brand-gold transition-colors cursor-pointer">
+            <button onClick={() => setShowPremiumModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer outline-none">
               <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-brand-text flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-gold" /> Premium Draft Request
+              <h3 className="text-lg font-bold text-[#080F2A] flex items-center gap-2 font-sans">
+                <Sparkles className="w-4 h-4 text-[#4F46E5]" /> Premium Draft Request
               </h3>
-              <p className="text-xs text-brand-text-muted leading-relaxed">
-                Our expert will contact you within <strong className="text-brand-gold">15 minutes</strong> during working hours (Mon-Fri, 10 AM – 7 PM IST) to understand your custom requirements and share pricing.
+              <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                Our expert will contact you within <strong className="text-[#4F46E5]">15 minutes</strong> during working hours (Mon-Fri, 10 AM – 7 PM IST) to understand your custom requirements and share pricing.
               </p>
             </div>
 
             <form onSubmit={handlePremiumSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Email Address *</label>
-                <input type="email" required value={premiumForm.email} onChange={(e) => setPremiumForm(p => ({ ...p, email: e.target.value }))} placeholder="you@example.com" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                <label className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-bold">Email Address *</label>
+                <input type="email" required value={premiumForm.email} onChange={(e) => setPremiumForm(p => ({ ...p, email: e.target.value }))} placeholder="you@example.com" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Phone Number *</label>
-                <input type="tel" required value={premiumForm.phone} onChange={(e) => setPremiumForm(p => ({ ...p, phone: e.target.value }))} placeholder="+91 9876543210" className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40" />
+                <label className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-bold">Phone Number *</label>
+                <input type="tel" required value={premiumForm.phone} onChange={(e) => setPremiumForm(p => ({ ...p, phone: e.target.value }))} placeholder="+91 9876543210" className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm" />
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] uppercase font-mono tracking-widest text-brand-text-muted font-bold">Special Requests (Optional)</label>
-                <textarea value={premiumForm.specialRequests} onChange={(e) => setPremiumForm(p => ({ ...p, specialRequests: e.target.value }))} placeholder="e.g. I need a drag-along clause, we are a fintech startup..." rows={3} className="w-full bg-brand-input-bg border border-brand-border rounded-lg px-3.5 py-2.5 text-xs text-brand-text outline-none focus:border-brand-gold placeholder-brand-text-muted/40 resize-none" />
+                <label className="text-[9px] uppercase font-mono tracking-widest text-slate-400 font-bold">Special Requests (Optional)</label>
+                <textarea value={premiumForm.specialRequests} onChange={(e) => setPremiumForm(p => ({ ...p, specialRequests: e.target.value }))} placeholder="e.g. I need a drag-along clause, we are a fintech startup..." rows={3} className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#080F2A] font-semibold outline-none focus:border-[#4F46E5] placeholder-slate-400 shadow-sm resize-none" />
               </div>
 
               {premiumError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 flex items-center gap-2">
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-600 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {premiumError}
                 </div>
               )}
 
-              <button type="submit" disabled={premiumSubmitting} className="w-full bg-brand-gold hover:bg-white text-black font-mono uppercase tracking-widest text-[10px] py-3 rounded-lg transition-all cursor-pointer font-bold shadow-lg shadow-brand-gold/10 disabled:opacity-50 flex items-center justify-center gap-2">
+              <button type="submit" disabled={premiumSubmitting} className="w-full bg-gradient-to-r from-[#4F46E5] to-[#635BFF] hover:from-[#3F37C9] hover:to-[#4F46E5] text-white font-mono uppercase tracking-widest text-[10px] py-3.5 rounded-xl transition-all cursor-pointer font-bold shadow-lg shadow-indigo-500/15 disabled:opacity-50 flex items-center justify-center gap-2">
                 {premiumSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Send className="w-3.5 h-3.5" /> Submit Request</>}
               </button>
             </form>
@@ -615,11 +1175,11 @@ Founder A Signature                     Founder B Signature`;
       {/* Success Toast */}
       <AnimatePresence>
         {premiumSuccess && (
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed bottom-6 right-6 z-[200] max-w-sm bg-emerald-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3">
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="fixed bottom-6 right-6 z-[2000] max-w-sm bg-emerald-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3 text-left">
             <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-xs font-bold">✅ Request Received!</p>
-              <p className="text-[10px] leading-relaxed opacity-90">Our expert will respond within 15 minutes during official working hours (Mon-Fri, 10 AM – 7 PM IST). Check your email and phone.</p>
+              <p className="text-xs font-bold">Request Received!</p>
+              <p className="text-[10px] leading-relaxed opacity-90 font-sans">Our expert will respond within 15 minutes during official working hours (Mon-Fri, 10 AM – 7 PM IST). Check your email and phone.</p>
             </div>
           </motion.div>
         )}

@@ -8,6 +8,29 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface TimelineMilestone {
+  id: string;
+  name: string;
+  description: string;
+  status: "pending" | "in_progress" | "completed";
+  owner: "expert" | "client" | "government";
+  updatedAt?: string;
+  completedAt?: string;
+  title?: string;
+  days?: number | string;
+  form?: string;
+  penalty?: string;
+  tip?: string;
+}
+
+export interface AdminCreateUserResult {
+  uid: string;
+  email: string;
+  password?: string;
+  fullName: string;
+  role: "customer" | "partner";
+}
+
 interface AuthContextType {
   user: any | null;
   profile: UserProfile | null;
@@ -171,4 +194,4 @@ export const useAuth = () => {
 
 // Kept for backward compat — components that import these won't break
 export const getDefaultTimeline = () => [];
-export const checkAccountExpiration = () => false;
+export const checkAccountExpiration = (user?: any) => false;

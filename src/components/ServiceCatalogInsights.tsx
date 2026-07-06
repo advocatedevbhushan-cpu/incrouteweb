@@ -4,7 +4,8 @@ import { useAppNavigate } from "../lib/useAppNavigate";
 import {
   Building2, Shield, Star, Clock, Users, FileText, CheckCircle2,
   ArrowRight, ChevronDown, ChevronUp, Sparkles, Award, TrendingUp,
-  Scale, Landmark, Database, Heart, AlertTriangle, Info, X, HelpCircle
+  Scale, Landmark, Database, Heart, AlertTriangle, Info, X, HelpCircle,
+  Search, Lock
 } from "lucide-react";
 
 interface ServiceType {
@@ -760,11 +761,39 @@ const advantageSpectrum = [
   { icon: Users, title: "Dedicated Expert Assigned", desc: "Every engagement is handled by a dedicated corporate expert — not outsourced to junior staff or automated pipelines." },
 ];
 
+const startingPrices: Record<string, string> = {
+  "pvt-ltd": "₹4,999",
+  "llp": "₹2,999",
+  "opc": "₹3,999",
+  "partnership": "₹1,499",
+  "section8": "₹9,999",
+  "annual-compliance": "₹999",
+  "gst-tax": "₹999",
+  "virtual-cfo": "Custom Pricing",
+  "virtual-office": "₹999",
+  "terms-privacy": "₹1,499",
+  "msme-registration": "₹999",
+  "fssai-registration": "₹1,999",
+  "return-filing": "₹499",
+  "trademark-registration": "₹4,999",
+  "trademark-objection": "₹1,499",
+  "trademark-opposition": "₹2,499",
+  "trademark-assignment": "₹2,999",
+  "brand-protection": "Custom Pricing",
+  "litigation-assistance": "As per Case",
+  "trademark-renewal": "₹2,999",
+  "patent-filing": "₹9,999",
+  "iso-certification": "₹3,999",
+};
+
 export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogInsightsProps) {
   const navigateToTab = useAppNavigate();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [activeSection, setActiveSection] = useState<"advantages" | "documents" | "compliance">("advantages");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [catalogViewMode, setCatalogViewMode] = useState<"grid" | "list">("grid");
+  const [visibleCount, setVisibleCount] = useState(8);
 
   const getCategoryBadgeClass = (category: string) => {
     switch (category) {
@@ -778,7 +807,12 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
     }
   };
 
-  const filtered = catalog.filter(s => activeCategory === "All" || s.category === activeCategory);
+  const filtered = catalog.filter(s => {
+    const matchesCategory = activeCategory === "All" || s.category === activeCategory;
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          s.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const openDetail = (service: ServiceType) => {
     setSelectedService(service);
@@ -795,7 +829,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
   };
 
   return (
-    <div id="catalog-insights-top" className="space-y-12">
+    <div id="catalog-insights-top" className="catalog-page-wrapper pt-6 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <AnimatePresence mode="wait">
         {selectedService ? (
           /* Detailed Blueprint Page View */
@@ -808,58 +842,58 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
             className="space-y-8 max-w-5xl mx-auto text-left"
           >
             {/* Back Button Navigation Bar */}
-            <div className="flex items-center justify-between border-b border-brand-border pb-4">
+            <div className="flex items-center justify-between border-b border-indigo-500/10 pb-4 relative z-10">
               <button
                 onClick={closeDetail}
-                className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-brand-gold hover:text-white font-bold cursor-pointer transition-colors px-3 py-1.5 rounded-lg border border-brand-border bg-brand-bg-lighter hover:border-brand-gold"
+                className="flex items-center gap-2 text-xs font-semibold text-[#4F46E5] hover:text-[#3730A3] cursor-pointer transition-colors px-3.5 py-1.5 rounded-lg border border-indigo-500/10 bg-white/80 hover:bg-white hover:border-indigo-500/30 shadow-sm"
               >
                 ← Back to Catalog
               </button>
-              <span className="text-[10px] font-mono text-brand-text-muted">
+              <span className="text-[10px] font-mono text-slate-400">
                 Blueprint ID: {selectedService.id.toUpperCase()}
               </span>
             </div>
-
+ 
             {/* Split Page Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start relative z-10">
               {/* Left Column: Cover Art & Metrics */}
               <div className="md:col-span-5 space-y-6">
                 {/* Illustration Frame */}
-                <div className="w-full rounded-2xl border border-brand-border bg-[var(--bg-page)] overflow-hidden shadow-xl relative">
-                  {/* Dark base behind illustration */}
-                  <div className="absolute inset-0 bg-[var(--bg-page)] z-0" />
+                <div className="w-full rounded-2xl border border-indigo-500/10 bg-white/50 overflow-hidden shadow-md relative">
+                  {/* Base background behind illustration */}
+                  <div className="absolute inset-0 bg-white/20 z-0" />
                   <img
                     src={selectedService.image}
                     alt={selectedService.name}
                     className="w-full h-auto object-contain aspect-video md:aspect-auto relative z-[1]"
                   />
-                  {/* Subtle vignette overlay */}
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_#0B0F1A_100%)] z-[2] opacity-60 pointer-events-none" />
+                  {/* Soft light vignette overlay */}
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_60%,_rgba(255,255,255,0.7)_100%)] z-[2] pointer-events-none" />
                 </div>
-
+ 
                 {/* Key Metrics block */}
-                <div className="bg-brand-bg-lighter border border-brand-border rounded-xl p-5 space-y-3 font-mono text-[11px] text-brand-text-muted">
+                <div className="bg-white/85 border border-indigo-500/10 rounded-2xl p-5 space-y-3 font-mono text-[11px] text-slate-500 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-brand-gold" /> Timeline:</span>
-                    <span className="font-bold text-brand-text">{selectedService.timeline}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-indigo-500" /> Timeline:</span>
+                    <span className="font-bold text-slate-700 font-sans">{selectedService.timeline}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Minimum Capital:</span>
-                    <span className="font-bold text-brand-text">{selectedService.minCapital}</span>
+                    <span className="font-bold text-slate-700 font-sans">{selectedService.minCapital}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Liability Shield:</span>
-                    <span className={`px-2 py-0.5 rounded font-bold ${selectedService.liability === "Limited" ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
+                    <span className={`px-2 py-0.5 rounded font-bold ${selectedService.liability === "Limited" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-red-500/10 text-red-600 border border-red-500/20"}`}>
                       {selectedService.liability}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Tax Benefit:</span>
-                    <span className="font-bold text-brand-gold">{selectedService.taxBenefit}</span>
+                    <span className="font-bold text-[#4F46E5] font-sans">{selectedService.taxBenefit}</span>
                   </div>
                 </div>
               </div>
-
+ 
               {/* Right Column: Descriptions & Details Tabs */}
               <div className="md:col-span-7 space-y-6">
                 <div className="space-y-2">
@@ -868,35 +902,35 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {selectedService.category}
                     </span>
                     {selectedService.badge && (
-                      <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-brand-gold text-black`}>
+                      <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-indigo-600 text-white`}>
                         {selectedService.badge}
                       </span>
                     )}
                   </div>
-                  <h2 className="text-3xl font-light text-brand-text serif">{selectedService.name}</h2>
+                  <h2 className="text-3xl font-extrabold text-[#080F2A]">{selectedService.name}</h2>
                 </div>
-
-                <p className="text-xs text-brand-text-muted font-sans leading-relaxed border-l-2 border-brand-gold/30 pl-4">
+ 
+                <p className="text-xs text-slate-600 font-sans leading-relaxed border-l-2 border-indigo-500/30 pl-4">
                   {selectedService.about}
                 </p>
-
+ 
                 {/* Details Tab Switcher */}
-                <div className="flex gap-1 bg-brand-bg border border-brand-border rounded-xl p-1 w-fit">
+                <div className="flex gap-1 bg-white/60 border border-indigo-500/10 rounded-xl p-1 w-fit">
                   {(["advantages", "documents", "compliance"] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => setActiveSection(tab)}
                       className={`text-[9px] font-mono uppercase tracking-widest px-3.5 py-2 rounded-lg transition-all cursor-pointer font-bold ${
-                        activeSection === tab ? "bg-brand-gold text-black shadow" : "text-brand-text-muted hover:text-brand-text"
+                        activeSection === tab ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white shadow shadow-[#4F46E5]/15" : "text-slate-400 hover:text-slate-600"
                       }`}
                     >
                       {tab === "advantages" ? "Key Advantages" : tab === "documents" ? "Documents" : "Compliance"}
                     </button>
                   ))}
                 </div>
-
+ 
                 {/* Tab content list frame */}
-                <div className="bg-brand-bg border border-brand-border/40 rounded-xl p-5 min-h-[140px]">
+                <div className="bg-white/80 border border-indigo-500/10 rounded-xl p-5 min-h-[140px] shadow-sm">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeSection}
@@ -908,8 +942,8 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {activeSection === "advantages" && (
                         <ul className="space-y-3">
                           {selectedService.advantages.map((adv, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-xs text-brand-text-muted font-sans leading-relaxed">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />
+                            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 font-sans leading-relaxed">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                               <span>{adv}</span>
                             </li>
                           ))}
@@ -918,8 +952,8 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {activeSection === "documents" && (
                         <ul className="space-y-3">
                           {selectedService.documents.map((doc, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-xs text-brand-text-muted font-sans leading-relaxed">
-                              <FileText className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />
+                            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 font-sans leading-relaxed">
+                              <FileText className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
                               <span>{doc}</span>
                             </li>
                           ))}
@@ -928,7 +962,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       {activeSection === "compliance" && (
                         <ul className="space-y-3">
                           {selectedService.compliance.map((item, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-xs text-brand-text-muted font-sans leading-relaxed">
+                            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 font-sans leading-relaxed">
                               <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                               <span>{item}</span>
                             </li>
@@ -938,24 +972,24 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                     </motion.div>
                   </AnimatePresence>
                 </div>
-
+ 
                 {/* Client Advantage Highlight */}
-                <div className="flex items-start gap-3 p-4 bg-brand-gold/5 border border-brand-gold/15 rounded-xl">
-                  <Info className="w-4.5 h-4.5 text-brand-gold shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 bg-indigo-500/5 border border-indigo-500/15 rounded-xl">
+                  <Info className="w-4.5 h-4.5 text-indigo-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold font-bold block mb-1">Client Advantage Spectrum</span>
-                    <p className="text-xs text-brand-text/90 font-sans leading-relaxed">{selectedService.clientAdvantage}</p>
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-indigo-600 font-bold block mb-1">Client Advantage Spectrum</span>
+                    <p className="text-xs text-slate-700 font-sans leading-relaxed">{selectedService.clientAdvantage}</p>
                   </div>
                 </div>
-
+ 
                 {/* CTAs */}
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-brand-border/60">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-indigo-500/10">
                   <button
                     onClick={() => {
                       closeDetail();
                       navigateToTab("contact");
                     }}
-                    className="px-5 py-3 border border-slate-500 hover:border-brand-gold text-brand-text hover:text-brand-gold font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all cursor-pointer bg-transparent"
+                    className="px-5 py-3 border border-slate-200 hover:border-[#4F46E5] text-slate-600 hover:text-[#4F46E5] font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all cursor-pointer bg-transparent"
                   >
                     Consult Expert
                   </button>
@@ -964,7 +998,7 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                       closeDetail();
                       navigateToTab("services");
                     }}
-                    className="flex items-center gap-2 bg-brand-gold text-black font-mono uppercase tracking-widest text-[10px] px-6 py-3 rounded-lg hover:bg-white transition-all cursor-pointer font-bold shadow-lg shadow-brand-gold/10 animate-pulse"
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#4F46E5] to-[#635BFF] hover:from-[#3F37C9] hover:to-[#4F46E5] text-white font-mono uppercase tracking-widest text-[10px] px-6 py-3 rounded-lg transition-all cursor-pointer font-bold shadow-lg shadow-indigo-500/20"
                   >
                     Begin Onboarding <ArrowRight className="w-3.5 h-3.5" />
                   </button>
@@ -982,127 +1016,417 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
             className="space-y-12"
           >
             {/* Header */}
-            <div className="text-center max-w-3xl mx-auto space-y-4">
-              <div className="inline-flex items-center gap-2.5 px-5 py-2 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/30 uppercase tracking-widest font-mono shadow-[0_0_16px_-4px_rgba(16,185,129,0.2)]">
-                <Sparkles className="w-3.5 h-3.5" /> Detailed Service Intelligence
+            <div className="relative text-center max-w-[820px] mx-auto space-y-5 pt-4 pb-2">
+              
+              {/* Left Side Illustration */}
+              <div className="hidden xl:block absolute -left-48 top-4 z-10 glass-illustration-left pointer-events-none select-none">
+                <div className="w-44 h-36 relative perspective-[800px]" style={{ transformStyle: 'preserve-3d' }}>
+                  {/* Outer glow aura */}
+                  <div className="absolute inset-0 bg-indigo-500/10 blur-xl rounded-full" />
+                  
+                  {/* Folder Back layer */}
+                  <div className="absolute left-4 top-4 w-32 h-24 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-purple-500/10 border border-white/40 shadow-md backdrop-blur-md" style={{ transform: 'rotateY(-15deg) rotateZ(-5deg)', transformStyle: 'preserve-3d' }}>
+                    {/* Folder Tab */}
+                    <div className="absolute -top-2 left-4 w-12 h-4 rounded-t-lg bg-indigo-500/20 border-t border-x border-white/40" />
+                  </div>
+
+                  {/* Document Stack sliding out */}
+                  <div className="absolute left-8 top-1 w-24 h-28 rounded-xl bg-white/95 border border-slate-200 shadow-sm flex flex-col p-3 gap-2" style={{ transform: 'rotateY(-10deg) rotateZ(-2deg)' }}>
+                    <div className="w-12 h-1.5 bg-indigo-200 rounded-full" />
+                    <div className="w-16 h-1 bg-slate-100 rounded-full" />
+                    <div className="w-14 h-1 bg-slate-100 rounded-full" />
+                    <div className="w-10 h-1 bg-slate-100 rounded-full" />
+                  </div>
+                  <div className="absolute left-6 top-2 w-24 h-28 rounded-xl bg-white/80 border border-slate-200 shadow-sm flex flex-col p-3 gap-2" style={{ transform: 'rotateY(-12deg) rotateZ(-4deg)' }}>
+                    <div className="w-10 h-1.5 bg-purple-200 rounded-full" />
+                    <div className="w-14 h-1 bg-slate-100/80 rounded-full" />
+                    <div className="w-12 h-1 bg-slate-100/80 rounded-full" />
+                  </div>
+
+                  {/* Folder Front layer */}
+                  <div className="absolute left-2 top-8 w-34 h-22 rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-white/60 shadow-[0_8px_32px_rgba(31,41,95,0.06)] backdrop-blur-[8px]" style={{ transform: 'rotateY(-12deg) rotateZ(-5deg)' }} />
+
+                  {/* Glassmorphic Shield in foreground */}
+                  <div className="absolute bottom-1 right-2 w-16 h-20 bg-gradient-to-br from-[#4F46E5]/90 to-[#7C3AED]/90 border border-white/30 rounded-2xl shadow-[0_12px_24px_rgba(79,70,229,0.3)] flex items-center justify-center" style={{ transform: 'translateZ(40px)' }}>
+                    <Shield className="w-8 h-8 text-white drop-shadow-md" />
+                    {/* Glowing check inside shield */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold font-sans translate-y-1">✓</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
+              
+              {/* Right Side Illustration - Resized & Shifted Dark Dashboard Laptop */}
+              <div className="hidden xl:block absolute -right-48 top-2 z-10 glass-illustration-right pointer-events-none select-none">
+                <div className="w-[230px] h-[170px] relative perspective-[1000px]" style={{ transformStyle: 'preserve-3d' }}>
+                  {/* Outer glow aura */}
+                  <div className="absolute inset-0 bg-purple-500/10 blur-xl rounded-full" />
+                  
+                  {/* Laptop Screen (tilted backward) */}
+                  <div className="absolute left-[25px] top-1 w-[180px] h-[115px] bg-slate-900 border-[3.5px] border-slate-800 rounded-t-xl shadow-2xl overflow-hidden flex flex-col" style={{ transform: 'rotateY(14deg) rotateX(10deg)', transformStyle: 'preserve-3d' }}>
+                    {/* Screen Content - Dashboard mock */}
+                    <div className="flex-1 flex p-2 gap-2 bg-slate-950">
+                      {/* Dashboard Sidebar */}
+                      <div className="w-10 shrink-0 flex flex-col gap-1.5 border-r border-slate-800/60 pr-1.5">
+                        <div className="w-full h-1 bg-[#4F46E5]/40 rounded-full" />
+                        <div className="w-full h-1 bg-slate-800 rounded-full" />
+                        <div className="w-full h-1 bg-slate-800 rounded-full" />
+                        <div className="w-full h-1 bg-slate-800 rounded-full" />
+                      </div>
+                      
+                      {/* Dashboard Charts Panel */}
+                      <div className="flex-1 flex flex-col gap-1.5 justify-between">
+                        {/* Upper Stats Row */}
+                        <div className="flex justify-between gap-1">
+                          <div className="w-full h-3.5 bg-[#4F46E5]/10 rounded border border-[#4F46E5]/20 flex items-center justify-center">
+                            <div className="w-5 h-0.5 bg-[#4F46E5] rounded-full" />
+                          </div>
+                          <div className="w-full h-3.5 bg-slate-900 rounded border border-slate-800 flex items-center justify-center">
+                            <div className="w-4 h-0.5 bg-emerald-500 rounded-full" />
+                          </div>
+                        </div>
+                        {/* Interactive Sparkline graph */}
+                        <div className="flex-1 bg-slate-900/60 rounded border border-slate-800/80 p-1 flex items-end justify-between relative overflow-hidden">
+                          <svg className="w-full h-full absolute inset-0 text-[#7C3AED]/40" viewBox="0 0 100 30" fill="none">
+                            <path d="M0,25 Q15,10 30,20 T60,5 T90,15 T100,10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            <path d="M0,25 Q15,10 30,20 T60,5 T90,15 T100,10 L100,30 L0,30 Z" fill="rgba(124, 92, 246, 0.05)" />
+                          </svg>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] absolute top-1.5 right-6 animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Glass sheen overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 z-10 pointer-events-none" />
+                  </div>
+
+                  {/* Laptop Base (lying flat in perspective) */}
+                  <div className="absolute left-1 top-[116px] w-[218px] h-[12px] bg-gradient-to-b from-slate-400 to-slate-500 rounded-b-md shadow-lg border-t border-slate-300 origin-top flex items-center justify-center" style={{ transform: 'rotateY(14deg) rotateX(55deg)' }}>
+                    {/* Trackpad representation */}
+                    <div className="w-12 h-1.5 bg-slate-600/30 rounded-sm border-t border-slate-500/20" />
+                  </div>
+                  
+                  {/* Subtle laptop shadows */}
+                  <div className="absolute left-7 top-[125px] w-[176px] h-2 bg-indigo-950/20 blur-sm rounded-full" style={{ transform: 'rotateY(14deg)' }} />
+                </div>
+              </div>
+
+              {/* Exploration Badge Pill */}
+              <div className="inline-flex justify-center">
+                <span className="hero-pill-badge">
+                  Explore Our Solutions
+                </span>
+              </div>
+              
+              <h1 className="text-[#080F2A] tracking-tight" style={{
+                fontSize: 'clamp(42px, 5vw, 72px)',
+                lineHeight: '0.95',
+                fontWeight: 800,
+                letterSpacing: '-0.04em'
+              }}>
                 Service Catalog &{" "}
-                <span className="text-brand-gold italic font-normal">Client Advantage Spectrum.</span>
+                <span className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent italic" style={{
+                  fontStyle: 'italic',
+                  fontWeight: 800,
+                  paddingRight: '0.15em',
+                  display: 'inline-block'
+                }}>
+                  Client Advantage
+                </span>{" "}
+                Spectrum
               </h1>
-              <p className="text-sm text-brand-text-muted font-sans leading-relaxed max-w-xl mx-auto">
-                Deep-dive structural blueprints for every service — document rules, compliance requirements, timelines, and legal advantages.
+              
+              <p className="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed max-w-2xl mx-auto font-medium">
+                Deep domain expertise across 25+ services to start, manage, grow and scale your business with complete compliance and confidence.
               </p>
-              {/* Decorative separator */}
-              <div className="flex items-center justify-center gap-3 pt-2">
-                <div className="h-px w-16 bg-gradient-to-r from-transparent to-brand-gold/40" />
-                <div className="w-1.5 h-1.5 rounded-full bg-brand-gold/50" />
-                <div className="h-px w-16 bg-gradient-to-l from-transparent to-brand-gold/40" />
+            </div>
+
+            {/* Stats Strip */}
+            <div className="w-full max-w-4xl mx-auto px-4">
+              <div className="catalog-stats-strip py-4 px-6 sm:px-8">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 text-left">
+                  {[
+                    { icon: Building2, value: "25+", label: "Services Available" },
+                    { icon: Users, value: "10,000+", label: "Clients Served" },
+                    { icon: CheckCircle2, value: "99%", label: "On-time Compliance" },
+                    { icon: Clock, value: "24/7", label: "Expert Support" },
+                  ].map((s, i) => (
+                    <React.Fragment key={i}>
+                      <div className="flex items-center gap-3.5 py-1.5 px-1 flex-1 justify-center sm:justify-start w-full sm:w-auto">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-[#4F46E5] shrink-0 border border-indigo-500/20">
+                          <s.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-base font-extrabold text-[#080F2A] leading-none">{s.value}</p>
+                          <p className="text-[11px] text-slate-500 mt-1.5 font-semibold leading-tight">{s.label}</p>
+                        </div>
+                      </div>
+                      {i < 3 && (
+                        <span className="hidden sm:inline-block w-[1px] h-8 bg-slate-200/80 self-center shrink-0" />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Category Filter */}
-            <div className="flex flex-wrap items-center justify-center gap-2 max-w-xl mx-auto">
-              {categoryFilters.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs font-mono uppercase tracking-widest font-bold border transition-all duration-150 fast-transition cursor-pointer ${
-                    activeCategory === cat
-                      ? "bg-brand-gold text-black border-brand-gold"
-                      : "bg-brand-bg border-brand-border text-brand-text-muted hover:border-brand-blue hover:text-brand-blue"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            {/* Filter and Search Action Row */}
+            <div className="w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 relative z-10">
+              
+              {/* Category Filters (Scrolls horizontally on mobile, wraps on tablet) */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+                {categoryFilters.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      setActiveCategory(cat);
+                      setVisibleCount(8); // reset pagination when category changes
+                    }}
+                    className={`category-pill px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer whitespace-nowrap ${
+                      activeCategory === cat ? "active" : "text-slate-500 hover:text-[#4F46E5]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Search Bar & View Grid/List Toggle */}
+              <div className="flex items-center gap-3 w-full md:w-auto self-end md:self-auto">
+                
+                {/* Search Inputs */}
+                <div className="relative flex-1 md:w-64">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setVisibleCount(8); // reset pagination when query changes
+                    }}
+                    placeholder="Search a service..."
+                    className="catalog-search-input pl-10 pr-4 py-2 w-full text-xs font-sans text-[#080F2A] outline-none"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold font-sans cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                
+                {/* Grid/List View Toggles */}
+                <div className="flex items-center gap-1.5 p-1 bg-white/60 border border-indigo-500/10 rounded-xl shadow-sm">
+                  <button
+                    onClick={() => setCatalogViewMode("grid")}
+                    className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                      catalogViewMode === "grid"
+                        ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white shadow-md shadow-[#4F46E5]/15"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                    aria-label="Grid View"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                      <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                      <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                      <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                    </svg>
+                  </button>
+                  
+                  <button
+                    onClick={() => setCatalogViewMode("list")}
+                    className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                      catalogViewMode === "list"
+                        ? "bg-gradient-to-r from-[#4F46E5] to-[#635BFF] text-white shadow-md shadow-[#4F46E5]/15"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                    aria-label="List View"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <line x1="3" y1="12" x2="21" y2="12"></line>
+                      <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                
+              </div>
             </div>
 
-            {/* Service Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto text-left">
-              {filtered.map((service, idx) => {
+            {/* Service Cards Grid / List */}
+            <div className={
+              catalogViewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto text-left"
+                : "grid grid-cols-1 gap-6 max-w-5xl mx-auto text-left"
+            }>
+              {filtered.slice(0, visibleCount).map((service, idx) => {
                 const Icon = service.icon;
+                const price = startingPrices[service.id] || "₹999";
+                
+                if (catalogViewMode === "list") {
+                  return (
+                    <motion.div
+                      key={service.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: idx * 0.04 }}
+                      className="service-glass-card p-5 sm:p-6 relative group"
+                    >
+                      <div className="flex flex-col sm:flex-row items-center gap-6">
+                        
+                        {/* Left: Glassy image box */}
+                        <div className="w-full sm:w-48 shrink-0 relative aspect-[16/9] sm:aspect-auto sm:h-28 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-50/50 via-slate-50 to-purple-50/50 border border-indigo-500/10 flex items-center justify-center">
+                          {/* Background animated circles */}
+                          <div className="absolute top-1 left-1 w-10 h-10 rounded-full bg-indigo-200/30 blur-md" />
+                          <div className="absolute bottom-1 right-1 w-12 h-12 rounded-full bg-purple-200/30 blur-md" />
+                          
+                          <div className="w-16 h-10 rounded-lg bg-white/50 border border-white/60 shadow-sm flex items-center justify-center">
+                            <Icon className="w-6 h-6 text-[#4F46E5]" />
+                          </div>
+                        </div>
+                        
+                        {/* Middle Content */}
+                        <div className="flex-1 min-w-0 space-y-2 text-left">
+                          <div className="flex items-center gap-2">
+                            <h3 onClick={() => openDetail(service)} className="text-sm font-bold text-[#080F2A] hover:text-[#4F46E5] transition-colors cursor-pointer">
+                              {service.name}
+                            </h3>
+                            <span className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-[#4F46E5] border border-indigo-500/20">
+                              {service.category}
+                            </span>
+                          </div>
+                          
+                          <p className="text-[11px] text-slate-500 font-sans leading-relaxed line-clamp-2">
+                            {service.description}
+                          </p>
+                          
+                          {/* Timeline / Starting Price metadata strip */}
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-slate-400">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-[#4F46E5]" /> Timeline: <strong className="text-slate-600 font-sans">{service.timeline}</strong>
+                            </span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                            <span>
+                              Price: <strong className="text-slate-500 font-sans font-semibold">Stated after consultation</strong>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Right: View Button */}
+                        <button
+                          onClick={() => openDetail(service)}
+                          className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-indigo-500/5 text-[#4F46E5] font-bold text-[11px] rounded-xl border border-indigo-500/10 cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap self-stretch sm:self-center justify-center"
+                        >
+                          View Details <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                        
+                      </div>
+                    </motion.div>
+                  );
+                }
+                
+                {/* Standard Grid Card */}
                 return (
                   <motion.div
                     key={service.id}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: idx * 0.04 }}
-                    className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden hover:border-[var(--accent)] transition-all duration-300 relative group flex flex-col justify-between premium-card"
+                    transition={{ duration: 0.3, delay: idx * 0.04 }}
+                    className="service-glass-card flex flex-col justify-between group relative"
                   >
-                    {/* Cover Image Header using perfect aspect ratio */}
-                    <div className="relative aspect-[16/9] overflow-hidden border-b border-[var(--border-subtle)]">
+                    
+                    {/* Header: Full-width Image Banner */}
+                    <div className="w-full h-[180px] overflow-hidden relative border-b border-indigo-500/10 shrink-0">
                       <img
                         src={service.image}
                         alt={service.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       
                       {/* Floating Badges */}
-                      <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-10">
-                        <span className={`text-[8px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-md border ${getCategoryBadgeClass(service.category)} font-bold backdrop-blur-md bg-black/50`}>
+                      <div className="absolute top-3 left-3 flex flex-wrap gap-1 z-10">
+                        <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-black/60 text-white backdrop-blur-sm">
                           {service.category}
                         </span>
                         {service.badge && (
-                          <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md backdrop-blur-md ${service.badgeColor}`}>
+                          <span className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#4F46E5] text-white shadow-sm font-semibold">
                             {service.badge}
                           </span>
                         )}
                       </div>
                     </div>
-
+                    
                     {/* Body Content */}
                     <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-brand-gold/10 border border-brand-gold/20 text-brand-gold">
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <h3 onClick={() => openDetail(service)} className="text-sm font-semibold text-brand-text group-hover:text-brand-gold transition-colors font-sans cursor-pointer">
-                            {service.name}
-                          </h3>
-                        </div>
+                      
+                      <div className="space-y-2.5 text-left">
+                        <h3
+                          onClick={() => openDetail(service)}
+                          className="text-[13px] font-extrabold text-[#080F2A] group-hover:text-[#4F46E5] transition-colors font-sans cursor-pointer leading-snug line-clamp-2 min-h-[38px] flex items-center"
+                          title={service.name}
+                        >
+                          {service.name}
+                        </h3>
                         
-                        <p className="text-xs text-brand-text-muted leading-relaxed line-clamp-3 font-sans">
+                        <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-3 font-sans font-light min-h-[48px]">
                           {service.description}
                         </p>
                       </div>
-
-                      {/* Info row */}
-                      <div className="space-y-2 border-t border-brand-border/60 pt-3">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-brand-text-muted">
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-brand-gold" /> Timeline:</span>
-                          <span className="font-bold text-brand-text">{service.timeline}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[10px] font-mono text-brand-text-muted">
-                          <span>Tax Benefit:</span>
-                          <span className="font-bold text-brand-gold">{service.taxBenefit}</span>
-                        </div>
+                      
+                      {/* Info & Pricing Row */}
+                      <div className="flex items-center justify-between border-t border-slate-100/80 pt-3 text-[10px]">
+                        <span className="flex items-center gap-1 text-slate-400 font-medium">
+                          <Clock className="w-3.5 h-3.5 text-[#4F46E5] shrink-0" />
+                          <span className="text-slate-600 font-medium">{service.timeline}</span>
+                        </span>
+                        
+                        <span className="text-slate-500 font-medium font-sans text-[10px]">
+                          Stated after consultation
+                        </span>
                       </div>
-
-                      {/* View Details Button */}
+                      
+                      {/* View details blueprint CTA */}
                       <button
                         onClick={() => openDetail(service)}
-                        className="w-full py-2.5 mt-2 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] group-hover:border-[var(--accent)] group-hover:bg-[var(--accent-soft)] text-[var(--text-secondary)] group-hover:text-[var(--accent)] font-mono uppercase tracking-widest text-[9px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="btn-view-blueprint w-full flex items-center justify-center gap-1.5"
                       >
-                        View Blueprint <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        View Details <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </button>
+                      
                     </div>
                   </motion.div>
                 );
               })}
             </div>
 
+            {/* Load More Services Button */}
+            {filtered.length > visibleCount && (
+              <div className="flex justify-center pt-4 pb-2">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 8)}
+                  className="px-6 py-2.5 bg-white/80 hover:bg-white text-[#4F46E5] text-xs font-semibold rounded-full border border-indigo-500/15 hover:border-indigo-500/35 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/5 backdrop-blur-sm"
+                >
+                  Load More Services <ChevronDown className="w-4 h-4 text-[#4F46E5]" />
+                </button>
+              </div>
+            )}
+
             {/* Client Advantage Spectrum */}
             <div className="max-w-5xl mx-auto space-y-8 pt-8">
               <div className="text-center space-y-3">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-[10px] font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
-                  <Award className="w-3 h-3" /> Why Choose Incroute
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 text-[#4F46E5] text-[10px] font-bold rounded-full border border-indigo-500/20 uppercase tracking-widest font-mono">
+                  <Award className="w-3.5 h-3.5 text-[#4F46E5]" /> Why Choose Incroute
                 </div>
-                <h2 className="text-2xl font-light text-brand-text serif">
-                  The Client <span className="text-brand-gold italic font-normal">Advantage Spectrum.</span>
+                <h2 className="text-3xl font-extrabold text-[#080F2A] tracking-tight">
+                  The Client{" "}
+                  <span className="bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent italic">
+                    Advantage Spectrum
+                  </span>
                 </h2>
-                <p className="text-xs text-brand-text-muted font-sans max-w-lg mx-auto leading-relaxed">
+                <p className="text-xs text-slate-500 font-sans max-w-lg mx-auto leading-relaxed font-medium">
                   Six core advantages every Incroute client receives — regardless of which service they choose.
                 </p>
               </div>
@@ -1111,39 +1435,64 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                 {advantageSpectrum.map((item, idx) => (
                   <div
                     key={idx}
-                    className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3 hover:border-[var(--accent)]/30 transition-all duration-200 group premium-card text-left"
+                    className="bg-white/80 backdrop-blur-md border border-indigo-500/10 rounded-2xl p-6 space-y-3 hover:border-indigo-500/30 hover:shadow-lg transition-all duration-300 group text-left"
                   >
-                    <div className="p-2.5 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-brand-gold w-fit group-hover:bg-brand-gold group-hover:text-black transition-colors">
+                    <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-[#4F46E5] w-fit group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                       <item.icon className="w-4 h-4" />
                     </div>
-                    <h4 className="text-sm font-semibold text-brand-text">{item.title}</h4>
-                    <p className="text-xs text-brand-text-muted font-sans leading-relaxed">{item.desc}</p>
+                    <h4 className="text-sm font-bold text-[#080F2A]">{item.title}</h4>
+                    <p className="text-xs text-slate-500 font-sans leading-relaxed font-light">{item.desc}</p>
                   </div>
                 ))}
               </div>
 
               {/* Bottom CTA */}
-              <div className="premium-hero-card border border-[var(--border-subtle)] rounded-2xl p-8 sm:p-10 text-center space-y-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--accent)]/10 blur-3xl rounded-full pointer-events-none" />
+              <div className="bg-white/80 backdrop-blur-md border border-indigo-500/10 rounded-3xl p-8 sm:p-10 text-center space-y-5 relative overflow-hidden shadow-lg shadow-indigo-500/5">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
                 <div className="relative z-10 space-y-4">
-                  <h3 className="text-xl font-light text-[var(--text-primary)] serif">Ready to get started?</h3>
-                  <p className="text-sm text-[var(--text-secondary)] font-sans max-w-md mx-auto">
+                  <h3 className="text-2xl font-bold text-[#080F2A] tracking-tight">Ready to get started?</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 font-sans max-w-md mx-auto font-medium">
                     Pick your structure, upload your documents, and let Incroute handle the rest — end to end.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                     <button
                       onClick={() => navigateToTab("services")}
-                      className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer flex items-center gap-2"
+                      className="px-6 py-3 bg-gradient-to-r from-[#4F46E5] to-[#635BFF] hover:from-[#3F37C9] hover:to-[#4F46E5] text-white font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-200 cursor-pointer flex items-center gap-2 shadow-md shadow-indigo-500/20"
                     >
                       Start Registration <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => navigateToTab("contact")}
-                      className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] hover:text-[var(--accent)] font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-150 cursor-pointer bg-transparent"
+                      className="px-6 py-3 border border-slate-200 hover:border-indigo-500 text-slate-700 hover:text-indigo-600 font-bold text-[10px] tracking-wider uppercase rounded-lg transition-all duration-200 cursor-pointer bg-transparent"
                     >
                       Talk to an Expert
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Bottom trust strip */}
+              <div className="catalog-trust-strip p-6 sm:p-8 mt-10 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-left">
+                  {[
+                    { icon: Shield, title: "Expert Guidance", desc: "Consult directly with corporate lawyers & CA experts" },
+                    { icon: Database, title: "Transparent Pricing", desc: "No hidden charges, zero obligation recommendations" },
+                    { icon: Lock, title: "Secure & Reliable", desc: "Bank-grade file storage & encrypted communications" },
+                    { icon: Users, title: "End-to-End Support", desc: "We manage preparation, registry lodging & filings" },
+                  ].map((item, idx) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <React.Fragment key={idx}>
+                        <div className="flex flex-col gap-2.5 flex-1 trust-strip-divider pr-4 md:pl-2">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-[#4F46E5] shrink-0 border border-indigo-500/20">
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <h4 className="text-xs font-bold text-[#080F2A]">{item.title}</h4>
+                          <p className="text-[11px] text-slate-500 leading-normal font-sans font-light">{item.desc}</p>
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </div>
             </div>

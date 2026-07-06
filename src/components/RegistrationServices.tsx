@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milestone, ArrowRight, CornerDownRight, Sparkles, Search, Lock, ChevronRight, AlertTriangle, CheckCircle2, Loader2, Star, Shield, Database, Landmark, TrendingUp, Scale, FileText, Heart, X, ArrowLeft } from "lucide-react";
+import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milestone, ArrowRight, CornerDownRight, Sparkles, Search, Lock, ChevronRight, AlertTriangle, CheckCircle2, Loader2, Star, Shield, Database, Landmark, TrendingUp, Scale, FileText, Heart, X, ArrowLeft, Calendar, Folder } from "lucide-react";
 import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
@@ -1478,6 +1478,7 @@ export default function RegistrationServices({
   const navigate = useNavigate();
   const [selectedEntityId, setSelectedEntityId] = useState("pvt-ltd");
   const [viewMode, setViewMode] = useState<"grid" | "detail">("grid");
+  const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [savedServices, setSavedServices] = useState<string[]>([]);
@@ -2044,135 +2045,276 @@ export default function RegistrationServices({
           <LogoTicker />
 
           {/* ═══ TRUST METRICS ROW ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto trust-strip pt-4">
-            <div className="stats-strip px-6 py-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="w-full max-w-[1320px] mx-auto trust-strip pt-4 px-4 sm:px-6">
+            <div className="stats-strip px-6 py-6 border border-indigo-500/10">
+              <div className="flex flex-wrap lg:flex-nowrap justify-between items-center gap-6">
                 {[
                   { icon: Users, value: "2,000+", label: "Businesses Served" },
                   { icon: FileText, value: "10,000+", label: "Compliance Filings" },
                   { icon: Shield, value: "500+", label: "Trademark Applications" },
                   { icon: CheckCircle2, value: "99%", label: "On-Time Compliance" },
-                  { icon: Award, value: "12+", label: "Years Expertise" },
+                  { icon: Award, value: "12+", label: "Years' Expertise" },
                   { icon: Clock, value: "24/7", label: "Expert Support" },
                 ].map((m, i) => (
-                  <div key={i} className="flex items-center gap-3.5 stat-item">
-                    <div className="stat-icon-wrapper shrink-0">
-                      <m.icon className="w-4 h-4" />
+                  <React.Fragment key={i}>
+                    <div className="flex items-center gap-3 stat-item flex-1 min-w-[150px] justify-center lg:justify-start">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[#4F46E5] shrink-0">
+                        <m.icon className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-base font-extrabold text-[#080F2A] leading-none">{m.value}</p>
+                        <p className="text-[10px] text-slate-500 font-medium mt-1 leading-tight">{m.label}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="stat-number leading-none">{m.value}</p>
-                      <p className="stat-label mt-1">{m.label}</p>
-                    </div>
-                  </div>
+                    {i < 5 && (
+                      <span className="hidden lg:inline-block w-[1px] h-8 bg-slate-200/60 self-center" />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
           </div>
 
           {/* ═══ FEATURES STRIP — Built for Modern Businesses ═══ */}
-          <div className="w-full max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 features-strip-container">
-            {[
-              { icon: Shield, title: "Secure & Reliable", desc: "Bank-grade security for all your documents" },
-              { icon: Clock, title: "Stay Ahead", desc: "Smart reminders to never miss a deadline" },
-              { icon: Users, title: "Expert Support", desc: "Dedicated professionals by your side" },
-              { icon: Database, title: "All in One Place", desc: "Manage legal, tax & compliance needs" },
-            ].map((f, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-2 feature-block-item">
-                <f.icon className="feature-block-icon" />
-                <h4 className="feature-block-title">{f.title}</h4>
-                <p className="feature-block-desc">{f.desc}</p>
-              </div>
-            ))}
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-8 pb-4">
+            <div className="card-glass grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 sm:p-8">
+              {[
+                { icon: Shield, title: "Secure & Reliable", desc: "Bank-grade security for all your documents" },
+                { icon: Clock, title: "Stay Ahead", desc: "Smart reminders so you never miss a deadline" },
+                { icon: Users, title: "Expert Support", desc: "Dedicated professionals by your side" },
+                { icon: Database, title: "All in One Place", desc: "Manage legal, tax & compliance needs seamlessly" },
+              ].map((f, i) => (
+                <div key={i} className="flex items-start gap-4 text-left feature-item-col pr-4">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[#4F46E5] shrink-0 mt-0.5">
+                    <f.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-bold text-[#080F2A]">{f.title}</h4>
+                    <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
-          <SReveal className="w-full max-w-6xl mx-auto pt-4 pb-2">
-            <div className="text-center space-y-1.5 mb-6">
-              <p className="text-[11px] font-semibold text-[var(--accent)] uppercase tracking-[0.2em]">Platform Overview</p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Everything You Need. One Place.</h2>
-              <p className="text-[14px] text-[var(--text-secondary)] max-w-lg mx-auto">From incorporation to annual filings — every compliance requirement tracked, managed, and delivered.</p>
+          <SReveal className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8 text-center">
+            <div className="space-y-2 mb-8">
+              <p className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-[0.25em]">Platform Overview</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#080F2A] tracking-tight">Everything You Need. One Place.</h2>
+              <p className="text-[13px] text-slate-500 max-w-xl mx-auto font-medium">From incorporation to annual filings — enjoy complete compliance management.</p>
             </div>
-            <div className="relative rounded-2xl border border-[var(--border-subtle)] bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-alt)] p-5 sm:p-8 shadow-[0_8px_40px_-12px_rgba(108,124,255,0.08)]">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-                <div className="lg:col-span-3">
-                  <DashboardPreview />
+            
+            <div className="platform-overview-panel p-6 sm:p-8 text-left">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                
+                {/* Left Side: Services Modules Grid (Col Span 3) */}
+                <div className="lg:col-span-3 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { title: "Company Incorporation", icon: Building2, active: false },
+                      { title: "Compliance Calendar", icon: Calendar, active: false },
+                      { title: "ROC & GST Filings", icon: FileText, active: false },
+                      { title: "Document Vault", icon: Folder, active: false },
+                      { title: "Legal Support", icon: Users, active: true },
+                      { title: "Trademark & IP", icon: Award, active: false },
+                      { title: "Advisory & Reports", icon: TrendingUp, active: false },
+                    ].map((mod, i) => (
+                      <div
+                        key={i}
+                        className={`platform-module-btn p-5 flex flex-col items-center justify-center gap-3 text-center relative h-32 ${
+                          mod.active ? "active border-[#4F46E5] text-[#4F46E5]" : "text-slate-700"
+                        } ${i === 6 ? "sm:col-span-3 h-24" : ""}`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${mod.active ? "bg-indigo-500/10 text-[#4F46E5]" : "bg-slate-100 text-slate-500"}`}>
+                          <mod.icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-xs font-bold font-sans tracking-tight">{mod.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Security Banner Strip */}
+                  <div className="w-full py-3.5 px-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center gap-2 text-[#4F46E5] text-xs font-bold">
+                    <Shield className="w-4 h-4" />
+                    <span>Bank-grade security with end-to-end data encryption</span>
+                  </div>
                 </div>
-                <div className="lg:col-span-2">
-                  <CompliancePreview />
+                
+                {/* Right Side: Upcoming Deadlines Panel (Col Span 2) */}
+                <div className="lg:col-span-2 bg-white/60 border border-indigo-500/5 rounded-2xl p-6 text-left space-y-5 h-full">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[14px] font-bold text-[#080F2A]">Upcoming Deadlines</h3>
+                    <button onClick={() => navigateToTab("compliance")} className="text-[11px] font-bold text-[#4F46E5] hover:underline cursor-pointer">View All</button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {[
+                      { day: "18", month: "MAY", title: "ROC Filing (AOC-4)", category: "Private Limited Company • FY 2023-24", priority: "High", priorityColor: "bg-red-500/10 text-red-500 border-red-500/20" },
+                      { day: "22", month: "MAY", title: "GST Return (GSTR-1)", category: "Monthly Filing", priority: "Medium", priorityColor: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+                      { day: "28", month: "MAY", title: "TDS Return (Quarterly)", category: "Q4 • FY 2023-24", priority: "Medium", priorityColor: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+                      { day: "05", month: "JUN", title: "Board Meeting", category: "Quarterly Compliance", priority: "Low", priorityColor: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+                    ].map((item, idx) => (
+                      <div key={idx} className="deadline-item-row flex items-center gap-4">
+                        <div className="date-chip shrink-0">
+                          <span className="text-[8px] font-bold text-slate-400 leading-none">{item.month}</span>
+                          <span className="text-base font-extrabold text-[#4F46E5] leading-none mt-1">{item.day}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[13px] font-bold text-[#080F2A] truncate leading-snug">{item.title}</h4>
+                          <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{item.category}</p>
+                        </div>
+                        <span className={`text-[9px] font-extrabold tracking-wide uppercase px-2 py-0.5 rounded-md border shrink-0 ${item.priorityColor}`}>
+                          {item.priority}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+                
               </div>
             </div>
           </SReveal>
 
           {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
-          <div className="w-full max-w-5xl mx-auto space-y-5 text-left">
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
             <div className="text-center space-y-1">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Choose Your Business Structure</h2>
-              <p className="text-[13px] text-[var(--text-secondary)]">The right entity type is the foundation of your business journey.</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Choose Your Business Structure</h2>
+              <p className="text-[13px] text-slate-500 font-medium">Select the right structure for your business goals and growth plans.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { title: "Private Limited Company", desc: "Best for startups & growing businesses.", benefits: ["Separate legal entity", "Limited liability protection", "Easy fundraising"], id: "pvt-ltd" },
-                { title: "Limited Liability Partnership", desc: "Best for professional & service businesses.", benefits: ["Flexible management", "Limited liability", "Less compliance"], id: "llp" },
-                { title: "One Person Company", desc: "Best for solo founders & individual entrepreneurs.", benefits: ["100% ownership", "Separate legal entity", "Limited liability"], id: "opc" },
+                { title: "Private Limited Company", desc: "Best for scaling startups and growing businesses.", benefits: ["Separate legal entity", "Limited liability protection", "Easy to raise funds"], id: "pvt-ltd", featured: true },
+                { title: "Limited Liability Partnership (LLP)", desc: "Ideal for professionals and small businesses.", benefits: ["Flexible management", "Limited liability", "Lower compliance"], id: "llp", featured: false },
+                { title: "One Person Company (OPC)", desc: "Perfect for solopreneurs and consultants.", benefits: ["100% ownership", "Separate legal entity", "Limited liability"], id: "opc", featured: false },
               ].map((item, i) => (
-                <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-3 hover:border-[var(--accent)] transition-all duration-200 group">
-                  <h3 className="text-[15px] font-bold text-[var(--accent)]">{item.title}</h3>
-                  <p className="text-[12px] text-[var(--text-secondary)]">{item.desc}</p>
-                  <ul className="space-y-1.5">
-                    {item.benefits.map((b, j) => <li key={j} className="flex items-center gap-2 text-[12px] text-[var(--text-secondary)]"><CheckCircle2 className="w-3 h-3 text-[var(--accent)]" />{b}</li>)}
-                  </ul>
-                  <button onClick={() => navigate(`/services/private-corporate/${item.id}/`)} className="text-[12px] text-[var(--accent)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all cursor-pointer pt-2">
-                    Incorporate in 7-10 Days <ArrowRight className="w-3 h-3" />
+                <div
+                  key={i}
+                  className={`business-card p-6 flex flex-col justify-between space-y-4 relative ${
+                    item.featured ? "featured" : ""
+                  }`}
+                >
+                  {item.featured && (
+                    <span className="absolute -top-3 left-6 px-2.5 py-0.5 bg-[#4F46E5] text-white text-[9px] font-bold rounded-full uppercase tracking-wider shadow-sm">
+                      Popular
+                    </span>
+                  )}
+                  <div className="space-y-3">
+                    <h3 className="text-[15px] font-bold text-[#080F2A] mt-2">{item.title}</h3>
+                    <p className="text-[12px] text-slate-500 leading-relaxed font-sans">{item.desc}</p>
+                    <ul className="space-y-2 pt-2">
+                      {item.benefits.map((b, j) => (
+                        <li key={j} className="flex items-start gap-2 text-[12px] text-slate-600 font-sans">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#4F46E5] shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/services/private-corporate/${item.id}/`)}
+                    className="text-[12px] text-[#4F46E5] font-bold flex items-center gap-1.5 hover:gap-2.5 transition-all cursor-pointer pt-2 leading-none"
+                  >
+                    Incorporation in 7-10 days <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
+              
               {/* Consultation card */}
-              <div className="bg-[var(--bg-surface)] border border-[var(--accent)]/20 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-[15px] font-bold text-[var(--text-primary)]">Not sure which is right for you?</h3>
-                  <p className="text-[12px] text-[var(--text-secondary)] mt-2">Talk to our experts and get free business structure recommendation.</p>
+              <div className="consultation-card p-6 flex flex-col justify-between space-y-5">
+                <div className="space-y-3 text-left">
+                  <h3 className="text-[15px] font-bold text-white leading-snug">Not sure which is right for you?</h3>
+                  <p className="text-[12px] text-slate-200 leading-relaxed font-sans">Talk to our experts and get free personalized guidance.</p>
+                  <ul className="space-y-2 pt-1.5">
+                    {["Business structure analysis", "Compliance roadmap", "Zero obligation"].map((item, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-[12px] text-white font-sans font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-200 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <button onClick={() => navigateToTab("contact")} className="w-full py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] text-[12px] font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
+                <button
+                  onClick={() => navigateToTab("contact")}
+                  className="w-full py-2.5 bg-white hover:bg-slate-50 text-[#4F46E5] text-[12px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                >
                   Book Free Consultation <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
-            <div className="flex justify-center">
-              <button onClick={() => navigateToTab("catalog")} className="px-5 py-2.5 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-all cursor-pointer flex items-center gap-2">
+            
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => navigateToTab("catalog")}
+                className="px-5 py-2.5 border border-slate-200 hover:border-indigo-500 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 bg-white/40 hover:bg-white"
+              >
                 View More Services <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
           {/* ═══ COMPLIANCE DEADLINE CARDS ═══ */}
-          <div className="w-full max-w-6xl mx-auto space-y-4 text-left pt-4">
-            <div className="flex items-center justify-between">
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Never Miss a Compliance Deadline</h2>
-                <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Stay ahead with our intelligent compliance calendar.</p>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Never Miss a Compliance Deadline</h2>
+                <p className="text-[13px] text-slate-500 font-medium mt-0.5">Stay ahead with our intelligent compliance calendar.</p>
               </div>
-              <button onClick={() => navigateToTab("compliance")} className="text-[12px] text-[var(--accent)] font-medium flex items-center gap-1 cursor-pointer whitespace-nowrap">View Full Calendar <ArrowRight className="w-3 h-3" /></button>
+              <button
+                onClick={() => navigateToTab("compliance")}
+                className="text-[12px] text-[#4F46E5] font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap self-start sm:self-center"
+              >
+                View Full Calendar <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
               {[
-                { due: "DUE IN 5 DAYS", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2024", penalty: "₹100 per day", color: "#EF4444" },
-                { due: "DUE IN 8 DAYS", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2024", penalty: "₹5,000 - ₹25,000", color: "#F59E0B" },
-                { due: "DUE IN 12 DAYS", title: "AOC-4 Filing", desc: "Financial statements & board report filing.", date: "01 Jun 2024", penalty: "₹100 per day", color: "#F59E0B" },
-                { due: "DUE IN 18 DAYS", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2024", penalty: "₹5,000", color: "var(--accent)" },
-                { due: "DUE IN 25 DAYS", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2024", penalty: "₹100 per day", color: "var(--accent)" },
+                { due: "DUE IN 5 DAYS", category: "GST Compliance", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2024", penalty: "₹100 per day", color: "#EF4444", status: "Due Soon" },
+                { due: "DUE IN 8 DAYS", category: "ROC Compliance", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2024", penalty: "₹5,000 - ₹25,000", color: "#F59E0B", status: "Upcoming" },
+                { due: "DUE IN 12 DAYS", category: "ROC Compliance", title: "AOC-4 Filing", desc: "Financial statements & board report filing.", date: "01 Jun 2024", penalty: "₹100 per day", color: "#F59E0B", status: "Upcoming" },
+                { due: "DUE IN 18 DAYS", category: "ROC Compliance", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2024", penalty: "₹5,000", color: "#4F46E5", status: "Upcoming" },
+                { due: "DUE IN 25 DAYS", category: "Tax Compliance", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2024", penalty: "₹100 per day", color: "#4F46E5", status: "Upcoming" },
               ].map((c, i) => (
-                <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3 hover:border-[var(--accent)] transition-colors">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block" style={{ background: `${c.color}20`, color: c.color }}>{c.due}</span>
-                  <h4 className="text-[14px] font-bold text-[var(--text-primary)] leading-tight">{c.title}</h4>
-                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">{c.desc}</p>
-                  <div className="text-[10px] text-[var(--text-tertiary)] pt-2 border-t border-[var(--border-subtle)] space-y-1">
-                    <div className="flex justify-between"><span>Due: {c.date}</span></div>
-                    <div><span style={{ color: c.color }}>Penalty: {c.penalty}</span></div>
+                <div key={i} className="card-glass p-5 flex flex-col justify-between min-h-[220px]">
+                  <div className="space-y-2.5 text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                        {c.category}
+                      </span>
+                    </div>
+                    <h4 className="text-[14px] font-extrabold text-[#080F2A] leading-snug">{c.title}</h4>
+                    <p className="text-[11px] text-slate-500 leading-normal font-sans">{c.desc}</p>
                   </div>
-                  <div className="flex items-center gap-3 pt-1">
-                    <button onClick={() => navigateToTab("contact")} className="text-[11px] text-[var(--accent)] font-medium cursor-pointer flex items-center gap-0.5">File Now <ArrowRight className="w-2.5 h-2.5" /></button>
-                    <button onClick={() => alert(`✓ Reminder set for "${c.title}" — due ${c.date}. We'll notify you before the deadline.`)} className="text-[11px] text-[var(--text-secondary)] font-medium cursor-pointer">Set Reminder</button>
+                  
+                  <div className="space-y-2.5 pt-3.5 mt-3.5 border-t border-slate-100">
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                      <span>Due: {c.date}</span>
+                      <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
+                        c.status === "Due Soon" ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-[#4F46E5]"
+                      }`}>
+                        {c.status}
+                      </span>
+                    </div>
+                    <div className="text-[9px] font-semibold font-sans truncate" style={{ color: c.color }}>
+                      Penalty: {c.penalty}
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        onClick={() => navigateToTab("contact")}
+                        className="text-[11px] text-[#4F46E5] font-bold cursor-pointer flex items-center gap-0.5 hover:gap-1 transition-all"
+                      >
+                        File Now <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => alert(`✓ Reminder set for "${c.title}" — due ${c.date}. We'll notify you before the deadline.`)}
+                        className="text-[10px] text-slate-400 font-medium hover:text-[#4F46E5] cursor-pointer"
+                      >
+                        Remind Me
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2180,13 +2322,15 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS ═══ */}
-          <SReveal className="w-full max-w-5xl mx-auto space-y-4 text-center pt-2">
+          <SReveal className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-8 text-center pt-10 pb-8">
             <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">How <span className="text-[var(--accent)]">INC</span><span className="italic">Route</span> Works</h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#080F2A] tracking-tight">
+                How <span className="text-[#4F46E5]">INC</span><span className="italic font-bold">route</span> Works
+              </h2>
             </div>
-            {/* Animated process flow */}
-            <ProcessFlow />
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+            
+            {/* Animated process flow horizontal timeline */}
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 sm:gap-4 max-w-5xl mx-auto pt-6">
               {[
                 { step: "01", title: "Tell us about your business", desc: "Answer a few questions about your business and goals.", icon: Building2 },
                 { step: "02", title: "We recommend the best structure", desc: "Get the right entity suggestion based on your needs.", icon: FileText },
@@ -2195,15 +2339,20 @@ export default function RegistrationServices({
                 { step: "05", title: "Stay compliant forever", desc: "We track, remind & file all your compliances on time.", icon: TrendingUp },
               ].map((s, i) => (
                 <React.Fragment key={i}>
-                  <div className="flex flex-col items-center text-center max-w-[160px] mx-auto sm:mx-0 space-y-2.5">
-                    <div className="w-12 h-12 rounded-full bg-[var(--accent-soft)] border border-[var(--accent)]/30 flex items-center justify-center">
-                      <s.icon className="w-5 h-5 text-[var(--accent)]" />
+                  <div className="flex flex-col items-center text-center max-w-[180px] mx-auto sm:mx-0 space-y-3 relative flex-1">
+                    {/* Connecting line */}
+                    {i < 4 && <div className="timeline-dotted-connector" />}
+                    
+                    <div className="timeline-step-circle">
+                      <s.icon className="w-5 h-5 text-[#4F46E5]" />
                     </div>
-                    <span className="text-[10px] text-[var(--accent)] font-bold uppercase tracking-wider">{s.step}</span>
-                    <h4 className="text-[13px] font-bold text-[var(--text-primary)] leading-tight">{s.title}</h4>
-                    <p className="text-[11px] text-[var(--text-tertiary)] leading-relaxed">{s.desc}</p>
+                    
+                    <div className="space-y-1 pt-1">
+                      <span className="text-[10px] text-[#4F46E5] font-bold uppercase tracking-wider">{s.step}</span>
+                      <h4 className="text-[13px] font-bold text-[#080F2A] leading-tight">{s.title}</h4>
+                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{s.desc}</p>
+                    </div>
                   </div>
-                  {i < 4 && <ArrowRight className="hidden sm:block w-5 h-5 text-[var(--accent)] shrink-0 opacity-50" />}
                 </React.Fragment>
               ))}
             </div>
@@ -2211,46 +2360,172 @@ export default function RegistrationServices({
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
           <SReveal>
-          <div className="w-full max-w-5xl mx-auto pt-2">
-            <AnimatedStats />
-          </div>
+            <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-6">
+              <AnimatedStats />
+            </div>
           </SReveal>
 
-          {/* ═══ SECURITY BADGES ═══ */}
-          <div className="w-full max-w-5xl mx-auto">
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 py-4 border-t border-[var(--border-subtle)]">
-              {[
-                { icon: Shield, label: "Enterprise Security" },
-                { icon: Lock, label: "Encrypted Documents" },
-                { icon: Users, label: "Role-Based Access" },
-                { icon: FileText, label: "Audit Logs" },
-                { icon: Database, label: "Secure Cloud Storage" },
-              ].map((b, i) => (
-                <div key={i} className="flex items-center gap-2 text-[11px] text-[var(--text-tertiary)]">
-                  <b.icon className="w-3.5 h-3.5" />
-                  <span>{b.label}</span>
+          {/* ═══ TRUST & BENEFITS STRIP ═══ */}
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-6 pb-6">
+            <div className="card-glass p-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-left">
+                {[
+                  { icon: Lock, title: "Secure & Encrypted", desc: "256-bit encryption for complete data security" },
+                  { icon: TrendingUp, title: "Real-time Tracking", desc: "Track progress at every step of the process" },
+                  { icon: ShieldCheck, title: "Expert Verification", desc: "Dual verification by legal & compliance experts" },
+                  { icon: Clock, title: "Timely Updates", desc: "Email & SMS alerts for every important update" },
+                  { icon: Users, title: "Dedicated Support", desc: "Reach out to experts anytime, anywhere" },
+                ].map((b, i) => (
+                  <React.Fragment key={i}>
+                    <div className="flex flex-col gap-2 flex-1 min-w-[140px] pr-2">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-[#4F46E5]">
+                        <b.icon className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-[12px] font-bold text-[#080F2A]">{b.title}</h4>
+                      <p className="text-[11px] text-slate-500 leading-normal font-sans">{b.desc}</p>
+                    </div>
+                    {i < 4 && (
+                      <span className="hidden md:inline-block w-[1px] h-12 bg-slate-200/60 self-center" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ FAQ & REVIEWS SECTION ═══ */}
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Left Column: Google Reviews Rating Card (Col Span 5) */}
+              <div className="lg:col-span-5 space-y-6 text-left">
+                <div className="reviews-rating-card p-6 sm:p-8 space-y-5">
+                  <span className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider block">Customer Trust</span>
+                  <h3 className="text-xl font-extrabold text-[#080F2A] leading-snug">Trusted by 2,000+ founders and businesses</h3>
+                  <div className="flex items-center gap-4 pt-2">
+                    <span className="text-4xl font-extrabold text-[#080F2A]">4.8/5</span>
+                    <div>
+                      <div className="flex text-amber-400 gap-0.5">
+                        {[...Array(5)].map((_, idx) => (
+                          <Star key={idx} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                        ))}
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium block mt-1">Google Reviews</span>
+                    </div>
+                  </div>
                 </div>
-              ))}
+                
+                {/* 3D Check Shield Visual Illustration */}
+                <div className="flex items-center justify-center py-6">
+                  <div className="css-3d-shield" />
+                </div>
+              </div>
+              
+              {/* Right Column: FAQ Accordion (Col Span 7) */}
+              <div className="lg:col-span-7 space-y-4 text-left">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Frequently Asked Questions</h3>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">Quick answers to help you navigate registration and filings.</p>
+                </div>
+                
+                <div className="bg-white/60 border border-slate-200/80 rounded-2xl p-4 sm:p-6 divide-y divide-slate-100">
+                  {[
+                    { q: "How long does company incorporation take?", a: "Standard private limited company incorporation in India takes approximately 7 to 10 working days, subject to Ministry of Corporate Affairs (MCA) processing timelines and name approval." },
+                    { q: "What documents are required for ROC filing?", a: "ROC filings generally require the company's financial statements (AOC-4), annual return reports (MGT-7), Director Identification numbers, utility bills, and meeting resolutions." },
+                    { q: "Can I track the status of my filing online?", a: "Yes. Our real-time platform tracking allows you to see the exact status of your name reservation, document drafting, lodgments, and certification status." },
+                    { q: "Do you provide support after incorporation?", a: "Absolutely. We provide dedicated corporate compliance support, GST registrations, TDS filings, trademark protection, virtual office configurations, and annual accounts maintenance." }
+                  ].map((faq, index) => {
+                    const isExpanded = expandedFaqId === index;
+                    return (
+                      <div key={index} className="faq-accordion-item py-4">
+                        <button
+                          onClick={() => setExpandedFaqId(isExpanded ? null : index)}
+                          className="w-full flex items-center justify-between gap-4 text-left font-bold text-[#080F2A] text-[13px] hover:text-[#4F46E5] transition-colors cursor-pointer"
+                        >
+                          <span>{faq.q}</span>
+                          <span className="text-base text-slate-400 select-none">{isExpanded ? "−" : "+"}</span>
+                        </button>
+                        <div
+                          className={`grid transition-all duration-200 ease-in-out ${
+                            isExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <p className="text-[12px] text-slate-500 leading-relaxed font-sans font-light">
+                              {faq.a}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
             </div>
           </div>
 
           {/* Testimonials rendered via TestimonialCarousel below */}
 
           {/* ═══ FINAL CTA ═══ */}
-          <div className="w-full max-w-5xl mx-auto pt-2">
-            <div className="relative rounded-2xl overflow-hidden border border-[var(--border-subtle)] p-6 sm:p-8 text-center" style={{ background: "linear-gradient(135deg, var(--bg-surface-alt) 0%, var(--bg-surface) 100%)" }}>
-              <div className="relative z-10 space-y-4">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Ready to Start Your Business Journey?</h2>
-                <p className="text-sm text-[var(--text-secondary)] max-w-lg mx-auto">Incorporate, manage & grow with confidence.</p>
-                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                  <button onClick={() => navigateToTab("catalog")} className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-[var(--on-gradient-text)] font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2">
-                    Start Your Business <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => navigateToTab("contact")} className="px-6 py-3 border border-[var(--border-subtle)] hover:border-[var(--accent)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all cursor-pointer">
-                    Book Consultation
-                  </button>
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8">
+            <div className="final-cta p-8 sm:p-12 relative overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10 text-left">
+                
+                {/* Left text column */}
+                <div className="space-y-5">
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                    Ready to Start Your Business Journey?
+                  </h2>
+                  <p className="text-[13px] text-indigo-100 max-w-md font-medium leading-relaxed font-sans">
+                    Incorporate, manage & grow with confidence. Join thousands of founders who trust INCroute for their legal and compliance needs.
+                  </p>
+                  
+                  <div className="flex flex-wrap items-center gap-4 pt-2">
+                    <button
+                      onClick={() => navigateToTab("catalog")}
+                      className="px-6 py-3 bg-white hover:bg-slate-50 text-[#4F46E5] font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-md hover:shadow-lg"
+                    >
+                      Start Your Business <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => navigateToTab("contact")}
+                      className="px-6 py-3 border border-white/30 hover:border-white hover:bg-white/10 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      Book a Consultation
+                    </button>
+                  </div>
                 </div>
+                
+                {/* Right growth chart illustration column */}
+                <div className="hidden md:flex flex-col items-end space-y-4 pr-4">
+                  <div className="bg-white/10 border border-white/10 rounded-2xl p-6 w-full max-w-sm backdrop-blur-md">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-bold text-white tracking-wider">Business Growth Matrix</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-extrabold px-2 py-0.5 rounded-full">+148%</span>
+                    </div>
+                    
+                    {/* Simulated SVG / CSS Growth Chart */}
+                    <div className="growth-chart-mockup">
+                      {[30, 48, 42, 68, 88, 74, 95].map((h, i) => (
+                        <div key={i} className="growth-chart-bar flex-1" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                    
+                    <div className="flex justify-between text-[8px] text-indigo-200 mt-2 font-mono">
+                      <span>Q1</span>
+                      <span>Q2</span>
+                      <span>Q3</span>
+                      <span>Q4</span>
+                    </div>
+                  </div>
+                </div>
+                
               </div>
+              
+              {/* Decorative background glow sphere */}
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-indigo-500/30 blur-[100px] pointer-events-none" />
+              <div className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-[#7C3AED]/20 blur-[100px] pointer-events-none" />
             </div>
           </div>
 

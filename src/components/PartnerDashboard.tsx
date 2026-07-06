@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAuth, getDefaultTimeline } from "../lib/AuthContext";
+import { useAuth, getDefaultTimeline, AdminCreateUserResult } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Search, ChevronRight, Mail, Calendar, CheckCircle, Clock,

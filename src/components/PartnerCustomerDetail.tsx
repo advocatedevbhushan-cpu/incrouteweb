@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth, getDefaultTimeline, checkAccountExpiration } from "../lib/AuthContext";
+import { useAuth, getDefaultTimeline, checkAccountExpiration, TimelineMilestone } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 

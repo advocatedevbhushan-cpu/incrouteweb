@@ -20,6 +20,7 @@ const AdminPortal = lazy(() => import("./admin/AdminPortal"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
 const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
+const LegalPolicies = lazy(() => import("./components/LegalPolicies"));
 const AnimatedTimeline = lazy(() => import("./components/AnimatedTimeline"));
 const EntityComparison = lazy(() => import("./components/EntityComparison"));
 const ServiceImpactDashboard = lazy(() => import("./components/ServiceImpactDashboard"));
@@ -506,6 +507,20 @@ export default function App() {
             </motion.div>
           )}
 
+          {/* Terms, Policies & Compliance Center */}
+          {activeTab === "policies" && (
+            <motion.div
+              key="policies"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+            >
+              <LegalPolicies />
+            </motion.div>
+          )}
+
           {/* Compliance Flowchart Visualization */}
           {activeTab === "flowchart" && (
             <motion.div
@@ -759,75 +774,94 @@ export default function App() {
       </main>
 
       {/* Footer segment */}
-      <footer className="bg-[#0B0E1A] border-t border-[rgba(108,124,255,0.1)] py-10 md:py-14 text-[#8B8FA8] mt-auto">
+      {/* Footer segment */}
+      <footer className="footer-dark border-t border-slate-800/80 py-12 md:py-16 mt-auto text-slate-400 font-sans">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 text-center md:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 text-left">
             
-            {/* Brand */}
-            <div className="col-span-1 sm:col-span-2 md:col-span-1 space-y-4 flex flex-col items-center md:items-start">
+            {/* Brand Column */}
+            <div className="space-y-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full overflow-hidden">
-                  <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" loading="lazy" />
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
+                  <img src="/incroute_logo.png" width="32" height="32" className="w-full h-full object-cover" alt="INCroute Logo" loading="lazy" />
                 </div>
                 <span className="text-[16px] font-extrabold text-white tracking-tight">
-                  INC<span className="text-[#6C7CFF] italic font-bold">route</span>
+                  INC<span className="text-[#4F46E5] italic font-bold">route</span>
                 </span>
               </div>
-              <p className="text-[11px] text-[#6B7094] leading-relaxed">
+              <p className="text-[11px] text-slate-500 leading-relaxed max-w-[200px]">
                 India's most trusted platform for business incorporation, compliance & advisory.
               </p>
               <div className="flex items-center gap-3 pt-1">
                 {["f", "in", "x", "✉"].map((s, i) => (
-                  <div key={i} className="w-7 h-7 rounded-lg bg-[#1A1E30] flex items-center justify-center text-[10px] text-[#8B8FA8] hover:text-[#6C7CFF] hover:bg-[#1E2338] cursor-pointer transition-colors">{s}</div>
+                  <div key={i} className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 hover:text-[#4F46E5] hover:border-[#4F46E5] cursor-pointer transition-colors font-bold">{s}</div>
                 ))}
               </div>
             </div>
 
-            {/* Our Services */}
+            {/* Our Services Column */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Our Services</h4>
-              <div className="space-y-2 text-[11px]">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400">
                 {["Company Incorporation", "Compliance Management", "GST Services", "ROC Filings", "Trademark Registration", "Legal Advisory"].map(s => (
-                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                  <p key={s} className="hover:text-white cursor-pointer transition-colors">{s}</p>
                 ))}
               </div>
             </div>
 
-            {/* Important Links */}
+            {/* Important Links Column */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Important Links</h4>
-              <div className="space-y-2 text-[11px]">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400">
                 {["About Us", "Blog", "Resources", "Careers", "Contact Us"].map(s => (
-                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                  <p key={s} className="hover:text-white cursor-pointer transition-colors">{s}</p>
                 ))}
               </div>
             </div>
 
-            {/* Legal & Policies */}
+            {/* Legal & Policies Column */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Legal & Policies</h4>
-              <div className="space-y-2 text-[11px]">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400 font-sans flex flex-col items-start">
                 {["Privacy Policy", "Terms & Conditions", "Refund Policy", "Disclaimer"].map(s => (
-                  <p key={s} className="hover:text-[#6C7CFF] cursor-pointer transition-colors">{s}</p>
+                  <button 
+                    key={s} 
+                    onClick={() => setActiveTab("policies")}
+                    className="block text-left hover:text-white cursor-pointer transition-colors border-none bg-transparent p-0 text-[11px] font-medium text-slate-400 outline-none"
+                  >
+                    {s}
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Contact */}
+            {/* Contact Column */}
             <div className="space-y-3">
               <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Contact Us</h4>
-              <div className="space-y-2 text-[11px]">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400">
                 <p>Email: info@incroute.com</p>
                 <p>Phone: +91 870 755 2183</p>
               </div>
             </div>
           </div>
 
-          {/* Bottom bar */}
-          <div className="mt-10 pt-6 border-t border-[#1A1E30] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-[10px] text-[#5A5E78]">© {new Date().getFullYear()} INCroute. All rights reserved.</p>
-            <div className="w-8 h-8 rounded-full bg-[#6C7CFF] flex items-center justify-center cursor-pointer hover:bg-[#5563E8] transition-colors" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-              <ArrowRight className="w-3.5 h-3.5 text-white -rotate-90" />
+          {/* Compliance & Certification Badges Strip */}
+          <div className="mt-12 pt-6 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-[10px] font-semibold text-slate-500 font-mono tracking-wider">
+              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">🛡 ISO 27001 Certified</span>
+              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">🔒 Bank-grade Security</span>
+              <span className="flex items-center gap-1.5 border border-slate-800 px-2.5 py-1 rounded bg-slate-900/40">✓ 100% Compliance Guarantees</span>
+            </div>
+            
+            <div className="flex items-center gap-4 text-[10px] text-slate-500 font-medium font-sans">
+              <span>© {new Date().getFullYear()} INCroute. All rights reserved.</span>
+              <button
+                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-colors cursor-pointer"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                aria-label="Scroll to top"
+              >
+                ▲
+              </button>
             </div>
           </div>
         </div>
