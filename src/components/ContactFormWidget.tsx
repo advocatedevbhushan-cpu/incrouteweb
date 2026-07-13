@@ -212,7 +212,7 @@ export default function ContactFormWidget({ initialMessage = "" }: ContactFormWi
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={isSubmittingContact}
-          className="w-full bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold font-mono uppercase tracking-widest text-xs px-6 py-3 rounded transition-all duration-150 fast-transition snappy-press xl:w-max xl:px-8 mt-4"
+          className="w-full bg-transparent hover:bg-brand-gold text-brand-gold hover:text-black border border-brand-gold font-mono uppercase tracking-widest text-xs px-6 py-3 min-h-[44px] rounded transition-all duration-150 fast-transition snappy-press xl:w-max xl:px-8 mt-4"
         >
           {isSubmittingContact ? "SENDING..." : "Send Message"}
         </motion.button>

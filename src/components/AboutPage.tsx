@@ -29,7 +29,7 @@ export default function AboutPage({ setActiveTab }: AboutPageProps) {
     { icon: Building2, value: "Enterprise", label: "CA Mentored" },
     { icon: Sparkles, value: "20+", label: "Founders Served" },
     { icon: Shield, value: "Startup India", label: "Recognized" },
-    { icon: Star, value: "4.9★", label: "Client Rating" },
+    { icon: CheckCircle2, value: "Bilingual", label: "EN/HI Support" },
   ];
 
   return (

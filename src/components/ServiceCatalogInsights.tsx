@@ -1147,9 +1147,9 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 text-left">
                   {[
                     { icon: Building2, value: "25+", label: "Services Available" },
-                    { icon: Users, value: "10,000+", label: "Clients Served" },
-                    { icon: CheckCircle2, value: "99%", label: "On-time Compliance" },
-                    { icon: Clock, value: "24/7", label: "Expert Support" },
+                    { icon: Users, value: "50+", label: "Businesses Supported" },
+                    { icon: CheckCircle2, value: "Prompt", label: "Filing Support" },
+                    { icon: Clock, value: "Dedicated", label: "Advisor Support" },
                   ].map((s, i) => (
                     <React.Fragment key={i}>
                       <div className="flex items-center gap-3.5 py-1.5 px-1 flex-1 justify-center sm:justify-start w-full sm:w-auto">

@@ -15,7 +15,7 @@ export const translations = {
     hero_badge: "Premium Legal-Tech Platform",
     hero_title_1: "Make Private Limited",
     hero_title_2: "Firm within Rs 999*",
-    hero_subtitle: "Premium consultancy services for registration, statutory compliance, and integrated firm management. Trusted by 2,000+ founders.",
+    hero_subtitle: "Premium consultancy services for registration, statutory compliance, and integrated firm management. Trusted by 50+ founders.",
     hero_cta_explore: "Explore Services",
     hero_cta_roadmap: "Compliance Roadmap",
 
@@ -122,7 +122,7 @@ export const translations = {
     hero_badge: "प्रीमियम लीगल-टेक प्लेटफ़ॉर्म (Legal-Tech)",
     hero_title_1: "भारत की सबसे बेहतरीन कंपनी (Entity) बनाएं",
     hero_title_2: "केवल ₹999* में",
-    hero_subtitle: "प्रीमियम कंपनी रजिस्ट्रेशन, कम्प्लायंस और मैनेजमेंट की बेहतरीन सेवाएं। 2,000+ से ज़्यादा स्टार्टअप फाउंडर्स का भरोसा।",
+    hero_subtitle: "प्रीमियम कंपनी रजिस्ट्रेशन, कम्प्लायंस और मैनेजमेंट की बेहतरीन सेवाएं। 50+ से ज़्यादा स्टार्टअप फाउंडर्स का भरोसा।",
     hero_cta_explore: "हमारी सेवाएं देखें",
     hero_cta_roadmap: "कम्प्लायंस रोडमैप",
 

@@ -30,12 +30,12 @@
     "motion": "^12.40.0",
     "multer": "^2.2.0",
     "mysql2": "^3.22.5",
-    "nodemailer": "^8.0.11",
+    "nodemailer": "^9.0.1",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-router-dom": "^7.16.0",
     "recharts": "^3.8.1",
-    "vite": "^6.2.3",
+    "vite": "^6.4.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -49,11 +49,19 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.1",
     "prisma": "^7.8.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.4.3"
+  },
+  "overrides": {
+    "nodemailer": "^9.0.1",
+    "vite": "^6.4.3",
+    "esbuild": "^0.28.1",
+    "dompurify": "^3.4.11",
+    "protobufjs": "^7.6.3",
+    "@hono/node-server": "^1.19.13"
   }
 }

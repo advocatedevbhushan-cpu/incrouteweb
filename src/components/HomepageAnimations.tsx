@@ -236,11 +236,16 @@ function useCountUp(end: number, duration = 2000, startOnView = true) {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const inView = useInView(ref, { once: true, amount: 0.15 });
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     if (!inView || started || !startOnView) return;
     setStarted(true);
+    if (reduced) {
+      setCount(end);
+      return;
+    }
     const startTime = Date.now();
     const tick = () => {
       const elapsed = Date.now() - startTime;
@@ -250,16 +255,16 @@ function useCountUp(end: number, duration = 2000, startOnView = true) {
       if (progress < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-  }, [inView, end, duration, started, startOnView]);
+  }, [inView, end, duration, started, startOnView, reduced]);
 
   return { count, ref };
 }
 
 export function TrustMetrics() {
-  const businesses = useCountUp(150);
-  const documents = useCountUp(2400);
-  const filings = useCountUp(890);
-  const categories = useCountUp(13);
+  const businesses = useCountUp(50);
+  const documents = useCountUp(200);
+  const filings = useCountUp(100);
+  const categories = useCountUp(15);
 
   const metrics = [
     { label: "Businesses Served", ...businesses },

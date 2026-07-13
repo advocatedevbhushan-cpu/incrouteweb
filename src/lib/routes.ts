@@ -27,6 +27,7 @@ export const ROUTES = {
   portal: "/portal",
   partner: "/partner",
   policies: "/policies/",
+  careers: "/careers/",
 } as const;
 
 // Map old tab names to new routes (for migration)
@@ -53,6 +54,7 @@ export const TAB_TO_ROUTE: Record<string, string> = {
   "partner": ROUTES.partner,
   "admin": "/admin",
   policies: ROUTES.policies,
+  careers: ROUTES.careers,
 };
 
 // Breadcrumb label map
@@ -79,5 +81,6 @@ export const ROUTE_LABELS: Record<string, string> = {
   "/dashboard/partner/customer/": "Customer File Review",
   "/partner": "Partner Portal",
   "/policies/": "Terms & Policies",
+  "/careers/": "Careers",
 };
 

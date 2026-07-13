@@ -33,6 +33,7 @@ const LocalCityLanding = lazy(() => import("./components/LocalCityLanding"));
 const AnswerHub = lazy(() => import("./components/AnswerHub"));
 const ComplianceCalendarSection = lazy(() => import("./components/ComplianceCalendarSection"));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
+const CareersForm = lazy(() => import("./components/CareersForm"));
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { useAuth } from "./lib/AuthContext";
 import { 
@@ -342,12 +343,7 @@ export default function App() {
       <div className="executive-grid" />
       <div className="hero-gradient-bg" />
 
-      {/* Decorative brand star — bottom right */}
-      <div className="fixed bottom-24 right-6 z-0 pointer-events-none opacity-20 hidden md:block">
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 0L44.5 35.5L80 40L44.5 44.5L40 80L35.5 44.5L0 40L35.5 35.5L40 0Z" fill="var(--color-brand-gold)" />
-        </svg>
-      </div>
+      {/* Decorative brand star removed */}
 
       {/* Navbar segment */}
       <Navbar 
@@ -629,6 +625,61 @@ export default function App() {
             </motion.div>
           )}
 
+          {/* Careers Section */}
+          {activeTab === "careers" && (
+            <motion.div
+              key="careers"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
+            >
+              <div className="text-center max-w-3xl mx-auto space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
+                  <Sparkles className="w-3.5 h-3.5" /> Join Incroute
+                </div>
+                <h1 className="text-4xl font-light text-brand-text tracking-tight sm:text-5xl serif">
+                  Build the Future of <span className="text-brand-gold italic font-normal">Legal Tech.</span>
+                </h1>
+                <p className="text-xs text-brand-text-muted font-sans max-w-xl mx-auto leading-relaxed">
+                  We are looking for passionate individuals to join our mission in simplifying compliance, incorporation, and corporate governance for startups across India.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
+                {/* Left: Careers Roles Listing */}
+                <div className="lg:col-span-7 space-y-6">
+                  <h3 className="text-xl font-extrabold text-[var(--text-primary)]">Open Positions</h3>
+                  <div className="space-y-4">
+                    {[
+                      { title: "Legal & Compliance Associate", type: "Full-Time", location: "Bangalore / Remote", desc: "Assist clients with MCA filings, company incorporation documents, and compliance reviews." },
+                      { title: "Full-Stack Software Engineer", type: "Full-Time", location: "Bangalore", desc: "Build robust frontend dashboards and automation engines for filing operations." },
+                      { title: "Business Development Intern", type: "Internship (3-6 Months)", location: "Remote", desc: "Work closely with startup founders to guide them through our incorporation and tax offerings." }
+                    ].map((job, idx) => (
+                      <div key={idx} className="p-5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-indigo-500/30 rounded-2xl transition-all duration-300 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-extrabold text-[var(--text-primary)]">{job.title}</h4>
+                          <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{job.type}</span>
+                        </div>
+                        <p className="text-[10px] text-[var(--text-secondary)] font-semibold">{job.location}</p>
+                        <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-sans">{job.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: Apply Form */}
+                <div className="lg:col-span-5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 md:p-8 space-y-5">
+                  <h3 className="text-lg font-extrabold text-[var(--text-primary)] border-b border-[var(--border-subtle)] pb-3">
+                    Submit Your Application
+                  </h3>
+                  <CareersForm />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Local City Landing Pages */}
           {activeTab === "company-registration-bangalore" && (
             <motion.div
@@ -792,7 +843,7 @@ export default function App() {
           )}
 
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin","policies","careers"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>
@@ -835,16 +886,29 @@ export default function App() {
             {/* Our Services Column */}
             <div className="lg:col-span-2 space-y-3">
               <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Our Services</h4>
-              <div className="space-y-2 text-[11px] font-medium text-slate-400">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400 font-sans flex flex-col gap-1.5">
                 {[
-                  { label: "Company Incorporation", tab: "services" },
+                  { label: "Company Incorporation", serviceId: "pvt-ltd" },
                   { label: "Compliance Management", tab: "compliance" },
-                  { label: "ROC Filings", tab: "services" },
-                  { label: "GST & Taxation", tab: "services" },
-                  { label: "Payroll & Labour Compliance", tab: "services" },
-                  { label: "Audit & Assurance", tab: "services" }
+                  { label: "ROC Filings", serviceId: "return-filing" },
+                  { label: "GST & Taxation", serviceId: "gst-tax" },
+                  { label: "Payroll & Labour Compliance", serviceId: "msme-registration" },
+                  { label: "Audit & Assurance", serviceId: "virtual-cfo" }
                 ].map(s => (
-                  <p key={s.label} onClick={() => { setActiveTab(s.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white cursor-pointer transition-colors">{s.label}</p>
+                  <p 
+                    key={s.label} 
+                    onClick={() => { 
+                      if (s.serviceId) {
+                        handleServiceClick(s.serviceId);
+                      } else if (s.tab) {
+                        setActiveTab(s.tab);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }} 
+                    className="hover:text-white cursor-pointer transition-colors"
+                  >
+                    {s.label}
+                  </p>
                 ))}
               </div>
             </div>
@@ -852,13 +916,11 @@ export default function App() {
             {/* Important Links Column */}
             <div className="lg:col-span-2 space-y-3">
               <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Important Links</h4>
-              <div className="space-y-2 text-[11px] font-medium text-slate-400">
+              <div className="space-y-2 text-[11px] font-medium text-slate-400 font-sans flex flex-col gap-1.5">
                 {[
                   { label: "About Us", tab: "about" },
                   { label: "Resources", tab: "faq" },
-                  { label: "Careers", tab: "about" },
-                  { label: "Pricing", tab: "pricing" },
-                  { label: "Partner With Us", tab: "about" }
+                  { label: "Careers", tab: "careers" }
                 ].map(s => (
                   <p key={s.label} onClick={() => { if(s.tab) setActiveTab(s.tab); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white cursor-pointer transition-colors">{s.label}</p>
                 ))}
@@ -884,22 +946,18 @@ export default function App() {
             {/* Contact Column */}
             <div className="lg:col-span-3 space-y-3">
               <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Contact Us</h4>
-              <div className="space-y-2.5 text-[11px] font-medium text-slate-400">
-                <a href="mailto:hello@incroute.com" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
+              <div className="space-y-2.5 text-[11px] font-medium text-slate-400 font-sans flex flex-col gap-2">
+                <a href="mailto:info@incroute.com" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
                   <Mail className="w-3.5 h-3.5 shrink-0 text-[#4F46E5] dark:text-[#9D85F2]" />
-                  <span>hello@incroute.com</span>
+                  <span>info@incroute.com</span>
                 </a>
-                <a href="tel:+911234567890" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
+                <a href="tel:+918707552183" className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
                   <Phone className="w-3.5 h-3.5 shrink-0 text-[#4F46E5] dark:text-[#9D85F2]" />
-                  <span>+91 12345 67890</span>
+                  <span>+91 87075 52183</span>
                 </a>
                 <div className="flex items-center gap-2 text-slate-500">
                   <Clock className="w-3.5 h-3.5 shrink-0 text-slate-650" />
                   <span>Mon - Fri: 9:30 AM - 6:30 PM IST</span>
-                </div>
-                <div className="flex items-start gap-2 text-slate-500">
-                  <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5 text-slate-650" />
-                  <span>IncRoute Tech Pvt. Ltd. Bangalore, Karnataka, India</span>
                 </div>
               </div>
             </div>

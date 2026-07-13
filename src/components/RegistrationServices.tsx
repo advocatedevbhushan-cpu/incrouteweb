@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milestone, ArrowRight, CornerDownRight, Sparkles, Search, Lock, ChevronRight, AlertTriangle, CheckCircle2, Loader2, Star, Shield, Database, Landmark, TrendingUp, Scale, FileText, Heart, X, ArrowLeft, Calendar, Folder } from "lucide-react";
+import { Building2, Check, Clock, ShieldAlert, Users, Award, ShieldCheck, Milestone, ArrowRight, CornerDownRight, Sparkles, Search, Lock, ChevronRight, AlertTriangle, CheckCircle2, Loader2, Star, Shield, Database, Landmark, TrendingUp, Scale, FileText, Heart, X, ArrowLeft, Calendar, Folder, MousePointerClick, UploadCloud } from "lucide-react";
 import { FirmOrder } from "../types";
 import { motion } from "motion/react";
 import { useLang } from "../lib/LanguageContext";
@@ -446,22 +446,24 @@ function AnimatedTestimonials() {
 
 /* ═══ ANIMATED COUNTER STATS ═══ */
 function AnimatedStats() {
-  const [counts, setCounts] = React.useState([0, 0, 0, 0, 0]);
-  const [hasAnimated, setHasAnimated] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
-
   const targets = [
-    { end: 150, suffix: "+", prefix: "", label: "Businesses Onboarded" },
-    { end: 500, suffix: "+", prefix: "", label: "Filings Completed" },
-    { end: 99, suffix: "%", prefix: "", label: "On-time Compliance" },
-    { end: 12, suffix: "+", prefix: "", label: "Expert CAs & CSs" },
-    { end: 24, suffix: "/7", prefix: "", label: "Support Available" },
+    { end: 50, suffix: "+", prefix: "", label: "Businesses Onboarded" },
+    { end: 120, suffix: "+", prefix: "", label: "Filings Completed" },
+    { end: 40, suffix: "+", prefix: "", label: "Trademark Filings" },
+    { end: 8, suffix: "+", prefix: "", label: "CA/CS Advisors" },
+    { end: 15, suffix: "+", prefix: "", label: "Service Categories" },
   ];
 
+  const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [counts, setCounts] = React.useState(() => targets.map(t => reduced ? t.end : 0));
+  const [hasAnimated, setHasAnimated] = React.useState(reduced);
+  const ref = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
+    if (hasAnimated || reduced) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setHasAnimated(true);
           const duration = 1500;
           const steps = 40;
@@ -470,27 +472,28 @@ function AnimatedStats() {
           const timer = setInterval(() => {
             step++;
             const progress = step / steps;
-            // Ease-out cubic
-            const eased = 1 - Math.pow(1 - progress, 3);
+            const eased = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
             setCounts(targets.map(t => Math.round(t.end * eased)));
-            if (step >= steps) clearInterval(timer);
+            if (step >= steps) {
+              clearInterval(timer);
+            }
           }, interval);
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.15 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [hasAnimated]);
+  }, [hasAnimated, reduced]);
 
   return (
     <div ref={ref} className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
       {targets.map((s, i) => (
-        <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-1">
+        <div key={i} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-1 hover:border-indigo-500/25 transition-colors">
           <p className="text-xl font-extrabold text-[var(--accent)] tabular-nums">
             {s.prefix}{counts[i]}{s.suffix}
           </p>
-          <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">{s.label}</p>
+          <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">{s.label}</p>
         </div>
       ))}
     </div>
@@ -1474,6 +1477,7 @@ export default function RegistrationServices({
   prefilledCompanyName = "",
   prefilledEntityType = ""
 }: RegistrationServicesProps) {
+  const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const navigateToTab = useAppNavigate();
   const navigate = useNavigate();
   const [selectedEntityId, setSelectedEntityId] = useState("pvt-ltd");
@@ -1486,6 +1490,15 @@ export default function RegistrationServices({
   const [formShake, setFormShake] = useState(false);
   const [nameBlurred, setNameBlurred] = useState(false);
   const [latestBlog, setLatestBlog] = useState<any>(null);
+  const [activeModuleIdx, setActiveModuleIdx] = useState(4);
+
+  useEffect(() => {
+    if (reduced) return;
+    const timer = setInterval(() => {
+      setActiveModuleIdx(prev => (prev + 1) % 7);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [reduced]);
   
   // Interactive Glowing Map City Stats
   const [hoveredCity, setHoveredCity] = useState<string | null>(null);
@@ -1700,7 +1713,7 @@ export default function RegistrationServices({
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
               <div className="trust-badge">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 2,000+ founders and businesses
+                <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 50+ founders and businesses
               </div>
 
               <h1 className="hero-title">
@@ -1889,12 +1902,12 @@ export default function RegistrationServices({
             <div className="stats-strip px-6 py-6 border border-indigo-500/10">
               <div className="flex flex-wrap lg:flex-nowrap justify-between items-center gap-6">
                 {[
-                  { icon: Users, value: "2,000+", label: "Businesses Served" },
-                  { icon: FileText, value: "10,000+", label: "Compliance Filings" },
-                  { icon: Shield, value: "500+", label: "Trademark Applications" },
-                  { icon: CheckCircle2, value: "99%", label: "On-Time Compliance" },
-                  { icon: Award, value: "12+", label: "Years' Expertise" },
-                  { icon: Clock, value: "24/7", label: "Expert Support" },
+                  { icon: Users, value: "50+", label: "Businesses Supported" },
+                  { icon: FileText, value: "120+", label: "Compliance Filings" },
+                  { icon: Shield, value: "40+", label: "Trademark Filings" },
+                  { icon: CheckCircle2, value: "Prompt", label: "Filing Support" },
+                  { icon: Award, value: "Qualified", label: "CA/CS Network" },
+                  { icon: Clock, value: "Dedicated", label: "Client Support" },
                 ].map((m, i) => (
                   <React.Fragment key={i}>
                     <div className="flex items-center gap-3 stat-item flex-1 min-w-[150px] justify-center lg:justify-start">
@@ -1937,54 +1950,99 @@ export default function RegistrationServices({
             </div>
           </div>
 
-          {/* ═══ INTERACTIVE PLATFORM PREVIEW ═══ */}
-          <SReveal className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8 text-center">
-            <div className="space-y-2 mb-8">
-              <p className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-[0.25em]">Platform Overview</p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#080F2A] tracking-tight">Everything You Need. One Place.</h2>
-              <p className="text-[13px] text-slate-500 max-w-xl mx-auto font-medium">From incorporation to annual filings — enjoy complete compliance management.</p>
-            </div>
+          {/* ═══ INTERACTIVE PLATFORM PREVIEW Redesigned Animation ═══ */}
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8 text-center overflow-hidden">
+            <motion.div
+              initial={reduced ? {} : { opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="space-y-2 mb-8"
+            >
+              <p className="text-[11px] font-bold text-[var(--accent)] uppercase tracking-[0.25em]">Platform Overview</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Everything You Need. One Place.</h2>
+              <p className="text-[13px] text-[var(--text-secondary)] max-w-xl mx-auto font-medium">From incorporation to annual filings — enjoy complete compliance management.</p>
+            </motion.div>
             
-            <div className="platform-overview-panel p-6 sm:p-8 text-left">
+            <motion.div
+              initial={reduced ? {} : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+              className="platform-overview-panel p-6 sm:p-8 text-left"
+            >
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
                 
                 {/* Left Side: Services Modules Grid (Col Span 3) */}
                 <div className="lg:col-span-3 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <motion.div 
+                    initial={reduced ? {} : "hidden"}
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.15 }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.05, delayChildren: 0.15 }
+                      }
+                    }}
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                  >
                     {[
-                      { title: "Company Incorporation", icon: Building2, active: false },
-                      { title: "Compliance Calendar", icon: Calendar, active: false },
-                      { title: "ROC & GST Filings", icon: FileText, active: false },
-                      { title: "Document Vault", icon: Folder, active: false },
-                      { title: "Legal Support", icon: Users, active: true },
-                      { title: "Trademark & IP", icon: Award, active: false },
-                      { title: "Advisory & Reports", icon: TrendingUp, active: false },
-                    ].map((mod, i) => (
-                      <div
-                        key={i}
-                        className={`platform-module-btn p-5 flex flex-col items-center justify-center gap-3 text-center relative h-32 ${
-                          mod.active ? "active border-[#4F46E5] text-[#4F46E5]" : "text-slate-700"
-                        } ${i === 6 ? "sm:col-span-3 h-24" : ""}`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${mod.active ? "bg-indigo-500/10 text-[#4F46E5]" : "bg-slate-100 text-slate-500"}`}>
-                          <mod.icon className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-bold font-sans tracking-tight">{mod.title}</span>
-                      </div>
-                    ))}
-                  </div>
+                      { title: "Company Incorporation", icon: Building2 },
+                      { title: "Compliance Calendar", icon: Calendar },
+                      { title: "ROC & GST Filings", icon: FileText },
+                      { title: "Document Vault", icon: Folder },
+                      { title: "Legal Support", icon: Users },
+                      { title: "Trademark & IP", icon: Award },
+                      { title: "Advisory & Reports", icon: TrendingUp },
+                    ].map((mod, i) => {
+                      const isActive = activeModuleIdx === i;
+                      return (
+                        <motion.button
+                          key={i}
+                          type="button"
+                          onClick={() => setActiveModuleIdx(i)}
+                          variants={{
+                            hidden: { opacity: 0, y: 12 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+                          }}
+                          className={`platform-module-btn p-5 flex flex-col items-center justify-center gap-3 text-center relative h-32 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer ${
+                            isActive ? "active border-[#4F46E5] text-[#4F46E5]" : "text-[var(--text-primary)]"
+                          } ${i === 6 ? "sm:col-span-3 h-24" : ""}`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? "bg-indigo-500/10 text-[#4F46E5]" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}>
+                            <mod.icon className="w-5 h-5" />
+                          </div>
+                          <span className="text-xs font-bold font-sans tracking-tight">{mod.title}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </motion.div>
                   
                   {/* Security Banner Strip */}
-                  <div className="w-full py-3.5 px-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center gap-2 text-[#4F46E5] text-xs font-bold">
+                  <motion.div 
+                    initial={reduced ? {} : { opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="w-full py-3.5 px-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center gap-2 text-[#4F46E5] text-xs font-bold"
+                  >
                     <Shield className="w-4 h-4" />
                     <span>Bank-grade security with end-to-end data encryption</span>
-                  </div>
+                  </motion.div>
                 </div>
                 
                 {/* Right Side: Upcoming Deadlines Panel (Col Span 2) */}
-                <div className="lg:col-span-2 bg-white/60 border border-indigo-500/5 rounded-2xl p-6 text-left space-y-5 h-full">
+                <motion.div 
+                  initial={reduced ? {} : { opacity: 0, x: 15 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="lg:col-span-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 text-left space-y-5 h-full"
+                >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-[14px] font-bold text-[#080F2A]">Upcoming Deadlines</h3>
+                    <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Upcoming Deadlines</h3>
                     <button onClick={() => navigateToTab("compliance")} className="text-[11px] font-bold text-[#4F46E5] hover:underline cursor-pointer">View All</button>
                   </div>
                   
@@ -2001,7 +2059,7 @@ export default function RegistrationServices({
                           <span className="text-base font-extrabold text-[#4F46E5] leading-none mt-1">{item.day}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] font-bold text-[#080F2A] truncate leading-snug">{item.title}</h4>
+                          <h4 className="text-[13px] font-bold text-[var(--text-primary)] truncate leading-snug">{item.title}</h4>
                           <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{item.category}</p>
                         </div>
                         <span className={`text-[9px] font-extrabold tracking-wide uppercase px-2 py-0.5 rounded-md border shrink-0 ${item.priorityColor}`}>
@@ -2010,11 +2068,11 @@ export default function RegistrationServices({
                       </div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
                 
               </div>
-            </div>
-          </SReveal>
+            </motion.div>
+          </div>
 
           {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
           <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
@@ -2161,42 +2219,67 @@ export default function RegistrationServices({
             </div>
           </div>
 
-          {/* ═══ HOW IT WORKS ═══ */}
-          <SReveal className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-8 text-center pt-10 pb-8">
-            <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#080F2A] tracking-tight">
-                How <span className="text-[#4F46E5]">INC</span><span className="italic font-bold">route</span> Works
+          {/* ═══ HOW IT WORKS Redesigned ═══ */}
+          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-10 text-center pt-10 pb-8 overflow-hidden">
+            <div className="space-y-2">
+              <span className="text-[10px] text-[var(--accent)] font-extrabold uppercase tracking-[0.2em] block">Process Walkthrough</span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
+                How <span className="text-[var(--accent)]">INC</span><span className="italic font-bold">route</span> Works
               </h2>
+              <p className="text-xs text-[var(--text-secondary)] max-w-lg mx-auto font-semibold">
+                Four simple steps to register, document, verify, and complete your compliance filing.
+              </p>
             </div>
-            
-            {/* Animated process flow horizontal timeline */}
-            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 sm:gap-4 max-w-5xl mx-auto pt-6">
-              {[
-                { step: "01", title: "Tell us about your business", desc: "Answer a few questions about your business and goals.", icon: Building2 },
-                { step: "02", title: "We recommend the best structure", desc: "Get the right entity suggestion based on your needs.", icon: FileText },
-                { step: "03", title: "We handle the incorporation", desc: "Our experts prepare documents and file with authorities.", icon: Shield },
-                { step: "04", title: "Get your company incorporated", desc: "Receive your incorporation certificate hassle-free.", icon: CheckCircle2 },
-                { step: "05", title: "Stay compliant forever", desc: "We track, remind & file all your compliances on time.", icon: TrendingUp },
-              ].map((s, i) => (
-                <React.Fragment key={i}>
-                  <div className="flex flex-col items-center text-center max-w-[180px] mx-auto sm:mx-0 space-y-3 relative flex-1">
-                    {/* Connecting line */}
-                    {i < 4 && <div className="timeline-dotted-connector" />}
-                    
-                    <div className="timeline-step-circle">
-                      <s.icon className="w-5 h-5 text-[#4F46E5]" />
+
+            {/* Horizontal Timeline Container */}
+            <div className="relative max-w-6xl mx-auto pt-4">
+              {/* Desktop Connecting Line */}
+              <div className="absolute top-14 left-[12%] right-[12%] h-[2px] bg-gradient-to-r from-indigo-500/5 via-indigo-500/20 to-indigo-500/5 hidden md:block" />
+
+              <motion.div 
+                initial={reduced ? {} : "hidden"}
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.15 }}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.15 }
+                  }
+                }}
+                className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10"
+              >
+                {[
+                  { step: "01", title: "Choose Your Service", desc: "Select the incorporation, registration, taxation, legal, or compliance service required.", icon: MousePointerClick },
+                  { step: "02", title: "Submit Your Details", desc: "Complete a simple digital form and securely upload the necessary documents.", icon: UploadCloud },
+                  { step: "03", title: "Expert Review & Processing", desc: "The Incroute team reviews the information, prepares the required documents, and manages the filing process.", icon: ShieldCheck },
+                  { step: "04", title: "Track and Complete", desc: "Customers receive progress updates and final documents through a structured and transparent process.", icon: CheckCircle2 },
+                ].map((s, i) => (
+                  <motion.div
+                    key={i}
+                    variants={{
+                      hidden: { opacity: 0, y: 15 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+                    }}
+                    className="flex flex-col items-center text-center p-6 bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-indigo-500/30 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative group"
+                  >
+                    {/* Step circle */}
+                    <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[var(--accent)] flex items-center justify-center mb-4 group-hover:bg-[var(--accent)] group-hover:text-white transition-all duration-300 transform group-hover:scale-110 z-10 shrink-0">
+                      <s.icon className="w-5 h-5 transition-transform duration-300" />
                     </div>
-                    
-                    <div className="space-y-1 pt-1">
-                      <span className="text-[10px] text-[#4F46E5] font-bold uppercase tracking-wider">{s.step}</span>
-                      <h4 className="text-[13px] font-bold text-[#080F2A] leading-tight">{s.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{s.desc}</p>
+
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-mono text-[var(--accent)] font-bold uppercase tracking-wider block bg-indigo-500/5 px-2.5 py-0.5 rounded-full w-fit mx-auto">
+                        Step {s.step}
+                      </span>
+                      <h4 className="text-[14px] font-extrabold text-[var(--text-primary)] leading-tight">{s.title}</h4>
+                      <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-medium">{s.desc}</p>
                     </div>
-                  </div>
-                </React.Fragment>
-              ))}
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
-          </SReveal>
+          </div>
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
           <SReveal>
@@ -2237,26 +2320,45 @@ export default function RegistrationServices({
           <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
-              {/* Left Column: Google Reviews Rating Card (Col Span 5) */}
+              {/* Left Column: Redesigned Startup-focused Trust Card (Col Span 5) */}
               <div className="lg:col-span-5 space-y-6 text-left">
-                <div className="reviews-rating-card p-6 sm:p-8 space-y-5">
-                  <span className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider block">Customer Trust</span>
-                  <h3 className="text-xl font-extrabold text-[#080F2A] leading-snug">Trusted by 2,000+ founders and businesses</h3>
-                  <div className="flex items-center gap-4 pt-2">
-                    <span className="text-4xl font-extrabold text-[#080F2A]">4.8/5</span>
-                    <div>
-                      <div className="flex text-amber-400 gap-0.5">
-                        {[...Array(5)].map((_, idx) => (
-                          <Star key={idx} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                        ))}
+                <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-indigo-500/20 p-6 sm:p-8 rounded-2xl space-y-6 shadow-sm hover:shadow-md transition-all duration-300">
+                  <div>
+                    <span className="text-[10px] font-mono text-[var(--accent)] font-bold uppercase tracking-widest block bg-indigo-500/5 px-2.5 py-0.5 rounded-full w-fit">
+                      Core Commitment
+                    </span>
+                    <h3 className="text-xl font-extrabold text-[var(--text-primary)] leading-snug mt-2">
+                      Our Foundation of Trust
+                    </h3>
+                    <p className="text-[11px] text-[var(--text-secondary)] mt-1 font-medium">
+                      Built for Indian startups and growing businesses. Safe, accurate, and completely transparent filing support.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {[
+                      { title: "Transparent Process", desc: "100% upfront clarity with zero hidden pricing, filing, or government fee surprises.", icon: Shield },
+                      { title: "Professional Documentation", desc: "Expert drafting of bylaws, MOA/AOA, and legal agreements reviewed by qualified advisors.", icon: FileText },
+                      { title: "Secure Document Handling", desc: "Advanced document vaulting protecting your PAN, Aadhaar, and registry filings.", icon: Lock },
+                      { title: "Dedicated Client Assistance", desc: "Direct communications for fast resolution, registry queries, and filing status updates.", icon: Users },
+                      { title: "Founder-Focused Guidance", desc: "Expert company architecture advice set up specifically for raising capital and DPIIT benefits.", icon: Sparkles },
+                      { title: "Clear Compliance Roadmap", desc: "Proactive automated notifications and checks ahead of statutory ROC/GST deadlines.", icon: Calendar }
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-[var(--accent)] shrink-0 mt-0.5 border border-indigo-500/10">
+                          <item.icon className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-[var(--text-primary)]">{item.title}</h4>
+                          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed mt-0.5 font-medium">{item.desc}</p>
+                        </div>
                       </div>
-                      <span className="text-xs text-slate-500 font-medium block mt-1">Google Reviews</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
                 
                 {/* 3D Check Shield Visual Illustration */}
-                <div className="flex items-center justify-center py-6">
+                <div className="flex items-center justify-center py-4">
                   <div className="css-3d-shield" />
                 </div>
               </div>
@@ -2264,11 +2366,11 @@ export default function RegistrationServices({
               {/* Right Column: FAQ Accordion (Col Span 7) */}
               <div className="lg:col-span-7 space-y-4 text-left">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Frequently Asked Questions</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Quick answers to help you navigate registration and filings.</p>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Frequently Asked Questions</h3>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1 font-medium">Quick answers to help you navigate registration and filings.</p>
                 </div>
                 
-                <div className="bg-white/60 border border-slate-200/80 rounded-2xl p-4 sm:p-6 divide-y divide-slate-100">
+                <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 sm:p-6 divide-y divide-[var(--border-subtle)]">
                   {[
                     { q: "How long does company incorporation take?", a: "Standard private limited company incorporation in India takes approximately 7 to 10 working days, subject to Ministry of Corporate Affairs (MCA) processing timelines and name approval." },
                     { q: "What documents are required for ROC filing?", a: "ROC filings generally require the company's financial statements (AOC-4), annual return reports (MGT-7), Director Identification numbers, utility bills, and meeting resolutions." },
@@ -2280,18 +2382,22 @@ export default function RegistrationServices({
                       <div key={index} className="faq-accordion-item py-4">
                         <button
                           onClick={() => setExpandedFaqId(isExpanded ? null : index)}
-                          className="w-full flex items-center justify-between gap-4 text-left font-bold text-[#080F2A] text-[13px] hover:text-[#4F46E5] transition-colors cursor-pointer"
+                          aria-expanded={isExpanded}
+                          aria-controls={`faq-content-${index}`}
+                          className="w-full flex items-center justify-between gap-4 text-left font-bold text-[var(--text-primary)] text-[13px] hover:text-[var(--accent)] transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded px-1 py-0.5"
                         >
                           <span>{faq.q}</span>
-                          <span className="text-base text-slate-400 select-none">{isExpanded ? "−" : "+"}</span>
+                          <span className="text-base text-[var(--text-secondary)] select-none" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
                         </button>
                         <div
+                          id={`faq-content-${index}`}
+                          role="region"
                           className={`grid transition-all duration-200 ease-in-out ${
                             isExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
                           }`}
                         >
                           <div className="overflow-hidden">
-                            <p className="text-[12px] text-slate-500 leading-relaxed font-sans font-light">
+                            <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed font-sans font-medium">
                               {faq.a}
                             </p>
                           </div>
@@ -3003,12 +3109,12 @@ export default function RegistrationServices({
               {/* Card 2 */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-left flex flex-col justify-between shadow-sm">
                 <div className="p-2.5 bg-brand-gold/10 text-brand-gold rounded-xl w-fit mb-4">
-                  <Star className="w-5 h-5 text-brand-gold" />
+                  <CheckCircle2 className="w-5 h-5 text-brand-gold" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white tracking-wide">4.9/5 Trust Rating</h4>
+                  <h4 className="text-sm font-bold text-white tracking-wide">Bilingual Helpline</h4>
                   <p className="text-xs text-slate-400 font-sans mt-1.5 leading-relaxed">
-                    Trusted by 2,000+ ambitious Indian startup founders and SMEs nationwide.
+                    Personalized support in English and Hindi directly by CA-mentored advisors.
                   </p>
                 </div>
               </div>

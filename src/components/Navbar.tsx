@@ -30,6 +30,17 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const nav = (e: React.MouseEvent, tab: string) => {
     e.preventDefault();
     setActiveTab(tab);
