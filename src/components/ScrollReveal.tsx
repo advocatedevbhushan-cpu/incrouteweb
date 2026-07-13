@@ -14,17 +14,19 @@ interface ScrollRevealProps extends HTMLMotionProps<"div"> {
   className?: string;
 }
 
-export default function ScrollReveal({
-  children,
-  variant = "fade-up",
-  delay = 0,
-  duration = 0.6,
-  staggerChildren,
-  once = true,
-  margin = "-20px",
-  className = "",
-  ...props
-}: ScrollRevealProps) {
+export default function ScrollReveal(props: ScrollRevealProps) {
+  const {
+    children,
+    variant = "fade-up",
+    delay = 0,
+    duration = 0.6,
+    staggerChildren,
+    once = true,
+    margin = "-20px",
+    className = "",
+    ...restProps
+  } = props;
+
   // Define animation presets
   const variants = {
     hidden: {
@@ -51,17 +53,13 @@ export default function ScrollReveal({
     },
   };
 
-  // If we want a staggered container, we should let children have their own variants
-  // This standard Framer Motion behavior works if the parent is a motion container
-  const isContainer = typeof staggerChildren === "number" && staggerChildren > 0;
-
   return (
     <motion.div
       initial="hidden"
       animate="visible"
       variants={variants}
       className={className}
-      {...props}
+      {...restProps}
     >
       {children}
     </motion.div>
@@ -69,16 +67,18 @@ export default function ScrollReveal({
 }
 
 // Sub-component for children inside a staggered container
-export function ScrollRevealItem({
-  children,
-  variant = "fade-up",
-  className = "",
-  ...props
-}: {
+export function ScrollRevealItem(props: {
   children: React.ReactNode;
   variant?: AnimationVariant;
   className?: string;
 } & HTMLMotionProps<"div">) {
+  const {
+    children,
+    variant = "fade-up",
+    className = "",
+    ...restProps
+  } = props;
+
   const itemVariants = {
     hidden: {
       opacity: 0,
@@ -100,7 +100,7 @@ export function ScrollRevealItem({
   };
 
   return (
-    <motion.div variants={itemVariants} className={className} {...props}>
+    <motion.div variants={itemVariants} className={className} {...restProps}>
       {children}
     </motion.div>
   );
