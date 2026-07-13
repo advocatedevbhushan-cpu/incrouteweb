@@ -55,7 +55,13 @@ collections:
                 name: "content"
                 widget: "markdown"
               - { label: "Featured Image", name: "image", widget: "image", required: false }
-              - { label: "Publish Date", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - label: "Publish Date"
+                name: "date"
+                widget: "datetime"
+                default: "{{now}}"
+                date_format: "YYYY-MM-DD"
+                time_format: false
+                picker_utc: true
               - { label: "Author", name: "author", widget: "string", default: "D Bhushan" }
               - label: "Category"
                 name: "category"
