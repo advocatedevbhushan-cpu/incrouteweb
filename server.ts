@@ -3397,10 +3397,24 @@ Sector/Industry: "${industry}"
 
 Assess the proposed name meticulously against naming guidelines (e.g. check if generic, check if offensive, check prefix/suffix suitability, check for prefix descriptiveness).
 Analyze the proposed name against phonetic registers, MCA database guidelines, and trademark Class 9/35/42 listings.
-Format your response as a strict, clean JSON object. In "suggestions", provide exactly 5 premium, highly professional corporate name variations using the proposed brand prefix, incorporating suitable sector nouns and standard legal suffixes matching the requested entity type.
-Return ONLY the raw JSON string matching this exact structure:
+
+For company name suggestions:
+Provide exactly 5 highly unique, modern corporate name suggestions. Ensure these suggested names avoid basic, boring additions (e.g. prefix + Solutions, Systems, Tech, Ventures, Global). Instead, use creative naming strategies like:
+- Coined (inventing new terms, e.g., using neologisms or phonetic adjustments)
+- Semantic (incorporating Latin/Greek roots or meaningful words)
+- Portmanteau (smartly blending two related words)
+- Modern/Abstract (sleek, highly brandable coined words)
+Each suggested name must match the requested entity type legal suffix (e.g., 'Private Limited' or 'LLP'). Write explanations explaining the semantic origin or rationale for each under 'concept'.
+
+Format your response as a strict, clean JSON object matching this exact structure:
 {
   "score": 85,
+  "scoreDetails": {
+    "phoneticUniqueness": 88,
+    "trademarkSafety": 82,
+    "legalAdherence": 90,
+    "linguisticAppeal": 80
+  },
   "summary": "Detailed professional suitability summary...",
   "conflicts": [
     "Conflict checking notes...",
@@ -3417,6 +3431,13 @@ Return ONLY the raw JSON string matching this exact structure:
     "Suggested Name 3",
     "Suggested Name 4",
     "Suggested Name 5"
+  ],
+  "creativeSuggestions": [
+    { "name": "Suggested Name 1", "type": "Coined neologism", "concept": "Concept/rationale text...", "trademarkRisk": "Low" },
+    { "name": "Suggested Name 2", "type": "Semantic concept", "concept": "Concept/rationale text...", "trademarkRisk": "Low" },
+    { "name": "Suggested Name 3", "type": "Portmanteau blend", "concept": "Concept/rationale text...", "trademarkRisk": "Medium" },
+    { "name": "Suggested Name 4", "type": "Modern abstract", "concept": "Concept/rationale text...", "trademarkRisk": "Low" },
+    { "name": "Suggested Name 5", "type": "Phonetic variant", "concept": "Concept/rationale text...", "trademarkRisk": "Low" }
   ],
   "domains": [
     { "ext": ".com", "status": "Available" },
@@ -3472,6 +3493,45 @@ Return ONLY the raw JSON string matching this exact structure:
       const parsed = JSON.parse(resultText);
 
       // Verify necessary fields are present
+      if (!parsed.scoreDetails) {
+        parsed.scoreDetails = {
+          phoneticUniqueness: Math.max(30, Math.min(99, Math.round((parsed.score || 85) * 0.95 + (positiveHash % 5)))),
+          trademarkSafety: Math.max(30, Math.min(99, Math.round((parsed.score || 85) * 0.9 + (positiveHash % 8)))),
+          legalAdherence: Math.max(30, Math.min(99, Math.round((parsed.score || 85) * 0.98 + (positiveHash % 3)))),
+          linguisticAppeal: Math.max(30, Math.min(99, Math.round((parsed.score || 85) * 0.85 + (positiveHash % 10))))
+        };
+      }
+      if (!parsed.creativeSuggestions) {
+        const strippedPrefix = cleanName
+          .replace(/\b(pvt ltd|private limited|llp|opc|partnership)\b/gi, "")
+          .trim();
+        const capitalizedPrefix = strippedPrefix.charAt(0).toUpperCase() + strippedPrefix.slice(1);
+        const corporateSuffix = entityType.includes("LLP") ? "LLP" : "Private Limited";
+        
+        parsed.creativeSuggestions = parsed.suggestions ? parsed.suggestions.map((sug: any, i: number) => {
+          const sugName = typeof sug === 'string' ? sug : (sug.name || `${capitalizedPrefix} ${i} ${corporateSuffix}`);
+          const nameTypes = ["Coined neologism", "Semantic concept", "Portmanteau blend", "Modern abstract", "Phonetic variant"];
+          const concepts = [
+            `A neologism combining the core brand prefix with a modern legal registry design.`,
+            `A semantic alignment with the industry, focusing on standard brand characteristics.`,
+            `A portmanteau blending ${cleanName} with industry-relevant concepts.`,
+            `A modern abstract brand variant formulated to ensure high trademark clearance.`,
+            `A phonetically clean variation of "${cleanName}" tailored to pass registrar audits.`
+          ];
+          return {
+            name: sugName,
+            type: nameTypes[i % nameTypes.length],
+            concept: concepts[i % concepts.length],
+            trademarkRisk: i % 3 === 0 ? "Medium" : "Low"
+          };
+        }) : [
+          { name: `${capitalizedPrefix} Velo ${corporateSuffix}`, type: "Coined neologism", concept: `Blending "${capitalizedPrefix}" with Velocity to represent speed and growth.`, trademarkRisk: "Low" },
+          { name: `${capitalizedPrefix} Labs ${corporateSuffix}`, type: "Modern abstract", concept: `A premium research/experimental vibe suggesting innovation.`, trademarkRisk: "Low" },
+          { name: `${capitalizedPrefix} Intellect ${corporateSuffix}`, type: "Semantic concept", concept: `Stresses professional knowledge and high-fidelity expertise.`, trademarkRisk: "Medium" },
+          { name: `${capitalizedPrefix} Synapse ${corporateSuffix}`, type: "Portmanteau blend", concept: `Stressing networks, connectivity, and intelligent software logic.`, trademarkRisk: "Low" },
+          { name: `${capitalizedPrefix} Apex ${corporateSuffix}`, type: "Modern abstract", concept: `Signifies top-tier performance, reaching the highest standard.`, trademarkRisk: "Low" }
+        ];
+      }
       if (!parsed.domains) {
         parsed.domains = [
           { ext: ".com", status: positiveHash % 3 === 0 ? "Taken" : "Available" },

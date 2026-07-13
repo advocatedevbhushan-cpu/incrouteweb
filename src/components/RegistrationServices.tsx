@@ -1829,215 +1829,55 @@ export default function RegistrationServices({
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="relative max-w-[1320px] mx-auto z-20 px-4 sm:px-6 mt-[-10px] md:mt-[-30px] pb-4 business-setup-section"
           >
-            <div className="business-search-card rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-5">
-              {/* Header */}
-              <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase text-left pl-1">
-                <Search className="w-3.5 h-3.5 text-[#8B9CFF]" /> Find the Right Business Setup
-              </div>
-              
-              {/* Search form controls */}
-              <form onSubmit={handleCheckName} className={`grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end ${formShake ? "form-shake" : ""}`}>
-                {/* Business name input */}
-                <div className="md:col-span-5 text-left relative">
-                  <div className="floating-label-group relative">
-                    <input
-                      id="proposed-business-name"
-                      type="text"
-                      placeholder=" "
-                      value={checkName}
-                      onChange={(e) => setCheckName(e.target.value)}
-                      onBlur={() => setNameBlurred(true)}
-                      onFocus={() => setNameBlurred(false)}
-                      className={`w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 text-xs outline-none transition-all font-sans pr-10 ${
-                        nameBlurred && !checkName.trim() ? "!border-[#C74A4A]" : ""
-                      }`}
-                    />
-                    <label htmlFor="proposed-business-name" className="flex items-center gap-1.5">
-                      <Lock className="w-3 h-3 text-brand-gold" /> Proposed Business Name
-                    </label>
-                    {checkName.trim().length >= 2 && (
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" viewBox="0 0 16 16" fill="none">
-                        <circle cx="8" cy="8" r="7" fill="#2C8C5A" opacity="0.15"/>
-                        <path d="M5 8l2 2 4-4" stroke="#2C8C5A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  {nameBlurred && !checkName.trim() && (
-                    <span className="input-error-tooltip show">Business name is required</span>
-                  )}
-                </div>
-                
-                {/* Entity structure select */}
-                <div className="md:col-span-3 text-left">
-                  <div className="floating-label-group relative">
-                    <select
-                      id="entity-type-select"
-                      value={calcEntity}
-                      onChange={(e) => {
-                        setCalcEntity(e.target.value);
-                        setSelectedEntityId(e.target.value);
-                      }}
-                      className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
-                    >
-                      <option value="pvt-ltd">Private Limited Company</option>
-                      <option value="llp">Limited Liability Partnership</option>
-                      <option value="opc">One Person Company</option>
-                      <option value="partnership">Partnership Firm</option>
-                    </select>
-                    <label htmlFor="entity-type-select">Entity Type</label>
-                    <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Industry/Sector select */}
-                <div className="md:col-span-3 text-left">
-                  <div className="floating-label-group relative">
-                    <select
-                      id="industry-select"
-                      value={checkIndustry}
-                      onChange={(e) => setCheckIndustry(e.target.value)}
-                      className="w-full premium-advisor-input rounded-xl px-4 pt-5 pb-2 pr-10 text-xs outline-none appearance-none cursor-pointer transition-all"
-                    >
-                      <option value="Technology & Software Services">Technology & Software Services</option>
-                      <option value="E-Commerce & Retail">E-Commerce & Retail</option>
-                      <option value="Finance & Consulting Services">Finance & Consulting Services</option>
-                      <option value="Healthcare & Pharma">Healthcare & Pharma</option>
-                      <option value="Manufacturing">Manufacturing</option>
-                      <option value="Education & EdTech">Education & EdTech</option>
-                      <option value="Real Estate & Construction">Real Estate & Construction</option>
-                      <option value="Food & Beverages">Food & Beverages</option>
-                      <option value="Agriculture & Agritech">Agriculture & Agritech</option>
-                      <option value="Logistics & Transportation">Logistics & Transportation</option>
-                      <option value="Media & Entertainment">Media & Entertainment</option>
-                      <option value="Travel & Hospitality">Travel & Hospitality</option>
-                      <option value="Textile & Apparel">Textile & Apparel</option>
-                      <option value="Automotive">Automotive</option>
-                      <option value="Energy & Renewable Resources">Energy & Renewable Resources</option>
-                      <option value="Banking & Financial Services">Banking & Financial Services</option>
-                      <option value="Insurance">Insurance</option>
-                      <option value="Telecommunications">Telecommunications</option>
-                      <option value="Legal Services">Legal Services</option>
-                      <option value="Advertising & Marketing">Advertising & Marketing</option>
-                      <option value="Sports & Fitness">Sports & Fitness</option>
-                      <option value="Beauty & Personal Care">Beauty & Personal Care</option>
-                      <option value="Environmental & Waste Management">Environmental & Waste Management</option>
-                      <option value="Mining & Metals">Mining & Metals</option>
-                      <option value="Aerospace & Defence">Aerospace & Defence</option>
-                      <option value="Blockchain & Web3">Blockchain & Web3</option>
-                      <option value="Artificial Intelligence & ML">Artificial Intelligence & ML</option>
-                      <option value="Gaming & Esports">Gaming & Esports</option>
-                      <option value="Event Management">Event Management</option>
-                      <option value="Interior Design & Architecture">Interior Design & Architecture</option>
-                      <option value="Import & Export Trading">Import & Export Trading</option>
-                      <option value="Printing & Packaging">Printing & Packaging</option>
-                      <option value="Security Services">Security Services</option>
-                      <option value="Non-Profit & Social Enterprise">Non-Profit & Social Enterprise</option>
-                      <option value="Chemicals & Petrochemicals">Chemicals & Petrochemicals</option>
-                      <option value="Jewellery & Precious Metals">Jewellery & Precious Metals</option>
-                      <option value="Freelancing & Professional Services">Freelancing & Professional Services</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <label htmlFor="industry-select">Industry</label>
-                    <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted rotate-90 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Form submit search trigger */}
-                <div className="md:col-span-1">
-                  <button
-                    type="submit"
-                    disabled={isCheckingName}
-                    aria-label="Check name availability"
-                    className="w-full h-11 bg-brand-gold hover:bg-black text-black hover:text-white rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-brand-gold/10 font-bold"
-                  >
-                    {isCheckingName ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-black" />
-                    ) : (
-                      <Search className="w-4 h-4 stroke-[2.5]" />
-                    )}
-                  </button>
-                </div>
-              </form>
-              
-              {/* Interactive clearance ledger */}
-              {checkReport && (
-                <div className="space-y-4 border-t border-slate-800 pt-5">
-                  {/* Highlighted AI Disclaimer Box */}
-                  <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl text-[10px] leading-relaxed flex items-start gap-2.5 text-left relative z-10">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <strong className="font-bold block text-amber-400 mb-0.5">AI-Powered Advisory Service</strong>
-                      This clearance test is conducted by an AI agent and could contain errors. Please consult our legal experts to confirm guidelines before filing.
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowOnboardModal(true);
-                        }}
-                        className="underline text-brand-gold font-semibold hover:text-white mt-1 cursor-pointer block"
-                      >
-                        Consult with our Expert now &rarr;
-                      </button>
-                    </div>
-                  </div>
+            <div 
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab("name-checker");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="business-search-card rounded-2xl sm:rounded-3xl p-6 md:p-8 space-y-6 cursor-pointer group/card shadow-2xl relative overflow-hidden text-left"
+            >
+              {/* Neon background decorations */}
+              <div className="absolute top-[-30%] right-[-10%] w-72 h-72 bg-gradient-to-br from-[#5B6CFF]/10 to-[#8B5CF6]/0 blur-[60px] rounded-full group-hover/card:scale-110 transition-transform duration-700 pointer-events-none" />
+              <div className="absolute bottom-[-30%] left-[-10%] w-72 h-72 bg-gradient-to-tr from-purple-500/10 to-indigo-500/0 blur-[60px] rounded-full group-hover/card:scale-110 transition-transform duration-700 pointer-events-none" />
 
-                  <motion.div 
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-5"
-                  >
-                    <div className="flex flex-col items-center justify-center p-5 bg-slate-900/60 rounded-xl border border-slate-800/80 shadow-sm min-h-[120px]">
-                      <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold font-mono mb-1">Suitability Score</span>
-                      <div className="text-center">
-                        <span className="text-4xl font-light text-red-500 font-serif italic block leading-none">
-                          {checkReport.score}
-                        </span>
-                        <span className="text-[9px] text-slate-400 font-mono tracking-wider block mt-1">out of 100</span>
-                      </div>
-                    </div>
-                    
-                    <div className="text-left space-y-3 bg-red-950/25 p-4.5 rounded-xl border border-red-500/20">
-                      <span className="text-[8px] uppercase tracking-widest text-red-400 font-bold font-mono flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" /> Issues Found
-                      </span>
-                      <ul className="space-y-1.5">
-                        {checkReport.conflicts.map((conf: string, i: number) => (
-                          <li key={i} className="text-xs text-slate-300 flex items-start gap-1.5 leading-relaxed font-sans">
-                            <span className="text-red-400 text-sm font-bold leading-none shrink-0 mt-0.5">•</span>
-                            <span>{conf}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <div className="text-left space-y-3 bg-emerald-950/20 p-4.5 rounded-xl border border-emerald-500/20 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[8px] uppercase tracking-widest text-emerald-400 font-bold font-mono flex items-center gap-1.5 mb-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Suggestions
-                        </span>
-                        <div className="space-y-2">
-                          {checkReport.suggestions.slice(0, 3).map((sug: string, i: number) => (
-                            <div key={i} className="flex items-center justify-between gap-2 p-2 bg-slate-900/50 border border-slate-800/80 rounded-lg group">
-                              <span className="text-[10px] font-mono font-semibold text-slate-200 truncate">{sug}</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setCheckName(sug);
-                                  setShowOnboardModal(true);
-                                }}
-                                title="Register this name"
-                                className="px-2 py-1 bg-[#3B5BFF] hover:bg-[#5B7CFF] text-white font-mono text-[8px] font-bold uppercase rounded transition-colors cursor-pointer shrink-0"
-                              >
-                                Register
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+              {/* Header */}
+              <div className="flex items-center justify-between gap-4 flex-wrap pl-1 relative z-10">
+                <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider text-slate-300 uppercase font-sans">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> AI Compliance & Feasibility Advisor
                 </div>
-              )}
+              </div>
+
+              {/* Card Body */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10 font-sans">
+                <div className="space-y-3.5 max-w-4xl">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-bold font-mono tracking-wider px-3 py-1 rounded-full uppercase">
+                      NEW ADVANCED ADVISOR
+                    </span>
+                    <span className="text-[10px] font-mono text-purple-300 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-amber-400 animate-spin-slow" /> Gemini AI Deep-Registry Clearance
+                    </span>
+                  </div>
+                  <h3 className="text-xl md:text-2xl text-white serif tracking-wide leading-snug">
+                    Need a trademark-safe neologism & official pre-clearance report?
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-3xl font-light">
+                    Don't guess your company name. Run our deep statutory clearance audit to search phonetics, trademark databases, and generate your printable Executive Feasibility Certificate instantly.
+                  </p>
+                </div>
+                
+                <button
+                  type="button"
+                  className="relative overflow-hidden bg-gradient-to-r from-[#5B6CFF] to-[#8B5CF6] hover:from-[#4A58E8] hover:to-[#7C3AED] text-white font-sans text-xs font-bold uppercase tracking-wider px-7 py-4.5 rounded-xl transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-500/25 group-hover/card:scale-[1.04] active:scale-[0.98] flex items-center gap-2.5 shrink-0 group/btn border border-indigo-400/30"
+                >
+                  {/* Animated shine line */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:animate-shine pointer-events-none" />
+                  <span>Launch AI Compliance Scanner</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                </button>
+              </div>
             </div>
           </motion.div>
 

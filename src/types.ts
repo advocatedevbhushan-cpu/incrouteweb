@@ -79,9 +79,28 @@ export interface NameCheckHistoryEntry {
   checkedAt: string;
   report: {
     score: number;
+    scoreDetails?: {
+      phoneticUniqueness: number;
+      trademarkSafety: number;
+      legalAdherence: number;
+      linguisticAppeal: number;
+    };
     summary: string;
     conflicts: string[];
     checklist: { criterion: string; passed: boolean; reason: string }[];
     suggestions: string[];
+    creativeSuggestions?: {
+      name: string;
+      type: string;
+      concept: string;
+      trademarkRisk: string;
+    }[];
+    domains?: { ext: string; status: string }[];
+    trademarks?: { class: string; status: string; matches: string }[];
+    postFilingKit?: {
+      steps: { step: string; detail: string; cost: string }[];
+      stampDuties: string;
+      timeframe: string;
+    };
   };
 }
