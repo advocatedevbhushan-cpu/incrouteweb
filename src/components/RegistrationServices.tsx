@@ -1712,14 +1712,37 @@ export default function RegistrationServices({
           >
             {/* LEFT: Content */}
             <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
-              <div className="trust-badge">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Trusted by 50+ founders and businesses
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="trust-badge group cursor-default"
+              >
+                <div className="relative flex items-center justify-center w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-[var(--accent)] to-indigo-500 text-white shrink-0 overflow-hidden shadow-[0_2px_8px_rgba(99,102,241,0.4)]">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.4 }}
+                  >
+                    <Check className="w-2.5 h-2.5" strokeWidth={4} />
+                  </motion.div>
+                </div>
+                <span>Trusted by <span className="font-bold text-slate-800">50+</span> founders and businesses</span>
+              </motion.div>
 
-              <h1 className="hero-title">
-                Start, Manage &<br />Stay Compliant —<br />
-                <span className="hero-highlight-text">All in One Platform.</span>
-              </h1>
+              <motion.h1 
+                className="hero-title flex flex-col"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+                }}
+              >
+                <motion.span variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }}>Start, Manage &</motion.span>
+                <motion.span variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } }}>Stay Compliant —</motion.span>
+                <motion.span variants={{ hidden: { opacity: 0, scale: 0.95, filter: "blur(4px)" }, visible: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { type: "spring", stiffness: 200, damping: 20, delay: 0.3 } } }} className="hero-highlight-text mt-1">All in One Platform.</motion.span>
+              </motion.h1>
               
               <p className="hero-desc leading-relaxed max-w-md">
                 Incorporate your company, track ROC & GST filings, avoid penalties, and manage compliance — without chaos.
@@ -1729,11 +1752,32 @@ export default function RegistrationServices({
               <RotatingInsight />
 
               {/* Bullet points */}
-              <ul className="space-y-2 text-[13px] text-[#475569] font-medium">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Entity Incorporation (Pvt Ltd, LLP, OPC)</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Compliance Calendar & Reminders</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> ROC, GST, Tax & Legal Filings</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[var(--accent)]" /> Expert Support & Documentation</li>
+              <ul className="space-y-3 pt-2 pb-1 text-[13.5px] text-[#475569] font-medium">
+                {[
+                  "Entity Incorporation (Pvt Ltd, LLP, OPC)",
+                  "Compliance Calendar & Reminders",
+                  "ROC, GST, Tax & Legal Filings",
+                  "Expert Support & Documentation"
+                ].map((item, idx) => (
+                  <motion.li 
+                    key={idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 + idx * 0.1 }}
+                    className="flex items-center gap-3 group"
+                  >
+                    <div className="relative flex items-center justify-center w-[22px] h-[22px] rounded-full bg-indigo-50 text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white transition-all duration-300 shadow-[0_0_0_1px_rgba(99,102,241,0.15)] group-hover:shadow-[0_4px_12px_rgba(99,102,241,0.3)] shrink-0">
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, delay: 0.4 + idx * 0.1 }}
+                      >
+                        <Check className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" strokeWidth={3} />
+                      </motion.div>
+                    </div>
+                    <span className="group-hover:text-slate-900 transition-colors duration-300">{item}</span>
+                  </motion.li>
+                ))}
               </ul>
               
               <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -1744,7 +1788,10 @@ export default function RegistrationServices({
                   Start Your Business <ArrowRight className="w-4 h-4" />
                 </button>
                 <button 
-                  onClick={() => navigateToTab("portal")}
+                  onClick={() => {
+                    const section = document.getElementById("how-it-works");
+                    if (section) section.scrollIntoView({ behavior: "smooth" });
+                  }}
                   className="secondary-button px-6 py-3 font-semibold text-sm cursor-pointer flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Explore The Platform
@@ -2220,7 +2267,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS Redesigned ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-10 text-center pt-10 pb-8 overflow-hidden">
+          <div id="how-it-works" className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-10 text-center pt-10 pb-8 overflow-hidden">
             <div className="space-y-2">
               <span className="text-[10px] text-[var(--accent)] font-extrabold uppercase tracking-[0.2em] block">Process Walkthrough</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
