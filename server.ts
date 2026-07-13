@@ -2858,6 +2858,17 @@ const secret = JWT_SECRET;
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
           `);
+
+          // Create blog comments table
+          await conn.query(`
+            CREATE TABLE IF NOT EXISTS blog_comments (
+              id VARCHAR(255) PRIMARY KEY,
+              post_id VARCHAR(255),
+              name VARCHAR(255),
+              content TEXT,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+          `);
           
           console.log("🟢 MySQL Database Tables Verified/Created.");
           conn.release();
@@ -3899,6 +3910,39 @@ Format your response in structured sections:
   // Serve blog images statically
   app.use("/blog-images", express.static(path.join(process.cwd(), "public", "blog-images")));
 
+  const getDbViewsMap = async (): Promise<Map<string, number>> => {
+    const dbPostsViews = new Map<string, number>();
+    if (dbPool) {
+      try {
+        const [rows]: any = await dbPool.query("SELECT post_id, views FROM blog_views");
+        if (Array.isArray(rows)) {
+          rows.forEach((row: any) => {
+            if (row && row.post_id) {
+              dbPostsViews.set(row.post_id, Number(row.views) || 0);
+            }
+          });
+        }
+      } catch (dbErr: any) {
+        console.error("🔴 Failed to query DB views map:", dbErr.message);
+      }
+    }
+    return dbPostsViews;
+  };
+
+  const applyViewsToPosts = async (postsList: any[]): Promise<any[]> => {
+    const dbViews = await getDbViewsMap();
+    const localViews = loadViewsMap();
+    return postsList.map((p) => {
+      if (!p || !p.id) return p;
+      const dbVal = dbViews.get(p.id) || 0;
+      const localVal = localViews.get(p.id) || 0;
+      return {
+        ...p,
+        views: Math.max(dbVal, localVal, Number(p.views) || 0)
+      };
+    });
+  };
+
   app.get("/api/blog/posts", async (req, res) => {
     const token = req.query.token || req.headers["x-admin-token"];
 
@@ -4016,15 +4060,7 @@ Format your response in structured sections:
     }
 
     // Final pass to merge database & local views for all loaded posts (covers fallback/in-memory posts)
-    posts = posts.map((p) => {
-      if (!p || !p.id) return p;
-      const dbViews = dbPostsViews.get(p.id) || 0;
-      const localViews = localPostsViews.get(p.id) || 0;
-      return {
-        ...p,
-        views: Math.max(dbViews, localViews, Number(p.views) || 0)
-      };
-    });
+    posts = await applyViewsToPosts(posts);
 
     // Sort posts by date descending
     posts.sort((a, b) => b.date.localeCompare(a.date));
@@ -4163,15 +4199,17 @@ Format your response in structured sections:
     posts[existingPostIndex] = updatedPost;
     try {
       fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
-      blogPosts = posts;
+      blogPosts = await applyViewsToPosts(posts);
     } catch (err: any) {
       console.error("Failed to write edited blog to local database file:", err.message);
     }
 
+    const [mergedPost] = await applyViewsToPosts([updatedPost]);
+
     res.json({ 
       success: true, 
       message: "Blog post updated successfully!", 
-      post: updatedPost 
+      post: mergedPost 
     });
   });
 
@@ -4209,12 +4247,13 @@ Format your response in structured sections:
     // Always update local disk cache
     try {
       fs.writeFileSync(BLOG_FILE, JSON.stringify({posts}, null, 2), "utf-8");
-      blogPosts = posts;
+      blogPosts = await applyViewsToPosts(posts);
     } catch (err: any) {
       console.error("Failed to write blog status to local database file:", err.message);
     }
 
-    res.json({ success: true, post: posts[postIndex] });
+    const mergedPosts = await applyViewsToPosts(posts);
+    res.json({ success: true, post: mergedPosts[postIndex] });
   });
 
   app.post("/api/blog/posts/:id/view", async (req, res) => {
@@ -4302,6 +4341,102 @@ Format your response in structured sections:
     }
 
     res.json({ success: true, message: "Blog post deleted successfully!" });
+  });
+
+  // Local JSON Blog Comments Datastore
+  const COMMENTS_FILE = path.join(process.cwd(), "blog-comments.json");
+
+  const loadComments = (): any[] => {
+    try {
+      if (fs.existsSync(COMMENTS_FILE)) {
+        const raw = fs.readFileSync(COMMENTS_FILE, "utf-8");
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : (parsed.comments || []);
+      }
+    } catch (e: any) {
+      console.error("Failed loading blog comments:", e.message);
+    }
+    return [];
+  };
+
+  const saveComments = (comments: any[]) => {
+    try {
+      fs.writeFileSync(COMMENTS_FILE, JSON.stringify({ comments }, null, 2), "utf-8");
+    } catch (e: any) {
+      console.error("Failed saving blog comments:", e.message);
+    }
+  };
+
+  // GET comments for a specific post
+  app.get("/api/blog/posts/:id/comments", async (req, res) => {
+    const { id } = req.params;
+
+    // Load from database if configured
+    if (dbPool) {
+      try {
+        const [rows]: any = await dbPool.query(
+          "SELECT id, post_id as postId, name, content, created_at as date FROM blog_comments WHERE post_id = ? ORDER BY created_at ASC",
+          [id]
+        );
+        if (Array.isArray(rows)) {
+          return res.json({ success: true, comments: rows });
+        }
+      } catch (err: any) {
+        console.error("🔴 Failed to fetch comments from MySQL database:", err.message);
+      }
+    }
+
+    // Fallback to local cache file
+    const comments = loadComments();
+    const filtered = comments.filter((c: any) => c.postId === id);
+    filtered.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    res.json({ success: true, comments: filtered });
+  });
+
+  // POST a new comment
+  app.post("/api/blog/posts/:id/comments", async (req, res) => {
+    const { id } = req.params;
+    const { name, content } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: "Name is required." });
+    }
+    if (!content || !content.trim()) {
+      return res.status(400).json({ success: false, error: "Comment text is required." });
+    }
+
+    const commentId = `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const commentDate = new Date().toISOString();
+    const trimmedName = name.trim();
+    const trimmedContent = content.trim();
+
+    // Save to database if configured
+    if (dbPool) {
+      try {
+        await dbPool.query(
+          "INSERT INTO blog_comments (id, post_id, name, content, created_at) VALUES (?, ?, ?, ?, ?)",
+          [commentId, id, trimmedName, trimmedContent, new Date()]
+        );
+        console.log(`🟢 Saved new comment to MySQL database: ${commentId}`);
+      } catch (err: any) {
+        console.error("🔴 Failed to save comment to MySQL database:", err.message);
+      }
+    }
+
+    // Always append/save to local cache file as a local fallback/backup
+    const comments = loadComments();
+    const newComment = {
+      id: commentId,
+      postId: id,
+      name: trimmedName,
+      content: trimmedContent,
+      date: commentDate
+    };
+
+    comments.push(newComment);
+    saveComments(comments);
+
+    res.json({ success: true, comment: newComment });
   });
 
   // Testimonials Persistent JSON Datastore

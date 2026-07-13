@@ -52,6 +52,60 @@ export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
+  // Comments State
+  const [comments, setComments] = useState<any[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [commentName, setCommentName] = useState("");
+  const [commentContent, setCommentContent] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentSuccess, setCommentSuccess] = useState(false);
+  const [commentError, setCommentError] = useState("");
+
+  const fetchComments = async (postId: string) => {
+    setLoadingComments(true);
+    try {
+      const res = await fetch(`/api/blog/posts/${postId}/comments`);
+      const data = await res.json();
+      if (data.success && data.comments) {
+        setComments(data.comments);
+      }
+    } catch (err) {
+      console.error("Failed to fetch comments:", err);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentName.trim() || !commentContent.trim()) return;
+
+    setSubmittingComment(true);
+    setCommentError("");
+    setCommentSuccess(false);
+
+    try {
+      const res = await fetch(`/api/blog/posts/${selectedPost!.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: commentName, content: commentContent })
+      });
+      const data = await res.json();
+      if (data.success && data.comment) {
+        setComments(prev => [...prev, data.comment]);
+        setCommentContent("");
+        setCommentSuccess(true);
+        setTimeout(() => setCommentSuccess(false), 4000);
+      } else {
+        setCommentError(data.error || "Failed to submit comment.");
+      }
+    } catch (err) {
+      setCommentError("Network error. Please try again.");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
   useEffect(() => { fetchPosts(); }, []);
 
   useEffect(() => {
@@ -63,6 +117,16 @@ export default function BlogPage() {
       setSelectedPost(found || null);
     } else { setSelectedPost(null); }
   }, [location.pathname, posts]);
+
+  useEffect(() => {
+    if (selectedPost) {
+      fetchComments(selectedPost.id);
+      setCommentName("");
+      setCommentContent("");
+      setCommentSuccess(false);
+      setCommentError("");
+    }
+  }, [selectedPost]);
 
   const fetchPosts = async () => {
     try {
@@ -132,6 +196,111 @@ export default function BlogPage() {
 
             {selectedPost.image && (<img src={selectedPost.image} alt={selectedPost.title} className="w-full h-auto max-h-[400px] object-cover rounded-2xl mb-10 border border-[var(--border-subtle)]" loading="lazy" />)}
             <article className="blog-article-content" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+
+            {/* Comment Section Container */}
+            <div className="mt-14 pt-10 border-t border-[var(--border-subtle)] space-y-10">
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">
+                  Comments ({comments.length})
+                </h3>
+                <p className="text-[12px] text-[var(--text-secondary)]">
+                  Share your feedback, ask questions, or contribute to the discussion.
+                </p>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-6">
+                {loadingComments ? (
+                  <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)] py-4">
+                    <span className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                    Loading comments...
+                  </div>
+                ) : comments.length === 0 ? (
+                  <div className="p-6 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl text-center space-y-1">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">No comments yet</p>
+                    <p className="text-[11px] text-[var(--text-secondary)]">Be the first to share your thoughts on this article!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {comments.map((comment: any) => (
+                      <div key={comment.id} className="p-5 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl space-y-2.5 transition-all duration-300 hover:border-indigo-500/20 text-left">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-extrabold text-[var(--text-primary)]">{comment.name}</span>
+                          <span className="text-[var(--text-secondary)] font-medium font-sans">
+                            {new Date(comment.date).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed font-sans whitespace-pre-line">
+                          {comment.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Add Comment Form */}
+              <form onSubmit={handleCommentSubmit} className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 md:p-8 space-y-5 text-left">
+                <h4 className="text-sm font-extrabold text-[var(--text-primary)] uppercase tracking-wider">Leave a Comment</h4>
+                
+                {commentSuccess && (
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-[12px] font-medium">
+                    ✓ Your comment has been posted successfully!
+                  </div>
+                )}
+
+                {commentError && (
+                  <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-[12px] font-medium">
+                    ⚠ {commentError}
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={commentName}
+                      onChange={(e) => setCommentName(e.target.value)}
+                      className="w-full text-[13px] px-4 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] focus:border-[var(--accent)] rounded-xl outline-none transition-colors text-[var(--text-primary)]"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Comment *</label>
+                    <textarea 
+                      required
+                      rows={4}
+                      placeholder="Write your thoughts, questions, or feedback here..."
+                      value={commentContent}
+                      onChange={(e) => setCommentContent(e.target.value)}
+                      className="w-full text-[13px] px-4 py-3 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] focus:border-[var(--accent)] rounded-xl outline-none transition-colors text-[var(--text-primary)] resize-none"
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={submittingComment || !commentName.trim() || !commentContent.trim()}
+                  className="px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-slate-700 disabled:opacity-40 text-white text-[12px] font-bold uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer shadow-md inline-flex items-center gap-2"
+                >
+                  {submittingComment ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Posting...
+                    </>
+                  ) : "Post Comment"}
+                </button>
+              </form>
+            </div>
           </div>
 
           {/* Right Sidebar */}
