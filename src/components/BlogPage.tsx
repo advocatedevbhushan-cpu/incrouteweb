@@ -22,7 +22,6 @@ interface BlogPost {
 function markdownToHtml(md: string): string {
   let html = md
     .replace(/^### (.+)$/gm, '<h3 class="text-[17px] font-bold text-[var(--text-primary)] mt-8 mb-3">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-[20px] font-bold text-[var(--text-primary)] mt-10 mb-4 pb-2 border-b border-[var(--border-subtle)]">$2</h2>')
     .replace(/^## (.+)$/gm, '<h2 class="text-[20px] font-bold text-[var(--text-primary)] mt-10 mb-4 pb-2 border-b border-[var(--border-subtle)]">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 class="text-[24px] font-extrabold text-[var(--text-primary)] mt-10 mb-5">$1</h1>')
     .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-[var(--accent)] bg-[var(--accent-soft)] pl-5 py-3 pr-4 my-5 rounded-r-xl text-[var(--text-secondary)] italic text-[14px]">$1</blockquote>')
