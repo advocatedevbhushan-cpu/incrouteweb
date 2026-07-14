@@ -15,6 +15,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import TimesheetWorkspace from "../components/TimesheetWorkspace";
 
 const authHeaders = () => {
   const token = localStorage.getItem("incroute_access_token");
@@ -341,6 +342,7 @@ const navItems = [
   { id: "clients", label: "Clients", icon: Users },
   { id: "documents", label: "Documents", icon: FileText },
   { id: "compliance", label: "Compliance", icon: CalendarCheck },
+  { id: "timesheets", label: "Timesheets", icon: Clock },
   { id: "profile", label: "Profile", icon: Settings },
 ];
 
@@ -355,6 +357,7 @@ export default function PartnerPortal() {
       case "clients": return <Clients />;
       case "documents": return <Documents />;
       case "compliance": return <Compliance />;
+      case "timesheets": return <TimesheetWorkspace mode="partner" />;
       case "profile": return <Profile />;
       default: return <Dashboard setScreen={setScreen} />;
     }

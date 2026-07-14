@@ -96,6 +96,34 @@ async function startServer() {
     return platformPool.getConnection();
   };
 
+  // Ensure Timesheet table exists at startup
+  (async () => {
+    try {
+      const conn = await getPlatformConnection();
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS \`Timesheet\` (
+          \`id\` VARCHAR(30) NOT NULL,
+          \`userId\` VARCHAR(30) NOT NULL,
+          \`clientId\` VARCHAR(30) NULL,
+          \`description\` TEXT NOT NULL,
+          \`startTime\` DATETIME NOT NULL,
+          \`endTime\` DATETIME NULL,
+          \`duration\` INT NOT NULL DEFAULT 0,
+          \`billable\` TINYINT(1) NOT NULL DEFAULT 0,
+          \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+          \`updatedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+          PRIMARY KEY (\`id\`),
+          INDEX \`Timesheet_userId_idx\` (\`userId\`),
+          INDEX \`Timesheet_clientId_idx\` (\`clientId\`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+      console.log("[DB Startup] Timesheet table verified/created successfully.");
+      conn.release();
+    } catch (err: any) {
+      console.error("[DB Startup Warning] Failed to verify Timesheet table on startup:", err.message);
+    }
+  })();
+
   // ─── ADMIN REGISTRATION (raw SQL, no Prisma needed) ───
   // Visit: /api/setup-admin?key=incroute2026 to create the admin user
   app.get("/api/setup-admin", async (req, res) => {
@@ -2311,6 +2339,246 @@ const secret = JWT_SECRET;
       res.json({ tasks });
     } catch (err: any) {
       res.status(500).json({ error: "Failed to load compliance tasks", details: err.message });
+    }
+  });
+
+  // ─── TIMESHEET PORTAL ENDPOINTS ───
+  app.get("/api/partner/timesheet", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user.role);
+      
+      let whereClause = "1=1";
+      const params: any[] = [];
+      
+      if (!isAdmin) {
+        whereClause += " AND t.userId = ?";
+        params.push(req.user.userId);
+      } else {
+        if (req.query.userId && req.query.userId !== "all") {
+          whereClause += " AND t.userId = ?";
+          params.push(req.query.userId);
+        }
+      }
+      
+      if (req.query.clientId) {
+        whereClause += " AND t.clientId = ?";
+        params.push(req.query.clientId);
+      }
+      
+      if (req.query.startDate) {
+        whereClause += " AND t.startTime >= ?";
+        params.push(req.query.startDate);
+      }
+      
+      if (req.query.endDate) {
+        whereClause += " AND t.startTime <= ?";
+        params.push(req.query.endDate);
+      }
+      
+      const query = `
+        SELECT t.*, u.firstName, u.lastName, c.companyName as clientName
+        FROM \`Timesheet\` t
+        LEFT JOIN \`User\` u ON t.userId = u.id
+        LEFT JOIN \`Client\` c ON t.clientId = c.id
+        WHERE ${whereClause}
+        ORDER BY t.startTime DESC
+      `;
+      
+      const [entries]: any = await conn.query(query, params);
+      conn.release();
+      res.json({ entries });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load timesheet entries", details: err.message });
+    }
+  });
+
+  app.get("/api/partner/timesheet/summary", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user.role);
+      const currentUserId = req.user.userId;
+      
+      // Active timer check
+      const [activeTimers]: any = await conn.query(
+        `SELECT t.*, c.companyName as clientName 
+         FROM \`Timesheet\` t 
+         LEFT JOIN \`Client\` c ON t.clientId = c.id
+         WHERE t.userId = ? AND t.endTime IS NULL 
+         LIMIT 1`,
+        [currentUserId]
+      );
+      const activeTimer = activeTimers.length > 0 ? activeTimers[0] : null;
+
+      // Stats filters
+      let statsWhere = "1=1";
+      const statsParams: any[] = [];
+      if (!isAdmin) {
+        statsWhere += " AND t.userId = ?";
+        statsParams.push(currentUserId);
+      } else {
+        if (req.query.userId && req.query.userId !== "all") {
+          statsWhere += " AND t.userId = ?";
+          statsParams.push(req.query.userId);
+        }
+      }
+
+      if (req.query.clientId) {
+        statsWhere += " AND t.clientId = ?";
+        statsParams.push(req.query.clientId);
+      }
+      if (req.query.startDate) {
+        statsWhere += " AND t.startTime >= ?";
+        statsParams.push(req.query.startDate);
+      }
+      if (req.query.endDate) {
+        statsWhere += " AND t.startTime <= ?";
+        statsParams.push(req.query.endDate);
+      }
+
+      // 1. Basic sums
+      const [[totals]]: any = await conn.query(
+        `SELECT 
+           COALESCE(SUM(duration), 0) as totalDuration,
+           COALESCE(SUM(CASE WHEN billable = 1 THEN duration ELSE 0 END), 0) as billableDuration
+         FROM \`Timesheet\` t
+         WHERE ${statsWhere} AND t.endTime IS NOT NULL`,
+        statsParams
+      );
+
+      // 2. Breakdown by client
+      const [byClient]: any = await conn.query(
+        `SELECT 
+           t.clientId,
+           COALESCE(c.companyName, 'No Client') as clientName,
+           SUM(t.duration) as totalDuration,
+           SUM(CASE WHEN t.billable = 1 THEN t.duration ELSE 0 END) as billableDuration
+         FROM \`Timesheet\` t
+         LEFT JOIN \`Client\` c ON t.clientId = c.id
+         WHERE ${statsWhere} AND t.endTime IS NOT NULL
+         GROUP BY t.clientId, c.companyName
+         ORDER BY totalDuration DESC`,
+        statsParams
+      );
+
+      // 3. Breakdown by user (only meaningful for Admin, but secure for partner too)
+      const [byUser]: any = await conn.query(
+        `SELECT 
+           t.userId,
+           CONCAT(u.firstName, ' ', u.lastName) as fullName,
+           SUM(t.duration) as totalDuration,
+           SUM(CASE WHEN t.billable = 1 THEN t.duration ELSE 0 END) as billableDuration
+         FROM \`Timesheet\` t
+         JOIN \`User\` u ON t.userId = u.id
+         WHERE ${statsWhere} AND t.endTime IS NOT NULL
+         GROUP BY t.userId, u.firstName, u.lastName
+         ORDER BY totalDuration DESC`,
+        statsParams
+      );
+
+      conn.release();
+      res.json({
+        activeTimer,
+        summary: {
+          totalDuration: totals.totalDuration,
+          billableDuration: totals.billableDuration,
+          byClient,
+          byUser
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to load timesheet summary", details: err.message });
+    }
+  });
+
+  app.post("/api/partner/timesheet", async (req: any, res) => {
+    try {
+      const { clientId, description, startTime, endTime, duration, billable } = req.body;
+      if (!description) {
+        return res.status(400).json({ error: "Description is required" });
+      }
+      if (!startTime) {
+        return res.status(400).json({ error: "Start time is required" });
+      }
+
+      const conn = await getPlatformConnection();
+      const id = "ts_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+      
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const startStr = new Date(startTime).toISOString().slice(0, 23).replace("T", " ");
+      const endStr = endTime ? new Date(endTime).toISOString().slice(0, 23).replace("T", " ") : null;
+      
+      await conn.query(
+        `INSERT INTO \`Timesheet\` (id, userId, clientId, description, startTime, endTime, duration, billable, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, req.user.userId, clientId || null, description, startStr, endStr, duration || 0, billable ? 1 : 0, now, now]
+      );
+      
+      conn.release();
+      res.status(201).json({ success: true, id });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to create timesheet entry", details: err.message });
+    }
+  });
+
+  app.put("/api/partner/timesheet/:id", async (req: any, res) => {
+    try {
+      const { clientId, description, startTime, endTime, duration, billable } = req.body;
+      const conn = await getPlatformConnection();
+      
+      // Verify authorization
+      const [existing]: any = await conn.query("SELECT userId FROM `Timesheet` WHERE id = ?", [req.params.id]);
+      if (existing.length === 0) {
+        conn.release();
+        return res.status(404).json({ error: "Timesheet entry not found" });
+      }
+
+      const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user.role);
+      if (!isAdmin && existing[0].userId !== req.user.userId) {
+        conn.release();
+        return res.status(403).json({ error: "Insufficient permissions to edit this entry" });
+      }
+
+      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
+      const startStr = startTime ? new Date(startTime).toISOString().slice(0, 23).replace("T", " ") : null;
+      const endStr = endTime ? new Date(endTime).toISOString().slice(0, 23).replace("T", " ") : null;
+
+      await conn.query(
+        `UPDATE \`Timesheet\`
+         SET clientId = ?, description = ?, startTime = COALESCE(?, startTime), endTime = ?, duration = ?, billable = ?, updatedAt = ?
+         WHERE id = ?`,
+        [clientId || null, description, startStr, endStr, duration || 0, billable ? 1 : 0, now, req.params.id]
+      );
+      
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to update timesheet entry", details: err.message });
+    }
+  });
+
+  app.delete("/api/partner/timesheet/:id", async (req: any, res) => {
+    try {
+      const conn = await getPlatformConnection();
+      
+      // Verify authorization
+      const [existing]: any = await conn.query("SELECT userId FROM `Timesheet` WHERE id = ?", [req.params.id]);
+      if (existing.length === 0) {
+        conn.release();
+        return res.status(404).json({ error: "Timesheet entry not found" });
+      }
+
+      const isAdmin = ["SUPER_ADMIN", "ADMIN"].includes(req.user.role);
+      if (!isAdmin && existing[0].userId !== req.user.userId) {
+        conn.release();
+        return res.status(403).json({ error: "Insufficient permissions to delete this entry" });
+      }
+
+      await conn.query("DELETE FROM `Timesheet` WHERE id = ?", [req.params.id]);
+      conn.release();
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to delete timesheet entry", details: err.message });
     }
   });
 

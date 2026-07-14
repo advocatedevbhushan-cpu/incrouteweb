@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Building2, CalendarCheck, FileText, Scale, Shield,
-  Database, Users, Receipt, HelpCircle, Bell, Settings, ChevronLeft, Menu, LogOut
+  Database, Users, Receipt, HelpCircle, Bell, Settings, ChevronLeft, Menu, LogOut, BookOpen
 } from "lucide-react";
 
 interface PortalShellProps {
@@ -17,6 +17,7 @@ const navItems = [
   { id: "entities", label: "My Entities", icon: Building2 },
   { id: "compliance", label: "Compliance", icon: CalendarCheck },
   { id: "documents", label: "Documents", icon: FileText },
+  { id: "books", label: "INCroute Books", icon: BookOpen },
   { id: "trademark", label: "Trademarks", icon: Shield },
   { id: "legal", label: "Legal", icon: Scale },
   { id: "tax", label: "Tax & GST", icon: Database },

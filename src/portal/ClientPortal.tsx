@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import PortalShell from "./PortalShell";
+import BooksApp from "../books/BooksApp";
 import Dashboard from "./screens/Dashboard";
 import Entities from "./screens/Entities";
 import Compliance from "./screens/Compliance";
@@ -7,7 +9,19 @@ import Documents from "./screens/Documents";
 import { Legal, Trademark, TaxGST, Consultations, Invoices, Support, Notifications, ProfileSettings } from "./screens/PlaceholderScreens";
 
 export default function ClientPortal() {
-  const [activeScreen, setActiveScreen] = useState("dashboard");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeScreen, setActiveScreenState] = useState(() => location.pathname.startsWith("/portal/books") ? "books" : "dashboard");
+
+  React.useEffect(() => {
+    if (location.pathname.startsWith("/portal/books")) setActiveScreenState("books");
+  }, [location.pathname]);
+
+  const setActiveScreen = (screen: string) => {
+    setActiveScreenState(screen);
+    if (screen === "books") navigate("/portal/books/dashboard");
+    else if (location.pathname.startsWith("/portal/books")) navigate("/portal");
+  };
 
   // Expose navigation to child screens via window for metric card clicks
   React.useEffect(() => {
@@ -32,6 +46,10 @@ export default function ClientPortal() {
       default: return <Dashboard />;
     }
   };
+
+  if (activeScreen === "books") {
+    return <BooksApp onExit={(screen = "dashboard") => setActiveScreen(screen)} />;
+  }
 
   return (
     <PortalShell activeScreen={activeScreen} setActiveScreen={setActiveScreen}>

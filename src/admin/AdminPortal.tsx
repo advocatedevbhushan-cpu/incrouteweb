@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AdminShell from "./AdminShell";
 import AdminDashboard from "./screens/AdminDashboard";
+import TimesheetWorkspace from "../components/TimesheetWorkspace";
 import ClientManagement from "./screens/ClientManagement";
 import ComplianceOps from "./screens/ComplianceOps";
 import TaskManagement from "./screens/TaskManagement";
@@ -110,6 +111,7 @@ export default function AdminPortal() {
       case "legal": return <LegalOps />;
       case "reports": return <ReportingDashboard />;
       case "audit": return <AuditCenter />;
+      case "timesheets": return <TimesheetWorkspace mode="admin" />;
       case "settings": return <AdminSettings />;
       default: return <AdminDashboard onNavigate={setScreen} />;
     }

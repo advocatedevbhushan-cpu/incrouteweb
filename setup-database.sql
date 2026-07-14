@@ -474,5 +474,23 @@ ALTER TABLE `Document` ADD COLUMN IF NOT EXISTS `internalNote` TEXT NULL AFTER `
 -- Add PENDING to Document status enum if not already there
 ALTER TABLE `Document` MODIFY COLUMN `status` ENUM('DRAFT','PENDING','UNDER_REVIEW','APPROVED','REJECTED','PUBLISHED','ARCHIVED','EXPIRED') NOT NULL DEFAULT 'PENDING';
 
+-- ═══ TIMESHEET TABLE ═══
+CREATE TABLE IF NOT EXISTS `Timesheet` (
+  `id` VARCHAR(30) NOT NULL,
+  `userId` VARCHAR(30) NOT NULL,
+  `clientId` VARCHAR(30) NULL,
+  `description` TEXT NOT NULL,
+  `startTime` DATETIME NOT NULL,
+  `endTime` DATETIME NULL,
+  `duration` INT NOT NULL DEFAULT 0,
+  `billable` TINYINT(1) NOT NULL DEFAULT 0,
+  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `Timesheet_userId_idx` (`userId`),
+  INDEX `Timesheet_clientId_idx` (`clientId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ═══ DONE ═══
 -- All tables created/updated successfully!
+

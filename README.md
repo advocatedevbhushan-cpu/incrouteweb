@@ -59,3 +59,20 @@ Tokens are stored in `localStorage` on the client. Admin routes are protected by
 npm run build   # Vite frontend build + esbuild server bundle
 npm start       # Run production server from dist/server.cjs
 ```
+
+---
+
+## 6. INCroute Books
+
+The accounting workspace is available under `/portal/books` after applying:
+
+1. `migrations/20260713_incroute_books_mvp.sql`
+2. `seeds/20260713_incroute_books_reference_seed.sql`
+
+The migration is isolated from the existing INCroute service-billing `Invoice` table. Run the financial invariant suite with:
+
+```bash
+npm run test:books
+```
+
+Architecture, route, data-model and phased-delivery decisions are recorded in `docs/incroute-books-implementation-plan.md`.
