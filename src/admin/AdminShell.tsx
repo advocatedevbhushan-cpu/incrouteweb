@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   LayoutDashboard, Users, CalendarCheck, CheckSquare, FileText, Receipt,
   Shield, Scale, Database, HelpCircle, BarChart3, Clock, Settings,
-  ChevronLeft, Menu, Bell, Search, LogOut
+  ChevronLeft, Menu, Bell, Search, LogOut, BookOpen
 } from "lucide-react";
 
 interface AdminShellProps {
@@ -15,6 +15,7 @@ const navSections = [
   { label: "Core", items: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "clients", label: "Clients", icon: Users },
+    { id: "books", label: "INCroute Books", icon: BookOpen },
     { id: "service-requests", label: "Service Requests", icon: FileText },
     { id: "compliance", label: "Compliance", icon: CalendarCheck },
     { id: "tasks", label: "Tasks", icon: CheckSquare },

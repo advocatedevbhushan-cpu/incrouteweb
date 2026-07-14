@@ -102,24 +102,15 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Form input states
-  const [isManualMode, setIsManualMode] = useState(false);
   const [description, setDescription] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [isBillable, setIsBillable] = useState(false);
-
-  // Manual Log Fields
-  const [manualDate, setManualDate] = useState(new Date().toISOString().split("T")[0]);
-  const [manualStartTime, setManualStartTime] = useState("09:00");
-  const [manualEndTime, setManualEndTime] = useState("10:00");
 
   // Editing state
   const [editingEntry, setEditingEntry] = useState<TimesheetEntry | null>(null);
   const [editDescription, setEditDescription] = useState("");
   const [editClientId, setEditClientId] = useState("");
   const [editBillable, setEditBillable] = useState(false);
-  const [editDate, setEditDate] = useState("");
-  const [editStartTime, setEditStartTime] = useState("");
-  const [editEndTime, setEditEndTime] = useState("");
 
   // Filters (primarily for Analytics and Monitor)
   const [filterPartner, setFilterPartner] = useState("all");
@@ -306,62 +297,12 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
     } catch {}
   };
 
-  const handleAddManualLog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim()) {
-      alert("Please enter a description.");
-      return;
-    }
-
-    try {
-      const startDT = new Date(`${manualDate}T${manualStartTime}:00`);
-      const endDT = new Date(`${manualDate}T${manualEndTime}:00`);
-      
-      let durationSeconds = Math.floor((endDT.getTime() - startDT.getTime()) / 1000);
-      if (durationSeconds < 0) {
-        alert("End time must be after start time.");
-        return;
-      }
-
-      const payload = {
-        description,
-        clientId: selectedClientId || null,
-        billable: isBillable,
-        startTime: startDT.toISOString(),
-        endTime: endDT.toISOString(),
-        duration: durationSeconds
-      };
-
-      const res = await fetch("/api/partner/timesheet", {
-        method: "POST",
-        headers: apiHeaders(),
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        setDescription("");
-        setSelectedClientId("");
-        setIsBillable(false);
-        fetchSummary();
-        fetchEntries();
-      }
-    } catch {}
-  };
 
   const handleEditEntry = (entry: TimesheetEntry) => {
     setEditingEntry(entry);
     setEditDescription(entry.description);
     setEditClientId(entry.clientId || "");
     setEditBillable(entry.billable === 1);
-    
-    const sDate = new Date(entry.startTime);
-    setEditDate(sDate.toISOString().split("T")[0]);
-    setEditStartTime(sDate.toTimeString().substring(0, 5));
-    if (entry.endTime) {
-      setEditEndTime(new Date(entry.endTime).toTimeString().substring(0, 5));
-    } else {
-      setEditEndTime("");
-    }
   };
 
   const handleUpdateEntry = async () => {
@@ -372,26 +313,10 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
     }
 
     try {
-      const startDT = new Date(`${editDate}T${editStartTime}:00`);
-      let endDT = null;
-      let durationSeconds = 0;
-
-      if (editEndTime) {
-        endDT = new Date(`${editDate}T${editEndTime}:00`);
-        durationSeconds = Math.floor((endDT.getTime() - startDT.getTime()) / 1000);
-        if (durationSeconds < 0) {
-          alert("End time must be after start time.");
-          return;
-        }
-      }
-
       const payload = {
         description: editDescription,
         clientId: editClientId || null,
-        billable: editBillable,
-        startTime: startDT.toISOString(),
-        endTime: endDT ? endDT.toISOString() : null,
-        duration: durationSeconds
+        billable: editBillable
       };
 
       const res = await fetch(`/api/partner/timesheet/${editingEntry.id}`, {
@@ -548,82 +473,28 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                 </button>
 
                 {/* Clock / Trigger Mode */}
-                {!isManualMode ? (
-                  <div className="flex items-center gap-3">
-                    <div className="font-mono text-lg font-bold text-[var(--text-primary)] min-w-[80px]">
-                      {formatDuration(timerSeconds)}
-                    </div>
-                    {activeTimer ? (
-                      <button
-                        onClick={handleStopTimer}
-                        className="flex items-center gap-1.5 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
-                      >
-                        <Square className="w-4 h-4 fill-current" /> Stop
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleStartTimer}
-                        className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
-                      >
-                        <Play className="w-4 h-4 fill-current" /> Start
-                      </button>
-                    )}
+                <div className="flex items-center gap-3">
+                  <div className="font-mono text-lg font-bold text-[var(--text-primary)] min-w-[80px]">
+                    {formatDuration(timerSeconds)}
                   </div>
-                ) : (
-                  <button
-                    onClick={handleAddManualLog}
-                    className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
-                  >
-                    <Plus className="w-4 h-4" /> Add Log
-                  </button>
-                )}
+                  {activeTimer ? (
+                    <button
+                      onClick={handleStopTimer}
+                      className="flex items-center gap-1.5 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
+                    >
+                      <Square className="w-4 h-4 fill-current" /> Stop
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleStartTimer}
+                      className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
+                    >
+                      <Play className="w-4 h-4 fill-current" /> Start
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Manual Entry fields configuration */}
-            {!activeTimer && (
-              <div className="flex flex-wrap items-center justify-between border-t border-[var(--border-subtle)] pt-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsManualMode(!isManualMode)}
-                  className="text-[12px] font-semibold text-[var(--accent)] hover:underline cursor-pointer"
-                >
-                  {isManualMode ? "Use Timer Mode" : "Use Manual Log Mode"}
-                </button>
-
-                {isManualMode && (
-                  <div className="flex flex-wrap items-center gap-3 text-[12px]">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[var(--text-tertiary)] font-medium">Date:</span>
-                      <input
-                        type="date"
-                        value={manualDate}
-                        onChange={(e) => setManualDate(e.target.value)}
-                        className="px-2.5 py-1.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[var(--text-tertiary)] font-medium">Start:</span>
-                      <input
-                        type="time"
-                        value={manualStartTime}
-                        onChange={(e) => setManualStartTime(e.target.value)}
-                        className="px-2.5 py-1.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[var(--text-tertiary)] font-medium">End:</span>
-                      <input
-                        type="time"
-                        value={manualEndTime}
-                        onChange={(e) => setManualEndTime(e.target.value)}
-                        className="px-2.5 py-1.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Quick Filter Bar */}
@@ -1090,62 +961,22 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
-                    Client
-                  </label>
-                  <select
-                    value={editClientId}
-                    onChange={(e) => setEditClientId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                  >
-                    <option value="">No Client</option>
-                    {clients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.companyName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
-                    Start Time
-                  </label>
-                  <input
-                    type="time"
-                    value={editStartTime}
-                    onChange={(e) => setEditStartTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
-                    End Time
-                  </label>
-                  <input
-                    type="time"
-                    value={editEndTime}
-                    onChange={(e) => setEditEndTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
+                  Client
+                </label>
+                <select
+                  value={editClientId}
+                  onChange={(e) => setEditClientId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                >
+                  <option value="">No Client</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.companyName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex items-center gap-2 pt-1.5">

@@ -2523,7 +2523,7 @@ const secret = JWT_SECRET;
 
   app.put("/api/partner/timesheet/:id", async (req: any, res) => {
     try {
-      const { clientId, description, startTime, endTime, duration, billable } = req.body;
+      const { clientId, description, billable } = req.body;
       const conn = await getPlatformConnection();
       
       // Verify authorization
@@ -2540,14 +2540,12 @@ const secret = JWT_SECRET;
       }
 
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-      const startStr = startTime ? new Date(startTime).toISOString().slice(0, 23).replace("T", " ") : null;
-      const endStr = endTime ? new Date(endTime).toISOString().slice(0, 23).replace("T", " ") : null;
 
       await conn.query(
         `UPDATE \`Timesheet\`
-         SET clientId = ?, description = ?, startTime = COALESCE(?, startTime), endTime = ?, duration = ?, billable = ?, updatedAt = ?
+         SET clientId = ?, description = ?, billable = ?, updatedAt = ?
          WHERE id = ?`,
-        [clientId || null, description, startStr, endStr, duration || 0, billable ? 1 : 0, now, req.params.id]
+        [clientId || null, description, billable ? 1 : 0, now, req.params.id]
       );
       
       conn.release();

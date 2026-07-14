@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminShell from "./AdminShell";
+import BooksApp from "../books/BooksApp";
 import AdminDashboard from "./screens/AdminDashboard";
 import TimesheetWorkspace from "../components/TimesheetWorkspace";
 import ClientManagement from "./screens/ClientManagement";
@@ -92,7 +94,23 @@ function AdminSettings() {
 }
 
 export default function AdminPortal() {
-  const [screen, setScreen] = useState("dashboard");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [screen, setScreenState] = useState(() => location.pathname.startsWith("/admin/books") ? "books" : "dashboard");
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin/books")) {
+      setScreenState("books");
+    } else {
+      setScreenState((current) => current === "books" ? "dashboard" : current);
+    }
+  }, [location.pathname]);
+
+  const setScreen = (nextScreen: string) => {
+    setScreenState(nextScreen);
+    if (nextScreen === "books") navigate("/admin/books/dashboard");
+    else if (location.pathname.startsWith("/admin/books")) navigate("/admin");
+  };
 
   const renderScreen = () => {
     switch (screen) {
@@ -116,6 +134,10 @@ export default function AdminPortal() {
       default: return <AdminDashboard onNavigate={setScreen} />;
     }
   };
+
+  if (screen === "books") {
+    return <BooksApp basePath="/admin/books" onExit={(nextScreen = "dashboard") => setScreen(nextScreen)} />;
+  }
 
   return (
     <AdminShell activeScreen={screen} setActiveScreen={setScreen}>
