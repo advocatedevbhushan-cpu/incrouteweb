@@ -90,6 +90,7 @@ async function startServer() {
         queueLimit: 0,
         idleTimeout: 60000,
         enableKeepAlive: true,
+        timezone: 'Z',
       });
     }
     
@@ -105,6 +106,7 @@ async function startServer() {
           \`id\` VARCHAR(30) NOT NULL,
           \`userId\` VARCHAR(30) NOT NULL,
           \`clientId\` VARCHAR(30) NULL,
+          \`customClient\` VARCHAR(100) NULL,
           \`description\` TEXT NOT NULL,
           \`startTime\` DATETIME NOT NULL,
           \`endTime\` DATETIME NULL,
@@ -117,6 +119,9 @@ async function startServer() {
           INDEX \`Timesheet_clientId_idx\` (\`clientId\`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
+      try {
+        await conn.query("ALTER TABLE `Timesheet` ADD COLUMN `customClient` VARCHAR(100) NULL AFTER `clientId` ");
+      } catch (e: any) {}
       console.log("[DB Startup] Timesheet table verified/created successfully.");
       conn.release();
     } catch (err: any) {
@@ -2450,13 +2455,13 @@ const secret = JWT_SECRET;
       const [byClient]: any = await conn.query(
         `SELECT 
            t.clientId,
-           COALESCE(c.companyName, 'No Client') as clientName,
+           COALESCE(c.companyName, t.customClient, 'No Client') as clientName,
            SUM(t.duration) as totalDuration,
            SUM(CASE WHEN t.billable = 1 THEN t.duration ELSE 0 END) as billableDuration
          FROM \`Timesheet\` t
          LEFT JOIN \`Client\` c ON t.clientId = c.id
          WHERE ${statsWhere} AND t.endTime IS NOT NULL
-         GROUP BY t.clientId, c.companyName
+         GROUP BY t.clientId, c.companyName, t.customClient
          ORDER BY totalDuration DESC`,
         statsParams
       );
@@ -2493,7 +2498,7 @@ const secret = JWT_SECRET;
 
   app.post("/api/partner/timesheet", async (req: any, res) => {
     try {
-      const { clientId, description, startTime, endTime, duration, billable } = req.body;
+      const { clientId, customClient, description, startTime, endTime, duration, billable } = req.body;
       if (!description) {
         return res.status(400).json({ error: "Description is required" });
       }
@@ -2502,17 +2507,45 @@ const secret = JWT_SECRET;
       }
 
       const conn = await getPlatformConnection();
-      const id = "ts_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-      
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
       const startStr = new Date(startTime).toISOString().slice(0, 23).replace("T", " ");
-      const endStr = endTime ? new Date(endTime).toISOString().slice(0, 23).replace("T", " ") : null;
-      
-      await conn.query(
-        `INSERT INTO \`Timesheet\` (id, userId, clientId, description, startTime, endTime, duration, billable, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, req.user.userId, clientId || null, description, startStr, endStr, duration || 0, billable ? 1 : 0, now, now]
-      );
+      const id = "ts_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+
+      if (endTime) {
+        // Manual entry: creates a completed log immediately
+        const endStr = new Date(endTime).toISOString().slice(0, 23).replace("T", " ");
+        const finalDuration = duration !== undefined ? duration : Math.max(0, Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000));
+        
+        await conn.query(
+          `INSERT INTO \`Timesheet\` (id, userId, clientId, customClient, description, startTime, endTime, duration, billable, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, req.user.userId, clientId || null, customClient || null, description, startStr, endStr, finalDuration, billable ? 1 : 0, now, now]
+        );
+      } else {
+        // Timer entry: starts running timer and stops any existing active timers
+        const [running]: any = await conn.query(
+          "SELECT id, startTime FROM `Timesheet` WHERE userId = ? AND endTime IS NULL",
+          [req.user.userId]
+        );
+        
+        for (const timer of running) {
+          const start = new Date(timer.startTime);
+          const end = new Date(startTime); // Stop old timer at start time of new timer
+          const duration = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1000));
+          const endStr = end.toISOString().slice(0, 23).replace("T", " ");
+          
+          await conn.query(
+            "UPDATE `Timesheet` SET endTime = ?, duration = ?, updatedAt = ? WHERE id = ?",
+            [endStr, duration, now, timer.id]
+          );
+        }
+
+        await conn.query(
+          `INSERT INTO \`Timesheet\` (id, userId, clientId, customClient, description, startTime, endTime, duration, billable, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [id, req.user.userId, clientId || null, customClient || null, description, startStr, null, 0, billable ? 1 : 0, now, now]
+        );
+      }
       
       conn.release();
       res.status(201).json({ success: true, id });
@@ -2523,11 +2556,11 @@ const secret = JWT_SECRET;
 
   app.put("/api/partner/timesheet/:id", async (req: any, res) => {
     try {
-      const { clientId, description, billable } = req.body;
+      const { clientId, customClient, description, billable, startTime, endTime, duration } = req.body;
       const conn = await getPlatformConnection();
       
-      // Verify authorization
-      const [existing]: any = await conn.query("SELECT userId FROM `Timesheet` WHERE id = ?", [req.params.id]);
+      // Verify authorization and check if active
+      const [existing]: any = await conn.query("SELECT userId, startTime, endTime FROM `Timesheet` WHERE id = ?", [req.params.id]);
       if (existing.length === 0) {
         conn.release();
         return res.status(404).json({ error: "Timesheet entry not found" });
@@ -2541,12 +2574,35 @@ const secret = JWT_SECRET;
 
       const now = new Date().toISOString().slice(0, 23).replace("T", " ");
 
-      await conn.query(
-        `UPDATE \`Timesheet\`
-         SET clientId = ?, description = ?, billable = ?, updatedAt = ?
-         WHERE id = ?`,
-        [clientId || null, description, billable ? 1 : 0, now, req.params.id]
-      );
+      if (existing[0].endTime === null) {
+        // The timer is currently running. We are stopping it now.
+        const start = new Date(existing[0].startTime);
+        const end = new Date();
+        const durationVal = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1000));
+        const endStr = end.toISOString().slice(0, 23).replace("T", " ");
+
+        await conn.query(
+          `UPDATE \`Timesheet\`
+           SET clientId = ?, customClient = ?, description = ?, billable = ?, endTime = ?, duration = ?, updatedAt = ?
+           WHERE id = ?`,
+          [clientId || null, customClient || null, description, billable ? 1 : 0, endStr, durationVal, now, req.params.id]
+        );
+      } else {
+        // Already stopped log, update metadata and optionally times/duration
+        const startStr = startTime ? new Date(startTime).toISOString().slice(0, 23).replace("T", " ") : null;
+        const endStr = endTime ? new Date(endTime).toISOString().slice(0, 23).replace("T", " ") : null;
+        
+        await conn.query(
+          `UPDATE \`Timesheet\`
+           SET clientId = ?, customClient = ?, description = ?, billable = ?,
+               startTime = COALESCE(?, startTime),
+               endTime = COALESCE(?, endTime),
+               duration = COALESCE(?, duration),
+               updatedAt = ?
+           WHERE id = ?`,
+          [clientId || null, customClient || null, description, billable ? 1 : 0, startStr, endStr, duration !== undefined ? duration : null, now, req.params.id]
+        );
+      }
       
       conn.release();
       res.json({ success: true });
@@ -3095,7 +3151,8 @@ const secret = JWT_SECRET;
         database: process.env.DB_NAME,
         waitForConnections: true,
         connectionLimit: 10,
-        queueLimit: 0
+        queueLimit: 0,
+        timezone: 'Z'
       });
       console.log("🟢 MySQL Database Pool Initialized.");
       

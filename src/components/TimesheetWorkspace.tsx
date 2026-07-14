@@ -39,6 +39,7 @@ interface TimesheetEntry {
   lastName: string;
   clientId: string | null;
   clientName: string | null;
+  customClient?: string | null;
   description: string;
   startTime: string;
   endTime: string | null;
@@ -104,13 +105,26 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
   // Form input states
   const [description, setDescription] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
+  const [customClientName, setCustomClientName] = useState("");
   const [isBillable, setIsBillable] = useState(false);
+
+  // Manual Entry States
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [manualStartTime, setManualStartTime] = useState("09:00");
+  const [manualEndTime, setManualEndTime] = useState("17:00");
 
   // Editing state
   const [editingEntry, setEditingEntry] = useState<TimesheetEntry | null>(null);
   const [editDescription, setEditDescription] = useState("");
   const [editClientId, setEditClientId] = useState("");
+  const [editCustomClientName, setEditCustomClientName] = useState("");
   const [editBillable, setEditBillable] = useState(false);
+
+  // Editing Date/Time States
+  const [editDate, setEditDate] = useState("");
+  const [editStartTime, setEditStartTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
 
   // Filters (primarily for Analytics and Monitor)
   const [filterPartner, setFilterPartner] = useState("all");
@@ -204,7 +218,16 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
         if (data.activeTimer) {
           setActiveTimer(data.activeTimer);
           setDescription(data.activeTimer.description);
-          setSelectedClientId(data.activeTimer.clientId || "");
+          if (data.activeTimer.clientId) {
+            setSelectedClientId(data.activeTimer.clientId);
+            setCustomClientName("");
+          } else if (data.activeTimer.customClient) {
+            setSelectedClientId("custom");
+            setCustomClientName(data.activeTimer.customClient);
+          } else {
+            setSelectedClientId("");
+            setCustomClientName("");
+          }
           setIsBillable(data.activeTimer.billable === 1);
           
           // Calculate running duration
@@ -220,8 +243,13 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
   // Run timer interval when activeTimer is running
   useEffect(() => {
     if (activeTimer) {
+      // Calculate running duration immediately first
+      const elapsed = Math.floor((Date.now() - new Date(activeTimer.startTime).getTime()) / 1000);
+      setTimerSeconds(elapsed > 0 ? elapsed : 0);
+
       timerRef.current = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
+        const elapsed = Math.floor((Date.now() - new Date(activeTimer.startTime).getTime()) / 1000);
+        setTimerSeconds(elapsed > 0 ? elapsed : 0);
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -243,10 +271,15 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
       alert("Please enter a description for the activity.");
       return;
     }
+    if (selectedClientId === "custom" && !customClientName.trim()) {
+      alert("Please enter custom client or activity name.");
+      return;
+    }
     try {
       const payload = {
         description,
-        clientId: selectedClientId || null,
+        clientId: selectedClientId === "custom" ? null : (selectedClientId || null),
+        customClient: selectedClientId === "custom" ? customClientName : null,
         billable: isBillable,
         startTime: new Date().toISOString(),
         duration: 0
@@ -264,6 +297,59 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
     } catch {}
   };
 
+  const handleAddManualLog = async () => {
+    if (!description.trim()) {
+      alert("Please enter a description for the activity.");
+      return;
+    }
+    if (selectedClientId === "custom" && !customClientName.trim()) {
+      alert("Please enter custom client or activity name.");
+      return;
+    }
+    if (!manualDate || !manualStartTime || !manualEndTime) {
+      alert("Please specify date, start time, and end time for manual logging.");
+      return;
+    }
+
+    try {
+      // Parse manual inputs in client timezone
+      const startDateTime = new Date(`${manualDate}T${manualStartTime}:00`);
+      const endDateTime = new Date(`${manualDate}T${manualEndTime}:00`);
+
+      if (endDateTime < startDateTime) {
+        alert("End time cannot be earlier than start time.");
+        return;
+      }
+
+      const duration = Math.max(0, Math.floor((endDateTime.getTime() - startDateTime.getTime()) / 1000));
+
+      const payload = {
+        description,
+        clientId: selectedClientId === "custom" ? null : (selectedClientId || null),
+        customClient: selectedClientId === "custom" ? customClientName : null,
+        billable: isBillable,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
+        duration
+      };
+
+      const res = await fetch("/api/partner/timesheet", {
+        method: "POST",
+        headers: apiHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setDescription("");
+        setSelectedClientId("");
+        setCustomClientName("");
+        setIsBillable(false);
+        fetchSummary();
+        fetchEntries();
+      }
+    } catch {}
+  };
+
   const handleStopTimer = async () => {
     if (!activeTimer) return;
     try {
@@ -273,7 +359,8 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
 
       const payload = {
         description,
-        clientId: selectedClientId || null,
+        clientId: selectedClientId === "custom" ? null : (selectedClientId || null),
+        customClient: selectedClientId === "custom" ? customClientName : null,
         billable: isBillable,
         startTime: activeTimer.startTime,
         endTime,
@@ -290,6 +377,7 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
         setActiveTimer(null);
         setDescription("");
         setSelectedClientId("");
+        setCustomClientName("");
         setIsBillable(false);
         fetchSummary();
         fetchEntries();
@@ -301,8 +389,37 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
   const handleEditEntry = (entry: TimesheetEntry) => {
     setEditingEntry(entry);
     setEditDescription(entry.description);
-    setEditClientId(entry.clientId || "");
     setEditBillable(entry.billable === 1);
+
+    if (entry.clientId) {
+      setEditClientId(entry.clientId);
+      setEditCustomClientName("");
+    } else if (entry.customClient) {
+      setEditClientId("custom");
+      setEditCustomClientName(entry.customClient);
+    } else {
+      setEditClientId("");
+      setEditCustomClientName("");
+    }
+
+    const startObj = new Date(entry.startTime);
+    const datePart = startObj.getFullYear() + "-" + 
+      String(startObj.getMonth() + 1).padStart(2, "0") + "-" + 
+      String(startObj.getDate()).padStart(2, "0");
+    const startHrs = String(startObj.getHours()).padStart(2, "0") + ":" + 
+      String(startObj.getMinutes()).padStart(2, "0");
+
+    setEditDate(datePart);
+    setEditStartTime(startHrs);
+
+    if (entry.endTime) {
+      const endObj = new Date(entry.endTime);
+      const endHrs = String(endObj.getHours()).padStart(2, "0") + ":" + 
+        String(endObj.getMinutes()).padStart(2, "0");
+      setEditEndTime(endHrs);
+    } else {
+      setEditEndTime("");
+    }
   };
 
   const handleUpdateEntry = async () => {
@@ -311,12 +428,36 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
       alert("Description is required.");
       return;
     }
+    if (editClientId === "custom" && !editCustomClientName.trim()) {
+      alert("Please specify the custom client or activity name.");
+      return;
+    }
 
     try {
+      let startTimeISO = editingEntry.startTime;
+      let endTimeISO = editingEntry.endTime;
+      let finalDuration = editingEntry.duration;
+
+      if (editingEntry.endTime !== null && editDate && editStartTime && editEndTime) {
+        const startDateTime = new Date(`${editDate}T${editStartTime}:00`);
+        const endDateTime = new Date(`${editDate}T${editEndTime}:00`);
+        if (endDateTime < startDateTime) {
+          alert("End time cannot be earlier than start time.");
+          return;
+        }
+        startTimeISO = startDateTime.toISOString();
+        endTimeISO = endDateTime.toISOString();
+        finalDuration = Math.max(0, Math.floor((endDateTime.getTime() - startDateTime.getTime()) / 1000));
+      }
+
       const payload = {
         description: editDescription,
-        clientId: editClientId || null,
-        billable: editBillable
+        clientId: editClientId === "custom" ? null : (editClientId || null),
+        customClient: editClientId === "custom" ? editCustomClientName : null,
+        billable: editBillable,
+        startTime: startTimeISO,
+        endTime: endTimeISO,
+        duration: finalDuration
       };
 
       const res = await fetch(`/api/partner/timesheet/${editingEntry.id}`, {
@@ -452,8 +593,22 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                       {c.companyName}
                     </option>
                   ))}
+                  <option value="custom">Other / Custom Work...</option>
                 </select>
               </div>
+
+              {selectedClientId === "custom" && (
+                <div className="w-full md:w-[220px]">
+                  <input
+                    type="text"
+                    value={customClientName}
+                    onChange={(e) => setCustomClientName(e.target.value)}
+                    placeholder="Specify work (e.g. Consultation)"
+                    disabled={!!activeTimer}
+                    className="w-full px-4 py-3 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-2xl text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors disabled:opacity-75"
+                  />
+                </div>
+              )}
 
               {/* Billable and Timer Controls */}
               <div className="flex items-center justify-between md:justify-start gap-4">
@@ -474,10 +629,19 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
 
                 {/* Clock / Trigger Mode */}
                 <div className="flex items-center gap-3">
-                  <div className="font-mono text-lg font-bold text-[var(--text-primary)] min-w-[80px]">
-                    {formatDuration(timerSeconds)}
-                  </div>
-                  {activeTimer ? (
+                  {!isManualMode && (
+                    <div className="font-mono text-lg font-bold text-[var(--text-primary)] min-w-[80px]">
+                      {formatDuration(timerSeconds)}
+                    </div>
+                  )}
+                  {isManualMode ? (
+                    <button
+                      onClick={handleAddManualLog}
+                      className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
+                    >
+                      <Plus className="w-4 h-4" /> Add Log
+                    </button>
+                  ) : activeTimer ? (
                     <button
                       onClick={handleStopTimer}
                       className="flex items-center gap-1.5 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-[13px] font-bold rounded-2xl cursor-pointer transition-colors shadow-sm"
@@ -495,6 +659,53 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                 </div>
               </div>
             </div>
+
+            {/* Manual Entry Toggle & Fields */}
+            {!activeTimer && (
+              <div className="flex flex-col space-y-3 pt-3 border-t border-[var(--border-subtle)]">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setIsManualMode(!isManualMode)}
+                    className="text-[12px] font-bold text-[var(--accent)] hover:underline cursor-pointer"
+                  >
+                    {isManualMode ? "← Use Timer Mode" : "→ Log Time Manually"}
+                  </button>
+                </div>
+
+                {isManualMode && (
+                  <div className="flex flex-wrap items-center gap-4 text-[12px] animate-fadeIn">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[var(--text-tertiary)] font-bold uppercase tracking-wider text-[10px]">Date:</span>
+                      <input
+                        type="date"
+                        value={manualDate}
+                        onChange={(e) => setManualDate(e.target.value)}
+                        className="px-3 py-2 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[var(--text-tertiary)] font-bold uppercase tracking-wider text-[10px]">Start:</span>
+                      <input
+                        type="time"
+                        value={manualStartTime}
+                        onChange={(e) => setManualStartTime(e.target.value)}
+                        className="px-3 py-2 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[var(--text-tertiary)] font-bold uppercase tracking-wider text-[10px]">End:</span>
+                      <input
+                        type="time"
+                        value={manualEndTime}
+                        onChange={(e) => setManualEndTime(e.target.value)}
+                        className="px-3 py-2 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Quick Filter Bar */}
@@ -589,10 +800,10 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                                 {entry.description || <span className="italic text-[var(--text-tertiary)]">No description</span>}
                               </span>
 
-                              {entry.clientName && (
+                              {(entry.clientName || entry.customClient) && (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent)]/10">
                                   <Briefcase className="w-3 h-3" />
-                                  {entry.clientName}
+                                  {entry.clientName || entry.customClient}
                                 </span>
                               )}
 
@@ -976,8 +1187,24 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                       {c.companyName}
                     </option>
                   ))}
+                  <option value="custom">Other / Custom Work...</option>
                 </select>
               </div>
+
+              {editClientId === "custom" && (
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
+                    Specify Custom Work
+                  </label>
+                  <input
+                    type="text"
+                    value={editCustomClientName}
+                    onChange={(e) => setEditCustomClientName(e.target.value)}
+                    placeholder="e.g. Consultation"
+                    className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-2 pt-1.5">
                 <input
@@ -991,6 +1218,48 @@ export default function TimesheetWorkspace({ mode }: TimesheetWorkspaceProps) {
                   This task is billable
                 </label>
               </div>
+
+              {editingEntry.endTime !== null && (
+                <>
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
+                        Start Time
+                      </label>
+                      <input
+                        type="time"
+                        value={editStartTime}
+                        onChange={(e) => setEditStartTime(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">
+                        End Time
+                      </label>
+                      <input
+                        type="time"
+                        value={editEndTime}
+                        onChange={(e) => setEditEndTime(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2.5 border-t border-[var(--border-subtle)] pt-4">

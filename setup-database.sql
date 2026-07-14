@@ -479,6 +479,7 @@ CREATE TABLE IF NOT EXISTS `Timesheet` (
   `id` VARCHAR(30) NOT NULL,
   `userId` VARCHAR(30) NOT NULL,
   `clientId` VARCHAR(30) NULL,
+  `customClient` VARCHAR(100) NULL,
   `description` TEXT NOT NULL,
   `startTime` DATETIME NOT NULL,
   `endTime` DATETIME NULL,
