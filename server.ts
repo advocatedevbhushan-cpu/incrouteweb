@@ -12,6 +12,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import compression from "compression";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { registerBooksRoutes } from "./server/books/routes";
 
 dotenv.config();
 
@@ -2653,6 +2654,9 @@ const secret = JWT_SECRET;
 
   // Apply auth to ALL /api/portal/* routes
   app.use("/api/portal", requireAuth);
+
+  // Register Books module routes
+  registerBooksRoutes(app, getPlatformConnection);
 
   // Portal Dashboard — get logged-in user's data
   app.get("/api/portal/dashboard", async (req, res) => {
