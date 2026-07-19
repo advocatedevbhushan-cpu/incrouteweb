@@ -82,7 +82,14 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
             return (
               <button
                 key={item.id}
-                onClick={() => { setActiveScreen(item.id); setMobileOpen(false); }}
+                onClick={() => {
+                  if (item.id === "books") {
+                    window.open("/portal/books/dashboard", "_blank", "noopener,noreferrer");
+                  } else {
+                    setActiveScreen(item.id);
+                  }
+                  setMobileOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors cursor-pointer ${
                   active
                     ? "bg-[var(--accent-soft)] text-[var(--accent)]"

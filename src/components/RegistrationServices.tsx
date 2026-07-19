@@ -2216,11 +2216,11 @@ export default function RegistrationServices({
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
               {[
-                { due: "DUE IN 5 DAYS", category: "GST Compliance", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2024", penalty: "₹100 per day", color: "#EF4444", status: "Due Soon" },
-                { due: "DUE IN 8 DAYS", category: "ROC Compliance", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2024", penalty: "₹5,000 - ₹25,000", color: "#F59E0B", status: "Upcoming" },
-                { due: "DUE IN 12 DAYS", category: "ROC Compliance", title: "AOC-4 Filing", desc: "Financial statements & board report filing.", date: "01 Jun 2024", penalty: "₹100 per day", color: "#F59E0B", status: "Upcoming" },
-                { due: "DUE IN 18 DAYS", category: "ROC Compliance", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2024", penalty: "₹5,000", color: "#4F46E5", status: "Upcoming" },
-                { due: "DUE IN 25 DAYS", category: "Tax Compliance", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2024", penalty: "₹100 per day", color: "#4F46E5", status: "Upcoming" },
+                { due: "DUE IN 5 DAYS", category: "GST Compliance", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2026", penalty: "₹100 per day", color: "#EF4444", status: "Due Soon" },
+                { due: "DUE IN 8 DAYS", category: "ROC Compliance", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2026", penalty: "₹5,000 - ₹25,000", color: "#F59E0B", status: "Upcoming" },
+                { due: "DUE IN 12 DAYS", category: "ROC Compliance", title: "AOC-4 Filing", desc: "Financial statements & board report filing.", date: "01 Jun 2026", penalty: "₹100 per day", color: "#F59E0B", status: "Upcoming" },
+                { due: "DUE IN 18 DAYS", category: "ROC Compliance", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2026", penalty: "₹5,000", color: "#4F46E5", status: "Upcoming" },
+                { due: "DUE IN 25 DAYS", category: "Tax Compliance", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2026", penalty: "₹100 per day", color: "#4F46E5", status: "Upcoming" },
               ].map((c, i) => (
                 <div key={i} className="card-glass p-5 flex flex-col justify-between min-h-[220px]">
                   <div className="space-y-2.5 text-left">
@@ -2337,30 +2337,46 @@ export default function RegistrationServices({
 
           {/* ═══ TRUST & BENEFITS STRIP ═══ */}
           <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-6 pb-6">
-            <div className="card-glass p-6">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-left">
-                {[
-                  { icon: Lock, title: "Secure & Encrypted", desc: "256-bit encryption for complete data security" },
-                  { icon: TrendingUp, title: "Real-time Tracking", desc: "Track progress at every step of the process" },
-                  { icon: ShieldCheck, title: "Expert Verification", desc: "Dual verification by legal & compliance experts" },
-                  { icon: Clock, title: "Timely Updates", desc: "Email & SMS alerts for every important update" },
-                  { icon: Users, title: "Dedicated Support", desc: "Reach out to experts anytime, anywhere" },
-                ].map((b, i) => (
-                  <React.Fragment key={i}>
-                    <div className="flex flex-col gap-2 flex-1 min-w-[140px] pr-2">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-[#4F46E5]">
-                        <b.icon className="w-4 h-4" />
-                      </div>
-                      <h4 className="text-[12px] font-bold text-[#080F2A]">{b.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-normal font-sans">{b.desc}</p>
-                    </div>
-                    {i < 4 && (
-                      <span className="hidden md:inline-block w-[1px] h-12 bg-slate-200/60 self-center" />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
+            <motion.div 
+              initial={reduced ? {} : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 }
+                }
+              }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-left"
+            >
+              {[
+                { icon: Lock, title: "Secure & Encrypted", desc: "256-bit encryption for complete data security", color: "from-blue-500/20 to-indigo-500/20 text-[#3B82F6] dark:text-[#60A5FA]" },
+                { icon: TrendingUp, title: "Real-time Tracking", desc: "Track progress at every step of the process", color: "from-emerald-500/20 to-teal-500/20 text-[#10B981] dark:text-[#34D399]" },
+                { icon: ShieldCheck, title: "Expert Verification", desc: "Dual verification by legal & compliance experts", color: "from-indigo-500/20 to-purple-500/20 text-[#6366F1] dark:text-[#818CF8]" },
+                { icon: Clock, title: "Timely Updates", desc: "Email & SMS alerts for every important update", color: "from-amber-500/20 to-orange-500/20 text-[#F59E0B] dark:text-[#FBBF24]" },
+                { icon: Users, title: "Dedicated Support", desc: "Reach out to experts anytime, anywhere", color: "from-violet-500/20 to-fuchsia-500/20 text-[#8B5CF6] dark:text-[#A78BFA]" },
+              ].map((b, i) => (
+                <motion.div
+                  key={i}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+                  }}
+                  whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.2 } }}
+                  className="flex flex-col gap-3.5 p-5 rounded-2xl bg-white/70 dark:bg-[#1C1930]/70 border border-slate-100 dark:border-slate-800/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_28px_rgba(99,102,241,0.08)] hover:border-indigo-500/30 transition-all duration-300 relative group overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${b.color.split(" ")[0]} ${b.color.split(" ")[1]} flex items-center justify-center ${b.color.split(" ")[2]} shrink-0 transition-transform duration-300 group-hover:scale-110`}>
+                    <b.icon className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1 relative z-10">
+                    <h4 className="text-[13.5px] font-bold text-[#080F2A] dark:text-white leading-tight tracking-tight">{b.title}</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal font-sans">{b.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
 
           {/* ═══ FAQ & REVIEWS SECTION ═══ */}

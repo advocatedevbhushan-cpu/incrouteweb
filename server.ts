@@ -98,6 +98,30 @@ async function startServer() {
     return platformPool.getConnection();
   };
 
+  // Books DB connection helper — uses separate pool, falls back to platform DB URL
+  let booksPool: any = null;
+
+  const getBooksConnection = async () => {
+    const dbUrl = process.env.BOOKS_DATABASE_URL || process.env.DATABASE_URL || "";
+    const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+    if (!match) throw new Error("BOOKS_DATABASE_URL or DATABASE_URL not configured");
+    const [, user, pass, host, port, database] = match;
+
+    if (!booksPool) {
+      booksPool = mysql.createPool({
+        host, port: Number(port), user, password: decodeURIComponent(pass), database,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        idleTimeout: 60000,
+        enableKeepAlive: true,
+        timezone: 'Z',
+      });
+    }
+
+    return booksPool.getConnection();
+  };
+
   // Ensure Timesheet table exists at startup
   (async () => {
     try {
@@ -2656,7 +2680,7 @@ const secret = JWT_SECRET;
   app.use("/api/portal", requireAuth);
 
   // Register Books module routes
-  registerBooksRoutes(app, getPlatformConnection);
+  registerBooksRoutes(app, getPlatformConnection, getBooksConnection);
 
   // Portal Dashboard — get logged-in user's data
   app.get("/api/portal/dashboard", async (req, res) => {
@@ -5587,6 +5611,44 @@ Format your response in structured sections:
         res.status(500).json({ error: "Setup failed", details: err.message });
       }
     });
+
+    // ─── ONE-TIME BOOKS SETUP ENDPOINT ───
+    // Visit: /api/setup-books?key=incroute2026 to apply Books migrations and reference seeds
+    app.get("/api/setup-books", async (req, res) => {
+      const setupKey = req.query.key;
+      if (setupKey !== "incroute2026") {
+        return res.status(403).json({ error: "Invalid setup key" });
+      }
+      try {
+        const dbUrl = process.env.DATABASE_URL || "";
+        const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+        if (!match) {
+          return res.status(500).json({ error: "Invalid DATABASE_URL format" });
+        }
+        const [, user, pass, host, port, database] = match;
+        const connection = await mysql.createConnection({
+          host, port: Number(port), user, password: decodeURIComponent(pass), database,
+          multipleStatements: true
+        });
+
+        // Read and run Books migration SQL
+        const migrationPath = path.join(process.cwd(), "migrations", "20260713_incroute_books_mvp.sql");
+        const migrationSql = fs.readFileSync(migrationPath, "utf-8");
+        await connection.query(migrationSql);
+
+        // Read and run Books seed SQL
+        const seedPath = path.join(process.cwd(), "seeds", "20260713_incroute_books_reference_seed.sql");
+        const seedSql = fs.readFileSync(seedPath, "utf-8");
+        await connection.query(seedSql);
+
+        await connection.end();
+
+        res.json({ success: true, message: "INCroute Books tables and reference seeds applied successfully!" });
+      } catch (err: any) {
+        res.status(500).json({ error: "Books setup failed", details: err.message });
+      }
+    });
+
 
     // Static file serving with cache headers
     app.use(express.static(resolvedDistPath, {

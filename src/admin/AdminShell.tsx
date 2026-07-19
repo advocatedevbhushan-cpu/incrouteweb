@@ -78,7 +78,15 @@ export default function AdminShell({ activeScreen, setActiveScreen, children }: 
                 {section.items.map(item => {
                   const active = activeScreen === item.id;
                   return (
-                    <button key={item.id} onClick={() => { setActiveScreen(item.id); setMobileOpen(false); }}
+                    <button key={item.id} 
+                      onClick={() => {
+                        if (item.id === "books") {
+                          window.open("/admin/books", "_blank", "noopener,noreferrer");
+                        } else {
+                          setActiveScreen(item.id);
+                        }
+                        setMobileOpen(false);
+                      }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-colors cursor-pointer ${active ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"} ${collapsed ? "justify-center px-2" : ""}`}>
                       <item.icon className={`w-[16px] h-[16px] shrink-0 ${active ? "text-[var(--accent)]" : ""}`} />
                       {!collapsed && <span className="truncate">{item.label}</span>}

@@ -7,9 +7,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 async function run() {
-  const dbUrl = process.env.DATABASE_URL || "";
+  const dbUrl = process.env.BOOKS_DATABASE_URL || process.env.DATABASE_URL || "";
   if (!dbUrl) {
-    console.error("DATABASE_URL is not configured in your .env file.");
+    console.error("Neither BOOKS_DATABASE_URL nor DATABASE_URL is configured in your .env file.");
     process.exit(1);
   }
 

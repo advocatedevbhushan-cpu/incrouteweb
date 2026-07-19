@@ -614,7 +614,7 @@ export default function ComplianceCalendarSection() {
                         {/* Mini Calendar (7 cols) */}
                         <div className="col-span-7 pr-3 border-r border-[rgba(99,102,241,0.1)] flex flex-col justify-between">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">May 2025</span>
+                            <span className="text-[10px] font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">May 2026</span>
                             <div className="flex gap-1.5 text-slate-400 font-bold text-xs select-none">
                               <span className="cursor-pointer hover:text-[#4F46E5]">‹</span>
                               <span className="cursor-pointer hover:text-[#4F46E5]">›</span>
@@ -674,7 +674,7 @@ export default function ComplianceCalendarSection() {
                           <div className="flex flex-col text-left">
                             <span className="text-[9.5px] font-bold text-slate-900 dark:text-white leading-tight">DIR-3 KYC for All Directors</span>
                             <span className="text-[8.5px] text-red-500 font-bold mt-0.5 flex items-center gap-1">
-                              <span className="w-1 h-1 rounded-full bg-red-500 animate-ping" /> Due: 15 May 2025
+                              <span className="w-1 h-1 rounded-full bg-red-500 animate-ping" /> Due: 15 May 2026
                             </span>
                           </div>
                         </div>
