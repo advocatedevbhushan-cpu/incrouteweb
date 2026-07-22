@@ -50,8 +50,13 @@ export default function LoginPage({ setActiveTab }: LoginPageProps) {
       localStorage.setItem("incroute_refresh_token", data.refreshToken);
       localStorage.setItem("incroute_user", JSON.stringify(data.user));
       
-      // Redirect based on role
-      if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN") {
+      // Redirect based on role or query parameter
+      const redirectUrl = new URLSearchParams(window.location.search).get("redirect");
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else if (window.location.hostname.startsWith("books.")) {
+        window.location.href = "/";
+      } else if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN") {
         window.location.href = "/admin";
       } else if (data.user?.role === "TEAM_MEMBER") {
         window.location.href = "/partner";

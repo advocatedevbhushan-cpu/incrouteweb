@@ -84,7 +84,8 @@ export default function PortalShell({ activeScreen, setActiveScreen, children, c
                 key={item.id}
                 onClick={() => {
                   if (item.id === "books") {
-                    window.open("/portal/books/dashboard", "_blank", "noopener,noreferrer");
+                    const booksUrl = window.location.hostname.includes("incroute.com") ? "https://books.incroute.com/dashboard" : "/portal/books/dashboard";
+                    window.open(booksUrl, "_blank", "noopener,noreferrer");
                   } else {
                     setActiveScreen(item.id);
                   }

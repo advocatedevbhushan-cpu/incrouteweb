@@ -48,6 +48,12 @@ export default function BooksApp({ onExit, basePath = "/portal/books" }:{ onExit
     finally { setLoading(false); }
   };
   useEffect(() => { loadBootstrap(); }, []);
+  useEffect(() => {
+    if (error && (error.message === "Not authenticated" || error.code === "UNAUTHENTICATED")) {
+      const currentUrl = window.location.href;
+      window.location.href = `/login?redirect=${encodeURIComponent(currentUrl)}`;
+    }
+  }, [error]);
   useEffect(() => { if (activeOrganisationId) localStorage.setItem(organisationStorageKey, activeOrganisationId); }, [activeOrganisationId, organisationStorageKey]);
   const organisation = bootstrap?.organisations.find((item) => item.id === activeOrganisationId) || bootstrap?.organisations[0];
   const adminMode = bootstrap?.user.role === "ADMIN" || bootstrap?.user.role === "SUPER_ADMIN";

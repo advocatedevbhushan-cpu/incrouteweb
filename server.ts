@@ -59,6 +59,29 @@ async function startServer() {
     next();
   });
 
+  // INCroute Books & Subdomain Routing Middleware
+  app.use((req, res, next) => {
+    const host = (req.headers.host || "").toLowerCase();
+    const isBooksDomain = host.startsWith("books.");
+
+    if (isBooksDomain) {
+      // If accessing books.incroute.com/books/*, strip redundant /books prefix
+      if (req.url.startsWith("/books")) {
+        const subPath = req.url.replace(/^\/books/, "") || "/";
+        return res.redirect(301, subPath);
+      }
+    } else {
+      // If accessing main domain (incroute.com or www.incroute.com) on /books or /books/*
+      if (req.path === "/books" || req.path.startsWith("/books/")) {
+        if (host.includes("incroute.com")) {
+          const subPath = req.url.replace(/^\/books/, "") || "/";
+          return res.redirect(301, `https://books.incroute.com${subPath}`);
+        }
+      }
+    }
+    next();
+  });
+
   // Health check (always works)
   app.get("/api/health", async (req, res) => {
     let dbStatus = "unknown";
@@ -151,6 +174,33 @@ async function startServer() {
       conn.release();
     } catch (err: any) {
       console.error("[DB Startup Warning] Failed to verify Timesheet table on startup:", err.message);
+    }
+  })();
+
+  // Ensure Books tables and seed exist at startup
+  (async () => {
+    try {
+      const conn = await getBooksConnection();
+      const [tables]: any = await conn.query("SHOW TABLES LIKE 'BooksTenant'");
+      if (!tables || tables.length === 0) {
+        console.log("[DB Startup] Initializing INCroute Books tables and reference seed...");
+        const migrationPath = path.join(process.cwd(), "migrations", "20260713_incroute_books_mvp.sql");
+        if (fs.existsSync(migrationPath)) {
+          const migrationSql = fs.readFileSync(migrationPath, "utf-8");
+          await conn.query(migrationSql);
+        }
+        const seedPath = path.join(process.cwd(), "seeds", "20260713_incroute_books_reference_seed.sql");
+        if (fs.existsSync(seedPath)) {
+          const seedSql = fs.readFileSync(seedPath, "utf-8");
+          await conn.query(seedSql);
+        }
+        console.log("[DB Startup] INCroute Books schema & seed initialized successfully.");
+      } else {
+        console.log("[DB Startup] INCroute Books tables verified.");
+      }
+      conn.release();
+    } catch (err: any) {
+      console.error("[DB Startup Warning] Failed to verify Books tables on startup:", err.message);
     }
   })();
 

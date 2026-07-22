@@ -81,7 +81,8 @@ export default function AdminShell({ activeScreen, setActiveScreen, children }: 
                     <button key={item.id} 
                       onClick={() => {
                         if (item.id === "books") {
-                          window.open("/admin/books", "_blank", "noopener,noreferrer");
+                          const booksUrl = window.location.hostname.includes("incroute.com") ? "https://books.incroute.com/dashboard" : "/admin/books";
+                          window.open(booksUrl, "_blank", "noopener,noreferrer");
                         } else {
                           setActiveScreen(item.id);
                         }

@@ -43,6 +43,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   const nav = (e: React.MouseEvent, tab: string) => {
     e.preventDefault();
+    if (tab === "books" && window.location.hostname.includes("incroute.com") && !window.location.hostname.startsWith("books.")) {
+      window.location.href = "https://books.incroute.com";
+      return;
+    }
     setActiveTab(tab);
     setMobileOpen(false);
     setOpenDropdown(null);
@@ -84,13 +88,14 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             {/* Solutions — dropdown */}
             <NavDropdown
               label="Solutions"
-              active={isActive(["services", "catalog", "tools", "name-checker", "comparison", "impact"])}
+              active={isActive(["services", "catalog", "tools", "name-checker", "comparison", "impact", "books"])}
               open={openDropdown === "solutions"}
               onOpen={() => setOpenDropdown("solutions")}
               onClose={() => setOpenDropdown(null)}
             >
               <DropdownItem onClick={(e) => nav(e, "services")} title="All Services" desc="Incorporation, compliance & advisory" active={activeTab === "services"} />
               <DropdownItem onClick={(e) => nav(e, "catalog")} title="Service Catalog" desc="Detailed pricing & documentation" active={activeTab === "catalog"} />
+              <DropdownItem onClick={(e) => nav(e, "books")} title="INCroute Books" desc="Cloud accounting & GST invoicing" active={activeTab === "books"} />
               <DropdownItem onClick={(e) => nav(e, "tools")} title="Business Tools" desc="Calculators, checkers & utilities" active={activeTab === "tools"} />
               <DropdownItem onClick={(e) => nav(e, "name-checker")} title="Name Feasibility" desc="AI-powered brand name check" active={activeTab === "name-checker"} />
             </NavDropdown>
@@ -182,6 +187,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               <MobileAccordion label="Solutions" items={[
                 { label: "All Services", tab: "services" },
                 { label: "Service Catalog", tab: "catalog" },
+                { label: "INCroute Books", tab: "books" },
                 { label: "Business Tools", tab: "tools" },
                 { label: "Name Feasibility", tab: "name-checker" },
               ]} activeTab={activeTab} onNav={nav} />

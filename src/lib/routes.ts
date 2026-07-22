@@ -26,6 +26,7 @@ export const ROUTES = {
   dashboardPartnerCustomerDetail: (id: string) => `/dashboard/partner/customer/${id}`,
   portal: "/portal",
   partner: "/partner",
+  books: "/books",
   policies: "/policies/",
   careers: "/careers/",
 } as const;
@@ -53,6 +54,7 @@ export const TAB_TO_ROUTE: Record<string, string> = {
   "portal": ROUTES.portal,
   "partner": ROUTES.partner,
   "admin": "/admin",
+  "books": ROUTES.books,
   policies: ROUTES.policies,
   careers: ROUTES.careers,
 };
@@ -80,7 +82,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   "/dashboard/partner": "Partner Index",
   "/dashboard/partner/customer/": "Customer File Review",
   "/partner": "Partner Portal",
+  "/books": "INCroute Books",
   "/policies/": "Terms & Policies",
   "/careers/": "Careers",
 };
-

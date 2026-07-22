@@ -18,6 +18,7 @@ const PartnerCustomerDetail = lazy(() => import("./components/PartnerCustomerDet
 const ClientPortal = lazy(() => import("./portal/ClientPortal"));
 const PartnerPortal = lazy(() => import("./partner/PartnerPortal"));
 const AdminPortal = lazy(() => import("./admin/AdminPortal"));
+const BooksApp = lazy(() => import("./books/BooksApp"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
 const ServiceCatalogInsights = lazy(() => import("./components/ServiceCatalogInsights"));
 const StatutoryTools = lazy(() => import("./components/StatutoryTools"));
@@ -82,6 +83,11 @@ export default function App() {
 
   const getTabFromPath = (): { tab: string; params: Record<string, string> } => {
     const path = location.pathname;
+    const isBooksDomain = window.location.hostname.startsWith("books.");
+
+    if (isBooksDomain || path.startsWith("/books") || path.startsWith("/portal/books") || path.startsWith("/admin/books")) {
+      return { tab: "books", params: {} };
+    }
 
     // Check dynamic customer details route first
     const partnerCustomerMatch = path.match(/^\/dashboard\/partner\/customer\/([^/]+)\/?$/);
@@ -300,8 +306,9 @@ export default function App() {
     fetchCalendar();
   }, []);
 
-  // Check if we're in a full-screen portal mode (portal/admin/partner have their own shell)
-  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin" || activeTab === "partner";
+  // Check if we're in a full-screen portal mode (portal/admin/partner/books have their own shell)
+  const isBooksDomain = window.location.hostname.startsWith("books.");
+  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin" || activeTab === "partner" || activeTab === "books" || isBooksDomain;
 
   // Check if user is authenticated for portal/admin access
   const isAuthenticated = (() => {
@@ -314,11 +321,12 @@ export default function App() {
   // Redirect to login if trying to access portal/admin/partner without auth
   useEffect(() => {
     if (isFullScreenPortal && !isAuthenticated && !loading) {
-      navigate("/login");
+      const currentUrl = window.location.href;
+      navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`);
     }
   }, [activeTab, isAuthenticated, loading]);
 
-  // If portal/admin is active, render without outer shell
+  // If portal/admin/books is active, render without outer shell
   if (isFullScreenPortal) {
     if (!isAuthenticated) {
       return (
@@ -327,6 +335,23 @@ export default function App() {
         </div>
       );
     }
+
+    if (activeTab === "books" || isBooksDomain) {
+      let booksBasePath = "/books";
+      if (isBooksDomain) booksBasePath = "";
+      else if (location.pathname.startsWith("/portal/books")) booksBasePath = "/portal/books";
+      else if (location.pathname.startsWith("/admin/books")) booksBasePath = "/admin/books";
+
+      return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>}>
+          <BooksApp basePath={booksBasePath} onExit={() => {
+            if (isBooksDomain) window.location.href = "https://incroute.com";
+            else navigate("/");
+          }} />
+        </Suspense>
+      );
+    }
+
     return (
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>}>
         {activeTab === "portal" ? <ClientPortal /> : activeTab === "partner" ? <PartnerPortal /> : <AdminPortal />}
