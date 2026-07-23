@@ -20,6 +20,8 @@ export default defineConfig(() => {
       },
     },
     build: {
+      assetsDir: 'static',
+      emptyOutDir: false,
       target: 'es2022',
       rollupOptions: {
         output: {
