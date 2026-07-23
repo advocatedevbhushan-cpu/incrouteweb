@@ -1,18 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://incroute.com/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://incroute.com/services/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://incroute.com/catalog/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://incroute.com/blog/</loc><lastmod>2026-06-29</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://incroute.com/about/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://incroute.com/contact/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://incroute.com/compliance/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://incroute.com/knowledge-hub/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://incroute.com/tools/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://incroute.com/tools/name-checker/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://incroute.com/tools/entity-comparison/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://incroute.com/tools/impact-dashboard/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://incroute.com/compliance/flowchart/</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://incroute.com/testimonials/</loc><lastmod>2026-06-29</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://incroute.com/login</loc><lastmod>2026-06-29</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <!-- Core Top-Level Pages -->
+  <url><loc>https://incroute.com/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://incroute.com/services/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://incroute.com/catalog/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/blog/</loc><lastmod>2026-07-22</lastmod><changefreq>daily</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/about/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/contact/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/compliance/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/knowledge-hub/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/tools/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/tools/name-checker/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/tools/entity-comparison/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://incroute.com/tools/impact-dashboard/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://incroute.com/compliance/flowchart/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://incroute.com/books</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/testimonials/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.70</priority></url>
+  <url><loc>https://incroute.com/login</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.30</priority></url>
+
+  <!-- Service Subdirectory URLs for Google Search Console & AI Crawlers -->
+  <url><loc>https://incroute.com/services/private-corporate/pvt-ltd/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://incroute.com/services/alternative-entity/llp/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/private-corporate/opc/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/alternative-entity/partnership/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/private-corporate/section8/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/private-corporate/public-ltd/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/compliance/annual-compliance/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/compliance/gst-tax/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/enterprise-growth/virtual-cfo/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/enterprise-growth/virtual-office/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/terms-privacy/</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/services/compliance/msme-registration/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/compliance/fssai-registration/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/compliance/return-filing/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/trademark-registration/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.90</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/trademark-objection/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/trademark-opposition/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/trademark-assignment/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/brand-protection/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/litigation-assistance/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/trademark-renewal/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.80</priority></url>
+  <url><loc>https://incroute.com/services/legal-ip/patent-filing/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://incroute.com/services/compliance/iso-certification/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.80</priority></url>
 </urlset>

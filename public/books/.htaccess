@@ -1,4 +1,12 @@
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(.*)$ https://incroute.com/books/$1 [R=301,L]
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve existing assets directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Fallback all sub-routes to main index.html
+  RewriteRule ^ /index.html [L]
 </IfModule>

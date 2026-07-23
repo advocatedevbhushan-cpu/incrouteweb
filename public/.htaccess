@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Handle CORS for API requests if needed
+  Header set Access-Control-Allow-Origin "*"
+
+  # Serve real files and directories directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Redirect all SPA routes (including subdomains and subpaths) to index.html
+  RewriteRule ^ index.html [L]
+</IfModule>

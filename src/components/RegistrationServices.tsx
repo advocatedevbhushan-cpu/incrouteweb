@@ -1356,6 +1356,1378 @@ const serviceCatalog = [
       "Organization flow chart",
       "Standard operating procedures (SOPs)"
     ]
+  },
+  {
+    id: "sole-proprietorship",
+    name: "Sole Proprietorship Registration",
+    category: "alternative-entity",
+    image: "/partnership_firm.webp",
+    pricing: "₹499*",
+    timeline: "2–3 Working Days",
+    minDirectors: "1 Proprietor",
+    minDirectorsNumber: "1",
+    minCapital: "None",
+    liability: "Unlimited",
+    taxBenefit: "Individual Slabs",
+    detailedAbout: "A Sole Proprietorship is the simplest form of business structure in India, owned and managed by a single individual. It requires minimal statutory compliance and allows complete operational control while obtaining necessary GST and MSME registrations for current account setup.",
+    keyAdvantages: [
+      "100% individual control",
+      "Minimal compliance costs",
+      "Quick 2-day business setup",
+      "Direct profit retention",
+      "Easy current account opening"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Simplest business structure for solo founders and micro-businesses.",
+    popular: false,
+    features: ["Instant business setup", "GST & MSME registration", "Bank current account assistance"],
+    documents: ["PAN Card of Proprietor", "Aadhaar Card", "Registered address proof", "Bank canceled cheque"]
+  },
+  {
+    id: "producer-company",
+    name: "Producer Company Registration",
+    category: "private-corporate",
+    image: "/pvt_ltd_corp.webp",
+    pricing: "₹3,999*",
+    timeline: "15–20 Working Days",
+    minDirectors: "5 Directors minimum",
+    minDirectorsNumber: "5",
+    minCapital: "₹5 Lakh",
+    liability: "Limited",
+    taxBenefit: "Agri Subsidies",
+    detailedAbout: "A Producer Company is structured specifically for farmers, agriculturalists, and primary producers to aggregate production, processing, and marketing activities under corporate umbrella protections.",
+    keyAdvantages: [
+      "Corporate benefits for primary producers",
+      "Access to NABARD and Govt subsidies",
+      "Limited liability protection",
+      "Democratic member management",
+      "Tax exemptions on agricultural income"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Empower agricultural and primary producers with corporate structure.",
+    popular: false,
+    features: ["NABARD scheme access", "5+ Producer members setup", "Agricultural tax exemptions"],
+    documents: ["PAN & Aadhaar of 10+ members", "Farmer/Producer certificates", "Address proof of premises"]
+  },
+  {
+    id: "nidhi-company",
+    name: "Nidhi Company Registration",
+    category: "private-corporate",
+    image: "/pvt_ltd_corp.webp",
+    pricing: "₹4,999*",
+    timeline: "20–25 Working Days",
+    minDirectors: "3 Directors minimum",
+    minDirectorsNumber: "3",
+    minCapital: "₹10 Lakh",
+    liability: "Limited",
+    taxBenefit: "Mutual Benefit",
+    detailedAbout: "Nidhi Company is a non-banking finance entity (NBFC) registered under the Companies Act for cultivating thrift and savings among its members, borrowing from and lending exclusively to its members.",
+    keyAdvantages: [
+      "No RBI approval required",
+      "Deposit accepting license for members",
+      "Secured lending operations",
+      "High local trust & credibility",
+      "Mutual benefit financial ecosystem"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Start a mutual benefit micro-finance business without RBI license.",
+    popular: false,
+    features: ["Member deposit collection", "Secured gold/property loans", "NDH-4 declaration assistance"],
+    documents: ["PAN & Aadhaar of 7+ subscribers", "Proof of net owned funds", "Registered office address proof"]
+  },
+  {
+    id: "indian-subsidiary",
+    name: "Indian Subsidiary Registration",
+    category: "private-corporate",
+    image: "/pvt_ltd_corp.webp",
+    pricing: "₹4,999*",
+    timeline: "10–15 Working Days",
+    minDirectors: "2 Directors (1 Resident)",
+    minDirectorsNumber: "2",
+    minCapital: "None",
+    liability: "Limited",
+    taxBenefit: "FDI Compliant",
+    detailedAbout: "An Indian Subsidiary allows foreign corporate entities and non-resident individuals to establish 100% Wholly Owned Subsidiaries (WOS) or Joint Ventures in India through the Automatic FDI route.",
+    keyAdvantages: [
+      "100% Foreign Direct Investment (FDI)",
+      "Limited liability corporate protection",
+      "Full profit repatriation rights",
+      "RBI & FEMA compliance support",
+      "Access to booming Indian domestic market"
+    ],
+    badge: "FDI Special",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Establish a 100% Wholly Owned Indian Subsidiary for global firms.",
+    popular: false,
+    features: ["FEMA & RBI reporting (FC-GPR)", "Apostilled/Notarized docs processing", "Resident Director provision guidance"],
+    documents: ["Parent Company Certificate of Incorporation", "Board Resolution from Foreign Parent", "Passport of Foreign Director", "Indian Resident Director KYC"]
+  },
+  {
+    id: "startup-india",
+    name: "Startup India DPIIT Recognition",
+    category: "private-corporate",
+    image: "/pvt_ltd_corp.webp",
+    pricing: "₹1,499*",
+    timeline: "3–5 Working Days",
+    minDirectors: "Eligible Entity",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Recognized",
+    taxBenefit: "Section 80-IAC Tax Holiday",
+    detailedAbout: "DPIIT Recognition under the Startup India initiative unlocks 3-year consecutive Income Tax exemptions (Section 80-IAC), Angel Tax exemptions (Section 56), fast-track patent processing with 80% fee rebate, and access to SIDBI Fund of Funds.",
+    keyAdvantages: [
+      "3-year Income Tax holiday (80-IAC)",
+      "Angel tax exemption (Section 56)",
+      "80% rebate on Patent application fees",
+      "Self-certification under 9 labour/environmental laws",
+      "Government tender fast-track qualification"
+    ],
+    badge: "Govt Advantage",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Get official DPIIT recognition to claim 3-year tax exemption & patent rebates.",
+    popular: true,
+    features: ["DPIIT Certificate issuance", "Section 80-IAC tax application", "Fast-track IP rebate filing"],
+    documents: ["Certificate of Incorporation", "Pitch deck/Write-up on innovation", "Website / Mobile App link"]
+  },
+  {
+    id: "trust-registration",
+    name: "Trust Registration",
+    category: "alternative-entity",
+    image: "/section8_ngo.webp",
+    pricing: "₹2,499*",
+    timeline: "7–10 Working Days",
+    minDirectors: "2 Trustees minimum",
+    minDirectorsNumber: "2",
+    minCapital: "None",
+    liability: "Fiduciary",
+    taxBenefit: "Charitable Trust",
+    detailedAbout: "A Public or Private Trust is formed under the Indian Trust Act 1882 for educational, religious, or charitable purposes, managed by designated Trustees via a registered Trust Deed.",
+    keyAdvantages: [
+      "Simple public welfare structure",
+      "12A & 80G tax benefit eligibility",
+      "Perpetual trust asset management",
+      "Low administrative costs",
+      "Government grant eligibility"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Establish a public or educational charitable trust with custom Trust Deed.",
+    popular: false,
+    features: ["Custom Trust Deed drafting", "Sub-Registrar office registration", "12A & 80G tax filing prep"],
+    documents: ["PAN & ID proof of Settlor & Trustees", "Trust Deed on Stamp Paper", "Address proof of Trust office"]
+  },
+  {
+    id: "society-registration",
+    name: "Society Registration",
+    category: "alternative-entity",
+    image: "/section8_ngo.webp",
+    pricing: "₹2,499*",
+    timeline: "12–15 Working Days",
+    minDirectors: "7 Governing Body Members",
+    minDirectorsNumber: "7",
+    minCapital: "None",
+    liability: "Mutual",
+    taxBenefit: "Non-Profit Status",
+    detailedAbout: "A Charitable Society registered under the Societies Registration Act 1860 is an association of individuals united for promotional, scientific, literary, or charitable goals.",
+    keyAdvantages: [
+      "Democratic governing body",
+      "12A & 80G tax exemptions",
+      "Legal recognition for social causes",
+      "FCRA eligibility for foreign funds",
+      "Institutional funding access"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Register a non-profit society for social, literary, or scientific welfare.",
+    popular: false,
+    features: ["MOA & Bye-laws drafting", "Registrar of Societies filing", "Governing body member setup"],
+    documents: ["ID & Address proof of 7 members", "Memorandum of Association (MOA)", "Registered office utility bill"]
+  },
+  {
+    id: "fcra-registration",
+    name: "FCRA Registration & Renewal",
+    category: "alternative-entity",
+    image: "/section8_ngo.webp",
+    pricing: "₹4,999*",
+    timeline: "25–30 Working Days",
+    minDirectors: "FCRA Lead Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "MHA Statutory",
+    taxBenefit: "Foreign Contribution Rights",
+    detailedAbout: "Foreign Contribution Regulation Act (FCRA) registration granted by the Ministry of Home Affairs (MHA) allows eligible NGOs, Trusts, and Section 8 companies to receive foreign donations legally.",
+    keyAdvantages: [
+      "Legal foreign funding authorization",
+      "SBI NDMC Designated Bank Account setup",
+      "MHA portal compliance shield",
+      "Global donor credibility",
+      "5-year validity with renewal support"
+    ],
+    badge: "NGO Essential",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Receive international grants & foreign donations legally under MHA approval.",
+    popular: false,
+    features: ["MHA FCRA portal filing", "Prior Permission / Registration", "FC-4 annual return compliance"],
+    documents: ["NGO Registration Certificate", "Audit reports for last 3 years", "FCRA Bank Account details", "Key functionaries KYC"]
+  },
+  {
+    id: "12a-80g-registration",
+    name: "12A & 80G Tax Exemption Certificates",
+    category: "alternative-entity",
+    image: "/section8_ngo.webp",
+    pricing: "₹2,999*",
+    timeline: "10–15 Working Days",
+    minDirectors: "NGO Tax Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Tax Exempt",
+    taxBenefit: "50% Donor Tax Deduction",
+    detailedAbout: "12A registration exempts an NGO's income from Income Tax, while 80G certification allows donors to claim 50% tax deductions on their financial contributions.",
+    keyAdvantages: [
+      "Complete tax exemption on NGO revenue",
+      "50% tax deduction for financial donors",
+      "High credibility with corporate CSR heads",
+      "Provisional 3-year certificate issuance",
+      "Permanent 5-year renewal filing"
+    ],
+    badge: "Donor Magnet",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Exempt your NGO from income tax & offer 50% tax deductions to your donors.",
+    popular: true,
+    features: ["Form 10A Income Tax e-filing", "Provisional & Final certificate tracking", "CSR funding eligibility setup"],
+    documents: ["Trust Deed / MOA / Section 8 License", "PAN Card of Organization", "Activity reports & balance sheets"]
+  },
+  {
+    id: "12aa-registration",
+    name: "12AA Permanent NGO Tax Registration",
+    category: "alternative-entity",
+    image: "/section8_ngo.webp",
+    pricing: "₹3,499*",
+    timeline: "15–20 Working Days",
+    minDirectors: "NGO Tax Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Tax Exempt",
+    taxBenefit: "Permanent Exemption",
+    detailedAbout: "Permanent 12AA / 12AB Income Tax registration for established trusts and non-profits, ensuring long-term tax protection under section 12AB of the Income Tax Act 1961.",
+    keyAdvantages: [
+      "Permanent 5-year statutory tax exemption",
+      "Exemption from commercial income tax",
+      "Protection from tax reassessment",
+      "Corporate CSR fund eligibility",
+      "IT Portal Form 10AB lodgment"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Convert provisional NGO registration into permanent 5-year 12AB tax status.",
+    popular: false,
+    features: ["Form 10AB lodgment", "Income Tax Commissioner hearing prep", "Permanent Order issuance"],
+    documents: ["Existing 12A/80G provisional order", "Past 3 years activity logs", "Audited balance sheets"]
+  },
+  {
+    id: "startup-grants",
+    name: "Startup Grants & SISFS Advisory",
+    category: "enterprise-growth",
+    image: "/virtual_cfo_analytics.webp",
+    pricing: "₹2,999*",
+    timeline: "7–10 Working Days",
+    minDirectors: "Grants Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Grant Approval",
+    taxBenefit: "Non-Dilutive Capital",
+    detailedAbout: "Assistance in securing non-dilutive government startup grants under Startup India Seed Fund Scheme (SISFS), BIRAC, NITI Aayog, and state incubator grant programs.",
+    keyAdvantages: [
+      "Up to ₹20 Lakhs proof-of-concept grant",
+      "Up to ₹50 Lakhs commercialization grant",
+      "Zero equity dilution for founders",
+      "Incubator pitch prep & application filing",
+      "DPIIT alignment review"
+    ],
+    badge: "Grants Special",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Apply for up to ₹70 Lakhs non-dilutive government startup seed fund grants.",
+    popular: true,
+    features: ["SISFS incubator application", "Pitch deck grant optimization", "Incubator presentation coaching"],
+    documents: ["DPIIT Recognition Certificate", "Pitch deck & financial projections", "Prototype / MVP demo link"]
+  },
+  {
+    id: "pitch-deck",
+    name: "Investment Pitch Deck & Financial Model",
+    category: "enterprise-growth",
+    image: "/virtual_cfo_analytics.webp",
+    pricing: "₹3,999*",
+    timeline: "5–7 Working Days",
+    minDirectors: "Financial Analyst",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Investor Ready",
+    taxBenefit: "Valuation Ready",
+    detailedAbout: "Institutional-grade 15-slide investor pitch deck coupled with a dynamic 5-year DCF & Financial Projection model designed to impress VC funds, angel syndicates, and banks.",
+    keyAdvantages: [
+      "15-slide VC grade deck design",
+      "5-year dynamic financial model (Excel)",
+      "TAM, SAM, SOM market sizing analysis",
+      "Unit economics & CAC/LTV modeling",
+      "Investor Q&A preparation guide"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "VC-ready 15-slide pitch deck & 5-year financial projection model.",
+    popular: false,
+    features: ["Executive deck design", "5-year P&L / Cash flow model", "Valuation benchmark analysis"],
+    documents: ["Business model overview", "Current traction / metrics log", "Competitor notes"]
+  },
+  {
+    id: "seed-funding",
+    name: "Seed & Angel Funding Advisory",
+    category: "enterprise-growth",
+    image: "/virtual_cfo_analytics.webp",
+    pricing: "₹4,999*",
+    timeline: "Retainer Advisory",
+    minDirectors: "Investment Advisory",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Advisory",
+    taxBenefit: "Capital Structuring",
+    detailedAbout: "End-to-end fundraising advisory for early-stage startups preparing for Seed, Pre-Series A, or Angel investment rounds, including term sheet negotiations and due diligence prep.",
+    keyAdvantages: [
+      "Term Sheet review & negotiation",
+      "Data Room setup for Due Diligence",
+      "SAFE / CCPS share structure drafting",
+      "Cap Table dilution forecasting",
+      "Angel Network & VC intros prep"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Strategic fundraising advisory, term sheet negotiation & data room setup.",
+    popular: false,
+    features: ["Term sheet legal review", "CCPS issuance structuring", "Venture Data Room management"],
+    documents: ["Pitch deck", "Incorporation files", "Cap table snapshot"]
+  },
+  {
+    id: "cap-table-valuation",
+    name: "Cap Table & Rule 11UA Valuation Report",
+    category: "enterprise-growth",
+    image: "/virtual_cfo_analytics.webp",
+    pricing: "₹3,499*",
+    timeline: "3–5 Working Days",
+    minDirectors: "Registered Valuer",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Certified",
+    taxBenefit: "Angel Tax Compliant",
+    detailedAbout: "Certified Valuation Report issued by an IBBI Registered Valuer or Merchant Banker under Rule 11UA of the Income Tax Act & Companies Act for issuing shares to investors.",
+    keyAdvantages: [
+      "IBBI Certified Valuation Certificate",
+      "Income Tax Rule 11UA compliance",
+      "Angel Tax penalty immunity",
+      "DCF / NAV valuation calculation",
+      "Share premium justification report"
+    ],
+    badge: "Valuer Certified",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Certified IBBI valuation report under Rule 11UA for issuing equity/CCPS.",
+    popular: false,
+    features: ["IBBI Registered Valuer certificate", "DCF Financial modeling", "Tax audit defense backing"],
+    documents: ["Audited balance sheets (last 3 yrs)", "5-year financial projections", "Cap Table details"]
+  },
+  {
+    id: "gst-return-filing",
+    name: "Monthly GST Return Filing",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹499/mo*",
+    timeline: "Monthly Support",
+    minDirectors: "GST Practitioner",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Input Tax Credit (ITC)",
+    detailedAbout: "Timely monthly filing of GSTR-1 (Outward Supplies) and GSTR-3B (Tax Payment & Input Tax Credit reconciliation) led by experienced GST practitioners.",
+    keyAdvantages: [
+      "GSTR-1 & GSTR-3B monthly filings",
+      "2A/2B Input Tax Credit reconciliation",
+      "Zero late fee filing guarantee",
+      "E-Way bill generation support",
+      "GST portal notice monitoring"
+    ],
+    badge: "Popular Retainer",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Hassle-free monthly GSTR-1 & GSTR-3B filings with 2B ITC reconciliation.",
+    popular: true,
+    features: ["Monthly GSTR-1 & 3B filing", "GSTR-2B ITC matching", "GST payment challan generation"],
+    documents: ["Sales & Purchase invoices excel", "Bank statement", "GST Login credentials"]
+  },
+  {
+    id: "gstr9-annual-return",
+    name: "GST Annual Return Filing (GSTR-9)",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹1,999*",
+    timeline: "5–7 Working Days",
+    minDirectors: "CA Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Audit Reconciled",
+    detailedAbout: "Filing of mandatory Annual GST Return (Form GSTR-9) and Reconciliation Statement (Form GSTR-9C) for taxpayers, ensuring complete tax period audit reconciliation.",
+    keyAdvantages: [
+      "Annual sales & ITC audit reconciliation",
+      "Form GSTR-9 & GSTR-9C preparation",
+      "Elimination of GST audit demand notices",
+      "Adjustment of missed input tax credits",
+      "CA certification for turnover > ₹5 Cr"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Annual GSTR-9 return & GSTR-9C reconciliation certified by Chartered Accountants.",
+    popular: false,
+    features: ["GSTR-9 compilation", "GSTR-9C audit reconciliation", "Missed ITC recovery"],
+    documents: ["Financial year P&L & Balance Sheet", "All 12 months GSTR-1 & 3B returns", "GST portal login"]
+  },
+  {
+    id: "gst-lut-filing",
+    name: "GST LUT Form for Exports",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹499*",
+    timeline: "1–2 Working Days",
+    minDirectors: "GST Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Export Qualified",
+    taxBenefit: "Zero Rated Export",
+    detailedAbout: "Filing Letter of Undertaking (LUT) in Form GST RFD-11 annually on the GST portal to export goods or services without paying IGST upfront.",
+    keyAdvantages: [
+      "Export goods/services without IGST payment",
+      "Saves cash flow for exporters & freelancers",
+      "Instant LUT acknowledgment certificate",
+      "Annual validity for full financial year",
+      "FDI / Paypal / Stripe inward remittance compliance"
+    ],
+    badge: "Exporter Must",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Export goods & IT services without paying IGST upfront via Form GST RFD-11.",
+    popular: true,
+    features: ["Form GST RFD-11 online filing", "LUT Acknowledgment certificate", "Witness details verification"],
+    documents: ["GSTIN Login credentials", "Witnesses ID proof details", "Export business details"]
+  },
+  {
+    id: "gst-notice-resolution",
+    name: "GST Notice & Audit Resolution",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹1,999*",
+    timeline: "3–5 Working Days",
+    minDirectors: "GST Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory Defense",
+    taxBenefit: "Demand Relief",
+    detailedAbout: "Legal drafting and representation for GST notices (ASMT-10, DRC-01, SCN) issued by state/central GST departments regarding ITC mismatches or tax demands.",
+    keyAdvantages: [
+      "Professional legal reply drafting",
+      "ITC mismatch reconciliation report",
+      "Representation before GST Officers",
+      "Penalty reduction & waiver support",
+      "Show Cause Notice (SCN) defense"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Expert reply drafting & defense representation for GST Show Cause Notices.",
+    popular: false,
+    features: ["DRC-01 & ASMT-10 analysis", "Evidentiary reply submission", "GST Hearing representation"],
+    documents: ["Copy of GST Notice received", "GSTR-2A/2B reconciliations", "Relevant sales/purchase invoices"]
+  },
+  {
+    id: "gst-foreigners",
+    name: "GST Registration for Non-Resident Foreigners",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹4,999*",
+    timeline: "7–10 Working Days",
+    minDirectors: "NRTP Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Cross-Border Trade",
+    detailedAbout: "Specialized GST Registration for Non-Resident Taxable Persons (NRTP) and foreign OIDAR service providers operating e-commerce or digital services in India.",
+    keyAdvantages: [
+      "Official NRTP GSTIN issuance",
+      "Authorized Indian Signatory provision",
+      "Cross-border SaaS / E-commerce compliance",
+      "Advance tax estimation guidance",
+      "Seamless inward foreign remittance"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "GST registration for foreign companies selling digital services or goods in India.",
+    popular: false,
+    features: ["Authorized Signatory assignment", "NRTP GSTIN portal filing", "OIDAR compliance setup"],
+    documents: ["Foreign entity registration certificate", "Passport of foreign director", "Indian Authorized Representative KYC"]
+  },
+  {
+    id: "gst-amendment",
+    name: "GST Certificate Amendment",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹499*",
+    timeline: "2–3 Working Days",
+    minDirectors: "GST Practitioner",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Updated",
+    taxBenefit: "Address/Trade Update",
+    detailedAbout: "Filing Core and Non-Core Amendments on the GST portal to update business address, trade name, addition of additional place of business, or change in directors/partners.",
+    keyAdvantages: [
+      "Official updated GST Certificate (REG-06)",
+      "Core field change approval tracking",
+      "Additional place of business addition",
+      "Trade name & HSN code updates",
+      "Director / Partner details update"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Update registered address, trade name, or additional premises on GST Certificate.",
+    popular: false,
+    features: ["Form GST REG-14 amendment", "New premises NOC verification", "Updated REG-06 download"],
+    documents: ["New address utility bill & NOC", "GST portal login credentials", "Board Resolution / Partner consent"]
+  },
+  {
+    id: "gstr10-final-return",
+    name: "GSTR-10 Final Return on Cancellation",
+    category: "compliance",
+    image: "/gst_tax_registration.webp",
+    pricing: "₹999*",
+    timeline: "2–4 Working Days",
+    minDirectors: "GST Practitioner",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Canceled Clean",
+    taxBenefit: "Zero Penalty Closure",
+    detailedAbout: "Filing of GSTR-10 Final Return required within 3 months of cancellation of GST registration to avoid massive flat late fee penalties of ₹10,000 under Section 29.",
+    keyAdvantages: [
+      "Prevents ₹10,000 flat Section 29 penalty",
+      "Stock tax liability calculation",
+      "Clean closure of GST profile",
+      "Final return acknowledgment",
+      "No future portal notices"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "File GSTR-10 Final Return within 3 months of GST cancellation to avoid ₹10,000 penalty.",
+    popular: false,
+    features: ["Form GSTR-10 preparation", "Closing stock tax computation", "Final cancellation acknowledgment"],
+    documents: ["GST Cancellation Order copy", "Closing stock valuation ledger", "GST login"]
+  },
+  {
+    id: "income-tax-efiling",
+    name: "Income Tax Return (ITR) E-Filing",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹799*",
+    timeline: "2–3 Working Days",
+    minDirectors: "CA Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Maximum Tax Refund",
+    detailedAbout: "Accurate filing of Income Tax Returns (ITR-1 to ITR-7) for individuals, salaried professionals, freelancers, directors, and corporate entities led by Chartered Accountants.",
+    keyAdvantages: [
+      "Maximum tax refund calculation",
+      "Form 26AS & AIS/TIS reconciliation",
+      "Capital gains & F&O loss carry forward",
+      "Section 80C, 80D, 80G deduction optimization",
+      "Instant ITR-V verification support"
+    ],
+    badge: "CA Verified",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Expert ITR filing with AIS/26AS reconciliation to maximize tax refunds.",
+    popular: true,
+    features: ["Form 26AS & AIS audit", "Capital gains computation", "ITR-V e-verification"],
+    documents: ["Form 16 / Salary Slips", "Bank statements for Financial Year", "PAN Card & Aadhaar"]
+  },
+  {
+    id: "business-tax-filing",
+    name: "Corporate & Business Tax Filing",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹2,499*",
+    timeline: "3–5 Working Days",
+    minDirectors: "CA Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Corporate Tax",
+    taxBenefit: "MAT & Loss Set-off",
+    detailedAbout: "Comprehensive tax audit and Income Tax filing (ITR-5 for LLPs/Partnerships & ITR-6 for Companies) under lower corporate tax rate regimes (Section 115BAA).",
+    keyAdvantages: [
+      "Lower 22% corporate tax regime optimization",
+      "Tax Audit Report (Form 3CA/3CB-3CD) filing",
+      "MAT (Minimum Alternate Tax) credit calculation",
+      "Unabsorbed depreciation carry-forward",
+      "CA sign-off & e-filing"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "File ITR-5 / ITR-6 with Tax Audit Report (Form 3CD) led by CAs.",
+    popular: false,
+    features: ["Form 3CD Tax Audit filing", "Corporate MAT computation", "Depreciation schedule audit"],
+    documents: ["Audited P&L and Balance Sheet", "TDS certificates (Form 16A)", "Previous year ITR copy"]
+  },
+  {
+    id: "itr-filing-individual",
+    name: "Individual & Proprietorship ITR (ITR-1 to ITR-4)",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹499*",
+    timeline: "1–2 Working Days",
+    minDirectors: "Tax Accountant",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Individual",
+    taxBenefit: "Presumptive Tax (44AD)",
+    detailedAbout: "Quick filing for salaried individuals, consultants, and sole proprietors claiming Presumptive Taxation benefits under Section 44AD / 44ADA.",
+    keyAdvantages: [
+      "Presumptive Tax (44ADA) for freelancers",
+      "50% profit tax declaration option",
+      "No book maintenance required under 44AD",
+      "Fast refund dispatch to bank account",
+      "Home loan / Visa approval proof"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "ITR filing for freelancers, consultants & proprietors with Section 44ADA benefits.",
+    popular: true,
+    features: ["Section 44ADA 50% profit declaration", "AIS data matching", "Instant ITR acknowledgment"],
+    documents: ["PAN Card", "Aadhaar Card", "Bank Statements", "Form 26AS"]
+  },
+  {
+    id: "corporate-tax-itr",
+    name: "Corporate Income Tax (ITR-6) Filing",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹2,999*",
+    timeline: "5–7 Working Days",
+    minDirectors: "CA Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Corporate",
+    taxBenefit: "Section 115BAA (22%)",
+    detailedAbout: "Statutory mandatory Income Tax Return (ITR-6) filing for Private Limited and Public Companies registered under MCA.",
+    keyAdvantages: [
+      "Section 115BAA 22% tax rate lock",
+      "Form 3CD tax audit reconciliation",
+      "Zero late fee compliance",
+      "Loss carry forward protection (8 years)",
+      "CA digital signature filing"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Mandatory ITR-6 filing for Private Limited Companies with CA digital signature.",
+    popular: false,
+    features: ["ITR-6 portal submission", "Tax audit reconciliation", "Loss carry-forward declaration"],
+    documents: ["Audited Financial Statements", "Director KYC details", "TDS certificate entries"]
+  },
+  {
+    id: "15ca-15cb-filing",
+    name: "Form 15CA & 15CB Foreign Remittance CA Certificate",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹1,499*",
+    timeline: "1–2 Working Days",
+    minDirectors: "CA Lead Certifier",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "FEMA Compliant",
+    taxBenefit: "DTAA Tax Benefit",
+    detailedAbout: "Issuance of CA Certificate (Form 15CB) and filing of Form 15CA on the Income Tax Portal required by banks for foreign money transfers to non-residents.",
+    keyAdvantages: [
+      "Mandatory for international vendor payments",
+      "Double Taxation Avoidance (DTAA) benefits",
+      "Same-day CA UDIN Certificate issuance",
+      "Bank clearance for foreign outbound transfer",
+      "Tax withholding rate determination"
+    ],
+    badge: "Express Service",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Get same-day Form 15CB CA Certificate & Form 15CA filing for foreign payments.",
+    popular: true,
+    features: ["CA UDIN Certificate issuance", "DTAA rate application", "Form 15CA filing"],
+    documents: ["Proforma Invoice from Foreign Vendor", "Remittance agreement", "DTAA Tax Residency Certificate"]
+  },
+  {
+    id: "tan-tds-filing",
+    name: "TAN Registration & Quarterly TDS Returns",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹999/qtr*",
+    timeline: "Quarterly Support",
+    minDirectors: "TDS Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "TDS Credit Pass-through",
+    detailedAbout: "TAN allotment and quarterly filing of TDS returns (Form 26Q for vendor payments & Form 24Q for salaries), along with Form 16/16A generation.",
+    keyAdvantages: [
+      "TAN allotment within 2 days",
+      "Form 26Q & Form 24Q quarterly returns",
+      "TRACES Form 16 / 16A PDF generation",
+      "Prevents 201(1A) interest & 234E late fees",
+      "Challan 280 / 281 payment guidance"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "TAN registration & quarterly Form 26Q/24Q filing with Form 16A generation.",
+    popular: false,
+    features: ["TAN issuance", "Quarterly TDS return filing", "TRACES Form 16A download"],
+    documents: ["Business PAN", "Salary & Vendor payment deductee list", "TDS challans paid"]
+  },
+  {
+    id: "income-tax-notice",
+    name: "Income Tax Notice & Demand Defense",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹1,999*",
+    timeline: "3–5 Working Days",
+    minDirectors: "Senior Tax Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Tax Defense",
+    taxBenefit: "Demand Rectification",
+    detailedAbout: "Professional handling, response drafting, and rectification filings (Section 154) for notices under Section 143(1), 139(9) defective returns, or Section 148 re-assessments.",
+    keyAdvantages: [
+      "Defective return (139(9)) rectification",
+      "Section 154 online tax demand adjustment",
+      "Assessment defense drafting (143(3))",
+      "Faceless Assessment portal response",
+      "Penalty stay application filing"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Expert response drafting & rectification filing for Income Tax notices (143/139).",
+    popular: false,
+    features: ["Section 154 online rectification", "Faceless Assessment portal submission", "Tax demand stay drafting"],
+    documents: ["Copy of Income Tax Notice", "Filed ITR acknowledgment", "Form 26AS & bank statements"]
+  },
+  {
+    id: "dir3-kyc",
+    name: "Annual DIR-3 KYC Verification",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹499*",
+    timeline: "1 Working Day",
+    minDirectors: "ROC Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "DIN Active",
+    taxBenefit: "Avoid ₹5000 Penalty",
+    detailedAbout: "Mandatory annual e-KYC filing for every DIN holder (Director Identification Number) before September 30th to avoid DIN deactivation and a flat ₹5,000 late fee.",
+    keyAdvantages: [
+      "Prevents ₹5,000 flat late fee penalty per DIN",
+      "Keeps Director Identification Number active",
+      "DIR-3 KYC Web OTP verification",
+      "DIR-3 KYC Form DSC certification",
+      "Same-day filing acknowledgment"
+    ],
+    badge: "Annual Must",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "File annual DIR-3 KYC before Sept 30 to keep DIN active & avoid ₹5,000 late fee.",
+    popular: true,
+    features: ["DIR-3 KYC Web OTP submission", "Mobile & Email verification", "Instant MCA approval receipt"],
+    documents: ["DIN Number", "PAN Card & Aadhaar Card", "Mobile number & Email for OTP"]
+  },
+  {
+    id: "inc20a-commencement",
+    name: "Commencement of Business (INC-20A)",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹999*",
+    timeline: "2–3 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Mandatory",
+    taxBenefit: "Prevents Strike Off",
+    detailedAbout: "Filing Form INC-20A with the ROC within 180 days of incorporation to declare that subscribers have deposited their capital subscription into the company bank account.",
+    keyAdvantages: [
+      "Mandatory before starting company operations",
+      "Prevents ROC strike-off of company",
+      "Prevents ₹50,000 company & director fine",
+      "Unlocks borrowing & share transfer powers",
+      "CS certification included"
+    ],
+    badge: "180-Day Rule",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "File Form INC-20A within 180 days of incorporation to declare share capital deposit.",
+    popular: true,
+    features: ["Form INC-20A MCA lodgment", "Bank statement subscription proof upload", "CS certification"],
+    documents: ["Company Bank Statement showing capital deposit", "Registered office photo with board", "CS Digital Signature"]
+  },
+  {
+    id: "secretarial-audit",
+    name: "Secretarial Audit & Report (Form MR-3)",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹4,999*",
+    timeline: "7–10 Working Days",
+    minDirectors: "Practicing CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory",
+    taxBenefit: "Governance Shield",
+    detailedAbout: "Independent Secretarial Audit conducted by a Practicing Company Secretary (PCS) under Section 204 of the Companies Act 2013 for listed & large public/private companies.",
+    keyAdvantages: [
+      "Form MR-3 Secretarial Audit Report",
+      "Compliance check across 20+ corporate laws",
+      "Board structure & governance evaluation",
+      "Protection for Independent Directors",
+      "Attachment to Board's Annual Report"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Independent Secretarial Audit & Form MR-3 report by Practicing Company Secretaries.",
+    popular: false,
+    features: ["PCS audit verification", "Form MR-3 report compilation", "Corporate law compliance check"],
+    documents: ["Past 3 years Board & AGM Minutes", "ROC filings records", "Statutory registers"]
+  },
+  {
+    id: "board-minutes-drafting",
+    name: "Board Meeting Minutes Drafting Suite",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹999/yr*",
+    timeline: "2–3 Working Days",
+    minDirectors: "CS Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory Register",
+    taxBenefit: "MCA Compliant",
+    detailedAbout: "Professional drafting of mandatory quarterly Board Meeting Minutes, AGM notices, and Statutory Register maintenance in compliance with Secretarial Standard-1 (SS-1).",
+    keyAdvantages: [
+      "4 Quarterly Board Meeting Minutes",
+      "Annual General Meeting (AGM) Notice & Minutes",
+      "Attendance Register & Resolution drafts",
+      "SS-1 & SS-2 secretarial standard compliance",
+      "Ready-to-sign PDF & Word formats"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Draft 4 quarterly Board Meeting Minutes & AGM notices in compliance with SS-1 standards.",
+    popular: false,
+    features: ["Quarterly BM minutes drafting", "AGM Notice & Resolution templates", "Statutory register entry logs"],
+    documents: ["Director names list", "Meeting date & agenda items", "Company letterhead"]
+  },
+  {
+    id: "change-company-name",
+    name: "Change Company Name & Articles Amendment",
+    category: "compliance",
+    image: "/return_filing.webp",
+    pricing: "₹2,499*",
+    timeline: "7–10 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "ROC Approved",
+    taxBenefit: "Brand Pivot",
+    detailedAbout: "End-to-end ROC process for changing a company's name, including RUN name reservation, Extraordinary General Meeting (EGM) resolutions, and filing Form INC-24 & MGT-14.",
+    keyAdvantages: [
+      "RUN name reservation on MCA",
+      "Form MGT-14 Special Resolution filing",
+      "Form INC-24 approval by ROC",
+      "New Certificate of Incorporation issuance",
+      "MOA & AOA name clause amendment"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Change your company name with RUN name reservation & ROC INC-24 approval.",
+    popular: false,
+    features: ["RUN name clearance", "Form INC-24 approval tracking", "Fresh COI download"],
+    documents: ["Proposed new company names", "Existing COI & MOA/AOA", "Board & Shareholder approval"]
+  },
+  {
+    id: "increase-authorized-capital",
+    name: "Increase Authorized Share Capital",
+    category: "compliance",
+    image: "/return_filing.webp",
+    pricing: "₹1,999*",
+    timeline: "3–5 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Capital Expanded",
+    taxBenefit: "Fundraising Ready",
+    detailedAbout: "ROC filings to increase authorized share capital of a Private Limited or Public company by amending the Capital Clause of MOA via Form SH-7 & Form MGT-14.",
+    keyAdvantages: [
+      "Enables issuance of new equity shares to investors",
+      "MOA Capital Clause amendment",
+      "Form SH-7 filing with ROC",
+      "State stamp duty calculation assistance",
+      "Updated MCA master data status"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Increase authorized capital (Form SH-7) to prepare for new investor share allotment.",
+    popular: false,
+    features: ["Form SH-7 lodgment", "EGM Special Resolution drafting", "State stamp duty payment"],
+    documents: ["Desired authorized capital amount", "Existing MOA/AOA", "Board resolution copy"]
+  },
+  {
+    id: "director-change",
+    name: "Director Addition & Resignation (DIR-12)",
+    category: "compliance",
+    image: "/return_filing.webp",
+    pricing: "₹1,299*",
+    timeline: "2–4 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "ROC Updated",
+    taxBenefit: "Board Restructure",
+    detailedAbout: "Filing Form DIR-12 with ROC for appointing a new Director / Additional Director or accepting the resignation/removal of an existing Director.",
+    keyAdvantages: [
+      "Form DIR-12 filing with ROC within 30 days",
+      "DIR-2 consent form & DIR-8 declaration prep",
+      "Resignation letter & Board resolution drafting",
+      "DIN allocation for new director if needed",
+      "Updated MCA Master Data profile"
+    ],
+    badge: "Quick Turnaround",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Appoint or remove directors with fast Form DIR-12 filing & MCA master data update.",
+    popular: true,
+    features: ["Form DIR-12 filing", "DIR-2 consent drafting", "MCA Director Master Data update"],
+    documents: ["PAN & Aadhaar of incoming director", "Resignation letter of outgoing director", "Board Resolution"]
+  },
+  {
+    id: "change-registered-office",
+    name: "Change Registered Address (INC-22)",
+    category: "compliance",
+    image: "/return_filing.webp",
+    pricing: "₹1,499*",
+    timeline: "3–5 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "ROC Updated",
+    taxBenefit: "Premises Relocation",
+    detailedAbout: "Filing Form INC-22 with the ROC to change registered office within local limits, or handling Regional Director (RD) approval for inter-state address changes.",
+    keyAdvantages: [
+      "Form INC-22 filing with ROC",
+      "Local / Inter-city address change",
+      "Landlord NOC & utility bill verification",
+      "Public notice newspaper publication (if RD route)",
+      "Updated MCA company master record"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Relocate registered office within city or state with Form INC-22 ROC approval.",
+    popular: false,
+    features: ["Form INC-22 submission", "Utility bill NOC verification", "MCA Master Data address update"],
+    documents: ["New address utility bill (Electricity/Gas)", "NOC from property owner", "Rent agreement copy"]
+  },
+  {
+    id: "share-transfer-allotment",
+    name: "Share Allotment (PAS-3) & Transfer (SH-4)",
+    category: "compliance",
+    image: "/return_filing.webp",
+    pricing: "₹1,999*",
+    timeline: "3–5 Working Days",
+    minDirectors: "CS Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Capital Restructured",
+    taxBenefit: "Stamp Duty Paid",
+    detailedAbout: "Filing Form PAS-3 for fresh share allotment to investors/founders or executing Form SH-4 Share Transfer deeds with statutory stamp duty payment.",
+    keyAdvantages: [
+      "Form PAS-3 Return of Allotment filing",
+      "Form SH-4 Share Transfer Deed execution",
+      "Physical / Demat Share Certificate issuance",
+      "State stamp duty payment (0.015% / 0.005%)",
+      "Register of Members (Form MGT-1) update"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Issue new shares (PAS-3) or execute transfer deeds (SH-4) with stamp duty clearance.",
+    popular: false,
+    features: ["Form PAS-3 allotment return", "Form SH-4 transfer deed stamping", "Share Certificate generation"],
+    documents: ["List of allottees / transferor-transferee", "Valuation report (if applicable)", "Board Resolution"]
+  },
+  {
+    id: "bookkeeping-ledger",
+    name: "Cloud Bookkeeping & Ledger Maintenance",
+    category: "compliance",
+    image: "/annual_compliances.webp",
+    pricing: "₹1,499/mo*",
+    timeline: "Monthly Retainer",
+    minDirectors: "Accountant Lead",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Audited Ledger",
+    taxBenefit: "Clean Accounts",
+    detailedAbout: "Full-service cloud bookkeeping on INCroute Books or Tally/Zoho for small businesses, recording daily sales, expenses, bank reconciliations, and vendor ledgers.",
+    keyAdvantages: [
+      "Daily / Weekly sales & expense accounting",
+      "Bank statement auto-reconciliation",
+      "Vendor & Customer ledger balancing",
+      "GST input tax credit matching",
+      "Ready balance sheet for statutory auditor"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Dedicated cloud bookkeeping & bank reconciliations led by qualified accountants.",
+    popular: false,
+    features: ["Monthly ledger maintenance", "Bank reconciliation", "Vendor payables tracking"],
+    documents: ["Sales & Purchase bills", "Bank statements", "Expense vouchers"]
+  },
+  {
+    id: "mis-financial-reporting",
+    name: "Monthly MIS & Investor Financial Reports",
+    category: "compliance",
+    image: "/virtual_cfo_analytics.webp",
+    pricing: "₹1,999/mo*",
+    timeline: "Monthly Retainer",
+    minDirectors: "Financial Analyst",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Board Level",
+    taxBenefit: "Executive Insights",
+    detailedAbout: "Executive MIS (Management Information System) dashboards delivering monthly P&L, burn rate, runway, unit economics, and cash flow reports for founders and board members.",
+    keyAdvantages: [
+      "Monthly P&L, Cash Flow & Balance Sheet",
+      "Burn rate & Runway calculation",
+      "Budget vs Actual variance analysis",
+      "Custom KPI tracking metrics",
+      "Investor updates email package"
+    ],
+    badge: "Executive Favorite",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Monthly executive MIS reports covering P&L, burn rate, runway & cash flows.",
+    popular: true,
+    features: ["Monthly MIS deck", "Burn rate runway analytics", "Investor reporting template"],
+    documents: ["Monthly accounting ledger", "Bank statement downloads"]
+  },
+  {
+    id: "nda-agreement",
+    name: "Non-Disclosure Agreement (NDA)",
+    category: "legal-ip",
+    image: "/legal_policy_drafting.webp",
+    pricing: "₹499*",
+    timeline: "1–2 Working Days",
+    minDirectors: "Legal Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Confidentiality Shielded",
+    taxBenefit: "IP Protection",
+    detailedAbout: "Custom drafting of unilateral or mutual Non-Disclosure Agreements (NDA) to protect trade secrets, proprietary code, customer lists, and sensitive business IP during partner/investor talks.",
+    keyAdvantages: [
+      "Unilateral or Mutual NDA options",
+      "Strict trade secret protection clauses",
+      "Injunctive relief & liquidated damages",
+      "Custom non-solicit & non-compete terms",
+      "Digital sign-ready Word & PDF"
+    ],
+    badge: "Essential",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Custom unilateral or mutual NDA to protect trade secrets & proprietary IP.",
+    popular: true,
+    features: ["Bespoke NDA drafting", "Non-solicitation clauses", "Digital sign-ready format"],
+    documents: ["Party names & addresses", "Description of confidential information"]
+  },
+  {
+    id: "founder-agreement",
+    name: "Co-Founders Agreement (SHA)",
+    category: "legal-ip",
+    image: "/legal_policy_drafting.webp",
+    pricing: "₹1,999*",
+    timeline: "2–3 Working Days",
+    minDirectors: "Legal Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Co-founder Protection",
+    taxBenefit: "Vesting Protected",
+    detailedAbout: "Comprehensive Co-Founders Agreement defining equity split, founder vesting schedules (reverse vesting), roles & responsibilities, IP assignment, and deadlock resolution.",
+    keyAdvantages: [
+      "4-year founder equity vesting schedule",
+      "1-year cliff protection clause",
+      "IP assignment to company clause",
+      "Co-founder exit & buyback valuation framework",
+      "Deadlock & dispute resolution mechanism"
+    ],
+    badge: "Startup Foundation",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Protect your startup with reverse vesting, equity splits & IP assignment clauses.",
+    popular: true,
+    features: ["4-year vesting schedule drafting", "IP transfer to company", "Founder exit mechanism"],
+    documents: ["Founders names & addresses", "Proposed equity split %", "Vesting timeline preference"]
+  },
+  {
+    id: "employment-contract",
+    name: "Executive Employment Contract Suite",
+    category: "legal-ip",
+    image: "/legal_policy_drafting.webp",
+    pricing: "₹999*",
+    timeline: "1–2 Working Days",
+    minDirectors: "Legal Counsel",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Employer Protected",
+    taxBenefit: "Labor Code Safe",
+    detailedAbout: "Legally enforceable employment contracts, offer letters, consultant agreements, and non-compete policies protecting company IP and client relationships.",
+    keyAdvantages: [
+      "IP assignment to company clause",
+      "Client & employee non-solicitation",
+      "Notice period & termination clauses",
+      "Confidentiality & non-compete terms",
+      "Compliant with Indian Labor Codes"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Executive employment contracts with IP assignment & non-solicitation clauses.",
+    popular: false,
+    features: ["Offer letter & Contract template", "IP assignment clause", "Termination protocol"],
+    documents: ["Company profile", "Role designations & CTC details"]
+  },
+  {
+    id: "copyright-registration",
+    name: "Copyright Registration",
+    category: "legal-ip",
+    image: "/trademark_brand.webp",
+    pricing: "₹2,499*",
+    timeline: "15–20 Working Days",
+    minDirectors: "IP Attorney",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Monopolized Asset",
+    taxBenefit: "Intangible Asset",
+    detailedAbout: "Registration of literary, artistic, musical, or software code works under the Indian Copyright Act 1957 to secure legal proof of ownership and prevent pirating.",
+    keyAdvantages: [
+      "Official Copyright Office registration",
+      "Protect software source code & website UI",
+      "Lifetime + 60 years legal protection",
+      "Evidence in copyright infringement suits",
+      "Global copyright protection (Berne Convention)"
+    ],
+    badge: "Source Code IP",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Register copyright for software source code, books, UI designs, and brand art.",
+    popular: false,
+    features: ["Form XIV Copyright lodgment", "No Objection Certificate (NOC) prep", "Diary Number tracking"],
+    documents: ["Work sample (Source code / Artwork PDF)", "Author & Applicant details", "NOC from author if company owned"]
+  },
+  {
+    id: "logo-brand-ip",
+    name: "Brand Logo & Graphic Asset IP Protection",
+    category: "legal-ip",
+    image: "/trademark_brand.webp",
+    pricing: "₹1,999*",
+    timeline: "2–3 Working Days",
+    minDirectors: "IP Attorney",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Brand Protected",
+    taxBenefit: "Asset Equity",
+    detailedAbout: "Combined Trademark & Copyright registration strategy for brand logos, mascots, packaging design, and distinctive graphical elements.",
+    keyAdvantages: [
+      "Logo trademark class registration",
+      "Artistic copyright ownership claim",
+      "Enjoin copycats on Amazon, Flipkart & social media",
+      "Cease & Desist legal notice power",
+      "Brand equity building"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Protect brand logos, packaging & mascots across trademark & copyright registries.",
+    popular: false,
+    features: ["Logo search report", "TM Class 35/42 selection", "Marketplace infringement notice template"],
+    documents: ["High-res Logo PNG/SVG", "Brand name details", "Date of first usage"]
+  },
+  {
+    id: "import-export-code",
+    name: "Import Export Code (IEC) License",
+    category: "compliance",
+    image: "/msme_udyam.webp",
+    pricing: "₹999*",
+    timeline: "1–2 Working Days",
+    minDirectors: "DGFT Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "DGFT Authorized",
+    taxBenefit: "Cross-Border Trade",
+    detailedAbout: "Mandatory 10-digit Import Export Code (IEC) issued by the Directorate General of Foreign Trade (DGFT) for importing or exporting goods & services from India.",
+    keyAdvantages: [
+      "Mandatory for international trade & service export",
+      "Lifetime validity with zero annual filings",
+      "Instant 24-hour DGFT approval",
+      "Customs port clearance authorization",
+      "Export scheme benefits (RoDTEP / MEIS)"
+    ],
+    badge: "24-Hour Approval",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "Get 10-digit IEC license from DGFT in 24 hours to import/export goods or IT services.",
+    popular: true,
+    features: ["DGFT portal application", "Digital signature verification", "Instant IEC Certificate download"],
+    documents: ["PAN Card of business/proprietor", "Aadhaar Card", "Bank Canceled Cheque", "Address proof"]
+  },
+  {
+    id: "shop-establishment-license",
+    name: "Shop & Establishment License",
+    category: "compliance",
+    image: "/msme_udyam.webp",
+    pricing: "₹999*",
+    timeline: "3–5 Working Days",
+    minDirectors: "Labor Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory Trade",
+    taxBenefit: "Local Bank Compliant",
+    detailedAbout: "State Labor Department registration mandatory for operating commercial shops, offices, IT hubs, and warehouses within municipal boundaries.",
+    keyAdvantages: [
+      "Mandatory for bank current account opening",
+      "Proof of commercial workspace presence",
+      "Labor law working hours compliance",
+      "Local municipal authority validation",
+      "State-level trade registration"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Get municipal shop act trade license mandatory for opening bank current accounts.",
+    popular: false,
+    features: ["State labor portal submission", "Municipal fee challan payment", "Official License certificate"],
+    documents: ["PAN & Aadhaar of owner", "Premises electricity bill & NOC", "Photo of office signboard"]
+  },
+  {
+    id: "pf-esi-registration",
+    name: "EPF & ESI Employer Registration",
+    category: "compliance",
+    image: "/msme_udyam.webp",
+    pricing: "₹1,499*",
+    timeline: "3–5 Working Days",
+    minDirectors: "Labor Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Employee Social Security",
+    taxBenefit: "Deduction Eligible",
+    detailedAbout: "Employees' Provident Fund (EPF) and Employees' State Insurance (ESI) registration for employers reaching 10-20 employees, ensuring social security compliance.",
+    keyAdvantages: [
+      "Mandatory EPF code allotment (Shram Suvidha)",
+      "ESI sub-code registration",
+      "Employee medical insurance coverage",
+      "Monthly ECR return filing guidance",
+      "Avoids labor department penalty notices"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.9,
+    description: "Get EPF & ESI employer code registration to ensure staff social security compliance.",
+    popular: false,
+    features: ["Shram Suvidha portal lodgment", "EPF/ESI code allocation", "Monthly ECR return setup"],
+    documents: ["Company Certificate of Incorporation", "PAN & Aadhaar of Directors", "Cheque copy & employee list"]
+  },
+  {
+    id: "professional-tax-license",
+    name: "Professional Tax (PT) License",
+    category: "compliance",
+    image: "/msme_udyam.webp",
+    pricing: "₹999*",
+    timeline: "2–4 Working Days",
+    minDirectors: "Tax Specialist",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "State Tax",
+    taxBenefit: "State Compliant",
+    detailedAbout: "Professional Tax Registration Certificate (PTRC) & Enrolment Certificate (PTEC) issued by state tax departments for employers and working professionals.",
+    keyAdvantages: [
+      "PTEC & PTRC registration",
+      "Mandatory for employee salary processing",
+      "State tax department compliance",
+      "Avoids interest penalties",
+      "Annual return filing guidance"
+    ],
+    badge: "",
+    expert: "D Bhushan",
+    rating: 4.8,
+    description: "Get state Professional Tax PTRC/PTEC registration for employer payroll.",
+    popular: false,
+    features: ["PTEC & PTRC state application", "Salary deduction guidance", "Challan generation"],
+    documents: ["PAN & Aadhaar of business", "Address proof", "List of employees"]
+  },
+  {
+    id: "posh-compliance",
+    name: "POSH Policy & IC Committee Compliance",
+    category: "compliance",
+    image: "/legal_policy_drafting.webp",
+    pricing: "₹1,499*",
+    timeline: "2–3 Working Days",
+    minDirectors: "POSH Advisory",
+    minDirectorsNumber: "1",
+    minCapital: "—",
+    liability: "Statutory Compliance",
+    taxBenefit: "Zero Fine Shield",
+    detailedAbout: "Prevention of Sexual Harassment (POSH) Act 2013 compliance, including policy drafting, Internal Committee (IC) constitution, and annual report filing.",
+    keyAdvantages: [
+      "Avoids ₹50,000 flat statutory fine",
+      "Bespoke POSH Policy document for company",
+      "Internal Committee (IC) constitution order",
+      "External Independent Member allocation advice",
+      "Employee awareness training slides"
+    ],
+    badge: "Statutory Must",
+    expert: "D Bhushan",
+    rating: 5,
+    description: "POSH Act 2013 compliance: Policy drafting, Internal Committee order & training deck.",
+    popular: false,
+    features: ["POSH Policy drafting", "Internal Committee (IC) order", "Annual report template"],
+    documents: ["Company profile & employee headcount", "Names of Internal Committee members"]
   }
 ];
 
@@ -2200,7 +3572,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ COMPLIANCE DEADLINE CARDS ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
+          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 space-y-6 text-left pt-10 pb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Never Miss a Compliance Deadline</h2>
@@ -2267,7 +3639,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS Redesigned ═══ */}
-          <div id="how-it-works" className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-10 text-center pt-10 pb-8 overflow-hidden">
+          <div id="how-it-works" className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 space-y-10 text-center pt-10 pb-8 overflow-hidden">
             <div className="space-y-2">
               <span className="text-[10px] text-[var(--accent)] font-extrabold uppercase tracking-[0.2em] block">Process Walkthrough</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
@@ -2330,13 +3702,13 @@ export default function RegistrationServices({
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
           <SReveal>
-            <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-6">
+            <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-6">
               <AnimatedStats />
             </div>
           </SReveal>
 
           {/* ═══ TRUST & BENEFITS STRIP ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-6 pb-6">
+          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-6 pb-6">
             <motion.div 
               initial={reduced ? {} : "hidden"}
               whileInView="visible"
@@ -2380,7 +3752,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ FAQ & REVIEWS SECTION ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 py-8">
+          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
               {/* Left Column: Redesigned Startup-focused Trust Card (Col Span 5) */}
@@ -2477,7 +3849,7 @@ export default function RegistrationServices({
           {/* Testimonials rendered via TestimonialCarousel below */}
 
           {/* ═══ FINAL CTA ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8">
+          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-10 pb-8">
             <div className="final-cta p-8 sm:p-12 relative overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10 text-left">
                 
@@ -3051,6 +4423,85 @@ export default function RegistrationServices({
                 </div>
               </ScrollReveal>
             </div>
+
+            {/* Subdirectory Crawling Grid for Search Engine & AI Indexing */}
+            <div className="pt-10 border-t border-brand-border space-y-6">
+              <div className="space-y-1 text-left">
+                <h3 className="text-xl font-bold font-serif text-brand-text">
+                  Explore Other {selectedEntity.category.replace("-", " ").toUpperCase()} Services
+                </h3>
+                <p className="text-xs text-brand-text-muted">
+                  Browse our complete directory of corporate registration and compliance solutions.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {activeCatalog
+                  .filter((s) => s.id !== selectedEntity.id)
+                  .slice(0, 6)
+                  .map((s) => (
+                    <a
+                      key={s.id}
+                      href={`/services/${s.category}/${s.id}/`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/services/${s.category}/${s.id}/`);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="p-4 rounded-2xl bg-brand-bg-lighter border border-brand-border hover:border-brand-gold/60 text-left transition-all duration-200 group block shadow-xs hover:shadow-md"
+                    >
+                      <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-brand-gold block mb-1">
+                        {s.category.replace("-", " ")}
+                      </span>
+                      <h4 className="text-sm font-bold text-brand-text group-hover:text-brand-gold transition-colors leading-snug">
+                        {s.name}
+                      </h4>
+                      <p className="text-[11px] text-brand-text-muted line-clamp-2 mt-1 font-light">
+                        {s.description}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between text-[10px] font-semibold text-brand-text-muted">
+                        <span>{s.timeline}</span>
+                        <span className="text-brand-gold font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
+                          View details &rarr;
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+              </div>
+            </div>
+
+            {/* Schema.org Structured Data (JSON-LD) for Search Console & AI Crawlers */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Service",
+                  "name": selectedEntity.name,
+                  "description": selectedEntity.detailedAbout || selectedEntity.description,
+                  "provider": {
+                    "@type": "Organization",
+                    "name": "INCroute Corporate Advisory",
+                    "url": "https://incroute.com"
+                  },
+                  "areaServed": {
+                    "@type": "Country",
+                    "name": "India"
+                  },
+                  "serviceType": selectedEntity.category,
+                  "offers": {
+                    "@type": "Offer",
+                    "price": selectedEntity.pricing.replace(/[^0-9]/g, "") || "999",
+                    "priceCurrency": "INR"
+                  },
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": selectedEntity.rating || "5.0",
+                    "reviewCount": "54"
+                  }
+                })
+              }}
+            />
           </div>
         </>
       )}

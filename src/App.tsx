@@ -85,6 +85,10 @@ export default function App() {
     const path = location.pathname;
     const isBooksDomain = window.location.hostname.startsWith("books.");
 
+    if (path === "/login" || path === "/login/" || path === "/auth" || path === "/auth/") {
+      return { tab: path.includes("login") ? "login" : "auth", params: {} };
+    }
+
     if (isBooksDomain || path.startsWith("/books") || path.startsWith("/portal/books") || path.startsWith("/admin/books")) {
       return { tab: "books", params: {} };
     }
@@ -118,6 +122,9 @@ export default function App() {
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
+    if (tab === "services" && location.pathname.startsWith("/services/")) {
+      return;
+    }
     const route = TAB_TO_ROUTE[tab] || `/${tab}/`;
     if (location.pathname !== route) {
       navigate(route);
@@ -240,20 +247,76 @@ export default function App() {
   }, [location.pathname]);
 
   const SERVICE_CATEGORIES: Record<string, string> = {
+    // Private Corporate
     "pvt-ltd": "private-corporate",
-    "llp": "alternative-entity",
     "opc": "private-corporate",
-    "partnership": "alternative-entity",
     "section8": "private-corporate",
     "public-ltd": "private-corporate",
-    "annual-compliance": "compliance",
-    "gst-tax": "compliance",
+    "producer-company": "private-corporate",
+    "nidhi-company": "private-corporate",
+    "indian-subsidiary": "private-corporate",
+
+    // Alternative Entity
+    "llp": "alternative-entity",
+    "partnership": "alternative-entity",
+    "sole-proprietorship": "alternative-entity",
+    "trust-registration": "alternative-entity",
+    "society-registration": "alternative-entity",
+    "fcra-registration": "alternative-entity",
+    "12a-80g-registration": "alternative-entity",
+    "12aa-registration": "alternative-entity",
+
+    // Enterprise Growth & Advisory
     "virtual-cfo": "enterprise-growth",
     "virtual-office": "enterprise-growth",
-    "terms-privacy": "legal-ip",
+    "startup-grants": "enterprise-growth",
+    "pitch-deck": "enterprise-growth",
+    "seed-funding": "enterprise-growth",
+    "cap-table-valuation": "enterprise-growth",
+
+    // Compliance & Tax
+    "annual-compliance": "compliance",
+    "gst-tax": "compliance",
+    "gst-return-filing": "compliance",
+    "gstr9-annual-return": "compliance",
+    "gst-lut-filing": "compliance",
+    "gst-notice-resolution": "compliance",
+    "gst-foreigners": "compliance",
+    "gst-amendment": "compliance",
+    "gstr10-final-return": "compliance",
+    "income-tax-efiling": "compliance",
+    "business-tax-filing": "compliance",
+    "itr-filing-individual": "compliance",
+    "corporate-tax-itr": "compliance",
+    "15ca-15cb-filing": "compliance",
+    "tan-tds-filing": "compliance",
+    "income-tax-notice": "compliance",
+    "dir3-kyc": "compliance",
+    "inc20a-commencement": "compliance",
+    "secretarial-audit": "compliance",
+    "board-minutes-drafting": "compliance",
+    "change-company-name": "compliance",
+    "increase-authorized-capital": "compliance",
+    "director-change": "compliance",
+    "change-registered-office": "compliance",
+    "share-transfer-allotment": "compliance",
     "msme-registration": "compliance",
     "fssai-registration": "compliance",
     "return-filing": "compliance",
+    "iso-certification": "compliance",
+    "bookkeeping-ledger": "compliance",
+    "mis-financial-reporting": "compliance",
+    "import-export-code": "compliance",
+    "shop-establishment-license": "compliance",
+    "pf-esi-registration": "compliance",
+    "professional-tax-license": "compliance",
+    "posh-compliance": "compliance",
+
+    // Legal & IP
+    "terms-privacy": "legal-ip",
+    "nda-agreement": "legal-ip",
+    "founder-agreement": "legal-ip",
+    "employment-contract": "legal-ip",
     "trademark-registration": "legal-ip",
     "trademark-objection": "legal-ip",
     "trademark-opposition": "legal-ip",
@@ -262,7 +325,8 @@ export default function App() {
     "litigation-assistance": "legal-ip",
     "trademark-renewal": "legal-ip",
     "patent-filing": "legal-ip",
-    "iso-certification": "compliance"
+    "copyright-registration": "legal-ip",
+    "logo-brand-ip": "legal-ip"
   };
 
   const handleServiceClick = (serviceId: string) => {
@@ -390,7 +454,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full flex flex-col max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-4"
+              className="w-full flex flex-col max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-4"
             >
               <RegistrationServices 
                 setActiveTab={setActiveTab} 
@@ -411,7 +475,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <NameFeasibilityChecker 
                 onOnboard={(brandName, entityType) => {
@@ -448,7 +512,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left space-y-12"
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
@@ -515,7 +579,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <BlogPage />
             </motion.div>
@@ -532,7 +596,7 @@ export default function App() {
               className="w-full catalog-section-bg relative"
             >
               <div className="catalog-mesh" />
-              <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left relative z-10">
+              <div className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left relative z-10">
                 <ServiceCatalogInsights setActiveTab={setActiveTab} />
               </div>
             </motion.div>
@@ -546,7 +610,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <StatutoryTools />
             </motion.div>
@@ -560,7 +624,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <LegalPolicies />
             </motion.div>
@@ -574,7 +638,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <ComplianceFlowchart />
             </motion.div>
@@ -588,7 +652,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <EntityComparison />
             </motion.div>
@@ -602,7 +666,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <ServiceImpactDashboard />
             </motion.div>
@@ -616,7 +680,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <AnimatedTimeline items={roadmapMilestones} />
             </motion.div>
@@ -630,7 +694,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <TestimonialsSection />
             </motion.div>
@@ -644,7 +708,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <AboutPage setActiveTab={setActiveTab} />
             </motion.div>
@@ -658,7 +722,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left space-y-12"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left space-y-12"
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
@@ -713,7 +777,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="bangalore" setActiveTab={setActiveTab} />
             </motion.div>
@@ -726,7 +790,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="mumbai" setActiveTab={setActiveTab} />
             </motion.div>
@@ -739,7 +803,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <LocalCityLanding cityId="delhi" setActiveTab={setActiveTab} />
             </motion.div>
@@ -753,7 +817,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left"
+              className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left"
             >
               <AnswerHub setActiveTab={setActiveTab} />
             </motion.div>
@@ -769,7 +833,7 @@ export default function App() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="w-full compliance-section-bg relative"
             >
-              <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-10 w-full text-left relative z-10">
+              <div className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left relative z-10">
                 <ComplianceCalendarSection />
               </div>
             </motion.div>
@@ -868,7 +932,7 @@ export default function App() {
           )}
 
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin","policies","careers"].includes(activeTab) && (
+          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin","books","policies","careers"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>
@@ -878,7 +942,7 @@ export default function App() {
       {/* Footer segment */}
       {/* Footer segment */}
       <footer className="footer-dark border-t border-slate-800/80 py-12 md:py-16 mt-auto text-slate-400 font-sans">
-        <div className="max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8">
+        <div className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 md:gap-10 text-left">
             
             {/* Brand Column */}

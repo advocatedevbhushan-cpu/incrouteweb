@@ -33,7 +33,7 @@ export const ROUTES = {
 
 // Map old tab names to new routes (for migration)
 export const TAB_TO_ROUTE: Record<string, string> = {
-  services: ROUTES.home,
+  services: ROUTES.services,
   compliance: ROUTES.compliance,
   blog: ROUTES.blog,
   catalog: ROUTES.catalog,
