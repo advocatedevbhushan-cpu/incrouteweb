@@ -12,7 +12,7 @@ interface BooksLoginPageProps {
 }
 
 export default function BooksLoginPage({ onSuccess }: BooksLoginPageProps) {
-  const { login } = useAuth();
+  const { signIn, activateMockSession } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,19 @@ export default function BooksLoginPage({ onSuccess }: BooksLoginPageProps) {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      if (signIn) {
+        await signIn(email, password);
+      } else {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to authenticate into INCroute Books");
+        localStorage.setItem("incroute_access_token", data.accessToken);
+        localStorage.setItem("incroute_user", JSON.stringify(data.user));
+      }
       if (onSuccess) onSuccess();
       else window.location.reload();
     } catch (err: any) {
@@ -37,7 +49,11 @@ export default function BooksLoginPage({ onSuccess }: BooksLoginPageProps) {
     setError(null);
     setLoading(true);
     try {
-      await login("demo@incroute.com", "demo123");
+      if (activateMockSession) {
+        activateMockSession("demo@incroute.com", "customer", "Demo Founder");
+      } else {
+        localStorage.setItem("incroute_access_token", "demo_books_token");
+      }
       if (onSuccess) onSuccess();
       else window.location.reload();
     } catch (err: any) {
