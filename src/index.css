@@ -482,17 +482,18 @@ a, button, input, select, textarea {
 /* Business Command Center 3D Mockup */
 .business-command-3d-container {
   position: relative;
-  perspective: 1200px;
+  perspective: 1000px;
   transform-style: preserve-3d;
   z-index: 10;
-  padding-bottom: 40px;
+  padding-bottom: 20px;
+  max-width: 100%;
 }
 
 .business-command-3d {
   position: relative;
-  transform: rotateY(-7deg) rotateX(2deg);
+  transform: rotateY(-3deg) rotateX(1deg);
   transform-style: preserve-3d;
-  border-radius: 32px;
+  border-radius: 28px;
   background: linear-gradient(
     145deg,
     rgba(255, 255, 255, 0.94),
@@ -500,18 +501,20 @@ a, button, input, select, textarea {
   );
   border: 1px solid rgba(99, 102, 241, 0.28);
   box-shadow:
-    0 35px 80px rgba(31, 41, 95, 0.22),
-    0 10px 30px rgba(99, 102, 241, 0.18),
+    0 25px 65px rgba(31, 41, 95, 0.18),
+    0 8px 25px rgba(99, 102, 241, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .business-command-3d-container:hover .business-command-3d {
-  transform: rotateY(-4deg) rotateX(1deg) translateY(-6px);
+  transform: rotateY(-1deg) rotateX(0deg) translateY(-4px);
   box-shadow:
-    0 45px 95px rgba(31, 41, 95, 0.25),
-    0 15px 35px rgba(99, 102, 241, 0.22),
+    0 35px 80px rgba(31, 41, 95, 0.22),
+    0 12px 30px rgba(99, 102, 241, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 

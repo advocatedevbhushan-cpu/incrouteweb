@@ -3080,10 +3080,10 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-[46%_54%] gap-4 lg:gap-6 items-start pt-5 pb-5 hero-section min-h-[500px] lg:min-h-[600px]"
+            className="relative w-full max-w-[1360px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center pt-4 pb-4 hero-section min-h-[480px] lg:min-h-[560px] overflow-hidden lg:overflow-visible"
           >
             {/* LEFT: Content */}
-            <div className="relative z-10 max-w-xl text-left space-y-3 pt-0">
+            <div className="relative z-10 lg:col-span-6 xl:col-span-6 text-left space-y-3 pt-0 max-w-xl">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -3185,10 +3185,10 @@ export default function RegistrationServices({
             </div>
 
             {/* RIGHT: Dashboard Mockup */}
-            <div className="relative hidden lg:block mt-2 business-command-3d-container">
+            <div className="relative hidden lg:block lg:col-span-6 xl:col-span-6 business-command-3d-container w-full max-w-[640px] ml-auto">
               <div className="dashboard-halo" />
               <div className="dashboard-platform" />
-              <div className="business-command-3d overflow-hidden flex scale-[1.05] origin-top-right" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.78) 100%)" }}>
+              <div className="business-command-3d overflow-hidden flex w-full max-w-full origin-center scale-100 xl:scale-[1.02]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.78) 100%)" }}>
                 <div className="w-[140px] shrink-0 bg-white/30 backdrop-blur-md border-r border-slate-100/50 p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />

@@ -419,29 +419,29 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           : "border-b border-transparent"
       } ${mobileOpen ? "mobile-menu-open" : ""}`}
     >
-      <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 flex items-center justify-between h-full">
+      <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-5 lg:px-6 xl:px-10 flex items-center justify-between h-full overflow-hidden">
 
         {/* ─── Left: Logo + Nav ─── */}
-        <div className="flex items-center gap-6 xl:gap-8 2xl:gap-12">
+        <div className="flex items-center gap-2 xl:gap-4 2xl:gap-8 min-w-0 shrink">
           {/* Logo */}
-          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
-            <div className="w-9 h-9 rounded-full overflow-hidden">
+          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2 shrink-0 cursor-pointer logo-wrapper">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden">
               <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" />
             </div>
             <div className="flex flex-col select-none leading-none">
-              <span className="text-[16px] font-extrabold logo-text-inc tracking-tight">
+              <span className="text-[15px] sm:text-[16px] font-extrabold logo-text-inc tracking-tight">
                 INC<span className="logo-text-route font-bold italic">route</span>
               </span>
               <div className="flex items-center gap-1 mt-[3px]">
-                <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
-                <span className="text-[8px] logo-tagline tracking-[0.18em] uppercase font-semibold">Make It Right</span>
-                <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
+                <span className="h-[1px] w-3 bg-[#6B6F86] opacity-30" />
+                <span className="text-[7.5px] sm:text-[8px] logo-tagline tracking-[0.16em] uppercase font-semibold">Make It Right</span>
+                <span className="h-[1px] w-3 bg-[#6B6F86] opacity-30" />
               </div>
             </div>
           </a>
 
           {/* Desktop Nav Mega Menus */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink min-w-0">
             {/* Business Registration */}
             <MegaNavDropdown
               category={MEGA_MENU_REGISTRATION}
@@ -501,12 +501,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         </div>
 
         {/* ─── Right: Utilities ─── */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
           {/* Quick Search */}
           <button
             onClick={(e) => nav(e, "tools")}
             aria-label="Search tools and services"
-            className="hidden sm:flex p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
+            className="hidden sm:flex p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
             title="Search Services & Tools"
           >
             <Search className="w-4 h-4" />
@@ -516,7 +516,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <button
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
+            className="flex p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
           >
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -525,17 +525,26 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <button
             onClick={() => setLang(lang === "en" ? "hi" : "en")}
             aria-label="Switch language"
-            className="flex items-center gap-1 p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
+            className="flex items-center gap-0.5 p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
           >
             <Globe className="w-3.5 h-3.5" />
             {lang === "en" ? "हिं" : "EN"}
           </button>
 
+          {/* Books Portal Button */}
+          <a
+            href="/books"
+            onClick={(e) => nav(e, "books")}
+            className="hidden lg:flex items-center cursor-pointer whitespace-nowrap px-3 py-1.5 rounded-xl text-[12.5px] font-semibold bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors shrink-0"
+          >
+            Books
+          </a>
+
           {/* Login — secondary */}
           <a
             href="/login"
             onClick={(e) => nav(e, "login")}
-            className="hidden lg:flex items-center nav-login-btn cursor-pointer whitespace-nowrap px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors"
+            className="hidden lg:flex items-center nav-login-btn cursor-pointer whitespace-nowrap px-3 py-1.5 rounded-xl text-[12.5px] font-medium transition-colors shrink-0"
           >
             Login
           </a>
@@ -544,7 +553,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <a
             href="/contact"
             onClick={(e) => nav(e, "contact")}
-            className="hidden lg:flex items-center book-consultation-button cursor-pointer whitespace-nowrap gap-1.5 shadow-[0_0_20px_rgba(196,146,53,0.25)] hover:shadow-[0_0_25px_rgba(196,146,53,0.4)] transition-all"
+            className="hidden xl:flex items-center book-consultation-button cursor-pointer whitespace-nowrap gap-1.5 shrink-0 shadow-[0_0_20px_rgba(196,146,53,0.25)] hover:shadow-[0_0_25px_rgba(196,146,53,0.4)] transition-all text-[12.5px] px-3.5 py-2"
           >
             Book Consultation <ArrowRight className="w-3.5 h-3.5 cta-arrow" />
           </a>
@@ -598,7 +607,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
 function NavLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
   return (
-    <a href="#" onClick={onClick} className={`nav-link px-3.5 py-2 cursor-pointer whitespace-nowrap text-[13px] font-semibold transition-colors ${active ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+    <a href="#" onClick={onClick} className={`nav-link px-1.5 xl:px-2.5 py-2 cursor-pointer whitespace-nowrap text-[12px] xl:text-[13px] font-semibold transition-colors ${active ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
       {children}
     </a>
   );
@@ -635,7 +644,7 @@ function MegaNavDropdown({
       {/* Top Level Nav Button */}
       <button
         onClick={onOpen}
-        className={`nav-link flex items-center gap-1 px-3 py-2 cursor-pointer whitespace-nowrap text-[13px] font-semibold transition-all relative ${
+        className={`nav-link flex items-center gap-0.5 xl:gap-1 px-1.5 xl:px-2.5 2xl:px-3 py-2 cursor-pointer whitespace-nowrap text-[12px] xl:text-[13px] font-semibold transition-all relative ${
           isTopActive || open ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         }`}
       >
