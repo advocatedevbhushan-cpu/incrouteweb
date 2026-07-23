@@ -41,8 +41,8 @@ export default function LocalCityLanding({ cityId, setActiveTab }: LocalCityLand
       localCAHi: "कर्नाटक DPIIT और स्टार्टअप इंडिया रजिस्ट्रेशन में माहिर लोकल सीए (CA) एक्सपर्ट्स।",
       reviewName: "Ananya Hegde",
       reviewRole: "CEO, Bengaluru FinTech Labs",
-      reviewTextEn: "Registering our Pvt Ltd firm from Koramangala was incredibly easy with INCroute. D Bhushan and the team handled our MCA name approval in 24 hours. The best online company registration platform in India by far!",
-      reviewTextHi: "INCroute के साथ कोरमंगला से अपनी प्राइवेट लिमिटेड कंपनी रजिस्टर कराना बेहद आसान था। डी भूषण और उनकी टीम ने 24 घंटे में हमारे MCA नाम की मंजूरी करा दी। सच में बेहतरीन!",
+      reviewTextEn: "Registering our Pvt Ltd firm from Koramangala was incredibly easy with INCroute. The INCroute team handled our MCA name approval in 24 hours. The best online company registration platform in India by far!",
+      reviewTextHi: "INCroute के साथ कोरमंगला से अपनी प्राइवेट लिमिटेड कंपनी रजिस्टर कराना बेहद आसान था। INCroute टीम ने 24 घंटे में हमारे MCA नाम की मंजूरी करा दी। सच में बेहतरीन!",
       localContextEn: "Fast-track legal filings tailored for technology, SaaS, and AI startups scaling in Bangalore."
     },
     mumbai: {

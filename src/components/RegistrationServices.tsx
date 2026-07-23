@@ -528,7 +528,7 @@ const serviceCatalog = [
       "Startup India eligibility"
     ],
     badge: "Most Popular",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "The gold standard for startups and growing businesses.",
     popular: true,
@@ -566,7 +566,7 @@ const serviceCatalog = [
       "Tax benefits on partner remuneration"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Flexibility of a partnership with corporate protection.",
     popular: false,
@@ -603,7 +603,7 @@ const serviceCatalog = [
       "Nominee director safety net"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Solo founder? Get full corporate protection alone.",
     popular: false,
@@ -640,7 +640,7 @@ const serviceCatalog = [
       "Mutual agency collaboration"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.5,
     description: "Simple, fast, and cost-effective for small businesses.",
     popular: false,
@@ -677,7 +677,7 @@ const serviceCatalog = [
       "Easy domestic/international donation flow"
     ],
     badge: "NGO Special",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Charitable non-profit status with tax exemptions.",
     popular: false,
@@ -714,7 +714,7 @@ const serviceCatalog = [
       "Stock exchange listing eligibility"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Raise public capital with unlimited shareholders.",
     popular: false,
@@ -751,7 +751,7 @@ const serviceCatalog = [
       "Dedicated CA Lead assigned"
     ],
     badge: "Compliance Special",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "ROC filing, Director KYC, and board meeting minutes.",
     popular: false,
@@ -788,7 +788,7 @@ const serviceCatalog = [
       "Inter-state commerce legal clearance"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "GSTIN activation, MSME registration, and PAN/TAN.",
     popular: false,
@@ -825,7 +825,7 @@ const serviceCatalog = [
       "Detailed board performance metrics"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Cash flow modeling, treasury operations, and performance reports.",
     popular: false,
@@ -861,7 +861,7 @@ const serviceCatalog = [
       "Lease liability isolation"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "GST & ROC compliant addresses with scan/forward support.",
     popular: false,
@@ -897,7 +897,7 @@ const serviceCatalog = [
       "Refund and termination clauses"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "GDPR/CCPA compliant terms & policies tailored for websites/apps.",
     popular: false,
@@ -934,7 +934,7 @@ const serviceCatalog = [
       "Government tender preferences"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Get government-backed Udyam MSME certification to unlock subsidies and loans.",
     popular: false,
@@ -971,7 +971,7 @@ const serviceCatalog = [
       "Legal protection from food audits"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Legally mandatory FSSAI food license for retail, kitchen, and preparation setups.",
     popular: false,
@@ -1008,7 +1008,7 @@ const serviceCatalog = [
       "Tax assessment defense support"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Expert GSTR-1/3B filings, ITR, and TDS returns led by CAs.",
     popular: false,
@@ -1045,7 +1045,7 @@ const serviceCatalog = [
       "Office action replies coordination"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Exclusivity for your brand name & logo with expert legal opinions.",
     popular: false,
@@ -1082,7 +1082,7 @@ const serviceCatalog = [
       "Expert hearing prep if needed"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Defend Section 9 or Section 11 objections with case-law backings.",
     popular: false,
@@ -1119,7 +1119,7 @@ const serviceCatalog = [
       "High-stake brand equity defense"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "File TM-O notices or defend your registry status against competitors.",
     popular: false,
@@ -1156,7 +1156,7 @@ const serviceCatalog = [
       "Balance sheet asset structuring"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Draft deeds and update registry ownership (Form TM-P) safely.",
     popular: false,
@@ -1193,7 +1193,7 @@ const serviceCatalog = [
       "Proactive infringement prevention"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Scan Trademark Journals and enforce brand rights online proactively.",
     popular: false,
@@ -1230,7 +1230,7 @@ const serviceCatalog = [
       "Arbitration and settlement audits"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Support for court proceedings, NCLT hearings, and legal notices.",
     popular: false,
@@ -1267,7 +1267,7 @@ const serviceCatalog = [
       "Asset protection continuity"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Renew marks (Form TM-R), FSSAI licenses, and prevent expiry risks.",
     popular: false,
@@ -1304,7 +1304,7 @@ const serviceCatalog = [
       "Utility and design patent filings"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Patentability searches, novelty checks, and specification drafting.",
     popular: false,
@@ -1341,7 +1341,7 @@ const serviceCatalog = [
       "Enterprise quality validation"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Secure ISO 9001 or 27001 quality audit certificates easily.",
     popular: false,
@@ -1378,7 +1378,7 @@ const serviceCatalog = [
       "Easy current account opening"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Simplest business structure for solo founders and micro-businesses.",
     popular: false,
@@ -1406,7 +1406,7 @@ const serviceCatalog = [
       "Tax exemptions on agricultural income"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Empower agricultural and primary producers with corporate structure.",
     popular: false,
@@ -1434,7 +1434,7 @@ const serviceCatalog = [
       "Mutual benefit financial ecosystem"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Start a mutual benefit micro-finance business without RBI license.",
     popular: false,
@@ -1462,7 +1462,7 @@ const serviceCatalog = [
       "Access to booming Indian domestic market"
     ],
     badge: "FDI Special",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Establish a 100% Wholly Owned Indian Subsidiary for global firms.",
     popular: false,
@@ -1490,7 +1490,7 @@ const serviceCatalog = [
       "Government tender fast-track qualification"
     ],
     badge: "Govt Advantage",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Get official DPIIT recognition to claim 3-year tax exemption & patent rebates.",
     popular: true,
@@ -1518,7 +1518,7 @@ const serviceCatalog = [
       "Government grant eligibility"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Establish a public or educational charitable trust with custom Trust Deed.",
     popular: false,
@@ -1546,7 +1546,7 @@ const serviceCatalog = [
       "Institutional funding access"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Register a non-profit society for social, literary, or scientific welfare.",
     popular: false,
@@ -1574,7 +1574,7 @@ const serviceCatalog = [
       "5-year validity with renewal support"
     ],
     badge: "NGO Essential",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Receive international grants & foreign donations legally under MHA approval.",
     popular: false,
@@ -1602,7 +1602,7 @@ const serviceCatalog = [
       "Permanent 5-year renewal filing"
     ],
     badge: "Donor Magnet",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Exempt your NGO from income tax & offer 50% tax deductions to your donors.",
     popular: true,
@@ -1630,7 +1630,7 @@ const serviceCatalog = [
       "IT Portal Form 10AB lodgment"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Convert provisional NGO registration into permanent 5-year 12AB tax status.",
     popular: false,
@@ -1658,7 +1658,7 @@ const serviceCatalog = [
       "DPIIT alignment review"
     ],
     badge: "Grants Special",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Apply for up to ₹70 Lakhs non-dilutive government startup seed fund grants.",
     popular: true,
@@ -1686,7 +1686,7 @@ const serviceCatalog = [
       "Investor Q&A preparation guide"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "VC-ready 15-slide pitch deck & 5-year financial projection model.",
     popular: false,
@@ -1714,7 +1714,7 @@ const serviceCatalog = [
       "Angel Network & VC intros prep"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Strategic fundraising advisory, term sheet negotiation & data room setup.",
     popular: false,
@@ -1742,7 +1742,7 @@ const serviceCatalog = [
       "Share premium justification report"
     ],
     badge: "Valuer Certified",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Certified IBBI valuation report under Rule 11UA for issuing equity/CCPS.",
     popular: false,
@@ -1770,7 +1770,7 @@ const serviceCatalog = [
       "GST portal notice monitoring"
     ],
     badge: "Popular Retainer",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Hassle-free monthly GSTR-1 & GSTR-3B filings with 2B ITC reconciliation.",
     popular: true,
@@ -1798,7 +1798,7 @@ const serviceCatalog = [
       "CA certification for turnover > ₹5 Cr"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Annual GSTR-9 return & GSTR-9C reconciliation certified by Chartered Accountants.",
     popular: false,
@@ -1826,7 +1826,7 @@ const serviceCatalog = [
       "FDI / Paypal / Stripe inward remittance compliance"
     ],
     badge: "Exporter Must",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Export goods & IT services without paying IGST upfront via Form GST RFD-11.",
     popular: true,
@@ -1854,7 +1854,7 @@ const serviceCatalog = [
       "Show Cause Notice (SCN) defense"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Expert reply drafting & defense representation for GST Show Cause Notices.",
     popular: false,
@@ -1882,7 +1882,7 @@ const serviceCatalog = [
       "Seamless inward foreign remittance"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "GST registration for foreign companies selling digital services or goods in India.",
     popular: false,
@@ -1910,7 +1910,7 @@ const serviceCatalog = [
       "Director / Partner details update"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Update registered address, trade name, or additional premises on GST Certificate.",
     popular: false,
@@ -1938,7 +1938,7 @@ const serviceCatalog = [
       "No future portal notices"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "File GSTR-10 Final Return within 3 months of GST cancellation to avoid ₹10,000 penalty.",
     popular: false,
@@ -1966,7 +1966,7 @@ const serviceCatalog = [
       "Instant ITR-V verification support"
     ],
     badge: "CA Verified",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Expert ITR filing with AIS/26AS reconciliation to maximize tax refunds.",
     popular: true,
@@ -1994,7 +1994,7 @@ const serviceCatalog = [
       "CA sign-off & e-filing"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "File ITR-5 / ITR-6 with Tax Audit Report (Form 3CD) led by CAs.",
     popular: false,
@@ -2022,7 +2022,7 @@ const serviceCatalog = [
       "Home loan / Visa approval proof"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "ITR filing for freelancers, consultants & proprietors with Section 44ADA benefits.",
     popular: true,
@@ -2050,7 +2050,7 @@ const serviceCatalog = [
       "CA digital signature filing"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Mandatory ITR-6 filing for Private Limited Companies with CA digital signature.",
     popular: false,
@@ -2078,7 +2078,7 @@ const serviceCatalog = [
       "Tax withholding rate determination"
     ],
     badge: "Express Service",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Get same-day Form 15CB CA Certificate & Form 15CA filing for foreign payments.",
     popular: true,
@@ -2106,7 +2106,7 @@ const serviceCatalog = [
       "Challan 280 / 281 payment guidance"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "TAN registration & quarterly Form 26Q/24Q filing with Form 16A generation.",
     popular: false,
@@ -2134,7 +2134,7 @@ const serviceCatalog = [
       "Penalty stay application filing"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Expert response drafting & rectification filing for Income Tax notices (143/139).",
     popular: false,
@@ -2162,7 +2162,7 @@ const serviceCatalog = [
       "Same-day filing acknowledgment"
     ],
     badge: "Annual Must",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "File annual DIR-3 KYC before Sept 30 to keep DIN active & avoid ₹5,000 late fee.",
     popular: true,
@@ -2190,7 +2190,7 @@ const serviceCatalog = [
       "CS certification included"
     ],
     badge: "180-Day Rule",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "File Form INC-20A within 180 days of incorporation to declare share capital deposit.",
     popular: true,
@@ -2218,7 +2218,7 @@ const serviceCatalog = [
       "Attachment to Board's Annual Report"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Independent Secretarial Audit & Form MR-3 report by Practicing Company Secretaries.",
     popular: false,
@@ -2246,7 +2246,7 @@ const serviceCatalog = [
       "Ready-to-sign PDF & Word formats"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Draft 4 quarterly Board Meeting Minutes & AGM notices in compliance with SS-1 standards.",
     popular: false,
@@ -2274,7 +2274,7 @@ const serviceCatalog = [
       "MOA & AOA name clause amendment"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Change your company name with RUN name reservation & ROC INC-24 approval.",
     popular: false,
@@ -2302,7 +2302,7 @@ const serviceCatalog = [
       "Updated MCA master data status"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Increase authorized capital (Form SH-7) to prepare for new investor share allotment.",
     popular: false,
@@ -2330,7 +2330,7 @@ const serviceCatalog = [
       "Updated MCA Master Data profile"
     ],
     badge: "Quick Turnaround",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Appoint or remove directors with fast Form DIR-12 filing & MCA master data update.",
     popular: true,
@@ -2358,7 +2358,7 @@ const serviceCatalog = [
       "Updated MCA company master record"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Relocate registered office within city or state with Form INC-22 ROC approval.",
     popular: false,
@@ -2386,7 +2386,7 @@ const serviceCatalog = [
       "Register of Members (Form MGT-1) update"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Issue new shares (PAS-3) or execute transfer deeds (SH-4) with stamp duty clearance.",
     popular: false,
@@ -2414,7 +2414,7 @@ const serviceCatalog = [
       "Ready balance sheet for statutory auditor"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Dedicated cloud bookkeeping & bank reconciliations led by qualified accountants.",
     popular: false,
@@ -2442,7 +2442,7 @@ const serviceCatalog = [
       "Investor updates email package"
     ],
     badge: "Executive Favorite",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Monthly executive MIS reports covering P&L, burn rate, runway & cash flows.",
     popular: true,
@@ -2470,7 +2470,7 @@ const serviceCatalog = [
       "Digital sign-ready Word & PDF"
     ],
     badge: "Essential",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Custom unilateral or mutual NDA to protect trade secrets & proprietary IP.",
     popular: true,
@@ -2498,7 +2498,7 @@ const serviceCatalog = [
       "Deadlock & dispute resolution mechanism"
     ],
     badge: "Startup Foundation",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Protect your startup with reverse vesting, equity splits & IP assignment clauses.",
     popular: true,
@@ -2526,7 +2526,7 @@ const serviceCatalog = [
       "Compliant with Indian Labor Codes"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Executive employment contracts with IP assignment & non-solicitation clauses.",
     popular: false,
@@ -2554,7 +2554,7 @@ const serviceCatalog = [
       "Global copyright protection (Berne Convention)"
     ],
     badge: "Source Code IP",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Register copyright for software source code, books, UI designs, and brand art.",
     popular: false,
@@ -2582,7 +2582,7 @@ const serviceCatalog = [
       "Brand equity building"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Protect brand logos, packaging & mascots across trademark & copyright registries.",
     popular: false,
@@ -2610,7 +2610,7 @@ const serviceCatalog = [
       "Export scheme benefits (RoDTEP / MEIS)"
     ],
     badge: "24-Hour Approval",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "Get 10-digit IEC license from DGFT in 24 hours to import/export goods or IT services.",
     popular: true,
@@ -2638,7 +2638,7 @@ const serviceCatalog = [
       "State-level trade registration"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Get municipal shop act trade license mandatory for opening bank current accounts.",
     popular: false,
@@ -2666,7 +2666,7 @@ const serviceCatalog = [
       "Avoids labor department penalty notices"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.9,
     description: "Get EPF & ESI employer code registration to ensure staff social security compliance.",
     popular: false,
@@ -2694,7 +2694,7 @@ const serviceCatalog = [
       "Annual return filing guidance"
     ],
     badge: "",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 4.8,
     description: "Get state Professional Tax PTRC/PTEC registration for employer payroll.",
     popular: false,
@@ -2722,7 +2722,7 @@ const serviceCatalog = [
       "Employee awareness training slides"
     ],
     badge: "Statutory Must",
-    expert: "D Bhushan",
+    expert: "INCroute Team",
     rating: 5,
     description: "POSH Act 2013 compliance: Policy drafting, Internal Committee order & training deck.",
     popular: false,

@@ -6,10 +6,10 @@ import {
   Scale, Lock, Award, Milestone, Users, Sparkles, PhoneCall, ChevronRight,
   Calculator
 } from "lucide-react";
-import { useLang } from "../lib/LanguageContext";
 import { useTheme } from "../lib/useTheme";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../lib/AuthContext";
+import SearchModal from "./SearchModal";
 
 interface NavbarProps {
   activeTab: string;
@@ -121,15 +121,15 @@ const SERVICE_CATEGORIES: Record<string, string> = {
   "logo-brand-ip": "legal-ip"
 };
 
-const MEGA_MENU_REGISTRATION: MegaCategory = {
-  id: "registration",
-  label: "Business Registration",
-  activeTabs: ["services", "catalog"],
-  advisoryText: "Prefer to talk to a business advisor first?",
+const MASTER_SERVICES_CATEGORY: MegaCategory = {
+  id: "all-services",
+  label: "Services & Solutions",
+  activeTabs: ["services", "catalog", "compliance", "tools", "name-checker"],
+  advisoryText: "Prefer to speak with a statutory corporate advisor first?",
   subCategories: [
     {
       id: "company",
-      label: "Company Registration",
+      label: "Company Incorporation",
       icon: Building2,
       items: [
         { title: "Private Limited Company", badge: "✨", tab: "services", serviceId: "pvt-ltd" },
@@ -137,201 +137,63 @@ const MEGA_MENU_REGISTRATION: MegaCategory = {
         { title: "One Person Company (OPC)", tab: "services", serviceId: "opc" },
         { title: "Sole Proprietorship", tab: "services", serviceId: "sole-proprietorship" },
         { title: "Partnership Firm", tab: "services", serviceId: "partnership" },
+        { title: "Section 8 NGO Company", tab: "services", serviceId: "section8" },
         { title: "Producer Company", tab: "services", serviceId: "producer-company" },
         { title: "Nidhi Company", tab: "services", serviceId: "nidhi-company" },
         { title: "Indian Subsidiary", tab: "services", serviceId: "indian-subsidiary" },
         { title: "Public Limited Company", tab: "services", serviceId: "public-ltd" },
-        { title: "Startup India Registration", tab: "services", serviceId: "startup-india" },
         { title: "Virtual Office Address", badge: "✨", tab: "services", serviceId: "virtual-office" },
       ]
     },
     {
-      id: "ngo",
-      label: "NGO Registration",
-      icon: ShieldCheck,
-      items: [
-        { title: "Section 8 Company", tab: "services", serviceId: "section8" },
-        { title: "Trust Registration", tab: "services", serviceId: "trust-registration" },
-        { title: "Society Registration", tab: "services", serviceId: "society-registration" },
-        { title: "FCRA Registration", tab: "services", serviceId: "fcra-registration" },
-        { title: "12A and 80G Registration", tab: "services", serviceId: "12a-80g-registration" },
-        { title: "12AA Registration", tab: "services", serviceId: "12aa-registration" },
-      ]
-    },
-    {
-      id: "fundraising",
-      label: "Fundraising",
-      icon: TrendingUp,
-      items: [
-        { title: "Startup Grants", badge: "✨", tab: "services", serviceId: "startup-grants" },
-        { title: "Investment Pitch Deck", tab: "services", serviceId: "pitch-deck" },
-        { title: "Seed Funding Advisory", tab: "services", serviceId: "seed-funding" },
-        { title: "Cap Table & Valuation Report", tab: "services", serviceId: "cap-table-valuation" },
-      ]
-    }
-  ]
-};
-
-const MEGA_MENU_TAX: MegaCategory = {
-  id: "tax",
-  label: "Tax & Compliance",
-  activeTabs: ["compliance", "flowchart"],
-  advisoryText: "Need help with tax or statutory compliance?",
-  subCategories: [
-    {
       id: "gst",
-      label: "GST Services",
+      label: "GST & Tax Compliances",
       icon: FileText,
       items: [
-        { title: "GST Registration", tab: "services", serviceId: "gst-tax" },
-        { title: "GST Return Filing", tab: "services", serviceId: "gst-return-filing" },
-        { title: "GST Annual Return Filing (GSTR-9)", tab: "services", serviceId: "gstr9-annual-return" },
-        { title: "GST E-Invoicing Software", tab: "books" },
-        { title: "GST LUT Form", tab: "services", serviceId: "gst-lut-filing" },
-        { title: "GST Notice Resolution", tab: "services", serviceId: "gst-notice-resolution" },
-        { title: "GST Registration for Foreigners", tab: "services", serviceId: "gst-foreigners" },
-        { title: "GST Invoicing & Filing Software", tab: "books" },
-        { title: "GST Amendment", tab: "services", serviceId: "gst-amendment" },
-        { title: "GSTR-10 Final Return", tab: "services", serviceId: "gstr10-final-return" },
-      ]
-    },
-    {
-      id: "incometax",
-      label: "Income Tax",
-      icon: Landmark,
-      items: [
-        { title: "Income Tax E-Filing", tab: "services", serviceId: "income-tax-efiling" },
-        { title: "Business Tax Filing", tab: "services", serviceId: "business-tax-filing" },
-        { title: "ITR-1 / ITR-2 Return Filing", tab: "services", serviceId: "itr-filing-individual" },
-        { title: "ITR-3 / ITR-4 Sugam Filing", tab: "services", serviceId: "itr-filing-individual" },
-        { title: "ITR-5 / ITR-6 Corporate Tax", tab: "services", serviceId: "corporate-tax-itr" },
-        { title: "15CA - 15CB Filing", tab: "services", serviceId: "15ca-15cb-filing" },
-        { title: "TAN Registration & TDS Filing", tab: "services", serviceId: "tan-tds-filing" },
-        { title: "Income Tax Notice Resolution", tab: "services", serviceId: "income-tax-notice" },
-      ]
-    },
-    {
-      id: "corporate",
-      label: "Corporate Compliances",
-      icon: Building2,
-      items: [
+        { title: "GST Registration", badge: "✨", tab: "services", serviceId: "gst-tax" },
+        { title: "GST Return Filing (GSTR-1 & 3B)", tab: "services", serviceId: "gst-return-filing" },
+        { title: "GSTR-9 Annual Return", tab: "services", serviceId: "gstr9-annual-return" },
+        { title: "GST LUT Form Filing", tab: "services", serviceId: "gst-lut-filing" },
+        { title: "Income Tax E-Filing (ITR)", tab: "services", serviceId: "income-tax-efiling" },
+        { title: "Business Tax Return Filing", tab: "services", serviceId: "business-tax-filing" },
         { title: "ROC Annual Filing (AOC-4 & MGT-7)", tab: "services", serviceId: "annual-compliance" },
-        { title: "DIR-3 KYC Annual Verification", tab: "services", serviceId: "dir3-kyc" },
+        { title: "DIR-3 KYC Verification", tab: "services", serviceId: "dir3-kyc" },
         { title: "Commencement of Business (INC-20A)", tab: "services", serviceId: "inc20a-commencement" },
-        { title: "Secretarial Audit", tab: "services", serviceId: "secretarial-audit" },
-        { title: "Board Meeting Minutes Drafting", tab: "services", serviceId: "board-minutes-drafting" },
       ]
     },
-    {
-      id: "eventroc",
-      label: "Event-Based ROC",
-      icon: Clock,
-      items: [
-        { title: "Change Company Name", tab: "services", serviceId: "change-company-name" },
-        { title: "Increase Authorized Capital", tab: "services", serviceId: "increase-authorized-capital" },
-        { title: "Director Addition / Removal", tab: "services", serviceId: "director-change" },
-        { title: "Change Registered Office", tab: "services", serviceId: "change-registered-office" },
-        { title: "Share Transfer & Allotment", tab: "services", serviceId: "share-transfer-allotment" },
-      ]
-    },
-    {
-      id: "accounting",
-      label: "Accounting & Finance",
-      icon: Calculator,
-      items: [
-        { title: "INCroute Books - Cloud Accounting", badge: "✨", tab: "books" },
-        { title: "Virtual CFO Advisory", tab: "services", serviceId: "virtual-cfo" },
-        { title: "Bookkeeping & Ledger Maintenance", tab: "services", serviceId: "bookkeeping-ledger" },
-        { title: "MIS & Financial Reporting", tab: "services", serviceId: "mis-financial-reporting" },
-      ]
-    },
-    {
-      id: "legal",
-      label: "Legal & Advisory",
-      icon: Scale,
-      items: [
-        { title: "Non-Disclosure Agreement (NDA)", tab: "services", serviceId: "nda-agreement" },
-        { title: "Founder Agreement", tab: "services", serviceId: "founder-agreement" },
-        { title: "Employment Contract", tab: "services", serviceId: "employment-contract" },
-        { title: "Terms of Service & Privacy Policy", tab: "services", serviceId: "terms-privacy" },
-      ]
-    }
-  ]
-};
-
-const MEGA_MENU_IP: MegaCategory = {
-  id: "trademark",
-  label: "Trademark & IP",
-  activeTabs: ["name-checker"],
-  advisoryText: "Protect your brand name and logo across India",
-  subCategories: [
     {
       id: "tm",
-      label: "Trademark Services",
+      label: "Trademark & Intellectual Property",
       icon: ShieldCheck,
       items: [
         { title: "Trademark Registration", badge: "✨", tab: "services", serviceId: "trademark-registration" },
-        { title: "AI Name Feasibility Clearance", tab: "name-checker" },
+        { title: "AI Brand Name Feasibility", badge: "FREE", tab: "name-checker" },
         { title: "Trademark Objection Reply", tab: "services", serviceId: "trademark-objection" },
         { title: "Trademark Hearing & Watch", tab: "services", serviceId: "trademark-opposition" },
+        { title: "Copyright Registration", tab: "services", serviceId: "copyright-registration" },
+        { title: "Patent Filing Advisory", tab: "services", serviceId: "patent-filing" },
       ]
     },
     {
-      id: "copyright",
-      label: "Copyright & Patent",
-      icon: Lock,
-      items: [
-        { title: "Copyright Filing", tab: "services", serviceId: "copyright-registration" },
-        { title: "Provisional Patent Application", tab: "services", serviceId: "patent-filing" },
-        { title: "Logo & Graphic Asset IP", tab: "services", serviceId: "logo-brand-ip" },
-      ]
-    }
-  ]
-};
-
-const MEGA_MENU_LICENSES: MegaCategory = {
-  id: "licenses",
-  label: "Licenses & Regulatory",
-  activeTabs: ["tools"],
-  advisoryText: "Get statutory trade & regulatory clearances fast",
-  subCategories: [
-    {
-      id: "govlic",
-      label: "Government Licenses",
+      id: "licenses",
+      label: "Government Trade Licenses",
       icon: Award,
       items: [
-        { title: "FSSAI Food Registration", tab: "services", serviceId: "fssai-registration" },
+        { title: "FSSAI Food License", tab: "services", serviceId: "fssai-registration" },
         { title: "Import Export Code (IEC)", tab: "services", serviceId: "import-export-code" },
-        { title: "Shop & Establishment License", tab: "services", serviceId: "shop-establishment-license" },
         { title: "MSME / Udyam Certificate", tab: "services", serviceId: "msme-registration" },
+        { title: "Shop & Establishment License", tab: "services", serviceId: "shop-establishment-license" },
+        { title: "PF & ESI Registration", tab: "services", serviceId: "pf-esi-registration" },
+        { title: "Professional Tax (PT) License", tab: "services", serviceId: "professional-tax-license" },
       ]
     },
     {
-      id: "labour",
-      label: "Regulatory & Labour",
-      icon: Milestone,
-      items: [
-        { title: "PF & ESI Employer Registration", tab: "services", serviceId: "pf-esi-registration" },
-        { title: "Professional Tax (PT) License", tab: "services", serviceId: "professional-tax-license" },
-        { title: "POSH Policy Compliance", tab: "services", serviceId: "posh-compliance" },
-      ]
-    }
-  ]
-};
-
-const MEGA_MENU_TOOLS: MegaCategory = {
-  id: "tools",
-  label: "Tools & Solutions",
-  activeTabs: ["tools", "name-checker", "comparison", "impact", "books"],
-  advisoryText: "Smart digital utilities built for Indian founders",
-  subCategories: [
-    {
       id: "aitools",
-      label: "AI & Business Tools",
+      label: "AI Tools & Cloud Software",
       icon: Sparkles,
       items: [
-        { title: "AI Brand Name Feasibility", badge: "✨", tab: "name-checker" },
-        { title: "INCroute Books Accounting", badge: "✨", tab: "books" },
+        { title: "AI Brand Name Feasibility", badge: "FREE", tab: "name-checker" },
+        { title: "INCroute Books Accounting Software", badge: "APP", tab: "books" },
         { title: "Business Calculators & Utilities", tab: "tools" },
         { title: "Entity Structure Matrix (Pvt vs LLP)", tab: "comparison" },
         { title: "Service Impact Analytics", tab: "impact" },
@@ -344,8 +206,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
-  const { lang, setLang } = useLang();
-  const { theme, toggleTheme } = useTheme();
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -419,132 +280,60 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           : "border-b border-transparent"
       } ${mobileOpen ? "mobile-menu-open" : ""}`}
     >
-      <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-5 lg:px-6 xl:px-10 flex items-center justify-between h-full overflow-hidden">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
-        {/* ─── Left: Logo + Nav ─── */}
-        <div className="flex items-center gap-2 xl:gap-4 2xl:gap-8 min-w-0 shrink">
-          {/* Logo */}
-          <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2 shrink-0 cursor-pointer logo-wrapper">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden">
-              <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" />
-            </div>
-            <div className="flex flex-col select-none leading-none">
-              <span className="text-[15px] sm:text-[16px] font-extrabold logo-text-inc tracking-tight">
-                INC<span className="logo-text-route font-bold italic">route</span>
-              </span>
-              <div className="flex items-center gap-1 mt-[3px]">
-                <span className="h-[1px] w-3 bg-[#6B6F86] opacity-30" />
-                <span className="text-[7.5px] sm:text-[8px] logo-tagline tracking-[0.16em] uppercase font-semibold">Make It Right</span>
-                <span className="h-[1px] w-3 bg-[#6B6F86] opacity-30" />
-              </div>
-            </div>
-          </a>
-
-          {/* Desktop Nav Mega Menus */}
-          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink min-w-0">
-            {/* Business Registration */}
-            <MegaNavDropdown
-              category={MEGA_MENU_REGISTRATION}
-              open={openDropdown === "registration"}
-              onOpen={() => setOpenDropdown("registration")}
-              onClose={() => setOpenDropdown(null)}
-              onNav={nav}
-              activeTab={activeTab}
-            />
-
-            {/* Tax & Compliance */}
-            <MegaNavDropdown
-              category={MEGA_MENU_TAX}
-              open={openDropdown === "tax"}
-              onOpen={() => setOpenDropdown("tax")}
-              onClose={() => setOpenDropdown(null)}
-              onNav={nav}
-              activeTab={activeTab}
-            />
-
-            {/* Trademark & IP */}
-            <MegaNavDropdown
-              category={MEGA_MENU_IP}
-              open={openDropdown === "ip"}
-              onOpen={() => setOpenDropdown("ip")}
-              onClose={() => setOpenDropdown(null)}
-              onNav={nav}
-              activeTab={activeTab}
-            />
-
-            {/* Licenses & Regulatory */}
-            <MegaNavDropdown
-              category={MEGA_MENU_LICENSES}
-              open={openDropdown === "licenses"}
-              onOpen={() => setOpenDropdown("licenses")}
-              onClose={() => setOpenDropdown(null)}
-              onNav={nav}
-              activeTab={activeTab}
-            />
-
-            {/* Tools & Solutions */}
-            <MegaNavDropdown
-              category={MEGA_MENU_TOOLS}
-              open={openDropdown === "tools"}
-              onOpen={() => setOpenDropdown("tools")}
-              onClose={() => setOpenDropdown(null)}
-              onNav={nav}
-              activeTab={activeTab}
-            />
-
-            {/* About Link */}
-            <NavLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</NavLink>
-
-            {/* Blog Link */}
-            <NavLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</NavLink>
+        {/* ─── Left: Logo ─── */}
+        <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
+          <div className="w-9 h-9 rounded-full overflow-hidden">
+            <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" />
           </div>
+          <div className="flex flex-col select-none leading-none">
+            <span className="text-[16px] font-extrabold logo-text-inc tracking-tight">
+              INC<span className="logo-text-route font-bold italic">route</span>
+            </span>
+            <div className="flex items-center gap-1 mt-[3px]">
+              <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
+              <span className="text-[8px] logo-tagline tracking-[0.18em] uppercase font-semibold">Make It Right</span>
+              <span className="h-[1px] w-3.5 bg-[#6B6F86] opacity-30" />
+            </div>
+          </div>
+        </a>
+
+        {/* ─── Center: Master Services Mega Menu ─── */}
+        <div className="hidden lg:flex items-center gap-2 xl:gap-4">
+          <MegaNavDropdown
+            category={MASTER_SERVICES_CATEGORY}
+            open={openDropdown === "all-services"}
+            onOpen={() => setOpenDropdown("all-services")}
+            onClose={() => setOpenDropdown(null)}
+            onNav={nav}
+            activeTab={activeTab}
+          />
+
+          <NavLink onClick={(e) => nav(e, "books")} active={activeTab === "books"}>INCroute Books</NavLink>
+          <NavLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</NavLink>
+          <NavLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</NavLink>
         </div>
 
-        {/* ─── Right: Utilities ─── */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
+        {/* ─── Right: Action Utilities ─── */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Quick Search */}
           <button
-            onClick={(e) => nav(e, "tools")}
+            onClick={() => setSearchModalOpen(true)}
             aria-label="Search tools and services"
-            className="hidden sm:flex p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
-            title="Search Services & Tools"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 hover:bg-slate-200/90 text-slate-700 hover:text-slate-900 border border-slate-200/80 transition-all text-xs font-semibold cursor-pointer shrink-0 shadow-xs"
+            title="Search Services (Ctrl+K)"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">Search Services</span>
+            <kbd className="hidden sm:inline-flex text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1 py-0.5 rounded">Ctrl+K</kbd>
           </button>
-
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer"
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
-          {/* Language */}
-          <button
-            onClick={() => setLang(lang === "en" ? "hi" : "en")}
-            aria-label="Switch language"
-            className="flex items-center gap-0.5 p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-soft)] transition-colors cursor-pointer text-[12px] font-medium"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            {lang === "en" ? "हिं" : "EN"}
-          </button>
-
-          {/* Books Portal Button */}
-          <a
-            href="/books"
-            onClick={(e) => nav(e, "books")}
-            className="hidden lg:flex items-center cursor-pointer whitespace-nowrap px-3 py-1.5 rounded-xl text-[12.5px] font-semibold bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors shrink-0"
-          >
-            Books
-          </a>
 
           {/* Login — secondary */}
           <a
             href="/login"
             onClick={(e) => nav(e, "login")}
-            className="hidden lg:flex items-center nav-login-btn cursor-pointer whitespace-nowrap px-3 py-1.5 rounded-xl text-[12.5px] font-medium transition-colors shrink-0"
+            className="hidden sm:flex items-center nav-login-btn cursor-pointer whitespace-nowrap px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors shrink-0"
           >
             Login
           </a>
@@ -553,12 +342,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <a
             href="/contact"
             onClick={(e) => nav(e, "contact")}
-            className="hidden xl:flex items-center book-consultation-button cursor-pointer whitespace-nowrap gap-1.5 shrink-0 shadow-[0_0_20px_rgba(196,146,53,0.25)] hover:shadow-[0_0_25px_rgba(196,146,53,0.4)] transition-all text-[12.5px] px-3.5 py-2"
+            className="hidden sm:flex items-center book-consultation-button cursor-pointer whitespace-nowrap gap-1.5 shrink-0 shadow-[0_0_20px_rgba(196,146,53,0.25)] hover:shadow-[0_0_25px_rgba(196,146,53,0.4)] transition-all text-[13px] px-4 py-2"
           >
             Book Consultation <ArrowRight className="w-3.5 h-3.5 cta-arrow" />
           </a>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger for < 1024px displays */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -567,9 +356,12 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* Universal Search Modal Command Palette */}
+        <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </div>
 
-      {/* ─── Mobile Menu ─── */}
+      {/* ─── Mobile Drawer ─── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -581,13 +373,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             style={{ background: "var(--bg-page)" }}
           >
             <div className="p-4 space-y-2 max-h-[75vh] overflow-y-auto text-left">
-              {/* Mobile Mega Accordions */}
-              <MobileMegaAccordion category={MEGA_MENU_REGISTRATION} activeTab={activeTab} onNav={nav} />
-              <MobileMegaAccordion category={MEGA_MENU_TAX} activeTab={activeTab} onNav={nav} />
-              <MobileMegaAccordion category={MEGA_MENU_IP} activeTab={activeTab} onNav={nav} />
-              <MobileMegaAccordion category={MEGA_MENU_LICENSES} activeTab={activeTab} onNav={nav} />
-              <MobileMegaAccordion category={MEGA_MENU_TOOLS} activeTab={activeTab} onNav={nav} />
+              {/* Mobile Master Accordion */}
+              <MobileMegaAccordion category={MASTER_SERVICES_CATEGORY} activeTab={activeTab} onNav={nav} />
 
+              <MobileLink onClick={(e) => nav(e, "books")} active={activeTab === "books"}>INCroute Books</MobileLink>
               <MobileLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</MobileLink>
               <MobileLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</MobileLink>
 
@@ -607,7 +396,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
 function NavLink({ children, onClick, active }: { children: string; onClick: (e: React.MouseEvent) => void; active: boolean }) {
   return (
-    <a href="#" onClick={onClick} className={`nav-link px-1.5 xl:px-2.5 py-2 cursor-pointer whitespace-nowrap text-[12px] xl:text-[13px] font-semibold transition-colors ${active ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
+    <a href="#" onClick={onClick} className={`nav-link px-2.5 py-2 cursor-pointer whitespace-nowrap text-[13px] font-semibold transition-colors ${active ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}>
       {children}
     </a>
   );
@@ -644,7 +433,7 @@ function MegaNavDropdown({
       {/* Top Level Nav Button */}
       <button
         onClick={onOpen}
-        className={`nav-link flex items-center gap-0.5 xl:gap-1 px-1.5 xl:px-2.5 2xl:px-3 py-2 cursor-pointer whitespace-nowrap text-[12px] xl:text-[13px] font-semibold transition-all relative ${
+        className={`nav-link flex items-center gap-1 px-2.5 2xl:px-3 py-2 cursor-pointer whitespace-nowrap text-[13px] font-semibold transition-all relative ${
           isTopActive || open ? "text-[var(--accent)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         }`}
       >

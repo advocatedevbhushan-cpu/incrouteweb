@@ -1160,9 +1160,9 @@ export default function NameFeasibilityChecker({ onOnboard, onConsultExpert }: N
                     </div>
 
                     <div className="flex flex-col items-center space-y-1">
-                      <div className="font-serif italic text-base text-slate-800 font-medium tracking-wide">D. Bhushan</div>
+                      <div className="font-serif italic text-base text-slate-800 font-medium tracking-wide">INCroute Team</div>
                       <div className="w-24 h-[1px] bg-slate-200" />
-                      <strong className="text-slate-700 text-[10px]">Principal Legal Advisor</strong>
+                      <strong className="text-slate-700 text-[10px]">Corporate Advisory Board</strong>
                       <span className="text-[9px] text-slate-400 uppercase font-mono tracking-wider">Incroute Advisory</span>
                     </div>
 

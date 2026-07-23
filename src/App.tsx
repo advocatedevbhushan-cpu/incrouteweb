@@ -35,6 +35,8 @@ const AnswerHub = lazy(() => import("./components/AnswerHub"));
 const ComplianceCalendarSection = lazy(() => import("./components/ComplianceCalendarSection"));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 const CareersForm = lazy(() => import("./components/CareersForm"));
+const ServiceDetailPage = lazy(() => import("./components/ServiceDetailPage"));
+const BooksLoginPage = lazy(() => import("./books/pages/BooksLoginPage"));
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { useAuth } from "./lib/AuthContext";
 import { 
@@ -97,6 +99,11 @@ export default function App() {
     const partnerCustomerMatch = path.match(/^\/dashboard\/partner\/customer\/([^/]+)\/?$/);
     if (partnerCustomerMatch) {
       return { tab: "dashboard-partner-customer-detail", params: { id: partnerCustomerMatch[1] } };
+    }
+
+    const serviceDetailMatch = path.match(/^\/services\/([^/]+)\/([^/]+)\/?$/);
+    if (serviceDetailMatch) {
+      return { tab: "service-detail", params: { category: serviceDetailMatch[1], serviceId: serviceDetailMatch[2] } };
     }
 
     let matchedTab = "services";
@@ -383,27 +390,30 @@ export default function App() {
     } catch { return false; }
   })();
 
-  // Redirect to login if trying to access portal/admin/partner without auth
+  // Redirect to login if trying to access portal/admin/partner without auth (excluding books)
   useEffect(() => {
     if (isFullScreenPortal && !isAuthenticated && !loading) {
-      if (!location.pathname.startsWith("/login")) {
+      const isBooksRoute = activeTab === "books" || isBooksDomain || location.pathname.startsWith("/books");
+      if (!isBooksRoute && !location.pathname.startsWith("/login")) {
         const currentUrl = window.location.href;
         navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`);
       }
     }
-  }, [isFullScreenPortal, isAuthenticated, loading, location.pathname]);
+  }, [isFullScreenPortal, isAuthenticated, loading, location.pathname, activeTab, isBooksDomain]);
 
   // If portal/admin/books is active, render without outer shell
   if (isFullScreenPortal) {
-    if (!isAuthenticated) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-page)]">
-          <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
-    }
+    const isBooksRoute = activeTab === "books" || isBooksDomain || location.pathname.startsWith("/books");
 
-    if (activeTab === "books" || isBooksDomain) {
+    if (isBooksRoute) {
+      if (!isAuthenticated) {
+        return (
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-950"><div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" /></div>}>
+            <BooksLoginPage />
+          </Suspense>
+        );
+      }
+
       let booksBasePath = "/books";
       if (isBooksDomain) booksBasePath = "";
       else if (location.pathname.startsWith("/portal/books")) booksBasePath = "/portal/books";
@@ -468,6 +478,19 @@ export default function App() {
               <div className="pb-4 w-full mt-2">
                 <TestimonialCarousel setActiveTab={setActiveTab} />
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === "service-detail" && (
+            <motion.div
+              key="service-detail"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full flex flex-col pt-0"
+            >
+              <ServiceDetailPage />
             </motion.div>
           )}
 
