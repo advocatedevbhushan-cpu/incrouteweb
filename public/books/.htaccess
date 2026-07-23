@@ -2,11 +2,10 @@
   RewriteEngine On
   RewriteBase /
 
-  # Serve existing assets directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
+  # Serve existing static asset files directly
+  RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # Fallback all sub-routes to main index.html
-  RewriteRule ^ /index.html [L]
+  # Rewrite all requests for subdomain/subpath to root index.html
+  RewriteRule . /index.html [L]
 </IfModule>

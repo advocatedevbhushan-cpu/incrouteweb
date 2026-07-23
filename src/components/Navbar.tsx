@@ -386,12 +386,6 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
       return;
     }
 
-    // Special subdomain routing for books
-    if (tab === "books" && window.location.hostname.includes("incroute.com") && !window.location.hostname.startsWith("books.")) {
-      window.location.href = "https://books.incroute.com";
-      return;
-    }
-
     const routeMap: Record<string, string> = {
       services: "/services/",
       catalog: "/catalog/",

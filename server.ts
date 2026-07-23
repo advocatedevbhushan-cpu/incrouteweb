@@ -70,14 +70,6 @@ async function startServer() {
         const subPath = req.url.replace(/^\/books/, "") || "/";
         return res.redirect(301, subPath);
       }
-    } else {
-      // If accessing main domain (incroute.com or www.incroute.com) on /books or /books/*
-      if (req.path === "/books" || req.path.startsWith("/books/")) {
-        if (host.includes("incroute.com")) {
-          const subPath = req.url.replace(/^\/books/, "") || "/";
-          return res.redirect(301, `https://books.incroute.com${subPath}`);
-        }
-      }
     }
     next();
   });
