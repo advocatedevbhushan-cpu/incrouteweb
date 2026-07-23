@@ -93,6 +93,13 @@ const paymentSchema = z.object({
   depositAccountId: z.string().max(30).optional().nullable(), reference: z.string().trim().max(191).optional().nullable(),
 });
 
+const billPaymentSchema = z.object({
+  organisationId: z.string().min(1).max(30), billId: z.string().min(1).max(30), paymentDate: isoDate,
+  amount: money.refine((value) => toMinorUnits(value) > 0n, "Payment amount must be positive"),
+  paymentMode: z.enum(["BANK_TRANSFER", "UPI", "CARD", "CHEQUE", "CASH", "OTHER"]),
+  paidThroughAccountId: z.string().max(30).optional().nullable(), reference: z.string().trim().max(191).optional().nullable(),
+});
+
 const billSchema = z.object({
   organisationId: z.string().min(1).max(30), vendorId: z.string().min(1).max(30), billNumber: z.string().trim().min(1).max(100),
   billDate: isoDate, dueDate: isoDate, placeOfSupply: z.string().regex(/^[0-9]{2}$/),
@@ -919,6 +926,325 @@ export function registerBooksRoutes(app: Express, getPlatformConnection: Connect
     } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
   });
 
+  app.get("/api/portal/books/bills/:id", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "purchases.view");
+      const [bills]: any = await booksConn.query(
+        `SELECT b.*, c.displayName vendorName, c.legalName vendorLegalName, c.gstin vendorGstin, c.pan vendorPan,
+                c.email vendorEmail, c.phone vendorPhone
+         FROM BooksBill b JOIN BooksContact c ON c.id = b.vendorId AND c.tenantId = b.tenantId AND c.organisationId = b.organisationId
+         WHERE b.id = ? AND b.tenantId = ? AND b.organisationId = ? LIMIT 1`,
+        [req.params.id, scope.tenantId, scope.organisationId]);
+      if (!bills.length) throw new BooksHttpError(404, "Vendor bill not found");
+      const [lines]: any = await booksConn.query(
+        `SELECT id, itemId, description, hsnSac, quantity, unitPrice, taxableAmount, gstRate,
+                cgstAmount, sgstAmount, igstAmount, lineTotal
+         FROM BooksBillLine WHERE tenantId = ? AND organisationId = ? AND billId = ? ORDER BY createdAt`,
+        [scope.tenantId, scope.organisationId, req.params.id]);
+      res.json({ bill: bills[0], lines });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.post("/api/portal/books/bill-payments", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const data = billPaymentSchema.parse(req.body);
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, data.organisationId, "purchases.post");
+      await booksConn.beginTransaction();
+      const [bills]: any = await booksConn.query(
+        "SELECT id, vendorId, billNumber, status, balanceDue, amountPaid FROM BooksBill WHERE id = ? AND tenantId = ? AND organisationId = ? FOR UPDATE",
+        [data.billId, scope.tenantId, scope.organisationId]);
+      if (!bills.length) throw new BooksHttpError(404, "Vendor bill not found");
+      const bill = bills[0];
+      if (!["POSTED", "PARTIALLY_PAID", "OVERDUE"].includes(bill.status)) throw new BooksHttpError(409, "Payments can only be recorded against posted unpaid bills");
+      if (toMinorUnits(data.amount) > toMinorUnits(String(bill.balanceDue))) throw new BooksHttpError(400, "Payment amount cannot exceed the bill balance due");
+      const fiscalYearId = await requireOpenPeriod(booksConn, scope, data.paymentDate);
+      const accounts = await accountMap(booksConn, scope);
+      const paidThroughAccountId = data.paidThroughAccountId || accounts.CASH;
+      if (!paidThroughAccountId || !accounts.ACCOUNTS_PAYABLE) throw new BooksHttpError(409, "Cash/bank and payable accounts must be configured");
+
+      const [countRows]: any = await booksConn.query("SELECT COUNT(*) count FROM BooksVendorPayment WHERE tenantId = ? AND organisationId = ?", [scope.tenantId, scope.organisationId]);
+      const paymentNumber = `VPAY-${String(Number(countRows[0].count) + 1).padStart(5, "0")}`;
+      const paymentId = makeId("bvpay");
+      await booksConn.query(
+        `INSERT INTO BooksVendorPayment
+          (id, tenantId, organisationId, vendorId, paymentNumber, paymentDate, amount, paymentMode, reference, status, postedAt, postedBy, createdBy)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'POSTED', NOW(3), ?, ?)`,
+        [paymentId, scope.tenantId, scope.organisationId, bill.vendorId, paymentNumber, data.paymentDate, data.amount, data.paymentMode, data.reference || null, userId, userId]);
+      await booksConn.query("INSERT INTO BooksVendorPaymentAllocation (id, tenantId, organisationId, paymentId, billId, amount) VALUES (?, ?, ?, ?, ?, ?)", [makeId("bvpa"), scope.tenantId, scope.organisationId, paymentId, bill.id, data.amount]);
+      const allocation = allocateCustomerPayment(String(bill.balanceDue), String(bill.amountPaid), data.amount);
+      await booksConn.query("UPDATE BooksBill SET amountPaid = ?, balanceDue = ?, status = ? WHERE id = ? AND tenantId = ? AND organisationId = ?", [allocation.amountPaid, allocation.balanceDue, allocation.status, bill.id, scope.tenantId, scope.organisationId]);
+
+      const description = `Vendor payment ${paymentNumber} for bill ${bill.billNumber}`;
+      const lines = [
+        { accountId: accounts.ACCOUNTS_PAYABLE, contactId: bill.vendorId, description, debit: data.amount, credit: "0.00" },
+        { accountId: paidThroughAccountId, contactId: bill.vendorId, description, debit: "0.00", credit: data.amount },
+      ];
+      assertBalanced(lines);
+      const journalId = await insertJournal(booksConn, { scope, fiscalYearId, sourceType: "VENDOR_PAYMENT", sourceId: paymentId, entryNumber: `JE-${paymentNumber}`, entryDate: data.paymentDate, narration: description, userId, lines });
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: "vendor_payment.posted", entityType: "vendor_payment", entityId: paymentId, afterData: { paymentNumber, amount: data.amount, billId: bill.id, journalId }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.status(201).json({ payment: { id: paymentId, paymentNumber, amount: data.amount, status: "POSTED" }, bill: { id: bill.id, status: allocation.status, balanceDue: allocation.balanceDue }, journalEntryId: journalId });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  async function ensureBankingTables(conn: any) {
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS \`BooksBankAccount\` (
+        \`id\` VARCHAR(30) NOT NULL,
+        \`tenantId\` VARCHAR(30) NOT NULL,
+        \`organisationId\` VARCHAR(30) NOT NULL,
+        \`accountId\` VARCHAR(30) NOT NULL,
+        \`accountName\` VARCHAR(191) NOT NULL,
+        \`accountNumber\` VARCHAR(100) NULL,
+        \`bankName\` VARCHAR(100) NULL,
+        \`branchName\` VARCHAR(100) NULL,
+        \`ifscCode\` VARCHAR(20) NULL,
+        \`accountType\` ENUM('CURRENT','SAVINGS','PETTY_CASH','CREDIT_CARD') NOT NULL DEFAULT 'CURRENT',
+        \`openingBalance\` DECIMAL(15,2) NOT NULL DEFAULT '0.00',
+        \`currentBalance\` DECIMAL(15,2) NOT NULL DEFAULT '0.00',
+        \`isActive\` TINYINT(1) NOT NULL DEFAULT 1,
+        \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (\`id\`),
+        KEY \`BooksBankAccount_scope_idx\` (\`tenantId\`,\`organisationId\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS \`BooksBankStatement\` (
+        \`id\` VARCHAR(30) NOT NULL,
+        \`tenantId\` VARCHAR(30) NOT NULL,
+        \`organisationId\` VARCHAR(30) NOT NULL,
+        \`bankAccountId\` VARCHAR(30) NOT NULL,
+        \`filename\` VARCHAR(191) NOT NULL,
+        \`importedAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        \`totalDeposits\` DECIMAL(15,2) NOT NULL DEFAULT '0.00',
+        \`totalWithdrawals\` DECIMAL(15,2) NOT NULL DEFAULT '0.00',
+        \`rowCount\` INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (\`id\`),
+        KEY \`BooksBankStatement_scope_idx\` (\`tenantId\`,\`organisationId\`,\`bankAccountId\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS \`BooksBankStatementLine\` (
+        \`id\` VARCHAR(30) NOT NULL,
+        \`tenantId\` VARCHAR(30) NOT NULL,
+        \`organisationId\` VARCHAR(30) NOT NULL,
+        \`statementId\` VARCHAR(30) NOT NULL,
+        \`bankAccountId\` VARCHAR(30) NOT NULL,
+        \`transactionDate\` DATE NOT NULL,
+        \`narration\` VARCHAR(500) NOT NULL,
+        \`referenceNumber\` VARCHAR(100) NULL,
+        \`type\` ENUM('DEPOSIT','WITHDRAWAL') NOT NULL,
+        \`amount\` DECIMAL(15,2) NOT NULL,
+        \`balanceAfter\` DECIMAL(15,2) NULL,
+        \`status\` ENUM('UNMATCHED','MATCHED','EXCLUDED') NOT NULL DEFAULT 'UNMATCHED',
+        \`matchedSourceType\` VARCHAR(50) NULL,
+        \`matchedSourceId\` VARCHAR(30) NULL,
+        \`reconciledAt\` DATETIME(3) NULL,
+        \`reconciledBy\` VARCHAR(191) NULL,
+        \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (\`id\`),
+        KEY \`BooksBankStatementLine_scope_idx\` (\`tenantId\`,\`organisationId\`,\`bankAccountId\`,\`status\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+  }
+
+  app.get("/api/portal/books/bank-accounts", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "banking.view");
+      await ensureBankingTables(booksConn);
+      const [bankAccounts]: any = await booksConn.query(
+        `SELECT ba.id, ba.accountId, ba.accountName, ba.accountNumber, ba.bankName, ba.branchName, ba.ifscCode,
+                ba.accountType, ba.openingBalance, ba.isActive,
+                COALESCE(SUM(CASE WHEN je.status = 'POSTED' THEN (jl.debit - jl.credit) ELSE 0 END), 0) currentBalance,
+                (SELECT COUNT(*) FROM BooksBankStatementLine bsl WHERE bsl.bankAccountId = ba.id AND bsl.status = 'UNMATCHED') unmatchedCount
+         FROM BooksBankAccount ba
+         LEFT JOIN BooksJournalLine jl ON jl.accountId = ba.accountId AND jl.tenantId = ba.tenantId AND jl.organisationId = ba.organisationId
+         LEFT JOIN BooksJournalEntry je ON je.id = jl.journalEntryId AND je.tenantId = jl.tenantId AND je.organisationId = jl.organisationId
+         WHERE ba.tenantId = ? AND ba.organisationId = ? AND ba.isActive = 1
+         GROUP BY ba.id ORDER BY ba.createdAt DESC`,
+        [scope.tenantId, scope.organisationId]);
+      res.json({ bankAccounts });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.post("/api/portal/books/bank-accounts", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const { organisationId, accountName, accountNumber, bankName, branchName, ifscCode, accountType, openingBalance } = req.body;
+      if (!organisationId || !accountName) throw new BooksHttpError(400, "Account name is required");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "banking.manage");
+      await ensureBankingTables(booksConn);
+      await booksConn.beginTransaction();
+
+      const accountId = makeId("bc");
+      const code = `BANK-${Date.now().toString().slice(-4)}`;
+      await booksConn.query(
+        `INSERT INTO BooksAccount (id, tenantId, organisationId, code, name, type, subType, normalBalance, isSystem)
+         VALUES (?, ?, ?, ?, ?, 'ASSET', 'BANK', 'DEBIT', 0)`,
+        [accountId, scope.tenantId, scope.organisationId, code, accountName]);
+
+      const bankAccountId = makeId("bba");
+      await booksConn.query(
+        `INSERT INTO BooksBankAccount
+          (id, tenantId, organisationId, accountId, accountName, accountNumber, bankName, branchName, ifscCode, accountType, openingBalance, currentBalance)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [bankAccountId, scope.tenantId, scope.organisationId, accountId, accountName, accountNumber || null, bankName || null,
+         branchName || null, ifscCode || null, accountType || "CURRENT", openingBalance || "0.00", openingBalance || "0.00"]);
+
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: "bank_account.created", entityType: "bank_account", entityId: bankAccountId, afterData: { accountName, accountNumber }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.status(201).json({ bankAccount: { id: bankAccountId, accountId, accountName, accountNumber, bankName, accountType } });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.post("/api/portal/books/bank-statements/import", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const { organisationId, bankAccountId, filename, rows } = req.body;
+      if (!organisationId || !bankAccountId || !Array.isArray(rows) || !rows.length) {
+        throw new BooksHttpError(400, "Bank statement CSV rows are required");
+      }
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "banking.manage");
+      await ensureBankingTables(booksConn);
+      await booksConn.beginTransaction();
+
+      const statementId = makeId("bst");
+      let totalDeposits = 0n;
+      let totalWithdrawals = 0n;
+
+      for (const row of rows) {
+        const lineId = makeId("bsl");
+        const type = row.type === "DEPOSIT" ? "DEPOSIT" : "WITHDRAWAL";
+        const amount = String(row.amount || "0.00");
+        const minor = toMinorUnits(amount);
+        if (type === "DEPOSIT") totalDeposits += minor; else totalWithdrawals += minor;
+
+        await booksConn.query(
+          `INSERT INTO BooksBankStatementLine
+            (id, tenantId, organisationId, statementId, bankAccountId, transactionDate, narration, referenceNumber, type, amount, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'UNMATCHED')`,
+          [lineId, scope.tenantId, scope.organisationId, statementId, bankAccountId, row.transactionDate || sqlDate(new Date()),
+           row.narration || "Bank Transaction", row.referenceNumber || null, type, amount]);
+      }
+
+      await booksConn.query(
+        `INSERT INTO BooksBankStatement
+          (id, tenantId, organisationId, bankAccountId, filename, totalDeposits, totalWithdrawals, rowCount)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [statementId, scope.tenantId, scope.organisationId, bankAccountId, filename || "statement.csv",
+         fromMinorUnits(totalDeposits), fromMinorUnits(totalWithdrawals), rows.length]);
+
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: "bank_statement.imported", entityType: "bank_statement", entityId: statementId, afterData: { filename, count: rows.length }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.status(201).json({ statement: { id: statementId, filename, count: rows.length } });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/bank-statements", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      const bankAccountId = String(req.query.bankAccountId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "banking.view");
+      await ensureBankingTables(booksConn);
+
+      const [lines]: any = await booksConn.query(
+        `SELECT bsl.*
+         FROM BooksBankStatementLine bsl
+         WHERE bsl.tenantId = ? AND bsl.organisationId = ? AND (? = '' OR bsl.bankAccountId = ?)
+         ORDER BY bsl.transactionDate DESC, bsl.createdAt DESC LIMIT 300`,
+        [scope.tenantId, scope.organisationId, bankAccountId, bankAccountId]);
+
+      // Smart match recommendations for each statement line
+      const enhancedLines = await Promise.all(lines.map(async (line: any) => {
+        if (line.status === "MATCHED") return line;
+        let suggestion: any = null;
+        if (line.type === "DEPOSIT") {
+          const [matches]: any = await booksConn.query(
+            `SELECT p.id, p.paymentNumber, p.amount, p.paymentDate, c.displayName customerName
+             FROM BooksCustomerPayment p JOIN BooksContact c ON c.id = p.customerId AND c.tenantId = p.tenantId AND c.organisationId = p.organisationId
+             WHERE p.tenantId = ? AND p.organisationId = ? AND p.amount = ? LIMIT 1`,
+            [scope.tenantId, scope.organisationId, line.amount]);
+          if (matches.length) suggestion = { type: "CUSTOMER_PAYMENT", id: matches[0].id, label: `Customer Payment ${matches[0].paymentNumber} (${matches[0].customerName})` };
+        } else {
+          const [matches]: any = await booksConn.query(
+            `SELECT vp.id, vp.paymentNumber, vp.amount, vp.paymentDate, c.displayName vendorName
+             FROM BooksVendorPayment vp JOIN BooksContact c ON c.id = vp.vendorId AND c.tenantId = vp.tenantId AND c.organisationId = vp.organisationId
+             WHERE vp.tenantId = ? AND vp.organisationId = ? AND vp.amount = ? LIMIT 1`,
+            [scope.tenantId, scope.organisationId, line.amount]);
+          if (matches.length) suggestion = { type: "VENDOR_PAYMENT", id: matches[0].id, label: `Vendor Payment ${matches[0].paymentNumber} (${matches[0].vendorName})` };
+        }
+        return { ...line, suggestion };
+      }));
+
+      res.json({ lines: enhancedLines });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.post("/api/portal/books/bank-statements/reconcile", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const { organisationId, lineId, matchedSourceType, matchedSourceId, action } = req.body;
+      if (!organisationId || !lineId) throw new BooksHttpError(400, "Statement line ID is required");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "banking.manage");
+      await ensureBankingTables(booksConn);
+      await booksConn.beginTransaction();
+
+      const nextStatus = action === "EXCLUDE" ? "EXCLUDED" : "MATCHED";
+      await booksConn.query(
+        `UPDATE BooksBankStatementLine
+         SET status = ?, matchedSourceType = ?, matchedSourceId = ?, reconciledAt = NOW(3), reconciledBy = ?
+         WHERE id = ? AND tenantId = ? AND organisationId = ?`,
+        [nextStatus, matchedSourceType || null, matchedSourceId || null, userId, lineId, scope.tenantId, scope.organisationId]);
+
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: `bank_statement.${nextStatus.toLowerCase()}`, entityType: "bank_statement_line", entityId: lineId, afterData: { action, matchedSourceType, matchedSourceId }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.json({ success: true, lineId, status: nextStatus });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
   app.get("/api/portal/books/reports/trial-balance", async (req: PortalRequest, res) => {
     let platformConn: any;
     let booksConn: any;
@@ -987,6 +1313,40 @@ export function registerBooksRoutes(app: Express, getPlatformConnection: Connect
     } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
   });
 
+  app.get("/api/portal/books/reports/general-ledger", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      const accountId = String(req.query.accountId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const from = isoDate.parse(String(req.query.from || `${new Date().getFullYear()}-04-01`));
+      const to = isoDate.parse(String(req.query.to || sqlDate(new Date())));
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "reports.view");
+
+      const [accounts]: any = await booksConn.query(
+        "SELECT id, code, name, type, subType FROM BooksAccount WHERE tenantId = ? AND organisationId = ? AND isActive = 1 ORDER BY code",
+        [scope.tenantId, scope.organisationId]);
+
+      const [postings]: any = await booksConn.query(
+        `SELECT jl.id, jl.debit, jl.credit, jl.description, je.entryNumber, je.entryDate, je.sourceType,
+                a.code accountCode, a.name accountName, c.displayName contactName
+         FROM BooksJournalLine jl
+         JOIN BooksJournalEntry je ON je.id = jl.journalEntryId AND je.tenantId = jl.tenantId AND je.organisationId = jl.organisationId
+         JOIN BooksAccount a ON a.id = jl.accountId AND a.tenantId = jl.tenantId AND a.organisationId = jl.organisationId
+         LEFT JOIN BooksContact c ON c.id = jl.contactId AND c.tenantId = jl.tenantId AND c.organisationId = jl.organisationId
+         WHERE jl.tenantId = ? AND jl.organisationId = ? AND (? = '' OR jl.accountId = ?)
+           AND je.entryDate BETWEEN ? AND ? AND je.status = 'POSTED'
+         ORDER BY je.entryDate ASC, je.createdAt ASC LIMIT 500`,
+        [scope.tenantId, scope.organisationId, accountId, accountId, from, to]);
+
+      res.json({ from, to, accounts, postings });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
   app.get("/api/portal/books/gst/summary", async (req: PortalRequest, res) => {
     let platformConn: any;
     let booksConn: any;
@@ -1019,6 +1379,144 @@ export function registerBooksRoutes(app: Express, getPlatformConnection: Connect
         inward: { ...inward, taxable: String(inward.taxable), cgst: String(inward.cgst), sgst: String(inward.sgst), igst: String(inward.igst), totalTax: fromMinorUnits(inputTax) },
         netPayable: fromMinorUnits(outputTax - inputTax),
       });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/gst/gstr1", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const from = isoDate.parse(String(req.query.from || `${new Date().getFullYear()}-04-01`));
+      const to = isoDate.parse(String(req.query.to || sqlDate(new Date())));
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "gst.view");
+
+      // B2B Invoices (Customers with valid GSTIN)
+      const [b2bInvoices]: any = await booksConn.query(
+        `SELECT i.id, i.invoiceNumber, i.invoiceDate, i.placeOfSupply, i.supplyType, i.grandTotal invoiceValue,
+                c.displayName customerName, c.gstin customerGstin
+         FROM BooksInvoice i JOIN BooksContact c ON c.id = i.customerId AND c.tenantId = i.tenantId AND c.organisationId = i.organisationId
+         WHERE i.tenantId = ? AND i.organisationId = ? AND i.invoiceDate BETWEEN ? AND ?
+           AND c.gstin IS NOT NULL AND c.gstin != '' AND i.status NOT IN ('DRAFT','CANCELLED','VOID')
+         ORDER BY i.invoiceDate DESC`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      // Lines for B2B Invoices
+      const b2bList = await Promise.all(b2bInvoices.map(async (inv: any) => {
+        const [lines]: any = await booksConn.query(
+          `SELECT hsnSac, gstRate, taxableAmount, cgstAmount, sgstAmount, igstAmount, lineTotal
+           FROM BooksInvoiceLine WHERE tenantId = ? AND organisationId = ? AND invoiceId = ?`,
+          [scope.tenantId, scope.organisationId, inv.id]);
+        return { ...inv, lines };
+      }));
+
+      // B2C Small & Large Invoices (Unregistered Customers)
+      const [b2cInvoices]: any = await booksConn.query(
+        `SELECT i.id, i.invoiceNumber, i.invoiceDate, i.placeOfSupply, i.grandTotal invoiceValue,
+                c.displayName customerName
+         FROM BooksInvoice i JOIN BooksContact c ON c.id = i.customerId AND c.tenantId = i.tenantId AND c.organisationId = i.organisationId
+         WHERE i.tenantId = ? AND i.organisationId = ? AND i.invoiceDate BETWEEN ? AND ?
+           AND (c.gstin IS NULL OR c.gstin = '') AND i.status NOT IN ('DRAFT','CANCELLED','VOID')
+         ORDER BY i.invoiceDate DESC`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      // HSN Summary
+      const [hsnSummary]: any = await booksConn.query(
+        `SELECT il.hsnSac, il.gstRate, COALESCE(SUM(il.quantity), 0) totalQty,
+                COALESCE(SUM(il.taxableAmount), 0) taxableValue,
+                COALESCE(SUM(il.cgstAmount), 0) cgst, COALESCE(SUM(il.sgstAmount), 0) sgst,
+                COALESCE(SUM(il.igstAmount), 0) igst, COALESCE(SUM(il.lineTotal), 0) lineTotal
+         FROM BooksInvoiceLine il JOIN BooksInvoice i ON i.id = il.invoiceId AND i.tenantId = il.tenantId AND i.organisationId = il.organisationId
+         WHERE il.tenantId = ? AND il.organisationId = ? AND i.invoiceDate BETWEEN ? AND ? AND i.status NOT IN ('DRAFT','CANCELLED','VOID')
+         GROUP BY il.hsnSac, il.gstRate ORDER BY il.hsnSac`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      res.json({ from, to, b2b: b2bList, b2c: b2cInvoices, hsnSummary });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/gst/gstr3b", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const from = isoDate.parse(String(req.query.from || `${new Date().getFullYear()}-04-01`));
+      const to = isoDate.parse(String(req.query.to || sqlDate(new Date())));
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "gst.view");
+
+      const [[table31]]: any = await booksConn.query(
+        `SELECT COALESCE(SUM(subTotal),0) taxableValue, COALESCE(SUM(cgstTotal),0) cgst,
+                COALESCE(SUM(sgstTotal),0) sgst, COALESCE(SUM(igstTotal),0) igst
+         FROM BooksInvoice WHERE tenantId = ? AND organisationId = ? AND invoiceDate BETWEEN ? AND ? AND status NOT IN ('DRAFT','CANCELLED','VOID')`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      const [[table4]]: any = await booksConn.query(
+        `SELECT COALESCE(SUM(subTotal),0) taxableValue, COALESCE(SUM(inputCgst),0) cgst,
+                COALESCE(SUM(inputSgst),0) sgst, COALESCE(SUM(inputIgst),0) igst
+         FROM BooksBill WHERE tenantId = ? AND organisationId = ? AND billDate BETWEEN ? AND ? AND status NOT IN ('DRAFT','CANCELLED','VOID')`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      const outTax = toMinorUnits(String(table31.cgst)) + toMinorUnits(String(table31.sgst)) + toMinorUnits(String(table31.igst));
+      const inTax = toMinorUnits(String(table4.cgst)) + toMinorUnits(String(table4.sgst)) + toMinorUnits(String(table4.igst));
+
+      res.json({
+        from, to,
+        table3_1: { ...table31, totalTax: fromMinorUnits(outTax) },
+        table4: { ...table4, totalTax: fromMinorUnits(inTax) },
+        netTaxPayable: fromMinorUnits(outTax - inTax),
+      });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/gst/export-json", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const from = isoDate.parse(String(req.query.from || `${new Date().getFullYear()}-04-01`));
+      const to = isoDate.parse(String(req.query.to || sqlDate(new Date())));
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "gst.view");
+
+      const [orgs]: any = await booksConn.query("SELECT legalName, (SELECT gstin FROM BooksGSTRegistration WHERE tenantId = ? AND organisationId = ? LIMIT 1) gstin FROM BooksOrganisation WHERE id = ?", [scope.tenantId, scope.organisationId, scope.organisationId]);
+      const gstin = orgs[0]?.gstin || "29AAACB1234F1Z5";
+
+      const [invoices]: any = await booksConn.query(
+        `SELECT i.id, i.invoiceNumber, i.invoiceDate, i.placeOfSupply, i.grandTotal invoiceValue, c.displayName customerName, c.gstin customerGstin
+         FROM BooksInvoice i JOIN BooksContact c ON c.id = i.customerId AND c.tenantId = i.tenantId AND c.organisationId = i.organisationId
+         WHERE i.tenantId = ? AND i.organisationId = ? AND i.invoiceDate BETWEEN ? AND ? AND i.status NOT IN ('DRAFT','CANCELLED','VOID')`,
+        [scope.tenantId, scope.organisationId, from, to]);
+
+      const fp = `${to.slice(5, 7)}${to.slice(0, 4)}`;
+      const jsonPayload = {
+        gstin,
+        fp,
+        version: "GST3.0.4",
+        hash: "hash-incroute-books-v1",
+        b2b: invoices.filter((i: any) => i.customerGstin).map((inv: any) => ({
+          ctin: inv.customerGstin,
+          inv: [{ inum: inv.invoiceNumber, idt: inv.invoiceDate, val: parseFloat(inv.invoiceValue), pos: inv.placeOfSupply, rchrg: "N", inv_typ: "R" }]
+        })),
+        b2cs: invoices.filter((i: any) => !i.customerGstin).map((inv: any) => ({
+          pos: inv.placeOfSupply,
+          txval: parseFloat(inv.invoiceValue),
+        }))
+      };
+
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Content-Disposition", `attachment; filename="GSTR1_${gstin}_${fp}.json"`);
+      res.send(JSON.stringify(jsonPayload, null, 2));
     } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
   });
 
@@ -1071,5 +1569,100 @@ export function registerBooksRoutes(app: Express, getPlatformConnection: Connect
         [scope.tenantId, scope.organisationId]);
       res.json({ entries });
     } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/chart-of-accounts", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "settings.view");
+
+      const [accounts]: any = await booksConn.query(
+        `SELECT id, code, name, type, subType, normalBalance, isSystem, isActive, createdAt
+         FROM BooksAccount WHERE tenantId = ? AND organisationId = ? ORDER BY type, code`,
+        [scope.tenantId, scope.organisationId]);
+
+      res.json({ accounts });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.post("/api/portal/books/chart-of-accounts", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const { organisationId, code, name, type, subType } = req.body;
+      if (!organisationId || !code || !name || !type) throw new BooksHttpError(400, "Code, name and type are required");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "settings.manage");
+      await booksConn.beginTransaction();
+
+      const accountId = makeId("bacc");
+      const normalBalance = ["ASSET", "EXPENSE"].includes(type) ? "DEBIT" : "CREDIT";
+      await booksConn.query(
+        `INSERT INTO BooksAccount (id, tenantId, organisationId, code, name, type, subType, normalBalance, isSystem)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+        [accountId, scope.tenantId, scope.organisationId, code, name, type, subType || "GENERAL", normalBalance]);
+
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: "chart_of_accounts.created", entityType: "account", entityId: accountId, afterData: { code, name, type }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.status(201).json({ account: { id: accountId, code, name, type, subType: subType || "GENERAL", isSystem: false } });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.get("/api/portal/books/organisation-settings", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      const organisationId = String(req.query.organisationId || "");
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "settings.view");
+
+      const [orgs]: any = await booksConn.query(
+        `SELECT id, legalName, tradeName, entityType, pan, tan, cinLlpIn, baseCurrency, reportingMethod, invoicePrefix, nextInvoiceNumber
+         FROM BooksOrganisation WHERE id = ? AND tenantId = ? LIMIT 1`,
+        [scope.organisationId, scope.tenantId]);
+
+      const [gstins]: any = await booksConn.query(
+        `SELECT id, gstin, stateCode, isDefault FROM BooksGSTRegistration WHERE tenantId = ? AND organisationId = ? AND isActive = 1`,
+        [scope.tenantId, scope.organisationId]);
+
+      res.json({ organisation: orgs[0], gstRegistrations: gstins });
+    } catch (error) { respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
+  });
+
+  app.put("/api/portal/books/organisation-settings", async (req: PortalRequest, res) => {
+    let platformConn: any;
+    let booksConn: any;
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new BooksHttpError(401, "Not authenticated");
+      const { organisationId, legalName, tradeName, invoicePrefix, baseCurrency } = req.body;
+      if (!organisationId || !legalName) throw new BooksHttpError(400, "Legal name is required");
+      platformConn = await getPlatformConnection();
+      booksConn = await getBooksConnection();
+      const scope = await getScope(platformConn, booksConn, userId, organisationId, "settings.manage");
+      await booksConn.beginTransaction();
+
+      await booksConn.query(
+        `UPDATE BooksOrganisation
+         SET legalName = ?, tradeName = ?, invoicePrefix = ?, baseCurrency = ?
+         WHERE id = ? AND tenantId = ?`,
+        [legalName, tradeName || null, invoicePrefix || "INV", baseCurrency || "INR", scope.organisationId, scope.tenantId]);
+
+      await writeAudit(booksConn, { scope, actorUserId: userId, action: "organisation_settings.updated", entityType: "organisation", entityId: scope.organisationId, afterData: { legalName, invoicePrefix }, ipAddress: req.ip, userAgent: req.headers["user-agent"] || null });
+      await booksConn.commit();
+      res.json({ success: true });
+    } catch (error) { if (booksConn) try { await booksConn.rollback(); } catch {}; respondError(res, error); } finally { platformConn?.release(); booksConn?.release(); }
   });
 }

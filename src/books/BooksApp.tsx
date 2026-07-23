@@ -5,6 +5,7 @@ import { booksApi } from "./api";
 import BooksShell from "./BooksShell";
 import type { BooksBootstrap, BooksOrganisation } from "./types";
 import BooksDashboard from "./pages/Dashboard";
+import BankingPage from "./pages/Banking";
 import BillsPage from "./pages/Bills";
 import ContactsPage from "./pages/Contacts";
 import InvoicesPage from "./pages/Invoices";
@@ -70,6 +71,7 @@ export default function BooksApp({ onExit, basePath = "/portal/books" }:{ onExit
     : route === "items" ? <ItemsPage organisation={organisation} />
     : route === "invoices" ? <InvoicesPage organisation={organisation} onNavigate={go} />
     : route === "bills" ? <BillsPage organisation={organisation} onNavigate={go} />
+    : route === "banking" ? <BankingPage organisation={organisation} onNavigate={go} />
     : route === "gst" ? <GstPage organisation={organisation} />
     : route === "reports" ? <ReportsPage organisation={organisation} />
     : route === "settings" ? <SettingsPage organisation={organisation} />
