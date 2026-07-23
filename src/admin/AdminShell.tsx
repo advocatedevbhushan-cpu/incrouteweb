@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   LayoutDashboard, Users, CalendarCheck, CheckSquare, FileText, Receipt,
   Shield, Scale, Database, HelpCircle, BarChart3, Clock, Settings,
-  ChevronLeft, Menu, Bell, Search, LogOut, BookOpen
+  ChevronLeft, Menu, Bell, Search, LogOut, BookOpen, Layers
 } from "lucide-react";
 
 interface AdminShellProps {
@@ -31,6 +31,7 @@ const navSections = [
     { id: "tickets", label: "Support", icon: HelpCircle },
   ]},
   { label: "Management", items: [
+    { id: "services", label: "Services", icon: Layers },
     { id: "team", label: "Team", icon: Users },
     { id: "reports", label: "Reports", icon: BarChart3 },
     { id: "audit", label: "Audit Log", icon: Clock },
