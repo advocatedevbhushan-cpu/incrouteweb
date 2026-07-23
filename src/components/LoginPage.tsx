@@ -51,11 +51,19 @@ export default function LoginPage({ setActiveTab }: LoginPageProps) {
       localStorage.setItem("incroute_user", JSON.stringify(data.user));
       
       // Redirect based on role or query parameter
-      const redirectUrl = new URLSearchParams(window.location.search).get("redirect");
+      let redirectUrl = new URLSearchParams(window.location.search).get("redirect");
       if (redirectUrl) {
+        if (redirectUrl.includes("/login")) {
+          try {
+            const parsed = new URL(redirectUrl, window.location.origin);
+            redirectUrl = parsed.searchParams.get("redirect") || "/";
+          } catch {
+            redirectUrl = "/";
+          }
+        }
         window.location.href = redirectUrl;
       } else if (window.location.hostname.startsWith("books.")) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       } else if (data.user?.role === "SUPER_ADMIN" || data.user?.role === "ADMIN") {
         window.location.href = "/admin";
       } else if (data.user?.role === "TEAM_MEMBER") {

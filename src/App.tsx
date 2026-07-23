@@ -372,7 +372,8 @@ export default function App() {
 
   // Check if we're in a full-screen portal mode (portal/admin/partner/books have their own shell)
   const isBooksDomain = window.location.hostname.startsWith("books.");
-  const isFullScreenPortal = activeTab === "portal" || activeTab === "admin" || activeTab === "partner" || activeTab === "books" || isBooksDomain;
+  const isAuthRoute = activeTab === "login" || activeTab === "auth" || location.pathname.startsWith("/login") || location.pathname.startsWith("/auth");
+  const isFullScreenPortal = !isAuthRoute && (activeTab === "portal" || activeTab === "admin" || activeTab === "partner" || activeTab === "books" || isBooksDomain);
 
   // Check if user is authenticated for portal/admin access
   const isAuthenticated = (() => {
@@ -385,10 +386,12 @@ export default function App() {
   // Redirect to login if trying to access portal/admin/partner without auth
   useEffect(() => {
     if (isFullScreenPortal && !isAuthenticated && !loading) {
-      const currentUrl = window.location.href;
-      navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+      if (!location.pathname.startsWith("/login")) {
+        const currentUrl = window.location.href;
+        navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+      }
     }
-  }, [activeTab, isAuthenticated, loading]);
+  }, [isFullScreenPortal, isAuthenticated, loading, location.pathname]);
 
   // If portal/admin/books is active, render without outer shell
   if (isFullScreenPortal) {
