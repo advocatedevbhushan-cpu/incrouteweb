@@ -13,6 +13,9 @@ import compression from "compression";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { registerBooksRoutes } from "./server/books/routes";
+import { createAuthRouter } from "./server/routes/auth";
+import { createServicesRouter } from "./server/routes/services";
+import { createBlogRouter } from "./server/routes/blog";
 
 dotenv.config();
 
@@ -47,7 +50,11 @@ async function startServer() {
   // Compression middleware — reduces response size by 60-80%
   app.use(compression());
 
-  const JWT_SECRET = process.env.JWT_SECRET || "incroute_jwt_secret_2024";
+  // Dynamic fallback secret to prevent token forgery when JWT_SECRET is omitted in dev
+  const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
+  if (!process.env.JWT_SECRET) {
+    console.warn("⚠️ Warning: JWT_SECRET environment variable not set. Using temporary cryptographically random secret.");
+  }
 
   // Security headers
   app.use((req, res, next) => {
@@ -61,8 +68,8 @@ async function startServer() {
 
   // INCroute Books & Subdomain Routing Middleware
   app.use((req, res, next) => {
-    const host = (req.headers.host || "").toLowerCase();
-    const isBooksDomain = host.startsWith("books.");
+    const host = (req.headers.host || "").toLowerCase().split(":")[0];
+    const isBooksDomain = /^books\./.test(host);
 
     if (isBooksDomain) {
       // If accessing books.incroute.com/books/*, strip redundant /books prefix
@@ -77,13 +84,15 @@ async function startServer() {
   // Health check (always works)
   app.get("/api/health", async (req, res) => {
     let dbStatus = "unknown";
+    let conn;
     try {
-      const conn = await getPlatformConnection();
+      conn = await getPlatformConnection();
       const [rows]: any = await conn.query("SELECT COUNT(*) as count FROM `User`");
       dbStatus = `connected (${rows[0].count} users)`;
-      conn.release();
     } catch (e: any) {
       dbStatus = `error: ${e.message?.substring(0, 50)}`;
+    } finally {
+      if (conn) conn.release();
     }
     res.json({ status: "ok", timestamp: new Date().toISOString(), db: dbStatus });
   });
@@ -92,21 +101,17 @@ async function startServer() {
   let platformPool: any = null;
   
   const getPlatformConnection = async () => {
-    const dbUrl = process.env.DATABASE_URL || "";
-    const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-    if (!match) throw new Error("DATABASE_URL not configured");
-    const [, user, pass, host, port, database] = match;
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) throw new Error("DATABASE_URL not configured");
     
-    // Reuse pool if already created
     if (!platformPool) {
       platformPool = mysql.createPool({
-        host, port: Number(port), user, password: decodeURIComponent(pass), database,
+        uri: dbUrl,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
         idleTimeout: 60000,
         enableKeepAlive: true,
-        timezone: 'Z',
       });
     }
     
@@ -117,25 +122,27 @@ async function startServer() {
   let booksPool: any = null;
 
   const getBooksConnection = async () => {
-    const dbUrl = process.env.BOOKS_DATABASE_URL || process.env.DATABASE_URL || "";
-    const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-    if (!match) throw new Error("BOOKS_DATABASE_URL or DATABASE_URL not configured");
-    const [, user, pass, host, port, database] = match;
+    const dbUrl = process.env.BOOKS_DATABASE_URL || process.env.DATABASE_URL;
+    if (!dbUrl) throw new Error("BOOKS_DATABASE_URL or DATABASE_URL not configured");
 
     if (!booksPool) {
       booksPool = mysql.createPool({
-        host, port: Number(port), user, password: decodeURIComponent(pass), database,
+        uri: dbUrl,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
         idleTimeout: 60000,
         enableKeepAlive: true,
-        timezone: 'Z',
       });
     }
 
     return booksPool.getConnection();
   };
+
+  // Register modular API routes
+  app.use("/api/auth", createAuthRouter(getPlatformConnection, JWT_SECRET));
+  app.use("/api", createServicesRouter(getPlatformConnection, complianceCalendar));
+  app.use("/api/blog", createBlogRouter());
 
   // Ensure Timesheet table exists at startup
   (async () => {
@@ -195,53 +202,6 @@ async function startServer() {
       console.error("[DB Startup Warning] Failed to verify Books tables on startup:", err.message);
     }
   })();
-
-  // ─── ADMIN REGISTRATION (raw SQL, no Prisma needed) ───
-  // Visit: /api/setup-admin?key=incroute2026 to create the admin user
-  app.get("/api/setup-admin", async (req, res) => {
-    const setupKey = req.query.key;
-    if (setupKey !== "incroute2026") {
-      return res.status(403).json({ error: "Invalid setup key" });
-    }
-    try {
-      const conn = await getPlatformConnection();
-
-      // Update existing admin email or create new one
-      const adminEmail = "d.bhushan@incroute.com";
-      const [existing]: any = await conn.query("SELECT id FROM `User` WHERE role = 'SUPER_ADMIN' LIMIT 1");
-      
-      if (existing.length > 0) {
-        // Update existing admin's email and reset password
-        const passwordHash = await bcrypt.hash("Admin@2026", 12);
-        const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-        await conn.query("UPDATE `User` SET email = ?, passwordHash = ?, updatedAt = ? WHERE id = ?", 
-          [adminEmail, passwordHash, now, existing[0].id]);
-        conn.release();
-        return res.json({ success: true, message: "Admin user updated!", credentials: { email: adminEmail, password: "***hidden***" }, hint: "Password is the same as ADMIN_PASSWORD env variable" });
-      }
-
-      // Create new admin
-      const passwordHash = await bcrypt.hash("Admin@2026", 12);
-      const id = "admin_" + Date.now().toString(36);
-      const now = new Date().toISOString().slice(0, 23).replace("T", " ");
-      
-      await conn.query(
-        `INSERT INTO \`User\` (id, email, passwordHash, firstName, lastName, phone, role, isActive, emailVerified, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, adminEmail, passwordHash, "Dev", "Bhushan", "+918707552183", "SUPER_ADMIN", 1, 1, now, now]
-      );
-      
-      conn.release();
-      res.json({ 
-        success: true, 
-        message: "Admin user created!", 
-        credentials: { email: adminEmail, password: "***hidden***" },
-        hint: "Password is the same as ADMIN_PASSWORD env variable"
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: "Admin setup failed", details: err.message });
-    }
-  });
 
   // ─── RAW SQL AUTH ENDPOINTS (bypasses Prisma binary requirement) ───
   // ─── RATE LIMITING & SECURITY ───
@@ -750,12 +710,13 @@ const secret = JWT_SECRET;
   });
 
   app.post("/api/admin/clients", async (req, res) => {
+    const conn = await getPlatformConnection();
     try {
       const { companyName, contactName, contactEmail, contactPhone, industry, notes, password, services, entityType, relationshipMgrId } = req.body;
       if (!companyName || !contactName || !contactEmail) {
+        conn.release();
         return res.status(400).json({ error: "companyName, contactName, and contactEmail are required" });
       }
-      const conn = await getPlatformConnection();
       
       // Build notes JSON with allowed services
       let notesJson: any = {};
@@ -766,6 +727,9 @@ const secret = JWT_SECRET;
         notesJson.allowedServices = services;
       }
       const notesStr = Object.keys(notesJson).length > 0 ? JSON.stringify(notesJson) : null;
+
+      // Begin atomic transaction for multi-table insertion
+      await conn.beginTransaction();
 
       // Create client record
       const clientId = "cli_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -786,8 +750,8 @@ const secret = JWT_SECRET;
         );
       }
 
-      // Create user account for the client (so they can login to portal)
-      const loginPassword = password || "Welcome@123";
+      // Create user account for the client with secure random default password if not specified
+      const loginPassword = password || (crypto.randomBytes(6).toString("hex") + "!Aa1");
       const passwordHash = await bcrypt.hash(loginPassword, 12);
       const userId = "usr_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const nameParts = contactName.split(" ");
@@ -810,6 +774,7 @@ const secret = JWT_SECRET;
         ["act_" + Date.now().toString(36), clientId, null, "client_created", `New client onboarded: ${companyName}`, now]
       );
 
+      await conn.commit();
       conn.release();
       
       // Send welcome email to new client
@@ -861,6 +826,8 @@ const secret = JWT_SECRET;
 
       res.json({ success: true, id: clientId, message: "Client created with login credentials", credentials: { email: contactEmail, password: loginPassword } });
     } catch (err: any) {
+      try { await conn.rollback(); } catch {}
+      conn.release();
       res.status(500).json({ error: "Failed to create client", details: err.message });
     }
   });
@@ -5615,7 +5582,7 @@ Format your response in structured sections:
         if (fs.existsSync(templatePath)) {
           const template = fs.readFileSync(templatePath, "utf-8");
           const html = injectSEOMetadata(template, url);
-          return res.status(200).set({ "Content-Type": "text/html" }).end(html);
+          return res.status(200).set({ "Content-Type": "text/html", "Cache-Control": "no-cache, no-store, must-revalidate" }).end(html);
         }
         next();
       } catch (err) {
@@ -5623,83 +5590,15 @@ Format your response in structured sections:
       }
     });
 
-    // ─── ONE-TIME DATABASE SETUP ENDPOINT ───
-    // Visit: /api/setup-db?key=incroute2026 to create all Prisma tables
-    // Uses raw SQL since Prisma CLI binaries don't have execute permission on shared hosting
-    app.get("/api/setup-db", async (req, res) => {
-      const setupKey = req.query.key;
-      if (setupKey !== "incroute2026") {
-        return res.status(403).json({ error: "Invalid setup key" });
-      }
-      try {
-        const dbUrl = process.env.DATABASE_URL || "";
-        const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-        if (!match) {
-          return res.status(500).json({ error: "Invalid DATABASE_URL format" });
-        }
-        const [, user, pass, host, port, database] = match;
-        const connection = await mysql.createConnection({
-          host, port: Number(port), user, password: decodeURIComponent(pass), database,
-          multipleStatements: true
-        });
-
-        // Create all tables
-        const sql = fs.readFileSync(path.join(process.cwd(), "setup-database.sql"), "utf-8");
-        await connection.query(sql);
-        await connection.end();
-
-        res.json({ success: true, message: "All 27 database tables created successfully!" });
-      } catch (err: any) {
-        res.status(500).json({ error: "Setup failed", details: err.message });
-      }
-    });
-
-    // ─── ONE-TIME BOOKS SETUP ENDPOINT ───
-    // Visit: /api/setup-books?key=incroute2026 to apply Books migrations and reference seeds
-    app.get("/api/setup-books", async (req, res) => {
-      const setupKey = req.query.key;
-      if (setupKey !== "incroute2026") {
-        return res.status(403).json({ error: "Invalid setup key" });
-      }
-      try {
-        const dbUrl = process.env.DATABASE_URL || "";
-        const match = dbUrl.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-        if (!match) {
-          return res.status(500).json({ error: "Invalid DATABASE_URL format" });
-        }
-        const [, user, pass, host, port, database] = match;
-        const connection = await mysql.createConnection({
-          host, port: Number(port), user, password: decodeURIComponent(pass), database,
-          multipleStatements: true
-        });
-
-        // Read and run Books migration SQL
-        const migrationPath = path.join(process.cwd(), "migrations", "20260713_incroute_books_mvp.sql");
-        const migrationSql = fs.readFileSync(migrationPath, "utf-8");
-        await connection.query(migrationSql);
-
-        // Read and run Books seed SQL
-        const seedPath = path.join(process.cwd(), "seeds", "20260713_incroute_books_reference_seed.sql");
-        const seedSql = fs.readFileSync(seedPath, "utf-8");
-        await connection.query(seedSql);
-
-        await connection.end();
-
-        res.json({ success: true, message: "INCroute Books tables and reference seeds applied successfully!" });
-      } catch (err: any) {
-        res.status(500).json({ error: "Books setup failed", details: err.message });
-      }
-    });
-
-
-    // Static file serving with cache headers
+    // Static file serving without aggressive immutable caching
     app.use(express.static(resolvedDistPath, {
-      maxAge: '1y',
-      immutable: true,
+      maxAge: 0,
+      etag: false,
+      lastModified: false,
       index: false  // Don't serve index.html from static — SPA fallback handles it
     }));
     app.use(express.static(path.join(process.cwd(), "public"), {
-      maxAge: '7d'
+      maxAge: 0
     }));
 
     // SPA fallback — serve index.html for ALL non-API, non-file routes
@@ -5708,6 +5607,7 @@ Format your response in structured sections:
       if (req.path.includes(".") && !req.path.endsWith(".html")) {
         return res.status(404).end();
       }
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(path.join(resolvedDistPath, "index.html"));
     });
   }

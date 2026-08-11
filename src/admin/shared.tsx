@@ -2,7 +2,16 @@ import React from "react";
 import { ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
 
 export const authHeaders = () => { const t = localStorage.getItem("incroute_access_token"); return t ? { Authorization: `Bearer ${t}` } : {} as any; };
-export const api = async (url: string, opts?: RequestInit) => { const res = await fetch(url, { ...opts, headers: { "Content-Type": "application/json", ...authHeaders(), ...opts?.headers } }); return res.json(); };
+export const api = async (url: string, opts?: RequestInit) => {
+  const res = await fetch(url, { ...opts, headers: { "Content-Type": "application/json", ...authHeaders(), ...opts?.headers } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errorMsg = data.error || data.details || `Request failed with status ${res.status}`;
+    console.error(`[API Error ${res.status}] ${url}:`, errorMsg);
+    throw new Error(errorMsg);
+  }
+  return data;
+};
 
 export function Loading() { return <div className="flex items-center justify-center min-h-[40vh]"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>; }
 

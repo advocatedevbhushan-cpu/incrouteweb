@@ -13,6 +13,7 @@ export interface BooksOrganisation {
   roleCode: string;
   accessKind?: "ADMIN_FIRM" | "CLIENT_ORGANISATION" | "PLATFORM_ORGANISATION" | "OWN_ORGANISATION";
   fiscalYear?: string | null;
+  invoicePrefix?: string | null;
 }
 
 export interface ExistingEntity {
@@ -73,4 +74,8 @@ export interface BooksInvoice {
   balanceDue: string;
   customerName: string;
   customerGstin?: string | null;
+  notes?: string | null;
+  cgstTotal?: string | null;
+  sgstTotal?: string | null;
+  igstTotal?: string | null;
 }

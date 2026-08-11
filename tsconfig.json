@@ -25,6 +25,10 @@
   },
   "exclude": [
     "node_modules",
-    "mobile-app"
+    "mobile-app",
+    "dist",
+    "scratch",
+    "docs",
+    ".agents"
   ]
 }

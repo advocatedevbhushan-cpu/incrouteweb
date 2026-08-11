@@ -2,10 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { TAB_TO_ROUTE } from "./routes";
 
-/**
- * Drop-in replacement for setActiveTab.
- * Components call navigateToTab("services") and it navigates to the correct URL.
- */
 export function useAppNavigate() {
   const navigate = useNavigate();
 
@@ -15,5 +11,11 @@ export function useAppNavigate() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [navigate]);
 
-  return navigateToTab;
+  const navigateToService = useCallback((serviceId: string, category?: string) => {
+    const cat = category || "corporate";
+    navigate(`/services/${cat}/${serviceId}/`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [navigate]);
+
+  return Object.assign(navigateToTab, { navigateToTab, navigateToService });
 }

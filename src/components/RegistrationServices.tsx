@@ -3494,7 +3494,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
+          <div id="service-catalog-section" className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
             <div className="text-center space-y-1">
               <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Choose Your Business Structure</h2>
               <p className="text-[13px] text-slate-500 font-medium">Select the right structure for your business goals and growth plans.</p>
@@ -3513,27 +3513,27 @@ export default function RegistrationServices({
                   }`}
                 >
                   {item.featured && (
-                    <span className="absolute -top-3 left-6 px-2.5 py-0.5 bg-[#4F46E5] text-white text-[9px] font-bold rounded-full uppercase tracking-wider shadow-sm">
+                    <span className="absolute -top-3 left-6 px-2.5 py-0.5 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full uppercase tracking-wider shadow-sm font-mono">
                       Popular
                     </span>
                   )}
                   <div className="space-y-3">
-                    <h3 className="text-[15px] font-bold text-[#080F2A] mt-2">{item.title}</h3>
-                    <p className="text-[12px] text-slate-500 leading-relaxed font-sans">{item.desc}</p>
+                    <h3 className="text-[15px] font-bold text-[var(--text-primary)] mt-2 font-display">{item.title}</h3>
+                    <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed font-sans">{item.desc}</p>
                     <ul className="space-y-2 pt-2">
                       {item.benefits.map((b, j) => (
-                        <li key={j} className="flex items-start gap-2 text-[12px] text-slate-600 font-sans">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#4F46E5] shrink-0 mt-0.5" />
+                        <li key={j} className="flex items-start gap-2 text-[12px] text-[var(--text-secondary)] font-sans">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent)] shrink-0 mt-0.5" />
                           <span>{b}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <button
-                    onClick={() => navigate(`/services/private-corporate/${item.id}/`)}
-                    className="text-[12px] text-[#4F46E5] font-bold flex items-center gap-1.5 hover:gap-2.5 transition-all cursor-pointer pt-2 leading-none"
+                    onClick={() => navigate(`/services/${(item as any).category || "private-corporate"}/${item.id}/`)}
+                    className="text-[12px] text-[var(--accent)] font-bold flex items-center gap-1.5 hover:gap-2.5 transition-all cursor-pointer pt-2 leading-none font-display"
                   >
-                    Incorporation in 7-10 days <ArrowRight className="w-3.5 h-3.5" />
+                    View Details & Statutory Requirements <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
@@ -4371,40 +4371,28 @@ export default function RegistrationServices({
                   </>
                 )}
 
-                {/* Ledger */}
-                {!pricing.customQuote && (
-                  <div className="space-y-2 pt-3 border-t border-brand-border/60">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-brand-text-muted font-sans">Professional Fee</span>
-                      <span className="font-serif font-bold text-brand-text">
-                        ₹{pricing.professionalFee}{pricing.isMonthly ? "/mo" : ""}
-                      </span>
-                    </div>
-                    {isIncorporation && (
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-brand-text-muted font-sans">Government & Stamp Duties</span>
-                        <span className="font-serif font-bold text-brand-text">₹{pricing.govFee}</span>
-                      </div>
-                    )}
-                    {isIncorporation && pricing.addOnFee > 0 && (
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-brand-text-muted font-sans">Add-ons Total</span>
-                        <span className="font-serif font-bold text-brand-text">+₹{pricing.addOnFee}</span>
-                      </div>
-                    )}
+                {/* Scope Highlights */}
+                <div className="space-y-2 pt-3 border-t border-brand-border/60">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-brand-text-muted font-sans">Processing Mode</span>
+                    <span className="font-serif font-bold text-brand-text">100% Online Digital</span>
                   </div>
-                )}
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-brand-text-muted font-sans">Verification</span>
+                    <span className="font-serif font-bold text-brand-text">CA & CS Pre-Scrutiny</span>
+                  </div>
+                </div>
 
                 {/* Estimated total and onboard button */}
                 <div className="border-t border-brand-border/60 pt-3 flex justify-between items-center">
                   <div className="flex flex-col">
-                    <span className="text-sm font-serif font-extrabold text-brand-text">Estimated Total</span>
+                    <span className="text-sm font-serif font-extrabold text-brand-text">Statutory Fee & Quote</span>
                     <span className="text-[9px] text-brand-text-muted font-sans">
-                      {pricing.customQuote ? "*Pricing depends on requirement details" : "*Final quote after consultation"}
+                      *Provided after document verification
                     </span>
                   </div>
-                  <span className="text-2.5xl font-serif font-bold text-[#c5a880]">
-                    {pricing.customQuote ? "Custom Quote" : `₹${pricing.total}${pricing.isMonthly ? "/mo" : ""}`}
+                  <span className="text-lg font-serif font-bold text-[#c5a880]">
+                    Custom Proposal
                   </span>
                 </div>
 
@@ -4412,7 +4400,7 @@ export default function RegistrationServices({
                   onClick={() => setShowOnboardModal(true)}
                   className="w-full bg-[#0a1128] hover:bg-[#c5a880] text-white hover:text-slate-900 py-3.5 rounded-xl transition-all cursor-pointer font-bold text-sm font-sans tracking-wide shadow-lg shadow-[#0a1128]/10 flex items-center justify-center gap-1.5 duration-300"
                 >
-                  {pricing.customQuote ? "Request Custom Quote" : "Onboard With This Budget"}{" "}
+                  Request Advisory Proposal{" "}
                   <ChevronRight className="w-4 h-4 ml-1 stroke-[2.5]" />
                 </button>
 
@@ -4491,7 +4479,7 @@ export default function RegistrationServices({
                   "serviceType": selectedEntity.category,
                   "offers": {
                     "@type": "Offer",
-                    "price": selectedEntity.pricing.replace(/[^0-9]/g, "") || "999",
+                    "price": "0",
                     "priceCurrency": "INR"
                   },
                   "aggregateRating": {
@@ -4553,7 +4541,7 @@ export default function RegistrationServices({
                         }) using the AI Feasibility Advisor and would like to proceed with registration. Please help me with the next steps.`
                       : isIncorporation 
                         ? `I would like to onboard and register my business structure as a ${selectedEntity.name}. Directors: ${calcDirectors}, Authorized Share Capital: ₹${calcCapital.toLocaleString()}. Addons: ${Object.keys(addOns).filter(k => addOns[k as any]).join(", ") || "None"}.`
-                        : `I would like to request a custom quote / register for the service: ${selectedEntity.name}.${pricing.customQuote ? "" : ` Estimated Professional Fee: ₹${pricing.total}.`}`
+                        : `I would like to request a custom quote / register for the service: ${selectedEntity.name}.`
                   } 
                 />
               </div>

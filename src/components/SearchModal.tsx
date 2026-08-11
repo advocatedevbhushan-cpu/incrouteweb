@@ -51,12 +51,21 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
+  // Scroll Lock & Lenis Suppression
   useEffect(() => {
     if (open) {
+      document.body.style.overflow = "hidden";
+      document.body.setAttribute("data-lenis-prevent", "true");
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
+      document.body.style.overflow = "";
+      document.body.removeAttribute("data-lenis-prevent");
       setQuery("");
     }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.removeAttribute("data-lenis-prevent");
+    };
   }, [open]);
 
   useEffect(() => {
@@ -64,9 +73,6 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         if (open) onClose();
-        else {
-          // Open trigger handled externally if passed
-        }
       }
       if (e.key === "Escape" && open) {
         onClose();
@@ -94,47 +100,58 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     } else {
       navigate(`/services/${item.category}/${item.id}/`);
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[2000] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/70 backdrop-blur-md">
+      <div 
+        data-lenis-prevent="true"
+        onWheel={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[2000] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/65 backdrop-blur-md pointer-events-auto"
+      >
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: -10 }}
+          initial={{ opacity: 0, scale: 0.95, y: -12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: -10 }}
-          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[80vh]"
+          exit={{ opacity: 0, scale: 0.95, y: -12 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-2xl bg-[var(--bg-surface)] rounded-3xl shadow-2xl border border-[var(--border-subtle)] overflow-hidden flex flex-col max-h-[80vh] text-left"
         >
           {/* Input Header */}
-          <div className="p-4 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
-            <Search className="w-5 h-5 text-indigo-600 shrink-0" />
+          <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] flex items-center gap-3 bg-[var(--bg-surface-alt)]/60">
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0 border border-[var(--border-subtle)]">
+              <Search className="w-4 h-4" />
+            </div>
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search services, incorporations, GST, trademarks, or tools..."
+              placeholder="Search 40+ statutory services, GST, trademarks, or AI tools..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 text-sm sm:text-base font-medium"
+              className="flex-1 bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] text-sm sm:text-base font-medium font-sans"
             />
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono text-slate-400 bg-white border border-slate-200 rounded-md shadow-xs">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-bold text-[var(--accent)] bg-[var(--accent-soft)] border border-[var(--border-subtle)] rounded-lg">
               ESC
             </kbd>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Results List */}
-          <div className="p-3 overflow-y-auto flex-1 space-y-1.5 text-left divide-y divide-slate-100">
+          <div 
+            data-lenis-prevent="true"
+            onWheel={(e) => e.stopPropagation()}
+            className="p-3 overflow-y-auto flex-1 space-y-1.5 text-left divide-y divide-[var(--border-subtle)]"
+          >
             {filteredServices.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 space-y-2">
-                <Search className="w-8 h-8 mx-auto text-slate-300 stroke-[1.5]" />
-                <p className="text-sm font-semibold text-slate-600">No matching services found</p>
-                <p className="text-xs text-slate-400">Try searching for "Pvt Ltd", "GST", "Trademark", or "Books".</p>
+              <div className="py-12 text-center text-[var(--text-secondary)] space-y-2">
+                <Search className="w-8 h-8 mx-auto text-[var(--text-tertiary)] stroke-[1.5]" />
+                <p className="text-sm font-semibold text-[var(--text-primary)] font-display">No matching services found</p>
+                <p className="text-xs text-[var(--text-secondary)]">Try searching for "Pvt Ltd", "GST", "Trademark", or "FSSAI".</p>
               </div>
             ) : (
               filteredServices.map((item) => {
@@ -143,27 +160,27 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   <div
                     key={item.id}
                     onClick={() => handleSelectService(item)}
-                    className="p-3 rounded-xl hover:bg-indigo-50/70 transition-all duration-150 cursor-pointer group flex items-start justify-between gap-4 border border-transparent hover:border-indigo-100"
+                    className="p-3.5 rounded-2xl hover:bg-[var(--bg-surface-alt)] transition-all duration-150 cursor-pointer group flex items-start justify-between gap-4 border border-transparent hover:border-[var(--border-subtle)]"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-100/60 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-9 h-9 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform border border-[var(--border-subtle)]">
                         <ItemIcon className="w-4 h-4" />
                       </div>
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                          <span className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors font-display">
                             {item.title}
                           </span>
                           {item.badge && (
-                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
+                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase tracking-wider font-mono">
                               {item.badge}
                             </span>
                           )}
-                          <span className="text-[10px] font-mono text-slate-400">
+                          <span className="text-[10px] font-mono text-[var(--text-tertiary)]">
                             {item.categoryLabel}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 line-clamp-1">
+                        <p className="text-xs text-[var(--text-secondary)] line-clamp-1 font-sans">
                           {item.description}
                         </p>
                       </div>
@@ -171,11 +188,11 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
 
                     <div className="flex items-center gap-2 shrink-0 pt-1">
                       {item.tat && (
-                        <span className="hidden sm:inline-flex text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                        <span className="hidden sm:inline-flex text-[10px] font-mono text-[var(--text-secondary)] bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] px-2 py-0.5 rounded-md">
                           {item.tat}
                         </span>
                       )}
-                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </div>
                 );
@@ -184,11 +201,11 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
           </div>
 
           {/* Footer */}
-          <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+          <div className="p-3.5 bg-[var(--bg-surface-alt)]/60 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-secondary)] font-mono">
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Showing {filteredServices.length} corporate services
+              <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" /> Showing <strong>{filteredServices.length}</strong> corporate services
             </span>
-            <span className="text-[11px]">Press <strong className="font-semibold text-slate-600">Enter</strong> to select</span>
+            <span className="text-[10px]">Press <strong className="font-semibold text-[var(--text-primary)]">ESC</strong> to exit</span>
           </div>
         </motion.div>
       </div>

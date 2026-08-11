@@ -242,7 +242,6 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     if (serviceId) {
       const category = SERVICE_CATEGORIES[serviceId] || "general";
       navigate(`/services/${category}/${serviceId}/`);
-      setActiveTab("services");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -321,12 +320,14 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
           <button
             onClick={() => setSearchModalOpen(true)}
             aria-label="Search tools and services"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 hover:bg-slate-200/90 text-slate-700 hover:text-slate-900 border border-slate-200/80 transition-all text-xs font-semibold cursor-pointer shrink-0 shadow-xs"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface-alt)]/80 hover:bg-[var(--bg-surface-alt)] text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 shadow-md shadow-purple-950/10 backdrop-blur-xl transition-all duration-200 text-xs font-semibold cursor-pointer shrink-0 group active:scale-95"
             title="Search Services (Ctrl+K)"
           >
-            <Search className="w-3.5 h-3.5 text-indigo-600" />
-            <span className="hidden sm:inline">Search Services</span>
-            <kbd className="hidden sm:inline-flex text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1 py-0.5 rounded">Ctrl+K</kbd>
+            <div className="w-5 h-5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center border border-[var(--border-subtle)] group-hover:scale-110 transition-transform">
+              <Search className="w-3 h-3" />
+            </div>
+            <span className="hidden sm:inline font-display">Search Services</span>
+            <kbd className="hidden sm:inline-flex text-[10px] font-mono font-bold text-[var(--accent)] bg-[var(--accent-soft)] border border-[var(--border-subtle)] px-2 py-0.5 rounded-md">⌘K</kbd>
           </button>
 
           {/* Login — secondary */}
@@ -455,13 +456,13 @@ function MegaNavDropdown({
             className="absolute top-full left-0 xl:-left-6 2xl:left-0 pt-2 z-[1100]"
           >
             <div
-              className="w-[780px] border border-[rgba(108,124,255,0.18)] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.22)] overflow-hidden flex flex-col"
-              style={{ background: "var(--bg-page)" }}
+              className="w-[820px] border border-[var(--border-subtle)] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.28)] overflow-hidden flex flex-col backdrop-blur-xl"
+              style={{ background: "var(--bg-surface)" }}
             >
               {/* 2-Pane Main Section */}
-              <div className="flex min-h-[340px]">
+              <div className="flex min-h-[350px]">
                 {/* Left Sidebar Pane */}
-                <div className="w-[270px] shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-surface)] p-2 space-y-1">
+                <div className="w-[280px] shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-surface-alt)] p-2.5 space-y-1">
                   {category.subCategories.map((sub) => {
                     const SubIcon = sub.icon;
                     const isSelected = sub.id === activeSub.id;
@@ -487,10 +488,10 @@ function MegaNavDropdown({
                 </div>
 
                 {/* Right Content Pane */}
-                <div className="flex-1 p-5 bg-[var(--bg-page)] overflow-y-auto max-h-[380px] text-left space-y-4">
+                <div className="flex-1 p-6 bg-[var(--bg-surface)] overflow-y-auto max-h-[400px] text-left space-y-4">
                   {/* Header Title */}
-                  <h4 className="text-[13px] font-extrabold text-[var(--accent)] tracking-tight flex items-center gap-1.5 border-b border-[var(--border-subtle)] pb-2.5">
-                    {activeSub.label} <ChevronRight className="w-3.5 h-3.5" />
+                  <h4 className="text-[13px] font-extrabold text-[var(--accent)] tracking-tight flex items-center gap-1.5 border-b border-[var(--border-subtle)] pb-3">
+                    {activeSub.label} <ChevronRight className="w-3.5 h-3.5 opacity-60" />
                   </h4>
 
                   {/* Services Items Grid */}
@@ -500,12 +501,12 @@ function MegaNavDropdown({
                         key={idx}
                         href="#"
                         onClick={(e) => onNav(e, item.tab, item.serviceId)}
-                        className="flex items-center justify-between p-2 rounded-xl hover:bg-[var(--accent-soft)] text-[12.5px] font-medium text-[var(--text-primary)] transition-colors cursor-pointer group"
+                        className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[var(--accent-soft)] text-[12.5px] font-medium text-[var(--text-primary)] transition-all cursor-pointer group border border-transparent hover:border-[var(--border-subtle)]"
                       >
                         <span className="flex items-center gap-1.5 group-hover:text-[var(--accent)] transition-colors">
                           {item.title}
                           {item.badge && (
-                            <span className="text-[10px] text-amber-500 font-extrabold">{item.badge}</span>
+                            <span className="text-[10px] text-amber-500 font-extrabold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">{item.badge}</span>
                           )}
                         </span>
                       </a>
@@ -515,15 +516,15 @@ function MegaNavDropdown({
               </div>
 
               {/* Bottom Advisory Callout Bar */}
-              <div className="border-t border-[var(--border-subtle)] bg-[var(--accent-soft)] px-5 py-3 flex items-center justify-between text-xs font-semibold shrink-0">
+              <div className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface-alt)] px-6 py-3.5 flex items-center justify-between text-xs font-semibold shrink-0">
                 <div className="flex items-center gap-2 text-[var(--text-primary)]">
                   <PhoneCall className="w-4 h-4 text-[var(--accent)] shrink-0" />
-                  <span>{category.advisoryText || "Prefer to talk to a business advisor first?"}</span>
+                  <span>{category.advisoryText || "Prefer to speak with a statutory corporate advisor first?"}</span>
                 </div>
                 <a
                   href="/contact"
                   onClick={(e) => onNav(e, "contact")}
-                  className="text-[var(--accent)] hover:underline font-extrabold flex items-center gap-1 whitespace-nowrap cursor-pointer"
+                  className="text-[var(--accent)] hover:underline font-extrabold flex items-center gap-1 whitespace-nowrap cursor-pointer hover:text-[var(--accent-deep)] transition-colors"
                 >
                   Book a call back <ArrowRight className="w-3.5 h-3.5" />
                 </a>

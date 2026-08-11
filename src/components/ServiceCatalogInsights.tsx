@@ -761,31 +761,6 @@ const advantageSpectrum = [
   { icon: Users, title: "Dedicated Expert Assigned", desc: "Every engagement is handled by a dedicated corporate expert — not outsourced to junior staff or automated pipelines." },
 ];
 
-const startingPrices: Record<string, string> = {
-  "pvt-ltd": "₹4,999",
-  "llp": "₹2,999",
-  "opc": "₹3,999",
-  "partnership": "₹1,499",
-  "section8": "₹9,999",
-  "annual-compliance": "₹999",
-  "gst-tax": "₹999",
-  "virtual-cfo": "Custom Pricing",
-  "virtual-office": "₹999",
-  "terms-privacy": "₹1,499",
-  "msme-registration": "₹999",
-  "fssai-registration": "₹1,999",
-  "return-filing": "₹499",
-  "trademark-registration": "₹4,999",
-  "trademark-objection": "₹1,499",
-  "trademark-opposition": "₹2,499",
-  "trademark-assignment": "₹2,999",
-  "brand-protection": "Custom Pricing",
-  "litigation-assistance": "As per Case",
-  "trademark-renewal": "₹2,999",
-  "patent-filing": "₹9,999",
-  "iso-certification": "₹3,999",
-};
-
 export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogInsightsProps) {
   const navigateToTab = useAppNavigate();
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("All");
@@ -1264,7 +1239,6 @@ export default function ServiceCatalogInsights({ setActiveTab }: ServiceCatalogI
             }>
               {filtered.slice(0, visibleCount).map((service, idx) => {
                 const Icon = service.icon;
-                const price = startingPrices[service.id] || "₹999";
                 
                 if (catalogViewMode === "list") {
                   return (

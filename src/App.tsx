@@ -35,10 +35,13 @@ const AnswerHub = lazy(() => import("./components/AnswerHub"));
 const ComplianceCalendarSection = lazy(() => import("./components/ComplianceCalendarSection"));
 const NotFoundPage = lazy(() => import("./components/NotFoundPage"));
 const CareersForm = lazy(() => import("./components/CareersForm"));
-const ServiceDetailPage = lazy(() => import("./components/ServiceDetailPage"));
+const ServicesHubPage = lazy(() => import("./components/ServicesHubPage"));
+import ServiceDetailPage from "./components/ServiceDetailPage";
 const BooksLoginPage = lazy(() => import("./books/pages/BooksLoginPage"));
 import { TAB_TO_ROUTE } from "./lib/routes";
 import { useAuth } from "./lib/AuthContext";
+import { useLenisScroll } from "./lib/useLenisScroll";
+import MobileBottomDock from "./components/MobileBottomDock";
 import { 
   Sparkles, 
   Search, 
@@ -74,6 +77,9 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
+
+  // Initialize global butter-smooth momentum scroll
+  useLenisScroll();
 
 
 
@@ -128,8 +134,22 @@ export default function App() {
   const [showExpertModal, setShowExpertModal] = useState<boolean>(false);
 
   const setActiveTab = (tab: string) => {
+    if (tab === "home" || tab === "landing") {
+      setActiveTabState("services");
+      if (location.pathname !== "/") {
+        navigate("/");
+      }
+      return;
+    }
+    if (tab === "services") {
+      setActiveTabState("services");
+      if (location.pathname !== "/services/" && location.pathname !== "/services") {
+        navigate("/services/");
+      }
+      return;
+    }
     setActiveTabState(tab);
-    if (tab === "services" && location.pathname.startsWith("/services/")) {
+    if (tab === "service-detail") {
       return;
     }
     const route = TAB_TO_ROUTE[tab] || `/${tab}/`;
@@ -138,7 +158,12 @@ export default function App() {
     }
   };
 
-  // Pathname sync useEffect relocated below state declarations to avoid reference errors
+  // Sync activeTab and routeParams whenever URL pathname changes
+  useEffect(() => {
+    const { tab, params } = getTabFromPath();
+    setActiveTabState(tab);
+    setRouteParams(params);
+  }, [location.pathname]);
 
   // Route guarding and role redirection checking
   useEffect(() => {
@@ -339,6 +364,8 @@ export default function App() {
   const handleServiceClick = (serviceId: string) => {
     const category = SERVICE_CATEGORIES[serviceId] || "general";
     navigate(`/services/${category}/${serviceId}/`);
+    setActiveTabState("service-detail");
+    setRouteParams({ category, serviceId });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -461,36 +488,53 @@ export default function App() {
         <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" /></div>}>
         <AnimatePresence mode="wait">
           {activeTab === "services" && (
-            <motion.div
-              key="services"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full flex flex-col max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-4"
-            >
-              <RegistrationServices 
-                setActiveTab={setActiveTab} 
-                prefilledCompanyName={prefilledName}
-                prefilledEntityType={prefilledEntityType}
-              />
-              {/* Live Testimonial Carousel */}
-              <div className="pb-4 w-full mt-2">
-                <TestimonialCarousel setActiveTab={setActiveTab} />
-              </div>
-            </motion.div>
+            (location.pathname.startsWith("/services") || location.pathname.startsWith("/catalog")) ? (
+              <motion.div
+                key="services-hub-standalone"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full flex flex-col pt-0"
+              >
+                <ServicesHubPage setActiveTab={setActiveTab} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="services-landing"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full flex flex-col max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-4"
+              >
+                <RegistrationServices 
+                  setActiveTab={setActiveTab} 
+                  prefilledCompanyName={prefilledName}
+                  prefilledEntityType={prefilledEntityType}
+                />
+                {/* Live Testimonial Carousel */}
+                <div className="pb-4 w-full mt-2">
+                  <TestimonialCarousel setActiveTab={setActiveTab} />
+                </div>
+              </motion.div>
+            )
           )}
 
           {activeTab === "service-detail" && (
             <motion.div
-              key="service-detail"
+              key={routeParams.serviceId || location.pathname}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="w-full flex flex-col pt-0"
             >
-              <ServiceDetailPage />
+              <ServiceDetailPage 
+                serviceId={routeParams.serviceId} 
+                category={routeParams.category} 
+                setActiveTab={setActiveTab} 
+              />
             </motion.div>
           )}
 
@@ -958,7 +1002,7 @@ export default function App() {
           )}
 
           {/* 404 Fallback — show when no tab matches */}
-          {!["services","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin","books","policies","careers"].includes(activeTab) && (
+          {!["services","service-detail","compliance","blog","catalog","about","contact","name-checker","tools","faq","comparison","impact","flowchart","testimonials","timeline-viz","company-registration-bangalore","company-registration-mumbai","company-registration-delhi","auth","login","dashboard-customer","dashboard-partner","dashboard-partner-customer-detail","portal","partner","admin","books","policies","careers"].includes(activeTab) && (
             <NotFoundPage />
           )}
         </AnimatePresence>
@@ -1128,34 +1172,11 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Mobile Floating CTA */}
-      <div className="mobile-floating-cta">
-        <button
-          onClick={() => {
-            setActiveTab("services");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-            setTimeout(() => {
-              const el = document.getElementById("service-catalog-section");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }, 300);
-          }}
-          className="bg-[#4F46E5] text-white font-mono uppercase tracking-widest"
-        >
-          Start Registration
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("contact");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className="bg-brand-gold text-black font-mono uppercase tracking-widest"
-        >
-          Request Callback
-        </button>
-      </div>
-
-      {/* Desktop Floating CTA — bottom right */}
-      {/* Decorative brand star removed — clean layout */}
+      {/* Next-Gen Mobile Bottom Dock (Phone users) */}
+      <MobileBottomDock 
+        setActiveTab={setActiveTab} 
+        onOpenConsultationModal={() => setShowExpertModal(true)} 
+      />
     </div>
   );
 }

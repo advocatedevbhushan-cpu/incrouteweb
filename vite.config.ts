@@ -23,12 +23,28 @@ export default defineConfig(() => {
       assetsDir: 'static',
       emptyOutDir: false,
       target: 'es2022',
+      cssCodeSplit: true,
+      minify: 'esbuild',
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-motion': ['motion'],
-            'vendor-lucide': ['lucide-react'],
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('motion') || id.includes('lenis') || id.includes('lottie-react')) {
+                return 'vendor-motion';
+              }
+              if (id.includes('recharts') || id.includes('jspdf')) {
+                return 'vendor-charts-pdf';
+              }
+              if (id.includes('@aws-sdk')) {
+                return 'vendor-aws';
+              }
+            }
           }
         }
       }
