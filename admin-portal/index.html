@@ -534,8 +534,22 @@
                   <input type="text" id="author" value="D Bhushan" oninput="updateLivePreview()" />
                 </div>
                 <div class="form-group">
-                  <label>Cover Image URL</label>
-                  <input type="text" id="image" placeholder="/blog-images/sample-cover.png" oninput="updateLivePreview()" />
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label>Cover Image</label>
+                    <button type="button" onclick="document.getElementById('cover-file-upload').click()" class="btn-pill" style="font-size: 11px; padding: 2px 8px; color: #A78BFA; border-color: rgba(167, 139, 250, 0.4);">
+                      📁 Upload Image
+                    </button>
+                    <input type="file" id="cover-file-upload" style="display:none;" accept="image/*" onchange="uploadCoverImage(event)" />
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <img id="image-thumb" src="/blog-images/sample-cover.png" alt="Cover Preview" style="width: 52px; height: 38px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(108,124,255,0.3); background: #1F1A33;" onerror="this.src='/blog-images/sample-cover.png'" />
+                    <input type="text" id="image" placeholder="/blog-images/sample-cover.png" value="/blog-images/sample-cover.png" oninput="updateLivePreview()" style="flex: 1;" />
+                  </div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                    <button type="button" class="btn-pill" onclick="setImagePreset('/blog-images/chatgpt-image-jun-29-2026-07_28_50-pm.png')" style="font-size: 10px; padding: 2px 7px;">🏢 Incorporation</button>
+                    <button type="button" class="btn-pill" onclick="setImagePreset('/blog-images/chatgpt-image-jul-13-2026-11_16_20-am.png')" style="font-size: 10px; padding: 2px 7px;">⚖️ Compliance</button>
+                    <button type="button" class="btn-pill" onclick="setImagePreset('/blog-images/sample-cover.png')" style="font-size: 10px; padding: 2px 7px;">📊 Advisory</button>
+                  </div>
                 </div>
               </div>
 
@@ -613,6 +627,10 @@
                   <div>👤 <strong id="prev-author">D Bhushan</strong></div>
                   <div>📅 <span id="prev-date">2026-08-16</span></div>
                   <div>⏱️ <span id="prev-read">5 min read</span></div>
+                </div>
+
+                <div id="prev-img-wrap" style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; border: 1px solid #E5E7EB;">
+                  <img id="prev-img" src="/blog-images/sample-cover.png" alt="Cover" style="width: 100%; max-height: 280px; object-fit: cover; display: block;" onerror="this.src='/blog-images/sample-cover.png'" />
                 </div>
 
                 <div class="preview-body" id="prev-body">
@@ -964,6 +982,12 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
         document.getElementById('prev-sub').textContent = subtitle;
         document.getElementById('prev-author').textContent = author;
 
+        const coverImgUrl = document.getElementById('image').value || '/blog-images/sample-cover.png';
+        const thumbEl = document.getElementById('image-thumb');
+        if (thumbEl) thumbEl.src = coverImgUrl;
+        const prevImgEl = document.getElementById('prev-img');
+        if (prevImgEl) prevImgEl.src = coverImgUrl;
+
         // Simple Markdown HTML renderer
         let contentHtml = rawContent.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
         contentHtml = contentHtml
@@ -977,6 +1001,36 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
           .replace(/\n\n/g, '<p></p>');
 
         document.getElementById('prev-body').innerHTML = contentHtml || '<p>Start typing in the editor to see live rendering...</p>';
+      }
+
+      function setImagePreset(url) {
+        document.getElementById('image').value = url;
+        updateLivePreview();
+      }
+
+      async function uploadCoverImage(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+          const res = await fetch('/api/blog/upload-image', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success && data.url) {
+            document.getElementById('image').value = data.url;
+            updateLivePreview();
+            alert('✓ Cover image uploaded successfully!');
+          } else {
+            alert('Failed to upload image: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Network error uploading image.');
+        }
       }
 
       // ─── AI GENERATOR ───

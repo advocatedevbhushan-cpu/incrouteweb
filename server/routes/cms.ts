@@ -188,6 +188,20 @@ Generate a complete, publication-ready article and output a STRICT JSON object w
 
       const parsed = JSON.parse(text || "{}");
 
+      const categoryImages: Record<string, string> = {
+        "Company Registration": "/blog-images/chatgpt-image-jun-29-2026-07_28_50-pm.png",
+        "Compliance & ROC": "/blog-images/chatgpt-image-jul-13-2026-11_16_20-am.png",
+        "GST & Taxation": "/blog-images/sample-cover.png",
+        "Trademark & IP": "/blog-images/chatgpt-image-jul-13-2026-11_16_20-am.png",
+        "Legal Advisory": "/blog-images/chatgpt-image-jun-29-2026-07_28_50-pm.png",
+        "Startup Guide": "/blog-images/sample-cover.png",
+        "Industry News": "/blog-images/chatgpt-image-jun-29-2026-07_28_50-pm.png",
+      };
+
+      if (!parsed.image) {
+        parsed.image = categoryImages[parsed.category || category] || "/blog-images/sample-cover.png";
+      }
+
       res.json({
         success: true,
         data: parsed,

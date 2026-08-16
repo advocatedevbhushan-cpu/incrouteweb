@@ -194,7 +194,17 @@ export default function BlogPage() {
               {(selectedPost.views || 0) > 0 && <span className="flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> {formatViews(selectedPost.views!)} views</span>}
             </div>
 
-            {selectedPost.image && (<img src={selectedPost.image} alt={selectedPost.title} className="w-full h-auto max-h-[400px] object-cover rounded-2xl mb-10 border border-[var(--border-subtle)]" loading="lazy" />)}
+            {selectedPost.image && (
+              <img
+                src={selectedPost.image}
+                alt={selectedPost.title}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/blog-images/sample-cover.png";
+                }}
+                className="w-full h-auto max-h-[400px] object-cover rounded-2xl mb-10 border border-[var(--border-subtle)]"
+                loading="lazy"
+              />
+            )}
             <article className="blog-article-content" dangerouslySetInnerHTML={{ __html: htmlContent }} />
 
             {/* Comment Section Container */}
@@ -411,7 +421,15 @@ export default function BlogPage() {
             <article onClick={() => handleSelectPost(filteredPosts[0])} className="group bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl overflow-hidden cursor-pointer hover:border-[var(--accent)] hover:shadow-[0_12px_40px_rgba(91,108,255,0.08)] transition-all duration-300">
               {filteredPosts[0].image && (
                 <div className="h-[260px] overflow-hidden relative">
-                  <img src={filteredPosts[0].image} alt={filteredPosts[0].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <img
+                    src={filteredPosts[0].image}
+                    alt={filteredPosts[0].title}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/blog-images/sample-cover.png";
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-4 left-5 right-5">
                     {filteredPosts[0].category && (<span className="inline-block text-[9px] font-bold text-white uppercase tracking-wider bg-[var(--accent)] px-2.5 py-1 rounded-full mb-2">{filteredPosts[0].category}</span>)}
@@ -440,7 +458,19 @@ export default function BlogPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {filteredPosts.slice(1).map(post => (
                   <article key={post.id} onClick={() => handleSelectPost(post)} className="group bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden cursor-pointer hover:border-[var(--accent)] hover:shadow-[0_8px_24px_rgba(91,108,255,0.06)] transition-all duration-200">
-                    {post.image && (<div className="h-[160px] overflow-hidden"><img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /></div>)}
+                    {post.image && (
+                      <div className="h-[160px] overflow-hidden">
+                        <img
+                          src={post.image}
+                          alt={post.title}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/blog-images/sample-cover.png";
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
                     <div className="p-4 space-y-2">
                       {post.category && (<span className="text-[9px] font-bold text-[var(--accent)] uppercase tracking-wider">{post.category}</span>)}
                       <h2 className="text-[14px] font-bold text-[var(--text-primary)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">{post.title}</h2>

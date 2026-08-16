@@ -257,23 +257,48 @@ export function createBlogRouter() {
       posts.unshift(newPost);
       fs.writeFileSync(BLOG_FILE, JSON.stringify({ posts }, null, 2), "utf-8");
 
-      // Instantly generate and write updated sitemap.xml
+      // Regenerate dynamic sitemap & ping search engines
       generateSitemapXml();
-
-      // Trigger search engine pings for instant Google/Bing discovery
-      const postUrl = `https://incroute.com/blog/${newPost.slug}/`;
-      pingSearchEngines(postUrl).catch(() => {});
+      pingSearchEngines();
 
       res.json({
         success: true,
-        message: "🎉 Blog post published successfully and added to Google sitemap!",
+        message: "Article published successfully and synced with Google Sitemap!",
         post: newPost,
-        url: `/blog/${newPost.slug}/`,
-        sitemapUpdated: true
+        url: `/blog?post=${newPost.slug}`,
       });
     } catch (err: any) {
       console.error("Fast publish error:", err);
-      res.status(500).json({ error: "Failed to publish blog post." });
+      res.status(500).json({ error: err.message || "Failed to publish article." });
+    }
+  });
+
+  // Upload blog cover image
+  router.post("/api/blog/upload-image", upload.single("image"), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided." });
+      }
+
+      const ext = path.extname(req.file.originalname) || ".png";
+      const sanitizedName = `cover-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+      const uploadDir = path.join(process.cwd(), "public", "blog-images");
+
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const filePath = path.join(uploadDir, sanitizedName);
+      fs.writeFileSync(filePath, req.file.buffer);
+
+      return res.json({
+        success: true,
+        url: `/blog-images/${sanitizedName}`,
+        filename: sanitizedName,
+      });
+    } catch (err: any) {
+      console.error("Failed to upload blog image:", err.message);
+      res.status(500).json({ error: "Failed to process image upload." });
     }
   });
 
