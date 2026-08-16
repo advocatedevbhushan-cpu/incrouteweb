@@ -149,6 +149,84 @@ export function createCmsRouter() {
     throw lastErr || new Error("Failed to generate content with Gemini AI.");
   };
 
+  const safeExtractJson = (raw: string): any => {
+    if (!raw || typeof raw !== "string") return {};
+
+    let clean = raw.trim();
+
+    // Remove markdown code fences if present (```json ... ``` or ``` ...)
+    clean = clean.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    // Try direct parse first
+    try {
+      return JSON.parse(clean);
+    } catch {}
+
+    // Find the first '{' and the last '}' to strip trailing non-whitespace chars
+    const startIdx = clean.indexOf("{");
+    const endIdx = clean.lastIndexOf("}");
+
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      const jsonSubstring = clean.substring(startIdx, endIdx + 1);
+      try {
+        return JSON.parse(jsonSubstring);
+      } catch {}
+
+      // Clean up unescaped control characters inside JSON strings
+      try {
+        const sanitized = jsonSubstring.replace(/[\u0000-\u001F]+/g, (match) => {
+          if (match === "\n") return "\\n";
+          if (match === "\r") return "\\r";
+          if (match === "\t") return "\\t";
+          return "";
+        });
+        return JSON.parse(sanitized);
+      } catch {}
+    }
+
+    // Fallback: If still not parsed, regex extract the known fields
+    const extracted: Record<string, any> = {};
+    const titleMatch = raw.match(/"title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
+    if (titleMatch) {
+      try { extracted.title = JSON.parse(`"${titleMatch[1]}"`); } catch { extracted.title = titleMatch[1]; }
+    }
+
+    const subtitleMatch = raw.match(/"subtitle"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
+    if (subtitleMatch) {
+      try { extracted.subtitle = JSON.parse(`"${subtitleMatch[1]}"`); } catch { extracted.subtitle = subtitleMatch[1]; }
+    }
+
+    const categoryMatch = raw.match(/"category"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
+    if (categoryMatch) {
+      try { extracted.category = JSON.parse(`"${categoryMatch[1]}"`); } catch { extracted.category = categoryMatch[1]; }
+    }
+
+    const slugMatch = raw.match(/"slug"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
+    if (slugMatch) {
+      try { extracted.slug = JSON.parse(`"${slugMatch[1]}"`); } catch { extracted.slug = slugMatch[1]; }
+    }
+
+    const metaDescMatch = raw.match(/"metaDescription"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/);
+    if (metaDescMatch) {
+      try { extracted.metaDescription = JSON.parse(`"${metaDescMatch[1]}"`); } catch { extracted.metaDescription = metaDescMatch[1]; }
+    }
+
+    const contentMatch = raw.match(/"content"\s*:\s*"([\s\S]*?)(?:",\s*"|"\s*})/);
+    if (contentMatch) {
+      try {
+        extracted.content = JSON.parse(`"${contentMatch[1]}"`);
+      } catch {
+        extracted.content = contentMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+      }
+    }
+
+    if (Object.keys(extracted).length > 0) {
+      return extracted;
+    }
+
+    throw new Error("Unable to parse AI response into JSON format.");
+  };
+
   // ─── AI BLOG GENERATOR & SEO CO-PILOT (Powered by Gemini) ───
   router.post("/api/cms/ai/generate", async (req: Request, res: Response) => {
     try {
@@ -186,7 +264,7 @@ Generate a complete, publication-ready article and output a STRICT JSON object w
         responseMimeType: "application/json",
       });
 
-      const parsed = JSON.parse(text || "{}");
+      const parsed = safeExtractJson(text || "{}");
 
       const categoryImages: Record<string, string> = {
         "Company Registration": "/blog-images/chatgpt-image-jun-29-2026-07_28_50-pm.png",
@@ -239,7 +317,7 @@ Return a STRICT JSON object:
         responseMimeType: "application/json",
       });
 
-      const parsed = JSON.parse(textResult || "{}");
+      const parsed = safeExtractJson(textResult || "{}");
       res.json({ success: true, data: parsed });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to polish text with AI." });
