@@ -127,6 +127,28 @@ export function createCmsRouter() {
     }
   });
 
+  const generateWithGemini = async (contents: string, config: any = {}) => {
+    if (!ai) throw new Error("Gemini API key is not configured in server environment.");
+    const models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.7-flash"];
+    let lastErr: any = null;
+    for (const model of models) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config,
+        });
+        if (response && response.text) {
+          return response.text;
+        }
+      } catch (err: any) {
+        lastErr = err;
+        console.warn(`[Gemini Fallback] Model ${model} returned: ${err.message}. Trying fallback model...`);
+      }
+    }
+    throw lastErr || new Error("Failed to generate content with Gemini AI.");
+  };
+
   // ─── AI BLOG GENERATOR & SEO CO-PILOT (Powered by Gemini) ───
   router.post("/api/cms/ai/generate", async (req: Request, res: Response) => {
     try {
@@ -160,15 +182,10 @@ Generate a complete, publication-ready article and output a STRICT JSON object w
   "estimatedReadingTime": "5 min read"
 }`;
 
-      const aiResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        },
+      const text = await generateWithGemini(prompt, {
+        responseMimeType: "application/json",
       });
 
-      const text = aiResponse.text;
       const parsed = JSON.parse(text || "{}");
 
       res.json({
@@ -204,15 +221,11 @@ Return a STRICT JSON object:
   "suggestedMetaDescription": "150-160 char Google meta snippet"
 }`;
 
-      const aiResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        },
+      const textResult = await generateWithGemini(prompt, {
+        responseMimeType: "application/json",
       });
 
-      const parsed = JSON.parse(aiResponse.text || "{}");
+      const parsed = JSON.parse(textResult || "{}");
       res.json({ success: true, data: parsed });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to polish text with AI." });

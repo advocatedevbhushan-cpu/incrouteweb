@@ -100,7 +100,7 @@ Format your response as a strict, clean JSON object matching this exact structur
     if (ai) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-flash-latest",
           contents: checkPrompt,
           config: {
             systemInstruction: "You are the Senior Registrar Compliance Director of Incroute with 20+ years of experience in corporate law in India. Return ONLY raw JSON matching the exact structure requested, without markdown syntax blocks.",
