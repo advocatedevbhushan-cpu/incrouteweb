@@ -247,6 +247,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
     }
 
     const routeMap: Record<string, string> = {
+      home: "/",
       services: "/services/",
       catalog: "/catalog/",
       compliance: "/compliance/",
@@ -274,15 +275,13 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
   return (
     <nav
       className={`site-header sticky top-0 z-[1000] transition-all duration-250 h-[72px] flex items-center ${
-        scrolled
-          ? "scrolled-nav border-b border-[rgba(91,108,255,0.10)] shadow-[0_1px_12px_rgba(91,108,255,0.06)]"
-          : "border-b border-transparent"
+        scrolled ? "scrolled-nav" : ""
       } ${mobileOpen ? "mobile-menu-open" : ""}`}
     >
       <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
 
         {/* ─── Left: Logo ─── */}
-        <a href="/" onClick={(e) => nav(e, "services")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
+        <a href="/" onClick={(e) => nav(e, "home")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
           <div className="w-9 h-9 rounded-full overflow-hidden">
             <img src="/incroute_logo.png" width="36" height="36" className="w-full h-full object-cover" alt="INCroute Logo" />
           </div>
@@ -370,8 +369,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-[64px] sm:top-[72px] left-0 right-0 border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50 shadow-[0_12px_32px_rgba(0,0,0,0.15)]"
-            style={{ background: "var(--bg-page)" }}
+            className="absolute top-[64px] sm:top-[72px] left-0 right-0 border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50 shadow-[0_20px_50px_rgba(0,0,0,0.35)] glass-surface-elevated backdrop-blur-2xl"
           >
             <div className="p-4 space-y-2 max-h-[75vh] overflow-y-auto text-left">
               {/* Mobile Master Accordion */}
@@ -456,8 +454,7 @@ function MegaNavDropdown({
             className="absolute top-full left-0 xl:-left-6 2xl:left-0 pt-2 z-[1100]"
           >
             <div
-              className="w-[820px] border border-[var(--border-subtle)] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.28)] overflow-hidden flex flex-col backdrop-blur-xl"
-              style={{ background: "var(--bg-surface)" }}
+              className="w-[820px] glass-surface-elevated rounded-2xl border border-[var(--border-subtle)] shadow-[0_24px_60px_rgba(0,0,0,0.38)] overflow-hidden flex flex-col backdrop-blur-2xl"
             >
               {/* 2-Pane Main Section */}
               <div className="flex min-h-[350px]">

@@ -91,8 +91,12 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
 
   const packageScopes = [
     {
+      id: "standard",
       name: "Basic Standard Scope",
+      tagline: "Essential government portal filing, statutory drafting & verification",
       badge: "Standard",
+      sla: "5–7 Days",
+      popular: false,
       features: [
         "Complete Document Verification",
         "Statutory Application Drafting",
@@ -101,8 +105,11 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
       ]
     },
     {
+      id: "growth",
       name: "Founders Growth Scope",
+      tagline: "High-speed execution with dedicated Chartered Accountant oversight",
       badge: "Recommended",
+      sla: "2–3 Days Fast-Track",
       popular: true,
       features: [
         "Everything in Basic Standard Scope",
@@ -113,8 +120,12 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
       ]
     },
     {
+      id: "enterprise",
       name: "Complete Enterprise Suite",
+      tagline: "End-to-end legal architecture, brand protection & priority advisory",
       badge: "Enterprise",
+      sla: "VIP Priority SLA",
+      popular: false,
       features: [
         "Everything in Founders Growth Scope",
         "Trademark Brand Application (1 Class)",
@@ -140,11 +151,12 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
     }
   ];
 
-  const handleConsultationClick = () => {
+  const handleConsultationClick = (scopeNameOrEvent?: string | React.MouseEvent) => {
+    const chosenScope = (typeof scopeNameOrEvent === "string" ? scopeNameOrEvent : null) || packageScopes[selectedPkg]?.name || "Founders Growth Scope";
     if (setActiveTab) {
       setActiveTab("contact");
     } else {
-      navigate("/contact/");
+      navigate(`/contact/?service=${encodeURIComponent(service.name)}&scope=${encodeURIComponent(chosenScope)}`);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -353,54 +365,130 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
         </section>
 
         {/* ─── Section 5: Service Scope Options ─── */}
-        <section className="space-y-6">
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight font-display">Execution Scope Options</h2>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">Select the advisory scope suited for your business scale.</p>
+        <section className="space-y-8">
+          <div className="text-center space-y-2.5 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-subtle)] font-mono">
+              <Sparkles className="w-3.5 h-3.5" /> TAILORED ADVISORY SCOPES
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight font-display">
+              Execution Scope Options
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-medium">
+              Select the advisory tier suited for your corporate roadmap and operational velocity.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {packageScopes.map((pkg, idx) => (
-              <div
-                key={idx}
-                onClick={() => setSelectedPkg(idx)}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-6 ${
-                  selectedPkg === idx || pkg.popular
-                    ? "bg-[var(--bg-surface)] border-[var(--accent)] shadow-xl ring-2 ring-[var(--accent)]/20"
-                    : "bg-[var(--bg-surface)] border-[var(--border-subtle)] hover:border-[var(--accent)]/30 shadow-sm"
-                }`}
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-[var(--text-primary)] font-display">{pkg.name}</h3>
-                    {pkg.popular && (
-                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--border-subtle)] font-mono">
-                        RECOMMENDED
-                      </span>
-                    )}
-                  </div>
-                  <ul className="space-y-2.5 text-xs text-[var(--text-secondary)] pt-3 border-t border-[var(--border-subtle)]">
-                    {pkg.features.map((feat, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="font-sans">{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button
-                  onClick={handleConsultationClick}
-                  className={`w-full py-3 rounded-xl text-xs font-bold transition-all cursor-pointer font-display ${
-                    selectedPkg === idx || pkg.popular
-                      ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] shadow-md hover:opacity-95"
-                      : "bg-[var(--bg-surface-alt)] text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--accent)]/40"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            {packageScopes.map((pkg, idx) => {
+              const isSelected = selectedPkg === idx;
+              return (
+                <div
+                  key={pkg.id || idx}
+                  onClick={() => setSelectedPkg(idx)}
+                  className={`relative p-6 sm:p-7 rounded-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden ${
+                    isSelected
+                      ? "bg-gradient-to-b from-[var(--accent-soft)]/20 via-[var(--bg-surface)] to-[var(--bg-surface)] border-2 border-[var(--accent)] shadow-2xl shadow-[var(--accent)]/15 scale-[1.02] z-10"
+                      : "bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-[var(--accent)]/40 hover:bg-[var(--bg-surface-alt)]/40 hover:-translate-y-1 shadow-sm"
                   }`}
                 >
-                  Request Proposal for This Scope
-                </button>
-              </div>
-            ))}
+                  {/* Active Aura / Glow for selected card */}
+                  {isSelected && (
+                    <div className="absolute -top-16 -right-16 w-36 h-36 bg-[var(--accent)]/20 rounded-full blur-3xl pointer-events-none" />
+                  )}
+
+                  {/* Top Header Row */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider font-mono border ${
+                        isSelected
+                          ? "bg-[var(--accent)] text-[var(--on-gradient-text)] border-[var(--accent)] shadow-xs"
+                          : pkg.popular
+                          ? "bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--border-subtle)]"
+                          : "bg-[var(--bg-surface-alt)] text-[var(--text-secondary)] border-[var(--border-subtle)]"
+                      }`}>
+                        {pkg.badge}
+                      </span>
+
+                      {/* Selection Radio Indicator */}
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+                        isSelected
+                          ? "bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent)]/40 font-mono"
+                          : "text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]"
+                      }`}>
+                        <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border transition-all ${
+                          isSelected
+                            ? "border-[var(--accent)] bg-[var(--accent)]"
+                            : "border-[var(--text-tertiary)] group-hover:border-[var(--accent)]/60"
+                        }`}>
+                          {isSelected && <Check className="w-2.5 h-2.5 text-[var(--on-gradient-text)] stroke-[3]" />}
+                        </div>
+                        <span className="text-[10px]">{isSelected ? "Selected" : "Select"}</span>
+                      </div>
+                    </div>
+
+                    {/* Scope Title & Description */}
+                    <div>
+                      <h3 className={`text-lg sm:text-xl font-bold font-display transition-colors ${
+                        isSelected ? "text-[var(--accent)]" : "text-[var(--text-primary)]"
+                      }`}>
+                        {pkg.name}
+                      </h3>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed font-sans">
+                        {pkg.tagline}
+                      </p>
+                    </div>
+
+                    {/* SLA Badge */}
+                    <div className="pt-1 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[var(--bg-surface-alt)] text-[var(--text-secondary)] border border-[var(--border-subtle)] font-mono">
+                        <Clock className="w-3 h-3 text-[var(--accent)]" /> SLA: {pkg.sla}
+                      </span>
+                    </div>
+
+                    {/* Features List */}
+                    <div className="pt-4 border-t border-[var(--border-subtle)] space-y-3">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-tertiary)] font-bold">
+                        Included Deliverables:
+                      </span>
+                      <ul className="space-y-2.5 text-xs text-[var(--text-secondary)]">
+                        {pkg.features.map((feat, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <div className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 mt-0.5 border ${
+                              isSelected
+                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                                : "bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--border-subtle)]"
+                            }`}>
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                            <span className="font-sans leading-snug">{feat}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Bottom Action Button */}
+                  <div className="pt-6 mt-6 border-t border-[var(--border-subtle)]">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPkg(idx);
+                        handleConsultationClick(pkg.name);
+                      }}
+                      className={`w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer font-display flex items-center justify-center gap-2 ${
+                        isSelected
+                          ? "bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] shadow-lg shadow-[var(--accent)]/30 hover:opacity-95 transform active:scale-98"
+                          : "bg-[var(--bg-surface-alt)] text-[var(--text-primary)] border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-[var(--accent-soft)]/20"
+                      }`}
+                    >
+                      <span>{isSelected ? `Request Proposal for ${pkg.badge}` : `Select ${pkg.name.split(" ")[0]} Scope`}</span>
+                      <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 

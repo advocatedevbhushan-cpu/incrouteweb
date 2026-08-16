@@ -182,8 +182,11 @@ export default function ServicesHubPage({ setActiveTab }: ServicesHubPageProps) 
               <div
                 key={item.id}
                 onClick={() => handleCardClick(item)}
-                className="bg-[var(--bg-surface)] p-6 rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--accent)]/50 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between space-y-5 group relative"
+                className="glass-glow-card p-6 rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--accent)] hover:shadow-2xl hover:shadow-[var(--accent)]/15 transition-all cursor-pointer flex flex-col justify-between space-y-5 group relative overflow-hidden"
               >
+                {/* Ambient Aura Flare on Hover */}
+                <div className="absolute -top-12 -right-12 w-28 h-28 bg-[var(--accent)]/10 rounded-full blur-2xl group-hover:bg-[var(--accent)]/20 transition-all pointer-events-none" />
+
                 {item.popular && (
                   <span className="absolute -top-3 right-6 px-2.5 py-0.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] text-[9px] font-extrabold rounded-full uppercase tracking-wider shadow-sm font-mono">
                     POPULAR

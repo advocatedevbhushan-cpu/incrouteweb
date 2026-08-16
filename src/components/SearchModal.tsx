@@ -115,7 +115,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -12 }}
           transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-2xl bg-[var(--bg-surface)] rounded-3xl shadow-2xl border border-[var(--border-subtle)] overflow-hidden flex flex-col max-h-[80vh] text-left"
+          className="w-full max-w-2xl glass-surface-elevated rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.5)] border border-[var(--border-subtle)] overflow-hidden flex flex-col max-h-[80vh] text-left backdrop-blur-2xl"
         >
           {/* Input Header */}
           <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] flex items-center gap-3 bg-[var(--bg-surface-alt)]/60">

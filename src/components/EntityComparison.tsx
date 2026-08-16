@@ -365,15 +365,18 @@ export default function EntityComparison({ entities = defaultEntities }: EntityC
                 <motion.div
                   key={entity.id}
                   variants={cardVariants}
-                  whileHover={{ y: -6, boxShadow: "0 15px 35px -12px rgba(197, 168, 128, 0.12)" }}
+                  whileHover={{ y: -6 }}
                   onClick={() => setSelectedEntity(entity.id)}
-                  className={`cursor-pointer rounded-2xl border-2 transition-all p-5 flex flex-col justify-between h-full relative ${
+                  className={`cursor-pointer rounded-2xl border transition-all p-5 flex flex-col justify-between h-full relative overflow-hidden ${
                     isSelected
-                      ? "bg-brand-gold/10 border-brand-gold shadow-lg shadow-brand-gold/5"
-                      : "bg-brand-bg-lighter border-brand-border hover:border-brand-gold/30"
+                      ? "glass-surface-elevated border-[var(--accent)] ring-2 ring-[var(--accent)] shadow-2xl shadow-[var(--accent)]/15 scale-[1.02]"
+                      : "glass-glow-card border-[var(--border-subtle)] hover:border-[var(--accent)]/50"
                   }`}
                 >
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-brand-gold/5 blur-2xl rounded-full" />
+                  {/* Ambient Aura Flare */}
+                  <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-all ${
+                    isSelected ? "bg-[var(--accent)]/20" : "bg-[var(--accent)]/5"
+                  }`} />
                   
                   <div className="space-y-4 relative z-10">
                     <div className="flex items-center justify-between">

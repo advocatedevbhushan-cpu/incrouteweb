@@ -465,12 +465,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-brand-text flex flex-col selection:bg-brand-gold/30 selection:text-brand-text relative homepage-shell">
-      <ScrollToTop />
-      {/* Executive Backdrop Pattern Layers */}
-      <div className="executive-glow-1" />
-      <div className="executive-glow-2" />
-      <div className="executive-grid" />
-      <div className="hero-gradient-bg" />
+      {/* Global Atmospheric Ambient Aura & Glass Depth System */}
+      <div className="ambient-aura-layer fixed inset-0 pointer-events-none z-[-1] overflow-hidden" aria-hidden="true">
+        <div className="ambient-orb ambient-orb-1" />
+        <div className="ambient-orb ambient-orb-2" />
+        <div className="ambient-orb ambient-orb-3" />
+        <div className="ambient-orb ambient-orb-4" />
+        <div className="ambient-mesh-grid" />
+      </div>
 
       {/* Decorative brand star removed */}
 

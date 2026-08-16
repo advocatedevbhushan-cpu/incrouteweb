@@ -284,7 +284,7 @@ export default function StatutoryTools() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch max-w-7xl mx-auto pt-6">
         
         {/* Left column - Document templates grid & configurations form (48% width) */}
-        <div className="lg:col-span-6 bg-white/70 border border-white/40 rounded-3xl p-5 sm:p-6 space-y-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
+        <div className="lg:col-span-6 glass-surface-elevated border border-[var(--border-subtle)] rounded-3xl p-5 sm:p-6 space-y-6 shadow-2xl backdrop-blur-2xl flex flex-col justify-between">
           <div className="space-y-5">
             {/* Category tabs */}
             <DocumentCategoryTabs
