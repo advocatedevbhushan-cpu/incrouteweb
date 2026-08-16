@@ -179,8 +179,10 @@ async function startServer() {
     res.send(generateSitemapXml());
   });
 
-  // Serve uploads folder statically for local storage fallback
+  // Serve uploads and templates folder statically
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+  app.use("/templates", express.static(path.join(process.cwd(), "public", "templates")));
+  app.use("/templates", express.static(path.join(process.cwd(), "templates")));
 
   // Register Modular Routers
   app.use("/api/auth", createAuthRouter());

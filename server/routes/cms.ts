@@ -2,11 +2,24 @@ import { Router, Request, Response } from "express";
 import path from "path";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import { GoogleGenAI } from "@google/genai";
 import { getJwtSecret } from "../middleware/auth";
 
 export function createCmsRouter() {
   const router = Router();
   const JWT_SECRET = getJwtSecret();
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  const ai = apiKey
+    ? new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            "User-Agent": "aistudio-build",
+          },
+        },
+      })
+    : null;
 
   const parseCookies = (cookieHeader: string | undefined): Record<string, string> => {
     const list: Record<string, string> = {};
@@ -62,7 +75,6 @@ export function createCmsRouter() {
     const indexPath = path.join(process.cwd(), "admin-portal", "index.html");
     const gatePath = path.join(process.cwd(), "admin-portal", "gate.html");
 
-    // If password gate is passed or no password set
     if (isCmsAuthenticated(req)) {
       if (fs.existsSync(indexPath)) {
         return res.sendFile(indexPath);
@@ -103,7 +115,6 @@ export function createCmsRouter() {
         .replace(/base_url:\s*.*$/m, `base_url: ${hostUrl}`)
         .replace(/auth_endpoint:\s*.*$/m, `auth_endpoint: api/auth`);
 
-      // If local development, enable local_backend for instant local preview with decap-server
       const isLocal = req.headers.host?.includes("localhost") || req.headers.host?.includes("127.0.0.1");
       if (isLocal && !configContent.includes("local_backend:")) {
         configContent = `local_backend: true\n` + configContent;
@@ -116,14 +127,188 @@ export function createCmsRouter() {
     }
   });
 
+  // ─── AI BLOG GENERATOR & SEO CO-PILOT (Powered by Gemini) ───
+  router.post("/api/cms/ai/generate", async (req: Request, res: Response) => {
+    try {
+      const { topic, category, targetAudience, keywords, tone } = req.body;
+      if (!topic) {
+        return res.status(400).json({ error: "Topic is required for AI generation." });
+      }
+
+      if (!ai) {
+        return res.status(503).json({ error: "Gemini API key is not configured in server environment." });
+      }
+
+      const prompt = `You are an elite corporate legal counsel, Chartered Accountant advisor, and SEO content strategist for INCroute (India's premier startup incorporation and statutory compliance advisory platform).
+
+Create a high-ranking, authoritative, and founder-friendly comprehensive guide on the topic:
+Topic: "${topic}"
+Category: "${category || "Company Registration"}"
+Target Audience: "${targetAudience || "Indian Startup Founders, Directors, and Small Business Owners"}"
+Target Keywords: "${keywords || "company registration, compliance, India, ROC, MCA guidelines"}"
+Tone: "${tone || "Professional, authoritative, actionable, clear, founder-friendly"}"
+
+Generate a complete, publication-ready article and output a STRICT JSON object with these exact keys:
+{
+  "title": "Compelling, high-CTR SEO title (50-65 characters)",
+  "subtitle": "Practical 1-2 sentence summary explaining the core takeaway for founders",
+  "category": "${category || "Company Registration"}",
+  "slug": "url-friendly-kebab-case-slug",
+  "metaDescription": "Exactly 150-160 characters search snippet optimized for Google SERP and click-throughs",
+  "keywords": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "content": "Full markdown text with: \\n# Title\\n\\n**Overview summary**\\n\\n## Section 1: Core Statutory Requirements\\n* Bullet points with details...\\n\\n> **Important Note**: Key statutory caveat or penalty avoidance note.\\n\\n## Section 2: Step-by-Step Procedure & Timelines\\n1. Step 1...\\n2. Step 2...\\n\\n## Section 3: Essential Documents Checklist\\n\\n## Section 4: Common Pitfalls to Avoid\\n\\n## Conclusion & How INCroute Assists\\nFinal takeaway reminding founders to consult INCroute.",
+  "estimatedReadingTime": "5 min read"
+}`;
+
+      const aiResponse = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
+
+      const text = aiResponse.text;
+      const parsed = JSON.parse(text || "{}");
+
+      res.json({
+        success: true,
+        data: parsed,
+      });
+    } catch (err: any) {
+      console.error("AI blog generator error:", err);
+      res.status(500).json({ error: err.message || "Failed to generate AI blog article." });
+    }
+  });
+
+  // ─── AI ARTICLE POLISHER & GRAMMAR ENHANCER ───
+  router.post("/api/cms/ai/polish", async (req: Request, res: Response) => {
+    try {
+      const { text, focus } = req.body;
+      if (!text) return res.status(400).json({ error: "Text is required to polish." });
+      if (!ai) return res.status(503).json({ error: "Gemini API key is not configured." });
+
+      const prompt = `You are a senior editor for a premier Indian corporate law and startup compliance publication.
+Polish and enhance the following draft text for ${focus || "clarity, professional legal tone, rich markdown formatting, and SEO ranking"}.
+Preserve all statutory facts, improve structure, make bullet points crisp, and ensure clean markdown formatting.
+
+Text to polish:
+"""
+${text}
+"""
+
+Return a STRICT JSON object:
+{
+  "polishedText": "Clean, formatted markdown string...",
+  "suggestedTitle": "Improved title if applicable",
+  "suggestedMetaDescription": "150-160 char Google meta snippet"
+}`;
+
+      const aiResponse = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
+
+      const parsed = JSON.parse(aiResponse.text || "{}");
+      res.json({ success: true, data: parsed });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Failed to polish text with AI." });
+    }
+  });
+
+  // ─── MULTI-COLLECTION: TESTIMONIALS ───
+  router.get("/api/cms/testimonials", (_req: Request, res: Response) => {
+    try {
+      const filePath = path.join(process.cwd(), "testimonials.json");
+      if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        return res.json({ success: true, testimonials: Array.isArray(data) ? data : [] });
+      }
+      res.json({ success: true, testimonials: [] });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to read testimonials." });
+    }
+  });
+
+  router.post("/api/cms/testimonials", (req: Request, res: Response) => {
+    try {
+      const { testimonials } = req.body;
+      if (!Array.isArray(testimonials)) {
+        return res.status(400).json({ error: "Testimonials array is required." });
+      }
+      const filePath = path.join(process.cwd(), "testimonials.json");
+      fs.writeFileSync(filePath, JSON.stringify(testimonials, null, 2), "utf-8");
+      res.json({ success: true, message: "Testimonials saved successfully!" });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to save testimonials." });
+    }
+  });
+
+  // ─── MULTI-COLLECTION: FAQS ───
+  router.get("/api/cms/faqs", (_req: Request, res: Response) => {
+    try {
+      const filePath = path.join(process.cwd(), "faqs.json");
+      if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        return res.json({ success: true, faqs: data.faqs || (Array.isArray(data) ? data : []) });
+      }
+      res.json({ success: true, faqs: [] });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to read FAQs." });
+    }
+  });
+
+  router.post("/api/cms/faqs", (req: Request, res: Response) => {
+    try {
+      const { faqs } = req.body;
+      if (!Array.isArray(faqs)) {
+        return res.status(400).json({ error: "FAQs array is required." });
+      }
+      const filePath = path.join(process.cwd(), "faqs.json");
+      fs.writeFileSync(filePath, JSON.stringify({ faqs }, null, 2), "utf-8");
+      res.json({ success: true, message: "FAQs saved successfully!" });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to save FAQs." });
+    }
+  });
+
+  // ─── MULTI-COLLECTION: SITE SETTINGS & ANNOUNCEMENTS ───
+  router.get("/api/cms/settings", (_req: Request, res: Response) => {
+    try {
+      const filePath = path.join(process.cwd(), "site-settings.json");
+      if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        return res.json({ success: true, settings: data });
+      }
+      res.json({ success: true, settings: {} });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to read site settings." });
+    }
+  });
+
+  router.post("/api/cms/settings", (req: Request, res: Response) => {
+    try {
+      const { settings } = req.body;
+      if (!settings || typeof settings !== "object") {
+        return res.status(400).json({ error: "Settings object is required." });
+      }
+      const filePath = path.join(process.cwd(), "site-settings.json");
+      fs.writeFileSync(filePath, JSON.stringify(settings, null, 2), "utf-8");
+      res.json({ success: true, message: "Site settings saved successfully!" });
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to save site settings." });
+    }
+  });
+
   // ─── GitHub OAuth Handshake for Self-Hosted Decap CMS ───
   router.get("/api/auth", (req: Request, res: Response, next) => {
-    // If it's a browser requesting GitHub OAuth for Decap CMS
-    const provider = req.query.provider || "github";
     const clientId = process.env.GITHUB_CLIENT_ID;
 
     if (req.headers.accept?.includes("application/json")) {
-      return next(); // Pass to next handler if it's an API JSON call
+      return next();
     }
 
     if (!clientId) {
@@ -149,7 +334,7 @@ export function createCmsRouter() {
               <li>Create a new OAuth App with callback URL: <code>${req.protocol}://${req.headers.host}/api/auth/callback</code></li>
               <li>Add <code>GITHUB_CLIENT_ID</code> and <code>GITHUB_CLIENT_SECRET</code> to your <code>.env</code> file.</li>
             </ol>
-            <p style="margin-top:20px; font-size:12px; color:#A9A3C2;">Tip: You can also use the integrated Admin Portal at <a href="/login">/login</a> &rarr; Admin Dashboard.</p>
+            <p style="margin-top:20px; font-size:12px; color:#A9A3C2;">Tip: You can also use the integrated Fast Publisher at <a href="/cms">/cms</a>.</p>
           </div>
         </body>
         </html>
@@ -199,7 +384,6 @@ export function createCmsRouter() {
 
       const token = data.access_token;
 
-      // Post token back to Decap CMS popup window
       res.send(`
         <!DOCTYPE html>
         <html>

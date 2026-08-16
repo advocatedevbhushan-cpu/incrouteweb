@@ -3,165 +3,159 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>INCroute CMS & Fast Blog Publisher</title>
+    <title>INCroute CMS Control Center — AI Blog Studio & Content Manager</title>
     <link rel="icon" type="image/png" href="/incroute_logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
-      /* ─── Modern Theme & Fast Publisher Styles ─── */
+      /* ─── Premium Glassmorphic CMS Theme ─── */
       * { box-sizing: border-box; }
       
       html, body {
-        background: #F8F9FC !important;
-        color: #1a1a2e !important;
+        background: #0F0D1A !important;
+        color: #F2EFFB !important;
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
         margin: 0;
         padding: 0;
+        min-height: 100vh;
       }
 
-      /* Quick Action Top Bar */
-      #fast-bar {
-        background: linear-gradient(135deg, #110E1B 0%, #1B172E 100%);
-        color: #F2EFFB;
-        padding: 10px 20px;
+      /* Top Header */
+      #cms-header {
+        background: rgba(19, 16, 32, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(108, 124, 255, 0.18);
+        padding: 12px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid rgba(108, 124, 255, 0.25);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         position: sticky;
         top: 0;
-        z-index: 9999;
+        z-index: 1000;
       }
-      .brand-title {
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
         font-weight: 800;
-        font-size: 15px;
+        font-size: 16px;
         letter-spacing: -0.02em;
-        display: flex;
-        align-items: center;
-        gap: 10px;
       }
-      .brand-title img {
-        width: 26px;
-        height: 26px;
+      .brand img {
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
+        border: 1px solid rgba(108, 124, 255, 0.3);
       }
-      .brand-title span {
-        color: #8B99FF;
-        font-weight: 600;
+      .brand span {
+        color: #7C5CF6;
+        font-style: italic;
       }
-      .bar-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .btn-quick-pub {
-        background: linear-gradient(135deg, #5B6CFF 0%, #7C5CF6 100%);
-        color: #FFFFFF;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
+      .nav-tabs {
         display: flex;
         align-items: center;
         gap: 6px;
-        transition: transform 0.15s, box-shadow 0.15s;
-        box-shadow: 0 4px 14px rgba(91, 108, 255, 0.35);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 4px;
+        border-radius: 12px;
+        border: 1px solid rgba(108, 124, 255, 0.15);
       }
-      .btn-quick-pub:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(91, 108, 255, 0.5);
-      }
-      .btn-outline-bar {
-        background: rgba(255, 255, 255, 0.08);
-        color: #E2E0F5;
-        border: 1px solid rgba(108, 124, 255, 0.2);
-        padding: 7px 14px;
-        border-radius: 8px;
+      .nav-tab {
+        background: transparent;
+        border: none;
+        color: #A4A1C0;
         font-weight: 600;
-        font-size: 12px;
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 8px;
         cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .nav-tab:hover {
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .nav-tab.active {
+        background: linear-gradient(135deg, #5B6CFF 0%, #7C5CF6 100%);
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(91, 108, 255, 0.3);
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn-pill {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(108, 124, 255, 0.2);
+        color: #E2E0F5;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 8px;
         text-decoration: none;
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 6px;
         transition: background 0.15s;
       }
-      .btn-outline-bar:hover {
-        background: rgba(255, 255, 255, 0.16);
+      .btn-pill:hover {
+        background: rgba(255, 255, 255, 0.15);
         color: #FFFFFF;
       }
 
-      /* Fast Publisher Modal */
-      #fast-modal-overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(10, 8, 20, 0.75);
-        backdrop-filter: blur(8px);
-        z-index: 100000;
+      /* Main Content Container */
+      .app-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+      .tab-panel {
         display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
       }
-      #fast-modal-overlay.open {
-        display: flex;
+      .tab-panel.active {
+        display: block;
       }
-      .modal-card {
-        background: #181528;
-        border: 1px solid rgba(108, 124, 255, 0.25);
-        border-radius: 20px;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-        width: 100%;
-        max-width: 860px;
-        max-height: 90vh;
-        overflow-y: auto;
-        color: #F2EFFB;
-        padding: 32px;
-        position: relative;
-      }
-      .modal-close {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: #FFFFFF;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        font-size: 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-      .drop-zone {
-        border: 2px dashed rgba(108, 124, 255, 0.4);
-        border-radius: 14px;
-        background: rgba(108, 124, 255, 0.04);
+
+      /* Cards & Surfaces */
+      .glass-card {
+        background: linear-gradient(145deg, rgba(26, 22, 42, 0.8), rgba(18, 15, 30, 0.9));
+        border: 1px solid rgba(108, 124, 255, 0.15);
+        border-radius: 18px;
         padding: 24px;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
-        margin-bottom: 20px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        margin-bottom: 24px;
       }
-      .drop-zone:hover, .drop-zone.dragover {
-        border-color: #7C5CF6;
-        background: rgba(108, 124, 255, 0.08);
+      .section-heading {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .form-row {
+      .section-sub {
+        font-size: 13px;
+        color: #9C98B8;
+        margin: 0 0 20px 0;
+      }
+
+      /* Grid Layouts */
+      .grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: 20px;
       }
+      @media (max-width: 992px) {
+        .grid-2 { grid-template-columns: 1fr; }
+      }
+
+      /* Inputs & Forms */
       .form-group {
         display: flex;
         flex-direction: column;
@@ -169,14 +163,14 @@
         margin-bottom: 16px;
       }
       .form-group label {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         color: #B5B2CE;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.05em;
       }
       .form-group input, .form-group select, .form-group textarea {
-        background: #231E38;
+        background: #1F1A33;
         border: 1px solid rgba(108, 124, 255, 0.2);
         color: #FFFFFF;
         padding: 12px 14px;
@@ -184,146 +178,601 @@
         font-family: inherit;
         font-size: 14px;
         outline: none;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
       }
       .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-        border-color: #8B99FF;
-        box-shadow: 0 0 0 3px rgba(108, 124, 255, 0.15);
-      }
-      .seo-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        background: rgba(16, 185, 129, 0.15);
-        color: #34D399;
-        border-radius: 100px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        margin-left: 8px;
+        border-color: #7C5CF6;
+        box-shadow: 0 0 0 3px rgba(124, 92, 246, 0.18);
       }
 
-      /* Decap Overrides */
-      #nc-root, #nc-root > div, #nc-root > div > div {
-        background: #F8F9FC !important;
-        color: #1a1a2e !important;
+      /* Buttons */
+      .btn-primary {
+        background: linear-gradient(135deg, #5B6CFF 0%, #7C5CF6 100%);
+        color: #FFFFFF;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 16px rgba(91, 108, 255, 0.35);
       }
-      [class*="AppHeader"], header[class] {
-        background: #1B1828 !important;
-        border-bottom: 1px solid rgba(108, 124, 255, 0.15) !important;
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(91, 108, 255, 0.5);
       }
-      [class*="AppHeader"] a, [class*="AppHeader"] span, [class*="AppHeader"] button {
-        color: #F2EFFB !important;
+      .btn-ai {
+        background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%);
+        color: #FFFFFF;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);
+      }
+      .btn-ai:hover {
+        opacity: 0.92;
+      }
+
+      /* Drag Drop Zone */
+      .drop-zone {
+        border: 2px dashed rgba(108, 124, 255, 0.35);
+        background: rgba(108, 124, 255, 0.04);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        margin-bottom: 16px;
+      }
+      .drop-zone:hover, .drop-zone.dragover {
+        border-color: #7C5CF6;
+        background: rgba(124, 92, 246, 0.08);
+      }
+
+      /* Google SERP Preview Box */
+      .google-serp-box {
+        background: #202124;
+        border-radius: 12px;
+        padding: 18px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 16px;
+      }
+      .serp-site {
+        font-size: 12px;
+        color: #DADCE0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .serp-title {
+        font-size: 18px;
+        color: #8AB4F8;
+        font-weight: 500;
+        text-decoration: none;
+        margin-bottom: 4px;
+        line-height: 1.3;
+        display: block;
+      }
+      .serp-desc {
+        font-size: 13px;
+        color: #BDC1C6;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* Live Blog Article Preview */
+      .article-preview-sheet {
+        background: #FFFFFF;
+        color: #111827;
+        border-radius: 16px;
+        padding: 36px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        max-height: 800px;
+        overflow-y: auto;
+      }
+      .preview-cat {
+        display: inline-block;
+        background: #EEF2FF;
+        color: #4F46E5;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 100px;
+        margin-bottom: 14px;
+      }
+      .preview-h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 12px 0;
+        line-height: 1.25;
+      }
+      .preview-sub {
+        font-size: 16px;
+        color: #4B5563;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .preview-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 13px;
+        color: #6B7280;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #E5E7EB;
+        margin-bottom: 24px;
+      }
+      .preview-body {
+        font-size: 15px;
+        line-height: 1.8;
+        color: #374151;
+      }
+      .preview-body h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        margin-top: 24px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #F3F4F6;
+        padding-bottom: 6px;
+      }
+      .preview-body p { margin-bottom: 14px; }
+      .preview-body blockquote {
+        border-left: 4px solid #6366F1;
+        background: #F5F7FF;
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        color: #4B5563;
+        font-style: italic;
+        margin: 16px 0;
+      }
+      .preview-body ul { padding-left: 20px; margin-bottom: 14px; }
+      .preview-body li { margin-bottom: 6px; }
+
+      /* Table Styles for Testimonials & FAQs */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+      }
+      .data-table th, .data-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(108, 124, 255, 0.12);
+        font-size: 13px;
+      }
+      .data-table th {
+        background: rgba(108, 124, 255, 0.08);
+        color: #B5B2CE;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .data-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .btn-del {
+        background: rgba(239, 68, 68, 0.15);
+        color: #F87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 4px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
       }
     </style>
   </head>
   <body>
-    <!-- ⚡ Quick Action Top Bar -->
-    <div id="fast-bar">
-      <div class="brand-title">
+    <!-- Top Header & Tab Switcher -->
+    <header id="cms-header">
+      <div class="brand">
         <img src="/incroute_logo.png" alt="INCroute" />
-        INC<span>route</span> CMS
+        <div>INC<span>route</span> Studio</div>
       </div>
-      <div class="bar-actions">
-        <button class="btn-quick-pub" onclick="openFastModal()">
-          ⚡ One-Click Template Publisher
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('tab-ai-publisher')">
+          ⚡ AI Studio & Publisher
         </button>
-        <a href="/templates/blog-template.md" download="blog-template.md" class="btn-outline-bar">
-          📥 Download Template (.md)
+        <button class="nav-tab" onclick="switchTab('tab-live-preview')">
+          👁️ Live Site & Google SERP Preview
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-testimonials')">
+          ⭐ Testimonials
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-faqs')">
+          ❓ FAQ Database
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-settings')">
+          📢 Announcement Banner
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-decap-git')">
+          ⚙️ Decap Git Engine
+        </button>
+      </nav>
+
+      <div class="header-right">
+        <a href="/templates/blog-template.md" download="blog-template.md" class="btn-pill">
+          📥 Template (.md)
         </a>
-        <a href="/sitemap.xml" target="_blank" class="btn-outline-bar">
-          🔍 View Google Sitemap
+        <a href="/sitemap.xml" target="_blank" class="btn-pill">
+          🔍 XML Sitemap
         </a>
-        <a href="/blog" target="_blank" class="btn-outline-bar">
-          🌐 View Live Blog
+        <a href="/blog" target="_blank" class="btn-pill" style="background: rgba(91, 108, 255, 0.2); border-color: #5B6CFF; color: #FFFFFF;">
+          🌐 View Blog
         </a>
       </div>
-    </div>
+    </header>
 
-    <!-- ⚡ Fast Publisher & Template Upload Modal -->
-    <div id="fast-modal-overlay">
-      <div class="modal-card">
-        <button class="modal-close" onclick="closeFastModal()">&times;</button>
-        
-        <div style="margin-bottom: 20px;">
-          <h2 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800; color: #FFFFFF;">
-            ⚡ Fast Blog & Template Publisher
-          </h2>
-          <p style="margin: 0; font-size: 13px; color: #A4A1C0;">
-            Upload any Markdown file (<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.md</code> / <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.txt</code> / <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.json</code>) or paste article text. We automatically parse the title, category, metadata, and publish instantly to Google Search!
-          </p>
-        </div>
-
-        <!-- Drag & Drop Zone -->
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-          <input type="file" id="file-input" style="display:none;" accept=".md,.txt,.json,.markdown" onchange="handleFileSelect(event)" />
-          <div style="font-size: 28px; margin-bottom: 8px;">📄</div>
-          <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Click or Drag & Drop your Blog Template File here</div>
-          <div style="font-size: 12px; color: #8E8BAF; margin-top: 4px;">Supports Markdown with Frontmatter (.md) or JSON files</div>
-        </div>
-
-        <div style="text-align: center; margin: 12px 0; font-size: 12px; color: #6C688D; font-weight: 700;">— OR PASTE ARTICLE TEXT BELOW —</div>
-
-        <form id="fast-pub-form" onsubmit="submitFastPublish(event)">
-          <div class="form-group">
-            <label>Raw Markdown / Article Draft</label>
-            <textarea id="rawText" rows="6" placeholder="Paste your markdown or article text directly from ChatGPT, Notion, or Word here..." oninput="autoParseText(this.value)" style="font-family: 'JetBrains Mono', monospace; font-size: 13px;"></textarea>
+    <div class="app-container">
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 1: AI BLOG STUDIO & FAST PUBLISHER                      -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-ai-publisher" class="tab-panel active">
+        <!-- AI Co-Pilot Assistant Box -->
+        <div class="glass-card" style="border-color: rgba(236, 72, 153, 0.35); background: linear-gradient(145deg, rgba(34, 18, 48, 0.8), rgba(20, 14, 34, 0.9));">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+              <div class="section-heading" style="color: #F472B6;">
+                🤖 AI Blog Generator & SEO Co-Pilot (Gemini 2.5)
+              </div>
+              <div class="section-sub">
+                Type any statutory or business topic below. Gemini will generate a full, publication-ready article, structured checklist, and 160-character Google SEO snippet.
+              </div>
+            </div>
+            <div style="font-size: 11px; padding: 4px 10px; border-radius: 100px; background: rgba(236, 72, 153, 0.2); color: #F472B6; font-weight: 700;">
+              ✨ Powered by Google Gemini
+            </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Article Title <span style="color:#EF4444;">*</span></label>
-              <input type="text" id="title" required placeholder="e.g., Private Limited Company Registration Guide" />
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: end;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Topic / Concept</label>
+              <input type="text" id="aiTopic" placeholder="e.g. 90-Day Post-Incorporation Compliance Roadmap for Founders" />
             </div>
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 0;">
               <label>Category</label>
-              <select id="category">
+              <select id="aiCategory">
                 <option value="Company Registration">Company Registration</option>
                 <option value="Compliance & ROC">Compliance & ROC</option>
                 <option value="GST & Taxation">GST & Taxation</option>
                 <option value="Trademark & IP">Trademark & IP</option>
                 <option value="Legal Advisory">Legal Advisory</option>
                 <option value="Startup Guide">Startup Guide</option>
-                <option value="Industry News">Industry News</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label>Subtitle / Excerpt</label>
-            <input type="text" id="subtitle" placeholder="A practical 1-2 sentence summary for founders..." />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Author</label>
-              <input type="text" id="author" value="D Bhushan" />
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Target Audience</label>
+              <input type="text" id="aiAudience" value="Indian Startup Founders & Directors" />
             </div>
-            <div class="form-group">
-              <label>Cover Image URL</label>
-              <input type="text" id="image" placeholder="/blog-images/sample-cover.png" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Google Search Meta Description <span class="seo-badge">✓ Auto-Optimized for Google</span></label>
-            <textarea id="metaDescription" rows="2" placeholder="150-160 character summary optimized for Google search results..."></textarea>
-          </div>
-
-          <div style="display: flex; gap: 12px; margin-top: 24px;">
-            <button type="submit" id="pub-btn" class="btn-quick-pub" style="flex: 1; padding: 14px; font-size: 15px; justify-content: center;">
-              🚀 Publish Article & Sync with Google Search
-            </button>
-            <button type="button" class="btn-outline-bar" onclick="closeFastModal()" style="padding: 14px 20px;">
-              Cancel
+            <button type="button" class="btn-ai" id="btn-gen-ai" onclick="generateWithAI()" style="height: 44px;">
+              ✨ Generate Article
             </button>
           </div>
+        </div>
 
-          <div id="pub-status" style="margin-top: 16px; display: none; padding: 14px; border-radius: 10px; font-size: 13px;"></div>
-        </form>
+        <!-- Smart Editor & Fast Publish Form -->
+        <div class="grid-2">
+          <!-- Left Column: Source Input -->
+          <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="section-heading">📝 Article Draft & Source</div>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="btn-pill" onclick="loadSampleTemplate()" style="font-size: 11px; padding: 5px 10px;">
+                  ⚡ Sample Template
+                </button>
+                <button type="button" class="btn-pill" onclick="polishWithAI()" style="font-size: 11px; padding: 5px 10px; color: #F472B6; border-color: rgba(236, 72, 153, 0.4);">
+                  ✨ AI Polish
+                </button>
+              </div>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+              <input type="file" id="file-input" style="display:none;" accept=".md,.txt,.json,.markdown" onchange="handleFileSelect(event)" />
+              <div style="font-size: 24px; margin-bottom: 4px;">📄</div>
+              <div style="font-size: 13px; font-weight: 700; color: #FFFFFF;">Drop Markdown / JSON Template Here</div>
+              <div style="font-size: 11px; color: #8E8BAF;">Or click to browse from your computer</div>
+            </div>
+
+            <div class="form-group">
+              <label>Raw Markdown Content</label>
+              <textarea id="rawText" rows="18" placeholder="Paste your markdown or article text directly from ChatGPT, Notion, or Google Docs..." oninput="autoParseText(this.value)" style="font-family: 'JetBrains Mono', monospace; font-size: 13px;"></textarea>
+            </div>
+          </div>
+
+          <!-- Right Column: Auto-Extracted Metadata & Publishing -->
+          <div class="glass-card">
+            <div class="section-heading">🚀 Metadata & Publishing Engine</div>
+            <div class="section-sub">Parsed automatically from your content. Ready to sync with Google.</div>
+
+            <form id="pub-form" onsubmit="submitFastPublish(event)">
+              <div class="form-group">
+                <label>Article Title <span style="color:#EF4444;">*</span></label>
+                <input type="text" id="title" required placeholder="Article Title" oninput="updateLivePreview()" />
+              </div>
+
+              <div class="form-group">
+                <label>Subtitle / Excerpt</label>
+                <input type="text" id="subtitle" placeholder="1-2 sentence hook for founders..." oninput="updateLivePreview()" />
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>Category</label>
+                  <select id="category" onchange="updateLivePreview()">
+                    <option value="Company Registration">Company Registration</option>
+                    <option value="Compliance & ROC">Compliance & ROC</option>
+                    <option value="GST & Taxation">GST & Taxation</option>
+                    <option value="Trademark & IP">Trademark & IP</option>
+                    <option value="Legal Advisory">Legal Advisory</option>
+                    <option value="Startup Guide">Startup Guide</option>
+                    <option value="Industry News">Industry News</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>URL Slug (Auto-Generated)</label>
+                  <input type="text" id="slug" placeholder="auto-generated-slug" oninput="updateLivePreview()" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>Author</label>
+                  <input type="text" id="author" value="D Bhushan" oninput="updateLivePreview()" />
+                </div>
+                <div class="form-group">
+                  <label>Cover Image URL</label>
+                  <input type="text" id="image" placeholder="/blog-images/sample-cover.png" oninput="updateLivePreview()" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label>Google Search Meta Description</label>
+                  <span id="char-count" style="font-size: 11px; color: #10B981; font-weight: 700;">0 / 160 chars</span>
+                </div>
+                <textarea id="metaDescription" rows="3" placeholder="150-160 character summary optimized for Google search results..." oninput="updateLivePreview()"></textarea>
+              </div>
+
+              <div style="margin-top: 24px;">
+                <button type="submit" id="pub-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 15px;">
+                  🚀 Publish Article & Sync with Google Search
+                </button>
+              </div>
+
+              <div id="pub-status" style="margin-top: 16px; display: none; padding: 14px; border-radius: 10px; font-size: 13px;"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 2: REAL-TIME LIVE SITE PREVIEW & GOOGLE SERP SIMULATOR  -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-live-preview" class="tab-panel">
+        <div class="grid-2">
+          <!-- Google SERP Card -->
+          <div>
+            <div class="glass-card">
+              <div class="section-heading">🔍 Google Search Snippet Simulator</div>
+              <div class="section-sub">This is exactly how your article will look on Google search results.</div>
+
+              <div class="google-serp-box">
+                <div class="serp-site">
+                  <img src="/incroute_logo.png" style="width:16px; height:16px; border-radius:50%;" />
+                  <span>https://incroute.com &rsaquo; blog &rsaquo; <span id="serp-slug">your-slug</span></span>
+                </div>
+                <a href="#" class="serp-title" id="serp-title">
+                  Enter Your Blog Post Title Here | INCroute Editorial
+                </a>
+                <p class="serp-desc" id="serp-desc">
+                  Clear 150-160 character summary optimized for Google search results and snippets.
+                </p>
+              </div>
+
+              <!-- SEO Quality Checklist -->
+              <div style="margin-top: 20px;">
+                <div style="font-size: 13px; font-weight: 700; color: #B5B2CE; margin-bottom: 10px;">✓ SEO Readiness Score</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                  <div id="chk-title" style="color: #34D399;">✓ Title length is optimal for Google indexing</div>
+                  <div id="chk-desc" style="color: #34D399;">✓ Meta description is within 160 character budget</div>
+                  <div id="chk-schema" style="color: #34D399;">✓ Article Schema JSON-LD structured data included</div>
+                  <div id="chk-sitemap" style="color: #34D399;">✓ Auto-mapped to /sitemap.xml for Googlebot</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Website Article Preview -->
+          <div>
+            <div class="glass-card" style="padding: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div class="section-heading" style="font-size: 16px;">🌐 Live Website Page Preview</div>
+                <span style="font-size: 11px; background: #EEF2FF; color: #4F46E5; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Desktop Mode</span>
+              </div>
+
+              <div class="article-preview-sheet">
+                <div class="preview-cat" id="prev-cat">Company Registration</div>
+                <h1 class="preview-h1" id="prev-h1">Article Title Preview</h1>
+                <div class="preview-sub" id="prev-sub">Practical 1-2 sentence founder takeaway...</div>
+                
+                <div class="preview-meta">
+                  <div>👤 <strong id="prev-author">D Bhushan</strong></div>
+                  <div>📅 <span id="prev-date">2026-08-16</span></div>
+                  <div>⏱️ <span id="prev-read">5 min read</span></div>
+                </div>
+
+                <div class="preview-body" id="prev-body">
+                  <p>Start drafting in the editor to see your article preview rendered in real time here...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 3: TESTIMONIALS MANAGER                                 -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-testimonials" class="tab-panel">
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="section-heading">⭐ Client Reviews & Testimonials</div>
+              <div class="section-sub">Manage client reviews displayed across the homepage and trust carousels.</div>
+            </div>
+            <button class="btn-primary" onclick="saveTestimonials()">💾 Save All Changes</button>
+          </div>
+
+          <!-- Add Testimonial Form -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(108, 124, 255, 0.15); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">+ Add New Testimonial</div>
+            <div class="grid-2">
+              <div class="form-group"><label>Client Name</label><input type="text" id="tName" placeholder="e.g. Keshav Agarwal" /></div>
+              <div class="form-group"><label>Designation / Company</label><input type="text" id="tDesig" placeholder="e.g. Director, KAAEXIM" /></div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group"><label>Entity Type</label><input type="text" id="tEntity" placeholder="e.g. Pvt Ltd Company" /></div>
+              <div class="form-group"><label>Rating (1-5)</label><input type="number" id="tRating" min="1" max="5" value="5" /></div>
+            </div>
+            <div class="form-group"><label>Review Quote</label><textarea id="tContent" rows="2" placeholder="Enter review quote..."></textarea></div>
+            <button class="btn-primary" type="button" onclick="addTestimonial()" style="font-size: 13px; padding: 8px 16px;">+ Add to List</button>
+          </div>
+
+          <!-- Testimonial Table -->
+          <table class="data-table" id="testimonials-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Designation & Entity</th>
+                <th>Rating</th>
+                <th>Review Quote</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="testimonials-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 4: FAQ DATABASE MANAGER                                 -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-faqs" class="tab-panel">
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="section-heading">❓ FAQ Knowledge Database</div>
+              <div class="section-sub">Manage statutory answers displayed on the FAQ and service hubs.</div>
+            </div>
+            <button class="btn-primary" onclick="saveFaqs()">💾 Save FAQs</button>
+          </div>
+
+          <!-- Add FAQ Form -->
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(108, 124, 255, 0.15); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">+ Add New FAQ Question</div>
+            <div class="grid-2">
+              <div class="form-group"><label>Question</label><input type="text" id="fQ" placeholder="e.g. How long does company incorporation take?" /></div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="fCat">
+                  <option value="Company Registration">Company Registration</option>
+                  <option value="LLP & Partnership">LLP & Partnership</option>
+                  <option value="GST & Tax">GST & Tax</option>
+                  <option value="Compliance & ROC">Compliance & ROC</option>
+                  <option value="Trademark & IP">Trademark & IP</option>
+                  <option value="Legal Advisory">Legal Advisory</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group"><label>Answer</label><textarea id="fA" rows="3" placeholder="Enter clear statutory answer..."></textarea></div>
+            <button class="btn-primary" type="button" onclick="addFaq()" style="font-size: 13px; padding: 8px 16px;">+ Add Question</button>
+          </div>
+
+          <!-- FAQ Table -->
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="faqs-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 5: ANNOUNCEMENT BANNER & SITE SETTINGS                  -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-settings" class="tab-panel">
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="section-heading">📢 Announcement Banner & Global Settings</div>
+              <div class="section-sub">Configure top-of-site announcements, contact details, and SEO defaults.</div>
+            </div>
+            <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(108, 124, 255, 0.15); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">Top Announcement Bar</div>
+            
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
+              <input type="checkbox" id="annEnabled" style="width: 18px; height: 18px;" />
+              <label for="annEnabled" style="text-transform: none; font-size: 13px; color: #FFFFFF; cursor: pointer;">
+                Enable Top Announcement Banner on Website
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label>Banner Text</label>
+              <input type="text" id="annText" placeholder="e.g. 📢 Avail Free MSME Registration with every Private Limited incorporation this month!" />
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Call to Action Link URL</label>
+                <input type="text" id="annLink" placeholder="e.g. /services" />
+              </div>
+              <div class="form-group">
+                <label>Banner Background Color</label>
+                <input type="color" id="annBgColor" value="#5B6CFF" style="height: 44px; padding: 4px;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group"><label>Support Email</label><input type="text" id="setContactEmail" placeholder="info@incroute.com" /></div>
+            <div class="form-group"><label>Support Phone</label><input type="text" id="setContactPhone" placeholder="+91 870 755 2183" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB 6: DECAP GIT ENGINE                                     -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tab-decap-git" class="tab-panel">
+        <div id="nc-root"></div>
       </div>
     </div>
 
-    <!-- Decap CMS Container -->
+    <!-- Decap CMS Initialization -->
     <script>
       window.CMS_MANUAL_INIT = true;
     </script>
@@ -332,13 +781,72 @@
       CMS.init();
     </script>
 
-    <!-- Fast Publisher Logic -->
+    <!-- Studio Logic Script -->
     <script>
-      function openFastModal() {
-        document.getElementById('fast-modal-overlay').classList.add('open');
+      let currentTestimonials = [];
+      let currentFaqs = [];
+      let currentSettings = {};
+
+      const SAMPLE_MARKDOWN_TEMPLATE = `---
+title: "Private Limited Company Registered—What Next? A 90-Day Compliance Guide for Founders"
+subtitle: "A practical post-incorporation roadmap covering your company bank account, first board meeting, auditor appointment, INC-20A, and essential registrations."
+category: "Company Registration"
+author: "D Bhushan"
+date: "${new Date().toISOString().split("T")[0]}"
+status: "published"
+featured: false
+image: "/blog-images/sample-cover.png"
+metaDescription: "Registered a private limited company in India? Follow this 90-day checklist for auditor, INC-20A, share certificates, banking and ROC compliance."
+---
+
+# Private Limited Company Registered—What Next? A 90-Day Compliance Guide for Founders
+
+Receiving your Certificate of Incorporation is an important milestone, but incorporation is not the finishing line.
+
+The first few weeks establish the legal and financial foundation of your company.
+
+## 1. Activate the Company Bank Account
+
+A Private Limited Company is a separate legal entity. Funds must remain separate from personal accounts.
+
+* Collect your Certificate of Incorporation, MOA, and AOA.
+* Submit director KYC and registered office proof to bank.
+* Ensure subscribers transfer share capital into the company account.
+
+> **Quick Tip**: Never receive company client payments into personal director bank accounts.
+
+## 2. Hold First Board Meeting & Appoint Auditor
+
+Within 30 days of incorporation:
+1. Conduct the first meeting of the Board of Directors.
+2. Appoint the first statutory auditor under Section 139 of the Companies Act.
+
+## 3. File Form INC-20A (Commencement of Business)
+
+Companies with share capital must file Form INC-20A within 180 days after subscribers deposit their share money.
+
+## Conclusion
+
+Incroute helps founders manage post-incorporation statutory registrations, accounting, and annual ROC filings smoothly.`;
+
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+        const target = document.getElementById(tabId);
+        if (target) target.classList.add('active');
+
+        const activeBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick')?.includes(tabId));
+        if (activeBtn) activeBtn.classList.add('active');
+
+        if (tabId === 'tab-testimonials') loadTestimonials();
+        if (tabId === 'tab-faqs') loadFaqs();
+        if (tabId === 'tab-settings') loadSettings();
       }
-      function closeFastModal() {
-        document.getElementById('fast-modal-overlay').classList.remove('open');
+
+      function loadSampleTemplate() {
+        document.getElementById('rawText').value = SAMPLE_MARKDOWN_TEMPLATE;
+        autoParseText(SAMPLE_MARKDOWN_TEMPLATE);
       }
 
       // Drag & Drop Handling
@@ -348,15 +856,11 @@
       dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-          processFile(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
       });
 
       function handleFileSelect(event) {
-        if (event.target.files.length > 0) {
-          processFile(event.target.files[0]);
-        }
+        if (event.target.files.length > 0) processFile(event.target.files[0]);
       }
 
       function processFile(file) {
@@ -380,7 +884,9 @@
           if (j.category) document.getElementById('category').value = j.category;
           if (j.author) document.getElementById('author').value = j.author;
           if (j.image) document.getElementById('image').value = j.image;
+          if (j.slug) document.getElementById('slug').value = j.slug;
           if (j.metaDescription) document.getElementById('metaDescription').value = j.metaDescription;
+          updateLivePreview();
           return;
         } catch (e) {}
 
@@ -403,30 +909,153 @@
               if (k === 'category') document.getElementById('category').value = v;
               if (k === 'author') document.getElementById('author').value = v;
               if (k === 'image') document.getElementById('image').value = v;
+              if (k === 'slug') document.getElementById('slug').value = v;
               if (k === 'metadescription' || k === 'description') document.getElementById('metaDescription').value = v;
             }
           });
         }
 
-        // Title from # H1 if missing
         if (!document.getElementById('title').value) {
           const h1 = contentPart.match(/^#\s+(.+)$/m);
           if (h1) document.getElementById('title').value = h1[1].trim();
         }
 
-        // Subtitle from > Quote if missing
         if (!document.getElementById('subtitle').value) {
           const quote = contentPart.match(/^>\s*(?:\*\*)?(.*?)(?:\*\*)?$/m);
           if (quote) document.getElementById('subtitle').value = quote[1].trim();
         }
 
-        // Auto meta description
         if (!document.getElementById('metaDescription').value) {
           const clean = contentPart.replace(/[#*`>_\[\]\(\)]/g, ' ').replace(/\s+/g, ' ').trim();
           document.getElementById('metaDescription').value = clean.length > 155 ? clean.substring(0, 152) + '...' : clean;
         }
+
+        if (!document.getElementById('slug').value && document.getElementById('title').value) {
+          document.getElementById('slug').value = document.getElementById('title').value
+            .toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+        }
+
+        updateLivePreview();
       }
 
+      function updateLivePreview() {
+        const title = document.getElementById('title').value || "Enter Your Blog Post Title";
+        const subtitle = document.getElementById('subtitle').value || "A practical 1-2 sentence summary for founders...";
+        const category = document.getElementById('category').value;
+        const author = document.getElementById('author').value || "D Bhushan";
+        const metaDesc = document.getElementById('metaDescription').value || "";
+        const slug = document.getElementById('slug').value || "url-slug";
+        const rawContent = document.getElementById('rawText').value || "";
+
+        // Google SERP Card
+        document.getElementById('serp-title').textContent = title + " | INCroute Editorial";
+        document.getElementById('serp-slug').textContent = slug;
+        document.getElementById('serp-desc').textContent = metaDesc || subtitle;
+
+        // Character counter
+        const charLen = metaDesc.length;
+        const countSpan = document.getElementById('char-count');
+        countSpan.textContent = `${charLen} / 160 chars`;
+        countSpan.style.color = charLen >= 140 && charLen <= 165 ? '#10B981' : (charLen > 165 ? '#EF4444' : '#F59E0B');
+
+        // Website Article Preview
+        document.getElementById('prev-cat').textContent = category;
+        document.getElementById('prev-h1').textContent = title;
+        document.getElementById('prev-sub').textContent = subtitle;
+        document.getElementById('prev-author').textContent = author;
+
+        // Simple Markdown HTML renderer
+        let contentHtml = rawContent.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+        contentHtml = contentHtml
+          .replace(/^#\s+(.+)$/gm, '')
+          .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+          .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+          .replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>')
+          .replace(/^\*\s+(.+)$/gm, '<li>$1</li>')
+          .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n\n/g, '<p></p>');
+
+        document.getElementById('prev-body').innerHTML = contentHtml || '<p>Start typing in the editor to see live rendering...</p>';
+      }
+
+      // ─── AI GENERATOR ───
+      async function generateWithAI() {
+        const topic = document.getElementById('aiTopic').value;
+        const category = document.getElementById('aiCategory').value;
+        const audience = document.getElementById('aiAudience').value;
+        const btn = document.getElementById('btn-gen-ai');
+
+        if (!topic.trim()) {
+          alert("Please enter an article topic first.");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '✨ Generating with Gemini AI...';
+
+        try {
+          const res = await fetch('/api/cms/ai/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, category, targetAudience: audience })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success && data.data) {
+            const art = data.data;
+            document.getElementById('title').value = art.title || topic;
+            document.getElementById('subtitle').value = art.subtitle || "";
+            document.getElementById('category').value = art.category || category;
+            document.getElementById('slug').value = art.slug || "";
+            document.getElementById('metaDescription').value = art.metaDescription || "";
+            document.getElementById('rawText').value = art.content || "";
+
+            updateLivePreview();
+            btn.textContent = '✓ AI Draft Ready!';
+            setTimeout(() => { btn.disabled = false; btn.textContent = '✨ Generate Article'; }, 2000);
+          } else {
+            alert("AI generation failed: " + (data.error || "Unknown error"));
+            btn.disabled = false;
+            btn.textContent = '✨ Generate Article';
+          }
+        } catch (e) {
+          alert("Network error with AI generation.");
+          btn.disabled = false;
+          btn.textContent = '✨ Generate Article';
+        }
+      }
+
+      // ─── AI POLISHER ───
+      async function polishWithAI() {
+        const text = document.getElementById('rawText').value;
+        if (!text.trim()) return alert("Enter some article text first to polish.");
+
+        const btn = event.target;
+        btn.textContent = '✨ Polishing...';
+
+        try {
+          const res = await fetch('/api/cms/ai/polish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          const data = await res.json();
+          if (res.ok && data.success && data.data) {
+            if (data.data.polishedText) document.getElementById('rawText').value = data.data.polishedText;
+            if (data.data.suggestedMetaDescription && !document.getElementById('metaDescription').value) {
+              document.getElementById('metaDescription').value = data.data.suggestedMetaDescription;
+            }
+            updateLivePreview();
+            btn.textContent = '✓ Polished!';
+            setTimeout(() => { btn.textContent = '✨ AI Polish'; }, 2000);
+          }
+        } catch (e) {
+          btn.textContent = '✨ AI Polish';
+        }
+      }
+
+      // ─── FAST PUBLISH SUBMIT ───
       async function submitFastPublish(e) {
         e.preventDefault();
         const btn = document.getElementById('pub-btn');
@@ -441,6 +1070,7 @@
           category: document.getElementById('category').value,
           author: document.getElementById('author').value,
           image: document.getElementById('image').value,
+          slug: document.getElementById('slug').value,
           metaDescription: document.getElementById('metaDescription').value,
           rawText: document.getElementById('rawText').value,
           content: document.getElementById('rawText').value,
@@ -463,7 +1093,7 @@
             statusDiv.innerHTML = `
               <strong>✓ Published Successfully!</strong><br>
               Live URL: <a href="${data.url}" target="_blank" style="color:#6EE7B7; text-decoration:underline; font-weight:700;">${data.url}</a><br>
-              <span style="font-size:12px; color:#A7F3D0;">✓ Added to Google XML Sitemap &bull; Pinged IndexNow search engines.</span>
+              <span style="font-size:12px; color:#A7F3D0;">✓ Updated in Google XML Sitemap &bull; Pinged Google Search Console & IndexNow.</span>
             `;
             btn.textContent = '✓ Published!';
             setTimeout(() => {
@@ -489,6 +1119,135 @@
           btn.textContent = '🚀 Publish Article';
         }
       }
+
+      // ─── TESTIMONIALS LOGIC ───
+      async function loadTestimonials() {
+        const res = await fetch('/api/cms/testimonials');
+        const data = await res.json();
+        if (data.success) {
+          currentTestimonials = data.testimonials || [];
+          renderTestimonials();
+        }
+      }
+      function renderTestimonials() {
+        const tbody = document.getElementById('testimonials-body');
+        tbody.innerHTML = currentTestimonials.map((t, idx) => `
+          <tr>
+            <td><strong>${t.name}</strong></td>
+            <td>${t.designation} &bull; <span style="color:#7C5CF6;">${t.entityType}</span></td>
+            <td>${'⭐'.repeat(t.rating || 5)}</td>
+            <td style="max-width: 350px;">${t.content}</td>
+            <td><button class="btn-del" onclick="deleteTestimonial(${idx})">&times; Remove</button></td>
+          </tr>
+        `).join('');
+      }
+      function addTestimonial() {
+        const name = document.getElementById('tName').value;
+        const designation = document.getElementById('tDesig').value;
+        const entityType = document.getElementById('tEntity').value;
+        const rating = Number(document.getElementById('tRating').value) || 5;
+        const content = document.getElementById('tContent').value;
+        if (!name || !content) return alert("Name and quote required.");
+        currentTestimonials.push({ id: `test-${Date.now()}`, name, designation, entityType, rating, content, approved: true, timestamp: new Date().toISOString() });
+        renderTestimonials();
+        document.getElementById('tName').value = '';
+        document.getElementById('tDesig').value = '';
+        document.getElementById('tEntity').value = '';
+        document.getElementById('tContent').value = '';
+      }
+      function deleteTestimonial(idx) {
+        currentTestimonials.splice(idx, 1);
+        renderTestimonials();
+      }
+      async function saveTestimonials() {
+        const res = await fetch('/api/cms/testimonials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ testimonials: currentTestimonials })
+        });
+        const data = await res.json();
+        alert(data.success ? "✓ Testimonials saved successfully!" : "Failed to save.");
+      }
+
+      // ─── FAQS LOGIC ───
+      async function loadFaqs() {
+        const res = await fetch('/api/cms/faqs');
+        const data = await res.json();
+        if (data.success) {
+          currentFaqs = data.faqs || [];
+          renderFaqs();
+        }
+      }
+      function renderFaqs() {
+        const tbody = document.getElementById('faqs-body');
+        tbody.innerHTML = currentFaqs.map((f, idx) => `
+          <tr>
+            <td><span style="background:rgba(108,124,255,0.15); color:#8B99FF; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px;">${f.category}</span></td>
+            <td><strong>${f.question}</strong></td>
+            <td style="max-width: 400px; font-size:12px; color:#A4A1C0;">${f.answer}</td>
+            <td><button class="btn-del" onclick="deleteFaq(${idx})">&times; Remove</button></td>
+          </tr>
+        `).join('');
+      }
+      function addFaq() {
+        const question = document.getElementById('fQ').value;
+        const category = document.getElementById('fCat').value;
+        const answer = document.getElementById('fA').value;
+        if (!question || !answer) return alert("Question and answer required.");
+        currentFaqs.push({ id: `faq-${Date.now()}`, question, answer, category, order: currentFaqs.length + 1, visible: true });
+        renderFaqs();
+        document.getElementById('fQ').value = '';
+        document.getElementById('fA').value = '';
+      }
+      function deleteFaq(idx) {
+        currentFaqs.splice(idx, 1);
+        renderFaqs();
+      }
+      async function saveFaqs() {
+        const res = await fetch('/api/cms/faqs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ faqs: currentFaqs })
+        });
+        const data = await res.json();
+        alert(data.success ? "✓ FAQs saved successfully!" : "Failed to save FAQs.");
+      }
+
+      // ─── SETTINGS LOGIC ───
+      async function loadSettings() {
+        const res = await fetch('/api/cms/settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          currentSettings = data.settings;
+          document.getElementById('annEnabled').checked = Boolean(currentSettings.announcement?.enabled);
+          document.getElementById('annText').value = currentSettings.announcement?.text || "";
+          document.getElementById('annLink').value = currentSettings.announcement?.link || "";
+          document.getElementById('annBgColor').value = currentSettings.announcement?.bgColor || "#5B6CFF";
+          document.getElementById('setContactEmail').value = currentSettings.contactEmail || "info@incroute.com";
+          document.getElementById('setContactPhone').value = currentSettings.contactPhone || "+91 870 755 2183";
+        }
+      }
+      async function saveSettings() {
+        currentSettings.announcement = {
+          enabled: document.getElementById('annEnabled').checked,
+          text: document.getElementById('annText').value,
+          link: document.getElementById('annLink').value,
+          bgColor: document.getElementById('annBgColor').value
+        };
+        currentSettings.contactEmail = document.getElementById('setContactEmail').value;
+        currentSettings.contactPhone = document.getElementById('setContactPhone').value;
+
+        const res = await fetch('/api/cms/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings: currentSettings })
+        });
+        const data = await res.json();
+        alert(data.success ? "✓ Site settings & announcement updated!" : "Failed to save settings.");
+      }
+
+      // Initialize Sample on first load
+      loadSampleTemplate();
     </script>
   </body>
 </html>
