@@ -16,8 +16,9 @@ import { createTimesheetRouter } from "./server/routes/timesheet";
 import { createAiRouter } from "./server/routes/ai";
 import { createBlogRouter } from "./server/routes/blog";
 import { createServicesRouter } from "./server/routes/services";
+import { createCmsRouter } from "./server/routes/cms";
 import { registerBooksRoutes } from "./server/books/routes";
-import { seoProfiles, injectSEOMetadata } from "./server/seo";
+import { seoProfiles, injectSEOMetadata, generateSitemapXml } from "./server/seo";
 
 dotenv.config();
 
@@ -171,6 +172,13 @@ async function startServer() {
     }
   });
 
+  // Dynamic Live Sitemap for Google Search Console
+  app.get("/sitemap.xml", (_req, res) => {
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(generateSitemapXml());
+  });
+
   // Serve uploads folder statically for local storage fallback
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -184,6 +192,7 @@ async function startServer() {
   app.use("/api/consult", createAiRouter());
   app.use("/api/blog", createBlogRouter());
   app.use("/api", createServicesRouter(complianceCalendar, emailTransporter));
+  app.use(createCmsRouter());
 
   // Register INCroute Books Accounting Engine
   registerBooksRoutes(app, getPlatformConnection, getBooksConnection);

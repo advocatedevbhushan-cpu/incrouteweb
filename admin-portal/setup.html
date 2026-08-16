@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Incroute Admin Device Whitelisting</title>
+    <link rel="icon" type="image/png" href="/incroute_logo.png" />
+    <style>
+      body {
+        background-color: #030303;
+        color: #ffffff;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .container {
+        width: 100%;
+        max-width: 480px;
+        padding: 40px;
+        box-sizing: border-box;
+        border-radius: 24px;
+        background: radial-gradient(circle at top, rgba(212, 175, 55, 0.08) 0%, rgba(0, 0, 0, 0) 70%), #0d0d0d;
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        text-align: center;
+      }
+      .logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 2px solid #d4af37;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        margin-bottom: 24px;
+      }
+      h1 {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+        color: #f3f3f3;
+        letter-spacing: 0.02em;
+      }
+      p {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 0 0 30px 0;
+        line-height: 1.6;
+      }
+      .btn {
+        background-color: #d4af37;
+        color: #000000;
+        border: 1px solid #d4af37;
+        border-radius: 12px;
+        padding: 14px 28px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .btn:hover {
+        background-color: transparent;
+        color: #d4af37;
+        box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+      }
+      .btn:disabled {
+        background-color: #333333;
+        border-color: #333333;
+        color: rgba(255, 255, 255, 0.3);
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .card {
+        background-color: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 30px;
+        text-align: left;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.5;
+      }
+      .card-title {
+        font-weight: 600;
+        color: #d4af37;
+        margin-bottom: 6px;
+        font-family: monospace;
+      }
+      .status {
+        margin-top: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #d4af37;
+        font-family: monospace;
+      }
+      .error-status {
+        color: #ef4444 !important;
+      }
+      .success-status {
+        color: #10b981 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="/incroute_logo.png" class="logo" alt="Incroute Logo" />
+      <h1>Register Authorized Device</h1>
+      <p>Configure this computer as the single authorized terminal for blog administrative tasks.</p>
+      
+      <div class="card">
+        <div class="card-title">Security Information</div>
+        This setup generates a cryptographically secure 2048-bit RSA key pair on this PC. The private key will be saved directly into this browser's local sandbox as <strong>non-exportable</strong>. It cannot be extracted or copied, ensuring that no other machine can impersonate this device.
+      </div>
+      
+      <button class="btn" id="register-btn" onclick="registerDevice()">Whitelist This PC</button>
+      <div class="status" id="status-message"></div>
+    </div>
+
+    <script>
+      const statusMsg = document.getElementById("status-message");
+      const registerBtn = document.getElementById("register-btn");
+
+      // Parse the activation key from query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const activationKey = urlParams.get("key");
+
+      if (!activationKey) {
+        statusMsg.innerText = "Error: Missing registration activation key.";
+        statusMsg.classList.add("error-status");
+        registerBtn.disabled = true;
+      }
+
+      function updateStatus(msg, type = "") {
+        statusMsg.innerText = msg;
+        statusMsg.className = "status";
+        if (type === "error") statusMsg.classList.add("error-status");
+        if (type === "success") statusMsg.classList.add("success-status");
+      }
+
+      // IndexedDB wrapper to store keys
+      function savePrivateKey(privateKey) {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("IncrouteDeviceLock", 1);
+          
+          request.onerror = (e) => reject("DB Open Failed");
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            db.createObjectStore("keys", { keyPath: "id" });
+          };
+          
+          request.onsuccess = (e) => {
+            const db = e.target.result;
+            const transaction = db.transaction(["keys"], "readwrite");
+            const store = transaction.objectStore("keys");
+            
+            const putReq = store.put({
+              id: "private_key",
+              key: privateKey,
+              registeredAt: new Date().toISOString()
+            });
+            
+            putReq.onsuccess = () => resolve();
+            putReq.onerror = () => reject("Save Failed");
+          };
+        });
+      }
+
+      async function registerDevice() {
+        registerBtn.disabled = true;
+        try {
+          updateStatus("Generating non-exportable RSA credentials...");
+          
+          // Generate key pair
+          const keyPair = await window.crypto.subtle.generateKey(
+            {
+              name: "RSASSA-PKCS1-v1_5",
+              modulusLength: 2048,
+              publicExponent: new Uint8Array([1, 0, 1]),
+              hash: "SHA-256"
+            },
+            false, // false makes the private key non-extractable!
+            ["sign", "verify"]
+          );
+          
+          updateStatus("Saving private key in browser security sandbox...");
+          await savePrivateKey(keyPair.privateKey);
+          
+          updateStatus("Exporting public key...");
+          const publicBuffer = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+          
+          // Convert ArrayBuffer to Base64
+          const publicBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(publicBuffer)));
+          
+          updateStatus("Registering public key with host server...");
+          const response = await fetch("/api/admin/register-device", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              key: activationKey,
+              publicKey: publicBase64
+            })
+          });
+          
+          const result = await response.json();
+          if (response.ok && result.success) {
+            updateStatus("Registration successful! PC Whitelisting Complete.", "success");
+            setTimeout(() => {
+              window.location.href = "/admin";
+            }, 1500);
+          } else {
+            throw new Error(result.error || "Server registration failed");
+          }
+        } catch (err) {
+          console.error(err);
+          updateStatus("Registration Error: " + err.message, "error");
+          registerBtn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

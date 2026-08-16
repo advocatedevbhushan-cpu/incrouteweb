@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INCroute CMS & Fast Blog Publisher</title>
+    <link rel="icon" type="image/png" href="/incroute_logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      /* ─── Modern Theme & Fast Publisher Styles ─── */
+      * { box-sizing: border-box; }
+      
+      html, body {
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Quick Action Top Bar */
+      #fast-bar {
+        background: linear-gradient(135deg, #110E1B 0%, #1B172E 100%);
+        color: #F2EFFB;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(108, 124, 255, 0.25);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 0;
+        z-index: 9999;
+      }
+      .brand-title {
+        font-weight: 800;
+        font-size: 15px;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-title img {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+      }
+      .brand-title span {
+        color: #8B99FF;
+        font-weight: 600;
+      }
+      .bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn-quick-pub {
+        background: linear-gradient(135deg, #5B6CFF 0%, #7C5CF6 100%);
+        color: #FFFFFF;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 14px rgba(91, 108, 255, 0.35);
+      }
+      .btn-quick-pub:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(91, 108, 255, 0.5);
+      }
+      .btn-outline-bar {
+        background: rgba(255, 255, 255, 0.08);
+        color: #E2E0F5;
+        border: 1px solid rgba(108, 124, 255, 0.2);
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.15s;
+      }
+      .btn-outline-bar:hover {
+        background: rgba(255, 255, 255, 0.16);
+        color: #FFFFFF;
+      }
+
+      /* Fast Publisher Modal */
+      #fast-modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(10, 8, 20, 0.75);
+        backdrop-filter: blur(8px);
+        z-index: 100000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      #fast-modal-overlay.open {
+        display: flex;
+      }
+      .modal-card {
+        background: #181528;
+        border: 1px solid rgba(108, 124, 255, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        width: 100%;
+        max-width: 860px;
+        max-height: 90vh;
+        overflow-y: auto;
+        color: #F2EFFB;
+        padding: 32px;
+        position: relative;
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #FFFFFF;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .drop-zone {
+        border: 2px dashed rgba(108, 124, 255, 0.4);
+        border-radius: 14px;
+        background: rgba(108, 124, 255, 0.04);
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        margin-bottom: 20px;
+      }
+      .drop-zone:hover, .drop-zone.dragover {
+        border-color: #7C5CF6;
+        background: rgba(108, 124, 255, 0.08);
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #B5B2CE;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .form-group input, .form-group select, .form-group textarea {
+        background: #231E38;
+        border: 1px solid rgba(108, 124, 255, 0.2);
+        color: #FFFFFF;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        border-color: #8B99FF;
+        box-shadow: 0 0 0 3px rgba(108, 124, 255, 0.15);
+      }
+      .seo-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border-radius: 100px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+      }
+
+      /* Decap Overrides */
+      #nc-root, #nc-root > div, #nc-root > div > div {
+        background: #F8F9FC !important;
+        color: #1a1a2e !important;
+      }
+      [class*="AppHeader"], header[class] {
+        background: #1B1828 !important;
+        border-bottom: 1px solid rgba(108, 124, 255, 0.15) !important;
+      }
+      [class*="AppHeader"] a, [class*="AppHeader"] span, [class*="AppHeader"] button {
+        color: #F2EFFB !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ⚡ Quick Action Top Bar -->
+    <div id="fast-bar">
+      <div class="brand-title">
+        <img src="/incroute_logo.png" alt="INCroute" />
+        INC<span>route</span> CMS
+      </div>
+      <div class="bar-actions">
+        <button class="btn-quick-pub" onclick="openFastModal()">
+          ⚡ One-Click Template Publisher
+        </button>
+        <a href="/templates/blog-template.md" download="blog-template.md" class="btn-outline-bar">
+          📥 Download Template (.md)
+        </a>
+        <a href="/sitemap.xml" target="_blank" class="btn-outline-bar">
+          🔍 View Google Sitemap
+        </a>
+        <a href="/blog" target="_blank" class="btn-outline-bar">
+          🌐 View Live Blog
+        </a>
+      </div>
+    </div>
+
+    <!-- ⚡ Fast Publisher & Template Upload Modal -->
+    <div id="fast-modal-overlay">
+      <div class="modal-card">
+        <button class="modal-close" onclick="closeFastModal()">&times;</button>
+        
+        <div style="margin-bottom: 20px;">
+          <h2 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800; color: #FFFFFF;">
+            ⚡ Fast Blog & Template Publisher
+          </h2>
+          <p style="margin: 0; font-size: 13px; color: #A4A1C0;">
+            Upload any Markdown file (<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.md</code> / <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.txt</code> / <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">.json</code>) or paste article text. We automatically parse the title, category, metadata, and publish instantly to Google Search!
+          </p>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" style="display:none;" accept=".md,.txt,.json,.markdown" onchange="handleFileSelect(event)" />
+          <div style="font-size: 28px; margin-bottom: 8px;">📄</div>
+          <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Click or Drag & Drop your Blog Template File here</div>
+          <div style="font-size: 12px; color: #8E8BAF; margin-top: 4px;">Supports Markdown with Frontmatter (.md) or JSON files</div>
+        </div>
+
+        <div style="text-align: center; margin: 12px 0; font-size: 12px; color: #6C688D; font-weight: 700;">— OR PASTE ARTICLE TEXT BELOW —</div>
+
+        <form id="fast-pub-form" onsubmit="submitFastPublish(event)">
+          <div class="form-group">
+            <label>Raw Markdown / Article Draft</label>
+            <textarea id="rawText" rows="6" placeholder="Paste your markdown or article text directly from ChatGPT, Notion, or Word here..." oninput="autoParseText(this.value)" style="font-family: 'JetBrains Mono', monospace; font-size: 13px;"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Article Title <span style="color:#EF4444;">*</span></label>
+              <input type="text" id="title" required placeholder="e.g., Private Limited Company Registration Guide" />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="category">
+                <option value="Company Registration">Company Registration</option>
+                <option value="Compliance & ROC">Compliance & ROC</option>
+                <option value="GST & Taxation">GST & Taxation</option>
+                <option value="Trademark & IP">Trademark & IP</option>
+                <option value="Legal Advisory">Legal Advisory</option>
+                <option value="Startup Guide">Startup Guide</option>
+                <option value="Industry News">Industry News</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Subtitle / Excerpt</label>
+            <input type="text" id="subtitle" placeholder="A practical 1-2 sentence summary for founders..." />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Author</label>
+              <input type="text" id="author" value="D Bhushan" />
+            </div>
+            <div class="form-group">
+              <label>Cover Image URL</label>
+              <input type="text" id="image" placeholder="/blog-images/sample-cover.png" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Google Search Meta Description <span class="seo-badge">✓ Auto-Optimized for Google</span></label>
+            <textarea id="metaDescription" rows="2" placeholder="150-160 character summary optimized for Google search results..."></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button type="submit" id="pub-btn" class="btn-quick-pub" style="flex: 1; padding: 14px; font-size: 15px; justify-content: center;">
+              🚀 Publish Article & Sync with Google Search
+            </button>
+            <button type="button" class="btn-outline-bar" onclick="closeFastModal()" style="padding: 14px 20px;">
+              Cancel
+            </button>
+          </div>
+
+          <div id="pub-status" style="margin-top: 16px; display: none; padding: 14px; border-radius: 10px; font-size: 13px;"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Decap CMS Container -->
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+      CMS.init();
+    </script>
+
+    <!-- Fast Publisher Logic -->
+    <script>
+      function openFastModal() {
+        document.getElementById('fast-modal-overlay').classList.add('open');
+      }
+      function closeFastModal() {
+        document.getElementById('fast-modal-overlay').classList.remove('open');
+      }
+
+      // Drag & Drop Handling
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          processFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      function handleFileSelect(event) {
+        if (event.target.files.length > 0) {
+          processFile(event.target.files[0]);
+        }
+      }
+
+      function processFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          document.getElementById('rawText').value = text;
+          autoParseText(text);
+        };
+        reader.readAsText(file);
+      }
+
+      function autoParseText(raw) {
+        if (!raw || !raw.trim()) return;
+
+        // Try JSON
+        try {
+          const j = JSON.parse(raw);
+          if (j.title) document.getElementById('title').value = j.title;
+          if (j.subtitle) document.getElementById('subtitle').value = j.subtitle;
+          if (j.category) document.getElementById('category').value = j.category;
+          if (j.author) document.getElementById('author').value = j.author;
+          if (j.image) document.getElementById('image').value = j.image;
+          if (j.metaDescription) document.getElementById('metaDescription').value = j.metaDescription;
+          return;
+        } catch (e) {}
+
+        // Frontmatter Match
+        const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+        let contentPart = raw;
+        if (fmMatch) {
+          contentPart = fmMatch[2];
+          const lines = fmMatch[1].split('\n');
+          lines.forEach(line => {
+            const idx = line.indexOf(':');
+            if (idx !== -1) {
+              const k = line.substring(0, idx).trim().toLowerCase();
+              let v = line.substring(idx + 1).trim();
+              if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+                v = v.slice(1, -1);
+              }
+              if (k === 'title') document.getElementById('title').value = v;
+              if (k === 'subtitle') document.getElementById('subtitle').value = v;
+              if (k === 'category') document.getElementById('category').value = v;
+              if (k === 'author') document.getElementById('author').value = v;
+              if (k === 'image') document.getElementById('image').value = v;
+              if (k === 'metadescription' || k === 'description') document.getElementById('metaDescription').value = v;
+            }
+          });
+        }
+
+        // Title from # H1 if missing
+        if (!document.getElementById('title').value) {
+          const h1 = contentPart.match(/^#\s+(.+)$/m);
+          if (h1) document.getElementById('title').value = h1[1].trim();
+        }
+
+        // Subtitle from > Quote if missing
+        if (!document.getElementById('subtitle').value) {
+          const quote = contentPart.match(/^>\s*(?:\*\*)?(.*?)(?:\*\*)?$/m);
+          if (quote) document.getElementById('subtitle').value = quote[1].trim();
+        }
+
+        // Auto meta description
+        if (!document.getElementById('metaDescription').value) {
+          const clean = contentPart.replace(/[#*`>_\[\]\(\)]/g, ' ').replace(/\s+/g, ' ').trim();
+          document.getElementById('metaDescription').value = clean.length > 155 ? clean.substring(0, 152) + '...' : clean;
+        }
+      }
+
+      async function submitFastPublish(e) {
+        e.preventDefault();
+        const btn = document.getElementById('pub-btn');
+        const statusDiv = document.getElementById('pub-status');
+        btn.disabled = true;
+        btn.textContent = 'Publishing & Syncing with Google...';
+        statusDiv.style.display = 'none';
+
+        const payload = {
+          title: document.getElementById('title').value,
+          subtitle: document.getElementById('subtitle').value,
+          category: document.getElementById('category').value,
+          author: document.getElementById('author').value,
+          image: document.getElementById('image').value,
+          metaDescription: document.getElementById('metaDescription').value,
+          rawText: document.getElementById('rawText').value,
+          content: document.getElementById('rawText').value,
+          status: 'published'
+        };
+
+        try {
+          const res = await fetch('/api/blog/fast-publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = 'rgba(16, 185, 129, 0.15)';
+            statusDiv.style.border = '1px solid #10B981';
+            statusDiv.style.color = '#34D399';
+            statusDiv.innerHTML = `
+              <strong>✓ Published Successfully!</strong><br>
+              Live URL: <a href="${data.url}" target="_blank" style="color:#6EE7B7; text-decoration:underline; font-weight:700;">${data.url}</a><br>
+              <span style="font-size:12px; color:#A7F3D0;">✓ Added to Google XML Sitemap &bull; Pinged IndexNow search engines.</span>
+            `;
+            btn.textContent = '✓ Published!';
+            setTimeout(() => {
+              btn.disabled = false;
+              btn.textContent = '🚀 Publish Another Article';
+            }, 2500);
+          } else {
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = 'rgba(239, 68, 68, 0.15)';
+            statusDiv.style.border = '1px solid #EF4444';
+            statusDiv.style.color = '#FCA5A5';
+            statusDiv.textContent = data.error || 'Failed to publish article.';
+            btn.disabled = false;
+            btn.textContent = '🚀 Publish Article';
+          }
+        } catch (err) {
+          statusDiv.style.display = 'block';
+          statusDiv.style.background = 'rgba(239, 68, 68, 0.15)';
+          statusDiv.style.border = '1px solid #EF4444';
+          statusDiv.style.color = '#FCA5A5';
+          statusDiv.textContent = 'Network error. Please try again.';
+          btn.disabled = false;
+          btn.textContent = '🚀 Publish Article';
+        }
+      }
+    </script>
+  </body>
+</html>
