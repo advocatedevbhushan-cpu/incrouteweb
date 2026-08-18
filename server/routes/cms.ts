@@ -1,13 +1,20 @@
 import { Router, Request, Response } from "express";
 import path from "path";
 import fs from "fs";
+import multer from "multer";
 import jwt from "jsonwebtoken";
 import { GoogleGenAI } from "@google/genai";
 import { getJwtSecret } from "../middleware/auth";
+import { generateSitemapXml, pingSearchEngines } from "../seo";
 
 export function createCmsRouter() {
   const router = Router();
   const JWT_SECRET = getJwtSecret();
+
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 15 * 1024 * 1024 },
+  });
 
   const apiKey = process.env.GEMINI_API_KEY;
   const ai = apiKey
@@ -126,6 +133,60 @@ export function createCmsRouter() {
       res.status(500).send("Error generating Decap CMS configuration.");
     }
   });
+
+  const syncFileToGitHub = async (relativeFilePath: string, commitMessage: string): Promise<boolean> => {
+    const token = process.env.GITHUB_TOKEN || process.env.GITHUB_PAT || process.env.GH_TOKEN;
+    const repo = process.env.GITHUB_REPO || "advocatedevbhushan-cpu/incrouteweb";
+    const branch = process.env.GITHUB_BRANCH || "main";
+
+    if (!token) return false;
+
+    try {
+      const fullPath = path.join(process.cwd(), relativeFilePath);
+      if (!fs.existsSync(fullPath)) return false;
+
+      const fileContent = fs.readFileSync(fullPath, "utf-8");
+      const contentBase64 = Buffer.from(fileContent, "utf-8").toString("base64");
+
+      // 1. Get current file SHA on GitHub
+      let sha: string | undefined;
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${relativeFilePath}?ref=${branch}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json",
+            "User-Agent": "INCroute-CMS",
+          },
+        });
+        if (getRes.ok) {
+          const getData: any = await getRes.json();
+          sha = getData.sha;
+        }
+      } catch {}
+
+      // 2. Commit update to GitHub
+      const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${relativeFilePath}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+          "User-Agent": "INCroute-CMS",
+        },
+        body: JSON.stringify({
+          message: commitMessage,
+          content: contentBase64,
+          branch,
+          ...(sha ? { sha } : {}),
+        }),
+      });
+
+      return putRes.ok;
+    } catch (err: any) {
+      console.error("Failed to sync file to GitHub:", err.message);
+      return false;
+    }
+  };
 
   const generateWithGemini = async (contents: string, config: any = {}) => {
     if (!ai) throw new Error("Gemini API key is not configured in server environment.");
@@ -321,6 +382,183 @@ Return a STRICT JSON object:
       res.json({ success: true, data: parsed });
     } catch (err: any) {
       res.status(500).json({ error: err.message || "Failed to polish text with AI." });
+    }
+  });
+
+  // ─── IMAGE UPLOAD HANDLER (Multipart & Base64 JSON) ───
+  router.post("/api/cms/upload-image", upload.single("image"), (req: Request, res: Response) => {
+    try {
+      let buffer: Buffer | null = null;
+      let ext = ".png";
+
+      if (req.file) {
+        buffer = req.file.buffer;
+        ext = path.extname(req.file.originalname) || ".png";
+      } else if (req.body.imageBase64) {
+        const base64Data = req.body.imageBase64.replace(/^data:image\/\w+;base64,/, "");
+        buffer = Buffer.from(base64Data, "base64");
+        if (req.body.filename) {
+          ext = path.extname(req.body.filename) || ".png";
+        }
+      }
+
+      if (!buffer) {
+        return res.status(400).json({ error: "No image file or base64 data provided." });
+      }
+
+      const sanitizedName = `cover-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+      const uploadDir = path.join(process.cwd(), "public", "blog-images");
+
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      fs.writeFileSync(path.join(uploadDir, sanitizedName), buffer);
+
+      res.json({
+        success: true,
+        url: `/blog-images/${sanitizedName}`,
+        filename: sanitizedName,
+      });
+    } catch (err: any) {
+      console.error("Image upload error in CMS:", err.message);
+      res.status(500).json({ error: "Failed to process image upload." });
+    }
+  });
+
+  // ─── BLOG POSTS MANAGEMENT (Read, Publish, Delete) ───
+  router.get("/api/cms/posts", (_req: Request, res: Response) => {
+    try {
+      const blogPath = path.join(process.cwd(), "blog-posts.json");
+      if (fs.existsSync(blogPath)) {
+        const raw = JSON.parse(fs.readFileSync(blogPath, "utf-8"));
+        const posts = Array.isArray(raw) ? raw : raw?.posts || [];
+        return res.json({ success: true, posts });
+      }
+      res.json({ success: true, posts: [] });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to fetch blog posts." });
+    }
+  });
+
+  router.post("/api/cms/fast-publish", async (req: Request, res: Response) => {
+    try {
+      const { title, subtitle, content, category, author, date, image, metaDescription, slug, status } = req.body;
+      if (!title || !content) {
+        return res.status(400).json({ error: "Title and content are required." });
+      }
+
+      const blogPath = path.join(process.cwd(), "blog-posts.json");
+      let posts: any[] = [];
+      if (fs.existsSync(blogPath)) {
+        try {
+          const data = JSON.parse(fs.readFileSync(blogPath, "utf-8"));
+          posts = Array.isArray(data) ? data : data?.posts || [];
+        } catch {
+          posts = [];
+        }
+      }
+
+      const baseSlug = (slug || title)
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]+/g, "")
+        .replace(/--+/g, "-");
+
+      let uniqueSlug = baseSlug;
+      let counter = 1;
+      while (posts.some((p) => p.slug === uniqueSlug)) {
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+
+      let meta = metaDescription;
+      if (!meta) {
+        const clean = (subtitle || content).replace(/[#*`>_\[\]\(\)]/g, " ").replace(/\s+/g, " ").trim();
+        meta = clean.length > 155 ? `${clean.substring(0, 152)}...` : clean;
+      }
+
+      const newPost = {
+        id: `blog-${Date.now()}`,
+        title: title.trim(),
+        subtitle: subtitle ? subtitle.trim() : "",
+        slug: uniqueSlug,
+        content: content.trim(),
+        category: category || "Company Registration",
+        author: author || "D Bhushan",
+        date: date || new Date().toISOString().split("T")[0],
+        image: image || "/blog-images/sample-cover.png",
+        views: 0,
+        status: status || "published",
+        featured: Boolean(req.body.featured),
+        metaDescription: meta.trim(),
+        tags: [],
+      };
+
+      posts.unshift(newPost);
+      fs.writeFileSync(blogPath, JSON.stringify({ posts }, null, 2), "utf-8");
+
+      generateSitemapXml();
+      pingSearchEngines();
+
+      // Trigger automatic GitHub Sync if GITHUB_TOKEN is present
+      const githubSynced = await syncFileToGitHub("blog-posts.json", `content: publish blog article — ${newPost.slug}`);
+
+      res.json({
+        success: true,
+        message: "Article published successfully and saved to disk!",
+        post: newPost,
+        url: `/blog?post=${newPost.slug}`,
+        githubSynced,
+      });
+    } catch (err: any) {
+      console.error("CMS publish error:", err);
+      res.status(500).json({ error: err.message || "Failed to publish article." });
+    }
+  });
+
+  // ─── ONE-CLICK GITHUB REPO SYNC ───
+  router.post("/api/cms/sync-github", async (_req: Request, res: Response) => {
+    try {
+      const blogSync = await syncFileToGitHub("blog-posts.json", "content: sync blog posts database to main branch");
+      const sitemapSync = await syncFileToGitHub("public/sitemap.xml", "seo: update dynamic sitemap.xml");
+
+      if (blogSync || sitemapSync) {
+        return res.json({
+          success: true,
+          message: "✓ Successfully pushed and committed blog-posts.json and sitemap.xml to GitHub repo (main branch)!",
+        });
+      }
+
+      res.json({
+        success: false,
+        warning: "GITHUB_TOKEN is not configured in .env. To enable automatic 1-click cloud sync to GitHub, add a GitHub Personal Access Token to your .env file as GITHUB_TOKEN.",
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Failed to sync to GitHub." });
+    }
+  });
+
+  router.delete("/api/cms/posts/:id", (req: Request, res: Response) => {
+    try {
+      const blogPath = path.join(process.cwd(), "blog-posts.json");
+      if (!fs.existsSync(blogPath)) {
+        return res.status(404).json({ error: "No posts file found." });
+      }
+
+      const data = JSON.parse(fs.readFileSync(blogPath, "utf-8"));
+      let posts = Array.isArray(data) ? data : data?.posts || [];
+      const targetId = req.params.id;
+
+      const filtered = posts.filter((p: any) => p.id !== targetId && p.slug !== targetId);
+      fs.writeFileSync(blogPath, JSON.stringify({ posts: filtered }, null, 2), "utf-8");
+
+      generateSitemapXml();
+
+      res.json({ success: true, message: "Article removed successfully." });
+    } catch (err: any) {
+      res.status(500).json({ error: "Failed to delete post." });
     }
   });
 

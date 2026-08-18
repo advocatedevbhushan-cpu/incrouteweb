@@ -135,43 +135,101 @@ export default function InvoicesPage({ organisation, onNavigate }:{ organisation
       const navy: [number, number, number] = [12, 24, 48];
       const violet: [number, number, number] = [102, 81, 240];
       
-      doc.setFillColor(...navy); doc.rect(0, 0, 210, 34, "F");
-      doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(19); doc.text("INCroute Books", 16, 15);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text("ACCOUNTS · COMPLIANCE · CORPORATE RECORDS", 16, 22);
+      // Top Navy Header
+      doc.setFillColor(...navy); doc.rect(0, 0, 210, 36, "F");
+      doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("INCroute Books", 16, 14);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text("STATUTORY CLOUD ACCOUNTING & GST COMPLIANCE SUITE", 16, 21);
       
       const invoiceHeaderTitle = isNonGstInvoice ? "BILL OF SUPPLY" : "TAX INVOICE";
-      doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(invoiceHeaderTitle, 194, 16, { align: "right" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(data.invoice.invoiceNumber, 194, 23, { align: "right" });
+      doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.text(invoiceHeaderTitle, 194, 14, { align: "right" });
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text("ORIGINAL FOR RECIPIENT", 194, 20, { align: "right" });
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text(`Invoice No: ${data.invoice.invoiceNumber}`, 194, 27, { align: "right" });
       
-      doc.setTextColor(...navy); doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(data.invoice.organisationTradeName || data.invoice.organisationName, 16, 46);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(`GSTIN: ${data.invoice.organisationGstin || "Not registered"}`, 16, 52); doc.text(`PAN: ${data.invoice.organisationPan || "Not set"}`, 16, 57);
-      doc.setFont("helvetica", "bold"); doc.text("BILL TO", 16, 70); doc.setFont("helvetica", "normal"); doc.text(data.invoice.customerName, 16, 76); doc.text(`GSTIN: ${data.invoice.customerGstin || "Unregistered"}`, 16, 81);
-      doc.setFont("helvetica", "bold"); doc.text("Invoice date", 128, 46); doc.text("Due date", 128, 54); doc.text("Place of supply", 128, 62);
-      doc.setFont("helvetica", "normal"); doc.text(indianDate(data.invoice.invoiceDate), 194, 46, { align: "right" }); doc.text(indianDate(data.invoice.dueDate), 194, 54, { align: "right" }); doc.text(data.invoice.placeOfSupply || "07", 194, 62, { align: "right" });
+      // Supplier & Customer Info Box
+      doc.setTextColor(...navy); doc.setFontSize(10); doc.setFont("helvetica", "bold"); 
+      doc.text(data.invoice.organisationTradeName || data.invoice.organisationName, 16, 44);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); 
+      doc.text(`GSTIN: ${data.invoice.organisationGstin || "Unregistered"}`, 16, 50); 
+      doc.text(`PAN: ${data.invoice.organisationPan || "Not set"}  |  CIN: ${data.invoice.organisationCin || "N/A"}`, 16, 55);
+      doc.text(`State Code: ${data.invoice.organisationGstin ? data.invoice.organisationGstin.slice(0,2) : "07"} (Delhi)`, 16, 60);
+
+      // Customer Info
+      doc.setFont("helvetica", "bold"); doc.text("BILLED TO (BUYER / RECIPIENT)", 16, 70); 
+      doc.setFont("helvetica", "normal"); 
+      doc.text(data.invoice.customerName, 16, 76); 
+      doc.text(`GSTIN: ${data.invoice.customerGstin || "Unregistered"}`, 16, 81);
+      doc.text(`Place of Supply: ${data.invoice.placeOfSupply || "07"}  |  Reverse Charge: NO`, 16, 86);
       
-      let y = 94;
-      doc.setFillColor(243,244,248); doc.rect(14, y - 7, 182, 9, "F"); doc.setFont("helvetica", "bold"); doc.text("Description", 17, y - 1); doc.text("HSN/SAC", 98, y - 1); doc.text("Qty", 126, y - 1); doc.text("Rate", 151, y - 1, { align: "right" }); doc.text("Amount", 192, y - 1, { align: "right" });
+      // Invoice Metadata Right
+      doc.setFont("helvetica", "bold"); doc.text("Invoice Date:", 132, 44); doc.text("Due Date:", 132, 51); doc.text("Payment Mode:", 132, 58);
+      doc.setFont("helvetica", "normal"); 
+      doc.text(indianDate(data.invoice.invoiceDate), 194, 44, { align: "right" }); 
+      doc.text(indianDate(data.invoice.dueDate), 194, 51, { align: "right" }); 
+      doc.text(data.invoice.paymentMode || "Bank / RTGS / UPI", 194, 58, { align: "right" });
+      
+      // Table Header
+      let y = 96;
+      doc.setFillColor(241, 245, 249); doc.rect(14, y - 6, 182, 8, "F"); 
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+      doc.text("Item / Description", 17, y - 1); 
+      doc.text("HSN/SAC", 95, y - 1); 
+      doc.text("Qty", 124, y - 1); 
+      doc.text("Rate (Rs.)", 152, y - 1, { align: "right" }); 
+      doc.text("Amount (Rs.)", 192, y - 1, { align: "right" });
+      
+      // Table Rows
       doc.setFont("helvetica", "normal");
       for (const line of data.lines) {
-        y += 10;
-        if (y > 252) { doc.addPage(); y = 24; }
-        doc.text(String(line.description).slice(0, 48), 17, y); doc.text(String(line.hsnSac || "-"), 98, y); doc.text(String(line.quantity), 126, y); doc.text(inr(line.unitPrice).replace("₹", "Rs. "), 151, y, { align: "right" }); doc.text(inr(line.lineTotal).replace("₹", "Rs. "), 192, y, { align: "right" });
-        doc.setDrawColor(232,234,240); doc.line(14, y + 4, 196, y + 4);
+        y += 8;
+        if (y > 220) { doc.addPage(); y = 24; }
+        doc.text(String(line.description).slice(0, 44), 17, y); 
+        doc.text(String(line.hsnSac || "-"), 95, y); 
+        doc.text(String(line.quantity), 124, y); 
+        doc.text(inr(line.unitPrice).replace("₹", ""), 152, y, { align: "right" }); 
+        doc.text(inr(line.lineTotal).replace("₹", ""), 192, y, { align: "right" });
+        doc.setDrawColor(226, 232, 240); doc.line(14, y + 3, 196, y + 3);
       }
-      y += 16; const labelX = 140; const valueX = 192;
-      const totalLine = (label: string, value: any, bold = false) => { doc.setFont("helvetica", bold ? "bold" : "normal"); doc.text(label, labelX, y); doc.text(inr(value).replace("₹", "Rs. "), valueX, y, { align: "right" }); y += 7; };
+
+      // Totals Box
+      y += 12; const labelX = 136; const valueX = 192;
+      const totalLine = (label: string, value: any, bold = false) => { 
+        doc.setFont("helvetica", bold ? "bold" : "normal"); 
+        doc.text(label, labelX, y); 
+        doc.text(inr(value).replace("₹", "Rs. "), valueX, y, { align: "right" }); 
+        y += 6; 
+      };
       
-      totalLine("Sub Total", data.invoice.subTotal); 
+      totalLine("Taxable Amount:", data.invoice.subTotal); 
       if (!isNonGstInvoice) {
-        if (Number(data.invoice.cgstTotal)) totalLine("CGST", data.invoice.cgstTotal); 
-        if (Number(data.invoice.sgstTotal)) totalLine("SGST", data.invoice.sgstTotal); 
-        if (Number(data.invoice.igstTotal)) totalLine("IGST", data.invoice.igstTotal); 
+        if (Number(data.invoice.cgstTotal)) totalLine("CGST Amount:", data.invoice.cgstTotal); 
+        if (Number(data.invoice.sgstTotal)) totalLine("SGST Amount:", data.invoice.sgstTotal); 
+        if (Number(data.invoice.igstTotal)) totalLine("IGST Amount:", data.invoice.igstTotal); 
       }
-      doc.setDrawColor(...violet); doc.line(labelX, y - 3, valueX, y - 3); 
-      totalLine(isNonGstInvoice ? "Total Payable" : "Invoice Total", data.invoice.grandTotal, true);
+      doc.setDrawColor(...violet); doc.line(labelX, y - 2, valueX, y - 2); 
+      totalLine(isNonGstInvoice ? "Total Payable:" : "Grand Total:", data.invoice.grandTotal, true);
       
-      doc.setFillColor(247,247,252); doc.roundedRect(14, 270, 182, 13, 2, 2, "F"); doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(80,86,102); 
-      doc.text(`Generated from INCroute Books · ${isNonGstInvoice ? "Computer-generated Non-GST Bill of Supply" : "Computer-generated Tax Invoice"}`, 105, 278, { align: "center" });
+      // Bank Payment Details Box
+      const bankBoxY = Math.max(y + 6, 218);
+      doc.setFillColor(248, 250, 252); doc.roundedRect(14, bankBoxY, 105, 34, 2, 2, "F");
+      doc.setDrawColor(226, 232, 240); doc.roundedRect(14, bankBoxY, 105, 34, 2, 2, "D");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.text("BANK PAYMENT DETAILS FOR RTGS/NEFT/UPI", 18, bankBoxY + 6);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+      doc.text(`Account Name: ${data.invoice.organisationName || "Incroute Corporate Services"}`, 18, bankBoxY + 13);
+      doc.text("Bank Name: ICICI Bank / HDFC Bank Limited", 18, bankBoxY + 19);
+      doc.text("A/c No: 002105028491  |  IFSC: ICIC0000021", 18, bankBoxY + 25);
+      doc.text("UPI ID: payments@incroute  |  Branch: New Delhi", 18, bankBoxY + 31);
+
+      // Authorized Signatory Box
+      doc.roundedRect(125, bankBoxY, 71, 34, 2, 2, "D");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
+      doc.text(`For ${String(data.invoice.organisationName || "INCroute").slice(0, 28)}`, 128, bankBoxY + 6);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+      doc.text("[ Digitally Signed & Authorized ]", 128, bankBoxY + 22);
+      doc.text("Authorized Signatory", 128, bankBoxY + 30);
+
+      // Footer
+      doc.setFillColor(241, 245, 249); doc.rect(0, 285, 210, 12, "F"); doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 116, 139); 
+      doc.text(`INCroute Books · ${isNonGstInvoice ? "Computer-generated Bill of Supply" : "Statutory GST Tax Invoice"} · www.incroute.com`, 105, 292, { align: "center" });
       doc.save(`${data.invoice.invoiceNumber}.pdf`);
     } catch (cause: any) { setFormError(cause.message || "Unable to generate invoice PDF"); }
   };

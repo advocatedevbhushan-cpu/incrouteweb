@@ -133,10 +133,13 @@ export default function BlogPage() {
       const res = await fetch("/api/blog/posts");
       const data = await res.json();
       if (data.success && data.posts) {
-        setPosts(data.posts.filter((p: BlogPost) => p.status === "published"));
+        setPosts(data.posts.filter((p: BlogPost) => !p.status || p.status.toLowerCase() === "published"));
       }
     } catch {
-      try { const c = localStorage.getItem("incroute_blog_posts"); if (c) setPosts(JSON.parse(c).filter((p: BlogPost) => p.status === "published")); } catch {}
+      try {
+        const c = localStorage.getItem("incroute_blog_posts");
+        if (c) setPosts(JSON.parse(c).filter((p: BlogPost) => !p.status || p.status.toLowerCase() === "published"));
+      } catch {}
     } finally { setLoading(false); }
   };
 

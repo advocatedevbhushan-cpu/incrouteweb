@@ -571,6 +571,37 @@
             </form>
           </div>
         </div>
+
+        <!-- Currently Published Articles Database Table -->
+        <div class="glass-card" style="margin-top: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div class="section-heading">📚 Published Articles in Database (<span id="post-count">0</span>)</div>
+              <div class="section-sub">Live articles permanently stored in <code>blog-posts.json</code> and indexed in Google XML Sitemap.</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-pill" onclick="syncToGitHubRepo()" style="font-size: 12px; background: rgba(59, 130, 246, 0.2); border-color: #3B82F6; color: #93C5FD;">🚀 Push to GitHub (incroute.com)</button>
+              <button class="btn-pill" onclick="loadSavedPosts()" style="font-size: 12px;">🔄 Refresh List</button>
+            </div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cover</th>
+                <th>Title & Excerpt</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="posts-list-body">
+              <tr><td colspan="7" style="text-align:center; color:#8E8BAF;">Loading published articles...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════ -->
@@ -1012,24 +1043,42 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
         const file = e.target.files[0];
         if (!file) return;
 
+        // Instant local preview
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          document.getElementById('image').value = dataUrl;
+          updateLivePreview();
+        };
+        reader.readAsDataURL(file);
+
+        // Upload to server
         const formData = new FormData();
         formData.append('image', file);
 
         try {
-          const res = await fetch('/api/blog/upload-image', {
+          // Try /api/cms/upload-image first, then fallback to /api/blog/upload-image
+          let res = await fetch('/api/cms/upload-image', {
             method: 'POST',
             body: formData
           });
-          const data = await res.json();
-          if (data.success && data.url) {
-            document.getElementById('image').value = data.url;
-            updateLivePreview();
-            alert('✓ Cover image uploaded successfully!');
-          } else {
-            alert('Failed to upload image: ' + (data.error || 'Unknown error'));
+
+          if (!res.ok) {
+            res = await fetch('/api/blog/upload-image', {
+              method: 'POST',
+              body: formData
+            });
+          }
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.url) {
+              document.getElementById('image').value = data.url;
+              updateLivePreview();
+            }
           }
         } catch (err) {
-          alert('Network error uploading image.');
+          console.warn("Upload endpoint notice, using local image data:", err);
         }
       }
 
@@ -1132,11 +1181,20 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
         };
 
         try {
-          const res = await fetch('/api/blog/fast-publish', {
+          // Try /api/cms/fast-publish first, fallback to /api/blog/fast-publish
+          let res = await fetch('/api/cms/fast-publish', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
+
+          if (!res.ok) {
+            res = await fetch('/api/blog/fast-publish', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          }
 
           const data = await res.json();
           if (res.ok && data.success) {
@@ -1145,11 +1203,12 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
             statusDiv.style.border = '1px solid #10B981';
             statusDiv.style.color = '#34D399';
             statusDiv.innerHTML = `
-              <strong>✓ Published Successfully!</strong><br>
+              <strong>✓ Published Successfully & Saved to Disk!</strong><br>
               Live URL: <a href="${data.url}" target="_blank" style="color:#6EE7B7; text-decoration:underline; font-weight:700;">${data.url}</a><br>
-              <span style="font-size:12px; color:#A7F3D0;">✓ Updated in Google XML Sitemap &bull; Pinged Google Search Console & IndexNow.</span>
+              <span style="font-size:12px; color:#A7F3D0;">✓ Written to blog-posts.json &bull; Updated in Google XML Sitemap &bull; Pinged Google Search Console.</span>
             `;
             btn.textContent = '✓ Published!';
+            loadSavedPosts();
             setTimeout(() => {
               btn.disabled = false;
               btn.textContent = '🚀 Publish Another Article';
@@ -1159,7 +1218,7 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
             statusDiv.style.background = 'rgba(239, 68, 68, 0.15)';
             statusDiv.style.border = '1px solid #EF4444';
             statusDiv.style.color = '#FCA5A5';
-            statusDiv.textContent = data.error || 'Failed to publish article.';
+            statusDiv.textContent = data.error || 'Failed to publish article. If your dev server was running before this update, please restart it (Ctrl+C then npm run dev).';
             btn.disabled = false;
             btn.textContent = '🚀 Publish Article';
           }
@@ -1168,9 +1227,110 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
           statusDiv.style.background = 'rgba(239, 68, 68, 0.15)';
           statusDiv.style.border = '1px solid #EF4444';
           statusDiv.style.color = '#FCA5A5';
-          statusDiv.textContent = 'Network error. Please try again.';
+          statusDiv.innerHTML = '<strong>⚠️ Server Restart Required</strong><br><span style="font-size:12px;">Please restart your Node.js terminal (press <code>Ctrl + C</code> and run <code>npm run dev</code>) so the server can write articles to disk.</span>';
           btn.disabled = false;
           btn.textContent = '🚀 Publish Article';
+        }
+      }
+
+      // ─── SAVED BLOG POSTS LIST LOGIC ───
+      let currentSavedPosts = [];
+
+      async function loadSavedPosts() {
+        try {
+          const res = await fetch('/api/cms/posts');
+          const data = await res.json();
+          if (data.success) {
+            currentSavedPosts = data.posts || [];
+            renderSavedPosts();
+          }
+        } catch (e) {
+          console.warn("Could not load posts list:", e);
+        }
+      }
+
+      function renderSavedPosts() {
+        const tbody = document.getElementById('posts-list-body');
+        if (!tbody) return;
+        const countSpan = document.getElementById('post-count');
+        if (countSpan) countSpan.textContent = currentSavedPosts.length;
+
+        if (currentSavedPosts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#8E8BAF;">No articles published yet. Publish your first article above!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = currentSavedPosts.map((p) => `
+          <tr>
+            <td style="width: 60px;">
+              <img src="${p.image || '/blog-images/sample-cover.png'}" style="width: 50px; height: 35px; border-radius: 6px; object-fit: cover;" onerror="this.src='/blog-images/sample-cover.png'" />
+            </td>
+            <td>
+              <div style="font-weight: 700; color: #FFFFFF; font-size: 13px;">${p.title}</div>
+              <div style="font-size: 11px; color: #8E8BAF; max-width: 320px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.subtitle || ''}</div>
+            </td>
+            <td>
+              <span style="background: rgba(108,124,255,0.15); color: #8B99FF; padding: 2px 7px; border-radius: 6px; font-weight: 700; font-size: 11px;">
+                ${p.category || 'General'}
+              </span>
+            </td>
+            <td style="color: #B5B2CE; font-size: 12px;">${p.author || 'D Bhushan'}</td>
+            <td style="color: #B5B2CE; font-size: 12px;">${p.date || ''}</td>
+            <td>
+              <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 2px 7px; border-radius: 100px; font-size: 11px; font-weight: 700;">
+                ✓ ${p.status || 'published'}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="/blog?post=${p.slug}" target="_blank" class="btn-pill" style="font-size: 11px; padding: 3px 8px; text-decoration: none;">
+                  👁️ View
+                </a>
+                <button class="btn-del" onclick="deleteSavedPost('${p.id || p.slug}')">&times; Delete</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      async function deleteSavedPost(id) {
+        if (!confirm("Are you sure you want to delete this article? It will be removed from your website and sitemap.")) return;
+
+        try {
+          const res = await fetch(\`/api/cms/posts/\${encodeURIComponent(id)}\`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            loadSavedPosts();
+            alert("✓ Article removed successfully.");
+          } else {
+            alert(data.error || "Failed to remove article.");
+          }
+        } catch (e) {
+          alert("Network error. Please make sure server is running.");
+        }
+      }
+
+      async function syncToGitHubRepo() {
+        const btn = event.target;
+        const orig = btn.textContent;
+        btn.textContent = '🚀 Syncing to GitHub...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('/api/cms/sync-github', { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            alert(data.message);
+          } else if (data.warning) {
+            alert(data.warning + "\n\nTip: You can also open your terminal and run:\n\ngit add .\ngit commit -m \"content: publish blog articles\"\ngit push origin main");
+          } else {
+            alert("Sync notice: " + (data.error || "Please run 'git push origin main' in your terminal."));
+          }
+        } catch (e) {
+          alert("To push to GitHub, run these 3 quick commands in your terminal:\n\n1) git add .\n2) git commit -m \"content: publish new blog\"\n3) git push origin main");
+        } finally {
+          btn.textContent = orig;
+          btn.disabled = false;
         }
       }
 
@@ -1300,8 +1460,9 @@ Incroute helps founders manage post-incorporation statutory registrations, accou
         alert(data.success ? "✓ Site settings & announcement updated!" : "Failed to save settings.");
       }
 
-      // Initialize Sample on first load
+      // Initialize on first load
       loadSampleTemplate();
+      loadSavedPosts();
     </script>
   </body>
 </html>

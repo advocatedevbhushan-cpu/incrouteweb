@@ -18,6 +18,7 @@ export function getPlatformPool(): Pool {
       queueLimit: 0,
       idleTimeout: 60000,
       enableKeepAlive: true,
+      multipleStatements: true,
     });
   }
   return platformPool;
@@ -35,6 +36,7 @@ export function getBooksPool(): Pool {
       queueLimit: 0,
       idleTimeout: 60000,
       enableKeepAlive: true,
+      multipleStatements: true,
     });
   }
   return booksPool;
