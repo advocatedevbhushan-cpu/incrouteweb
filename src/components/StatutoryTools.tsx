@@ -225,7 +225,7 @@ export default function StatutoryTools() {
   };
 
   // Form submission handler for custom inquiries (Premium/Enterprise)
-  const handlePremiumSubmit = (e: React.FormEvent) => {
+  const handlePremiumSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!premiumForm.email || !premiumForm.phone) {
       setPremiumError("Email and phone number are required.");
@@ -234,24 +234,40 @@ export default function StatutoryTools() {
     setPremiumSubmitting(true);
     setPremiumError("");
 
-    setTimeout(() => {
-      localStorage.setItem("premium_request_log", JSON.stringify({
-        ...premiumForm,
-        type: premiumType,
-        templateId: selectedTemplateId,
-        timestamp: new Date().toISOString(),
-      }));
+    try {
+      await fetch("/api/send-premium-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: premiumForm.email.split("@")[0],
+          email: premiumForm.email,
+          phone: premiumForm.phone,
+          companyName: activeTemplate.title,
+          notes: premiumForm.specialRequests || `Drafting request for template: ${activeTemplate.title} (${premiumType})`,
+          agreedToTerms: true,
+          wizardData: activeValues,
+        })
+      }).catch(() => {});
+    } catch {
+      // Graceful fallback
+    }
 
-      setPremiumSubmitting(false);
-      setShowPremiumModal(false);
-      if (premiumType === "premium") {
-        setPremiumCooldown(true);
-        sessionStorage.setItem("premium_sent", "true");
-      }
-      setPremiumSuccess(true);
-      setPremiumForm({ email: "", phone: "", specialRequests: "" });
-      setTimeout(() => setPremiumSuccess(false), 6000);
-    }, 1200);
+    localStorage.setItem("premium_request_log", JSON.stringify({
+      ...premiumForm,
+      type: premiumType,
+      templateId: selectedTemplateId,
+      timestamp: new Date().toISOString(),
+    }));
+
+    setPremiumSubmitting(false);
+    setShowPremiumModal(false);
+    if (premiumType === "premium") {
+      setPremiumCooldown(true);
+      sessionStorage.setItem("premium_sent", "true");
+    }
+    setPremiumSuccess(true);
+    setPremiumForm({ email: "", phone: "", specialRequests: "" });
+    setTimeout(() => setPremiumSuccess(false), 6000);
   };
 
   return (

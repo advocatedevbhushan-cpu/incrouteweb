@@ -89,14 +89,32 @@ async function startServer() {
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+
+      emailTransporter.verify((err) => {
+        if (err) {
+          console.warn("⚠️ SMTP connection verification failed:", err.message);
+        } else {
+          console.log(`✓ SMTP Email Notifications connected (${process.env.SMTP_USER} via ${process.env.SMTP_HOST}:${smtpPort})`);
+          if (!process.env.NOTIFICATION_TO) {
+            console.warn("⚠️ Warning: NOTIFICATION_TO is not set in .env. Form notification emails will not know where to send.");
+          } else {
+            console.log(`✓ Lead alert emails will be routed to: ${process.env.NOTIFICATION_TO}`);
+          }
         }
       });
     } catch (mailErr: any) {
       console.warn("⚠️ SMTP initialization skipped:", mailErr.message);
     }
+  } else {
+    console.log("ℹ️ SMTP email alerts inactive: SMTP_HOST, SMTP_USER, and SMTP_PASS need to be configured in .env");
   }
 
-  // Health check endpoint
+  // Health check endpoint with SMTP status
   app.get("/api/health", async (req, res) => {
     let dbStatus = "unknown";
     try {
@@ -108,7 +126,70 @@ async function startServer() {
     } catch (e: any) {
       dbStatus = `error: ${e.message?.substring(0, 50)}`;
     }
-    res.json({ status: "ok", timestamp: new Date().toISOString(), db: dbStatus });
+
+    const smtpStatus = {
+      configured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+      host: process.env.SMTP_HOST || "not_set",
+      user: process.env.SMTP_USER || "not_set",
+      notificationTo: process.env.NOTIFICATION_TO || "not_set",
+      hasTransporter: !!emailTransporter
+    };
+
+    res.json({ status: "ok", timestamp: new Date().toISOString(), db: dbStatus, smtp: smtpStatus });
+  });
+
+  // Dedicated test email endpoint to verify Hostinger SMTP
+  app.get("/api/health/test-email", async (req, res) => {
+    if (!emailTransporter) {
+      return res.status(500).json({
+        success: false,
+        error: "SMTP transporter is not initialized. Ensure SMTP_HOST, SMTP_USER, and SMTP_PASS are set in environment variables and restart the server.",
+        envCheck: {
+          hasHost: !!process.env.SMTP_HOST,
+          hasUser: !!process.env.SMTP_USER,
+          hasPass: !!process.env.SMTP_PASS,
+          hasNotificationTo: !!process.env.NOTIFICATION_TO
+        }
+      });
+    }
+
+    const targetRecipient = (req.query.to as string) || process.env.NOTIFICATION_TO;
+    if (!targetRecipient) {
+      return res.status(400).json({
+        success: false,
+        error: "No recipient specified and NOTIFICATION_TO is not set in environment."
+      });
+    }
+
+    try {
+      const info = await emailTransporter.sendMail({
+        from: `"INCroute Test" <${process.env.SMTP_USER}>`,
+        to: targetRecipient,
+        subject: "🔔 INCroute SMTP Test Email",
+        html: `
+          <div style="font-family:sans-serif;padding:20px;border:1px solid #d4af37;border-radius:8px;max-width:500px;margin:0 auto;background:#111;color:#fff;">
+            <h3 style="color:#d4af37;margin-top:0;">✓ SMTP Working Perfectly!</h3>
+            <p>This is a test email sent from INCroute server to confirm email dispatch is operational.</p>
+            <p style="font-size:12px;color:#888;">Timestamp: ${new Date().toISOString()}</p>
+          </div>
+        `
+      });
+
+      res.json({
+        success: true,
+        message: `Test email successfully dispatched to ${targetRecipient}`,
+        messageId: info.messageId,
+        response: info.response
+      });
+    } catch (sendErr: any) {
+      console.error("[Test Email Error]:", sendErr);
+      res.status(500).json({
+        success: false,
+        error: sendErr.message,
+        code: sendErr.code,
+        command: sendErr.command
+      });
+    }
   });
 
   // Document download streaming endpoint
