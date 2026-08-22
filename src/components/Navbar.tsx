@@ -68,6 +68,7 @@ const SERVICE_CATEGORIES: Record<string, string> = {
 
   // Compliance & Tax
   "annual-compliance": "compliance",
+  "dsc-registration": "compliance",
   "gst-tax": "compliance",
   "gst-return-filing": "compliance",
   "gstr9-annual-return": "compliance",
@@ -151,6 +152,7 @@ const MASTER_SERVICES_CATEGORY: MegaCategory = {
       icon: FileText,
       items: [
         { title: "GST Registration", badge: "✨", tab: "services", serviceId: "gst-tax" },
+        { title: "Digital Signature (Class 3 DSC)", badge: "✨", tab: "services", serviceId: "dsc-registration" },
         { title: "GST Return Filing (GSTR-1 & 3B)", tab: "services", serviceId: "gst-return-filing" },
         { title: "GSTR-9 Annual Return", tab: "services", serviceId: "gstr9-annual-return" },
         { title: "GST LUT Form Filing", tab: "services", serviceId: "gst-lut-filing" },

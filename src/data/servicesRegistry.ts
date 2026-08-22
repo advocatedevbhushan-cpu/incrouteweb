@@ -248,10 +248,52 @@ export const TITLE_MAP: Record<string, { name: string; tagline: string; descript
     name: "FCRA Foreign Contribution Registration",
     tagline: "MHA License Required for NGOs to Receive Foreign Grants & Donations",
     description: "Apply for Foreign Contribution Regulation Act (FCRA) prior permission or 5-year registration certificate from Ministry of Home Affairs."
+  },
+  "dsc-registration": {
+    name: "Digital Signature Certificate (DSC) Class 3",
+    tagline: "Class 3 Paperless Digital Signatures with USB Crypto Token for MCA, GST, Income Tax & E-Tendering",
+    description: "Obtain Class 3 Digital Signature Certificate (Signing & Encryption) with secure USB Crypto Token for MCA V3 e-filing, GST returns, ITR e-signing, and government e-tendering within 24 hours."
   }
 };
 
 export const servicesRegistry: ServiceItem[] = [
+  {
+    id: "dsc-registration",
+    name: "Digital Signature Certificate (DSC) Class 3",
+    category: "compliance",
+    tagline: "Class 3 Paperless Digital Signatures with USB Crypto Token for MCA, GST, Income Tax & E-Tendering",
+    timeline: "1–2 Working Days (Paperless Video KYC)",
+    minDirectors: "Individual / Organization",
+    liability: "CCA Licensed Cryptographic Security",
+    taxBenefit: "Business Expense Tax Deduction",
+    detailedAbout: "A Class 3 Digital Signature Certificate (DSC) is the highest assurance cryptographic certificate issued by licensed Certifying Authorities (CAs) under the Controller of Certifying Authorities (CCA), Ministry of Electronics & IT, Government of India. It is mandatory for filing statutory returns on the Ministry of Corporate Affairs (MCA V3), GST Portal, Income Tax e-Filing, Employees' Provident Fund (EPFO), ICEGATE customs clearance, Trademark/Patent e-filings, and Central/State Government e-tendering portals (CPPP/IREPS/GeM). INCroute provides paperless Aadhaar OTP & Video KYC approval with high-security FIPS-certified USB crypto tokens dispatched across India.",
+    keyAdvantages: [
+      "Class 3 Signing + Encryption certificate for maximum statutory validity",
+      "100% Paperless verification via Aadhaar eKYC / PAN and quick video recording",
+      "FIPS 140-2 Level 2 certified hardware USB crypto token (ePass2003 / ProxKey)",
+      "Mandatory for all Company Directors, Designated Partners, CAs, and Authorized Signatories",
+      "Available with 2-Year and 3-Year validity options for Individuals and Organizations",
+      "Full technical support for driver installation, token PIN configuration, and portal signer utility"
+    ],
+    badge: "Essential",
+    expert: "INCroute DSC Desk",
+    rating: 5,
+    description: "Paperless Class 3 DSC with secure USB token for MCA, GST, ITR & E-Tendering.",
+    popular: true,
+    features: [
+      "Class 3 Signing & Encryption Certificate",
+      "Secure USB Cryptographic Hardware Token",
+      "Paperless Aadhaar OTP & Video Verification",
+      "Free Driver & Portal Signer Setup Support"
+    ],
+    documents: [
+      "PAN Card of Applicant",
+      "Aadhaar Card linked with active mobile number",
+      "Passport size color photograph",
+      "Email ID & Mobile Number for OTP validation",
+      "Organization Authorization Letter & GSTIN (for Organizational DSC only)"
+    ]
+  },
   {
     id: "pvt-ltd",
     name: "Private Limited Company Registration",

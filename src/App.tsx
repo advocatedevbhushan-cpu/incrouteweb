@@ -312,6 +312,7 @@ export default function App() {
 
     // Compliance & Tax
     "annual-compliance": "compliance",
+    "dsc-registration": "compliance",
     "gst-tax": "compliance",
     "gst-return-filing": "compliance",
     "gstr9-annual-return": "compliance",

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, X, AlertTriangle, Download, ChevronRight, Plus, Edit3, Save } from "lucide-react";
+import { 
+  FileText, FolderOpen, Loader2, Search, Upload, CheckCircle2, Clock, 
+  X, AlertTriangle, Download, ChevronRight, Plus, Edit3, Save,
+  ShieldCheck, Lock, Sparkles, UserCheck, Shield
+} from "lucide-react";
 
 // All possible service categories with their required documents
 const ALL_SERVICE_DOCUMENTS: Record<string, { label: string; icon: string; docs: string[] }> = {
@@ -441,6 +445,76 @@ export default function Documents() {
           </div>
         </div>
       )}
+
+      {/* ─── Encrypted KYC Vault & Foundation Document Locker ─── */}
+      <div className="bg-gradient-to-r from-[var(--bg-surface)] via-[var(--bg-surface-alt)] to-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-6 shadow-md space-y-4 text-left">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 bg-[var(--accent-soft)] text-[var(--accent)] text-[10px] font-mono font-bold rounded-full border border-[var(--border-subtle)] flex items-center gap-1">
+                <Lock className="w-3 h-3 text-[var(--accent)]" /> 256-Bit Encrypted Vault
+              </span>
+              <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-semibold rounded-full border border-emerald-500/20">
+                MCA & ITD Verified
+              </span>
+            </div>
+            <h2 className="text-lg font-bold text-[var(--text-primary)] font-display">
+              Enterprise Foundation KYC Locker
+            </h2>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Your central repository for director credentials, entity registration certificates, and registered office proofs.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveFolder(allowedServices[0] || "PVT_LTD")}
+              className="px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-deep)] text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer font-display shadow-xs"
+            >
+              <Upload className="w-3.5 h-3.5" /> Upload KYC File
+            </button>
+          </div>
+        </div>
+
+        {/* Quick KYC Slots */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase font-bold text-[var(--text-tertiary)]">Identity</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <strong className="text-[12px] text-[var(--text-primary)] block">Director PAN & Aadhaar</strong>
+            <span className="text-[10px] text-emerald-400 font-medium">Vault Verified</span>
+          </div>
+
+          <div className="p-3.5 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase font-bold text-[var(--text-tertiary)]">Registered Office</span>
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+            <strong className="text-[12px] text-[var(--text-primary)] block">Utility Bill & NOC</strong>
+            <span className="text-[10px] text-amber-400 font-medium">Electricity Bill Active</span>
+          </div>
+
+          <div className="p-3.5 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase font-bold text-[var(--text-tertiary)]">Banking</span>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <strong className="text-[12px] text-[var(--text-primary)] block">Bank Statement / Cheque</strong>
+            <span className="text-[10px] text-emerald-400 font-medium">Linked for INC-20A</span>
+          </div>
+
+          <div className="p-3.5 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase font-bold text-[var(--text-tertiary)]">Digital Sign</span>
+              <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
+            </div>
+            <strong className="text-[12px] text-[var(--text-primary)] block">Class 3 DSC Token</strong>
+            <span className="text-[10px] text-[var(--accent)] font-medium">Active (2 Year Validity)</span>
+          </div>
+        </div>
+      </div>
 
       {/* Service folders grid — only shows allowed services */}
       {Object.keys(SERVICE_DOCUMENTS).length === 0 ? (

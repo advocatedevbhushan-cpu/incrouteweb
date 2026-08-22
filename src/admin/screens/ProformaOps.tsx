@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FileText, Plus, X, Send, Download, Eye, Trash2, Copy } from "lucide-react";
+import { FileText, Plus, X, Send, Download, Eye, Trash2, Copy, MessageSquare, Award } from "lucide-react";
 import { Loading, SearchBar, FilterPill, Pagination, StatusBadge, EmptyState, StatCard, api } from "../shared";
 import jsPDF from "jspdf";
+import { generateProposalPDF } from "../../utils/proposalExport";
 
 // Predefined service catalog for quick adding
 const SERVICE_CATALOG = [
@@ -126,7 +127,48 @@ export default function ProformaOps() {
     } catch { alert("Failed to send"); } finally { setSending(false); }
   };
 
-  // Download PDF
+  // Download Formal Institutional Proposal PDF
+  const handleDownloadProposalPDF = (p: Proforma) => {
+    let parsedItems: any[] = [];
+    try { parsedItems = JSON.parse(p.items); } catch {}
+
+    const itemsFormatted = parsedItems.map((it: any) => ({
+      description: it.name || "Corporate Advisory Service",
+      hsn: it.hsn || "998313",
+      govtFee: it.name?.toLowerCase().includes("govt") || it.name?.toLowerCase().includes("statutory") ? Number(it.rate || 0) : 0,
+      professionalFee: it.name?.toLowerCase().includes("govt") || it.name?.toLowerCase().includes("statutory") ? 0 : Number(it.rate || 0),
+    }));
+
+    const firstServiceName = parsedItems[0]?.name || "Corporate Advisory & Registration";
+
+    const doc = generateProposalPDF({
+      proposalNo: p.proformaNo,
+      clientName: p.clientName || "Valued Client",
+      companyName: p.clientName ? `${p.clientName} Project` : "Corporate Compliance Setup",
+      clientEmail: p.clientEmail || undefined,
+      serviceTitle: firstServiceName,
+      scopeSummary: `Formal statutory execution and corporate advisory for ${p.clientName || "the Client"}. INCroute's corporate practice team handles end-to-end secretarial drafting, government filing, and certification.`,
+      items: itemsFormatted.length > 0 ? itemsFormatted : undefined,
+      notes: p.notes,
+    });
+
+    doc.save(`INCroute_${p.proformaNo}_Proposal.pdf`);
+  };
+
+  // WhatsApp Share
+  const handleWhatsAppShare = (p: Proforma) => {
+    const text = encodeURIComponent(
+      `Hello ${p.clientName || "Founder"},\n\n` +
+      `Here is the quotation and statutory scope from INCroute for your requirement:\n` +
+      `• Ref: ${p.proformaNo}\n` +
+      `• Total Amount: ₹${Number(p.total).toLocaleString("en-IN")}\n` +
+      `• Valid Until: ${new Date(p.validUntil).toLocaleDateString("en-IN")}\n\n` +
+      `Please let us know if you have any questions or when you would like to proceed with the filing.`
+    );
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  // Download Standard Proforma PDF
   const handleDownloadPDF = (p: Proforma) => {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     const pw = doc.internal.pageSize.getWidth();
@@ -237,9 +279,11 @@ export default function ProformaOps() {
                 <td className="px-4 py-3 text-[12px] font-bold text-[var(--text-primary)]">₹{Number(p.total).toLocaleString("en-IN")}</td>
                 <td className="px-4 py-3 text-[11px] text-[var(--text-tertiary)]">{new Date(p.validUntil).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</td>
                 <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
-                <td className="px-4 py-3"><div className="flex gap-1">
-                  <button onClick={() => handleDownloadPDF(p)} title="Download PDF" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer"><Download className="w-3.5 h-3.5 text-[var(--text-secondary)]" /></button>
-                  <button onClick={() => handleSend(p.id)} title="Email to Client" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer"><Send className="w-3.5 h-3.5 text-[var(--accent)]" /></button>
+                <td className="px-4 py-3"><div className="flex items-center gap-1.5">
+                  <button onClick={() => handleDownloadProposalPDF(p)} title="Download Formal Proposal PDF" className="p-1.5 rounded-lg bg-[var(--accent-soft)] hover:bg-[var(--accent)] hover:text-white text-[var(--accent)] cursor-pointer transition-colors"><Award className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleDownloadPDF(p)} title="Download Standard Proforma PDF" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer text-[var(--text-secondary)]"><Download className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleWhatsAppShare(p)} title="Share on WhatsApp" className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-500 cursor-pointer"><MessageSquare className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleSend(p.id)} title="Email to Client" className="p-1.5 rounded-lg hover:bg-[var(--accent-soft)] cursor-pointer text-[var(--accent)]"><Send className="w-3.5 h-3.5" /></button>
                   {p.status !== "ACCEPTED" && <button onClick={() => convertToInvoice(p.id)} title="Convert to Invoice" className="text-[9px] px-2 py-1 rounded-lg bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-[var(--success)] font-semibold cursor-pointer hover:bg-[var(--success)] hover:text-white">→ Invoice</button>}
                 </div></td>
               </tr>

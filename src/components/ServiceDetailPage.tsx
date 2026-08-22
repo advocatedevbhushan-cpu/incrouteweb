@@ -4,9 +4,11 @@ import {
   Check, ArrowRight, ShieldCheck, Clock, FileText, Building2, 
   HelpCircle, Star, PhoneCall, Sparkles, ChevronDown, ChevronRight,
   Award, Lock, UserCheck, MapPin, CheckSquare, AlertCircle,
-  Briefcase, Scale, Layers, CheckCircle2, HeartHandshake, FileCheck
+  Briefcase, Scale, Layers, CheckCircle2, HeartHandshake, FileCheck,
+  Download, X, Send
 } from "lucide-react";
 import { servicesRegistry, getServiceById, TITLE_MAP, ServiceItem } from "../data/servicesRegistry";
+import { generateProposalPDF } from "../utils/proposalExport";
 
 interface Props {
   serviceId?: string;
@@ -28,6 +30,59 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [selectedPkg, setSelectedPkg] = useState<number>(1);
   const [checkedDocs, setCheckedDocs] = useState<Record<number, boolean>>({});
+  
+  // Proposal Modal State
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalForm, setProposalForm] = useState({ clientName: "", companyName: "", phone: "", email: "" });
+  const [isGeneratingProposal, setIsGeneratingProposal] = useState(false);
+  const [proposalDownloaded, setProposalDownloaded] = useState(false);
+
+  const handleDownloadProposal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!proposalForm.clientName || !proposalForm.phone) return;
+
+    setIsGeneratingProposal(true);
+
+    try {
+      const chosenScope = packageScopes[selectedPkg] || packageScopes[1];
+      const doc = generateProposalPDF({
+        clientName: proposalForm.clientName,
+        companyName: proposalForm.companyName || `${service.name} Project`,
+        clientEmail: proposalForm.email,
+        clientPhone: proposalForm.phone,
+        serviceTitle: service.name,
+        timeline: service.timeline,
+        scopeSummary: `${service.name} (${chosenScope.name}): ${chosenScope.tagline}. Full secretarial drafting and filing conducted under supervision of certified CAs and CSs.`,
+        deliverables: chosenScope.features.length > 0 ? chosenScope.features : service.features,
+      });
+
+      const filename = `INCroute_${service.name.replace(/[^a-zA-Z0-9]+/g, "_")}_Proposal.pdf`;
+      doc.save(filename);
+      setProposalDownloaded(true);
+
+      // Log lead to backend
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: proposalForm.clientName,
+          phone: proposalForm.phone,
+          email: proposalForm.email,
+          entityType: service.name,
+          source: `Downloaded Proposal PDF for ${service.name}`,
+        }),
+      }).catch(() => {});
+
+      setTimeout(() => {
+        setIsGeneratingProposal(false);
+        setShowProposalModal(false);
+        setProposalDownloaded(false);
+      }, 2500);
+    } catch (err) {
+      console.error("Failed to generate proposal PDF:", err);
+      setIsGeneratingProposal(false);
+    }
+  };
 
   // Lookup in central registry
   const registryEntry = getServiceById(targetServiceId);
@@ -258,12 +313,21 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
                 </div>
               </div>
 
-              <button
-                onClick={handleConsultationClick}
-                className="w-full py-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] font-bold text-sm rounded-xl shadow-lg shadow-[var(--accent)]/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer font-display"
-              >
-                Consult Corporate Advisor <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="space-y-2.5">
+                <button
+                  onClick={handleConsultationClick}
+                  className="w-full py-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] font-bold text-sm rounded-xl shadow-lg shadow-[var(--accent)]/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer font-display"
+                >
+                  Consult Corporate Advisor <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setShowProposalModal(true)}
+                  className="w-full py-3 bg-[var(--bg-surface)] hover:bg-[var(--accent-soft)]/25 text-[var(--accent)] border border-[var(--border-subtle)] hover:border-[var(--accent)]/40 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer font-display shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download Cost Proposal (PDF)
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -535,10 +599,120 @@ export default function ServiceDetailPage({ serviceId: propServiceId, category: 
             >
               Consult Corporate Specialist <ArrowRight className="w-4 h-4" />
             </button>
+
+            <button
+              onClick={() => setShowProposalModal(true)}
+              className="px-6 py-3.5 bg-[var(--bg-surface)] hover:bg-[var(--accent-soft)]/30 text-[var(--accent)] border border-[var(--border-subtle)] font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2 cursor-pointer font-display shadow-sm"
+            >
+              <Download className="w-4 h-4" /> Download Official Proposal (PDF)
+            </button>
           </div>
         </section>
 
       </div>
+
+      {/* ─── Official Proposal Download Modal ─── */}
+      {showProposalModal && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative text-left">
+            <button
+              onClick={() => setShowProposalModal(false)}
+              className="absolute top-5 right-5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer outline-none"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-[var(--accent)] font-bold">
+                <FileText className="w-3.5 h-3.5" /> Instant Cost Proposal
+              </span>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] font-display">
+                Download {service.name} Proposal
+              </h3>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                Get an official branded PDF with itemized statutory filing fees, scope deliverables, payment milestones, and banking details.
+              </p>
+            </div>
+
+            <form onSubmit={handleDownloadProposal} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-widest text-[var(--text-tertiary)] font-bold">
+                  Your Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Vikram Sharma"
+                  value={proposalForm.clientName}
+                  onChange={(e) => setProposalForm(prev => ({ ...prev, clientName: e.target.value }))}
+                  className="w-full bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] font-semibold outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-widest text-[var(--text-tertiary)] font-bold">
+                  Proposed Company / Entity Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Nexus Technologies Pvt Ltd"
+                  value={proposalForm.companyName}
+                  onChange={(e) => setProposalForm(prev => ({ ...prev, companyName: e.target.value }))}
+                  className="w-full bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] font-semibold outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-mono tracking-widest text-[var(--text-tertiary)] font-bold">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    value={proposalForm.phone}
+                    onChange={(e) => setProposalForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] font-semibold outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-mono tracking-widest text-[var(--text-tertiary)] font-bold">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="you@company.com"
+                    value={proposalForm.email}
+                    onChange={(e) => setProposalForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full bg-[var(--bg-surface-alt)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-primary)] font-semibold outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
+                  />
+                </div>
+              </div>
+
+              {proposalDownloaded ? (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center text-xs font-bold text-emerald-400 font-mono">
+                  ✓ Official PDF Proposal Downloaded!
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isGeneratingProposal || !proposalForm.clientName || !proposalForm.phone}
+                  className="w-full py-3.5 bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-[var(--on-gradient-text)] font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-[var(--accent)]/25 hover:opacity-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer font-display"
+                >
+                  <Download className="w-4 h-4" />
+                  {isGeneratingProposal ? "Generating Official Proposal..." : "Download Official Proposal (PDF)"}
+                </button>
+              )}
+
+              <p className="text-[10px] text-center text-[var(--text-tertiary)]">
+                🔒 Includes confidential MCA fees, secretarial deliverables & bank settlement details.
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
