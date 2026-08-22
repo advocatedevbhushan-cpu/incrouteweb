@@ -105,7 +105,7 @@ export default function TopAnnouncementBar({ onBookConsultation, onSelectService
   };
 
   return (
-    <aside aria-label="Statutory Announcement" className="relative z-[1001] bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white border-b border-indigo-500/20 py-2 px-4 text-xs font-sans overflow-hidden">
+    <aside aria-label="Statutory Announcement" className="relative z-30 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white border-b border-indigo-500/20 py-2 px-4 text-xs font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-left">
         {/* Animated Cycling Headline */}
         <div className="flex-1 min-w-[280px] overflow-hidden py-0.5">
