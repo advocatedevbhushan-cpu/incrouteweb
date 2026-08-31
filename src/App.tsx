@@ -295,8 +295,18 @@ export default function App() {
             </Suspense>
           } />
 
-          {/* Contact */}
+          {/* Contact & Consultation */}
           <Route path="/contact" element={
+            <Suspense fallback={<PageSpinner />}>
+              <ContactFormWidget />
+            </Suspense>
+          } />
+          <Route path="/consultation" element={
+            <Suspense fallback={<PageSpinner />}>
+              <ContactFormWidget />
+            </Suspense>
+          } />
+          <Route path="/book-consultation" element={
             <Suspense fallback={<PageSpinner />}>
               <ContactFormWidget />
             </Suspense>
