@@ -31,7 +31,13 @@ export function createServicesRouter(complianceCalendar: any[], emailTransporter
     subtitle: string,
     fields: Record<string, string | undefined>
   ) => {
-    if (!emailTransporter || !process.env.NOTIFICATION_TO || !process.env.SMTP_USER) {
+    const adminEmail = process.env.NOTIFICATION_TO || process.env.ADMIN_EMAIL || "d.bhushan@incroute.com";
+    const recipients = [adminEmail, process.env.NOTIFICATION_TO_SECONDARY].filter(Boolean).join(", ");
+
+    if (!emailTransporter || !process.env.SMTP_USER) {
+      console.warn(`⚠️ [Lead Alert Skipped - SMTP Not Configured]: A lead was captured but could not be emailed because SMTP settings are missing in .env.`);
+      console.log(`📋 Lead Details [${title}]:`, JSON.stringify(fields, null, 2));
+      console.log(`👉 To receive email alerts, configure SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and NOTIFICATION_TO in .env`);
       return;
     }
 
@@ -46,7 +52,7 @@ export function createServicesRouter(complianceCalendar: any[], emailTransporter
     try {
       await emailTransporter.sendMail({
         from: `"INCroute Lead Alerts" <${process.env.SMTP_USER}>`,
-        to: process.env.NOTIFICATION_TO,
+        to: recipients,
         subject: `${title}`,
         html: `
           <!DOCTYPE html>
@@ -69,9 +75,9 @@ export function createServicesRouter(complianceCalendar: any[], emailTransporter
           </html>
         `
       });
-      console.log(`[Lead Alert Sent] -> ${process.env.NOTIFICATION_TO}`);
+      console.log(`✓ [Lead Alert Sent] -> ${recipients}`);
     } catch (leadMailErr: any) {
-      console.warn("[Lead Notification Warning]:", leadMailErr.message);
+      console.error("❌ [Lead Notification Failed]:", leadMailErr.message);
     }
   };
 
@@ -244,6 +250,27 @@ export function createServicesRouter(complianceCalendar: any[], emailTransporter
           console.warn("[Submission DB Warning]:", dbErr.message);
         }
       });
+
+      // Failsafe local JSON backup
+      try {
+        const subFile = path.join(process.cwd(), "submissions.json");
+        let list: any[] = [];
+        if (fs.existsSync(subFile)) {
+          try { list = JSON.parse(fs.readFileSync(subFile, "utf-8")); } catch {}
+        }
+        list.unshift({
+          id,
+          name,
+          email,
+          phone,
+          service: service || "Corporate Advisory",
+          message,
+          timestamp: new Date().toISOString()
+        });
+        fs.writeFileSync(subFile, JSON.stringify(list.slice(0, 100), null, 2), "utf-8");
+      } catch (err: any) {
+        console.warn("[Failsafe Lead File Warning]:", err.message);
+      }
 
       // 1. Admin lead alert
       await sendLeadNotification(`🏆 New Contact Lead: ${name}`, "New Contact Form Submission", {
