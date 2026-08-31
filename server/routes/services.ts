@@ -25,6 +25,56 @@ export function createServicesRouter(complianceCalendar: any[], emailTransporter
     }
   });
 
+  // Helper to send admin lead notification email
+  const sendLeadNotification = async (
+    title: string,
+    subtitle: string,
+    fields: Record<string, string | undefined>
+  ) => {
+    if (!emailTransporter || !process.env.NOTIFICATION_TO || !process.env.SMTP_USER) {
+      return;
+    }
+
+    const rowsHtml = Object.entries(fields)
+      .filter(([_, v]) => v !== undefined && v !== null && v !== "")
+      .map(
+        ([k, v]) =>
+          `<tr><td style="padding:10px 14px;font-weight:600;color:#64748b;font-size:13px;border-bottom:1px solid #f1f5f9;width:160px;">${k}</td><td style="padding:10px 14px;color:#0f172a;font-size:13px;border-bottom:1px solid #f1f5f9;font-weight:500;">${v}</td></tr>`
+      )
+      .join("");
+
+    try {
+      await emailTransporter.sendMail({
+        from: `"INCroute Lead Alerts" <${process.env.SMTP_USER}>`,
+        to: process.env.NOTIFICATION_TO,
+        subject: `${title}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"></head>
+          <body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+            <div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);">
+              <div style="background:linear-gradient(135deg,#0b0f19 0%,#1e1b4b 100%);padding:28px 28px;border-bottom:3px solid #d4af37;">
+                <div style="font-size:20px;font-weight:900;color:#fff;">${title}</div>
+                <p style="margin:6px 0 0;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:1px;">${subtitle}</p>
+              </div>
+              <div style="padding:24px 28px;">
+                <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                  <tbody>${rowsHtml}</tbody>
+                </table>
+                <p style="margin:20px 0 0;font-size:12px;color:#94a3b8;text-align:center;">INCroute Admin Notification • ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      });
+      console.log(`[Lead Alert Sent] -> ${process.env.NOTIFICATION_TO}`);
+    } catch (leadMailErr: any) {
+      console.warn("[Lead Notification Warning]:", leadMailErr.message);
+    }
+  };
+
   // Helper to send instant client confirmation / welcome email
   const sendClientConfirmationEmail = async ({
     recipientEmail,

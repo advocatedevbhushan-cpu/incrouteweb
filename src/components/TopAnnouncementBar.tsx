@@ -96,7 +96,7 @@ export default function TopAnnouncementBar({ onBookConsultation, onSelectService
     if (current.ctaAction === "consultation" && onBookConsultation) {
       onBookConsultation();
     } else if (current.ctaAction === "dsc" && onSelectService) {
-      onSelectService("pvt-ltd");
+      onSelectService("dsc-registration");
     } else if (current.ctaAction === "trademark" && onSelectService) {
       onSelectService("trademark-registration");
     } else if (onBookConsultation) {

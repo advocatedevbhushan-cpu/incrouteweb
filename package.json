@@ -10,6 +10,8 @@
     "clean": "node -e \"const fs=require('fs'); fs.rmSync('dist', {recursive:true, force:true}); fs.rmSync('server.cjs', {force:true});\"",
     "lint": "tsc --noEmit",
     "test:books": "tsx --test tests/books/*.test.ts",
+    "test:api": "tsx --import ./tests/helpers/register.ts --test tests/auth.test.ts tests/services.test.ts tests/admin.test.ts",
+    "test": "npm run test:books && npm run test:api",
     "generate-activation": "node scratch/generate-activation.js",
     "db:setup": "tsx scripts/setup-db.ts"
   },

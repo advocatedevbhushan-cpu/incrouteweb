@@ -29,8 +29,20 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              if (id.includes('/react-dom/') || id.includes('/react-dom.')) {
+                return 'vendor-react-dom';
+              }
+              if (id.includes('/react-router-dom/') || id.includes('/react-router-dom.')) {
+                return 'vendor-react-router';
+              }
+              if (id.includes('/react/') || id.includes('/react.')) {
                 return 'vendor-react';
+              }
+              if (id.includes('recharts') || id.includes('d3-')) {
+                return 'vendor-recharts';
+              }
+              if (id.includes('jspdf')) {
+                return 'vendor-jspdf';
               }
               if (id.includes('lucide-react')) {
                 return 'vendor-icons';
@@ -38,8 +50,8 @@ export default defineConfig(() => {
               if (id.includes('motion') || id.includes('lenis') || id.includes('lottie-react')) {
                 return 'vendor-motion';
               }
-              if (id.includes('recharts') || id.includes('jspdf')) {
-                return 'vendor-charts-pdf';
+              if (id.includes('zod')) {
+                return 'vendor-zod';
               }
               if (id.includes('@aws-sdk')) {
                 return 'vendor-aws';

@@ -11,12 +11,14 @@ export function createAuthRouter() {
   const loginAttempts = new Map<string, { count: number; lastAttempt: number; lockedUntil: number }>();
 
   // Clean up old rate limit entries every 15 minutes
-  setInterval(() => {
+  const _cleanupInterval = setInterval(() => {
     const now = Date.now();
     for (const [key, data] of loginAttempts.entries()) {
       if (now - data.lastAttempt > 30 * 60 * 1000) loginAttempts.delete(key);
     }
   }, 15 * 60 * 1000);
+  // Expose cleanup for graceful shutdown and testing
+  router._cleanupInterval = _cleanupInterval;
 
   function checkRateLimit(identifier: string) {
     const now = Date.now();
