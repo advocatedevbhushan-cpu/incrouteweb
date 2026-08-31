@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Database, LogOut, RefreshCw } from "lucide-react";
 import { booksApi } from "./api";
 import BooksShell from "./BooksShell";
+import TallyGateway from "./TallyGateway";
 import type { BooksBootstrap, BooksOrganisation } from "./types";
 import BooksDashboard from "./pages/Dashboard";
 import BankingPage from "./pages/Banking";
@@ -18,7 +19,7 @@ import SettingsPage from "./pages/Settings";
 import { LoadingState } from "./pages/Common";
 import "./books.css";
 
-const supportedRoutes = new Set(["dashboard", "sales", "invoices", "customers", "purchases", "bills", "vendors", "items", "banking", "accountant", "gst", "reports", "documents", "settings"]);
+const supportedRoutes = new Set(["dashboard", "gateway", "sales", "invoices", "customers", "purchases", "bills", "vendors", "items", "banking", "accountant", "gst", "reports", "documents", "settings"]);
 
 export default function BooksApp({ onExit, basePath = "/portal/books" }:{ onExit: (screen?: string) => void; basePath?: string }) {
   const location = useLocation();
@@ -30,6 +31,20 @@ export default function BooksApp({ onExit, basePath = "/portal/books" }:{ onExit
   const [creatingOrganisation, setCreatingOrganisation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; code?: string } | null>(null);
+
+  // Layout mode: defaults to "tally" (TallyPrime Gold view)
+  const [layoutMode, setLayoutMode] = useState<"tally" | "modern">(() => {
+    return (localStorage.getItem("incroute_books_ui_mode") as "tally" | "modern") || "tally";
+  });
+
+  const toggleLayoutMode = () => {
+    setLayoutMode((prev) => {
+      const next = prev === "tally" ? "modern" : "tally";
+      localStorage.setItem("incroute_books_ui_mode", next);
+      return next;
+    });
+  };
+
   const route = useMemo(() => {
     const routePath = location.pathname.startsWith(normalizedBasePath)
       ? location.pathname.slice(normalizedBasePath.length)
@@ -48,34 +63,76 @@ export default function BooksApp({ onExit, basePath = "/portal/books" }:{ onExit
     } catch (cause: any) { setError({ message: cause.message || "INCroute Books could not be loaded", code: cause.code }); }
     finally { setLoading(false); }
   };
+
   useEffect(() => { loadBootstrap(); }, []);
+
   useEffect(() => {
     if (error && (error.message === "Not authenticated" || error.code === "UNAUTHENTICATED")) {
       const currentUrl = window.location.href;
       window.location.href = `/login?redirect=${encodeURIComponent(currentUrl)}`;
     }
   }, [error]);
-  useEffect(() => { if (activeOrganisationId) localStorage.setItem(organisationStorageKey, activeOrganisationId); }, [activeOrganisationId, organisationStorageKey]);
+
+  useEffect(() => {
+    if (activeOrganisationId) localStorage.setItem(organisationStorageKey, activeOrganisationId);
+  }, [activeOrganisationId, organisationStorageKey]);
+
   const organisation = bootstrap?.organisations.find((item) => item.id === activeOrganisationId) || bootstrap?.organisations[0];
   const adminMode = bootstrap?.user.role === "ADMIN" || bootstrap?.user.role === "SUPER_ADMIN";
   const go = (nextRoute: string) => navigate(`${normalizedBasePath}/${nextRoute === "dashboard" ? "dashboard" : nextRoute}`);
 
-  if (loading) return <div className="books-standalone"><LoadingState label="Opening INCroute Books" /></div>;
+  if (loading) return <div className="books-standalone"><LoadingState label="Opening INCroute Books Prime..." /></div>;
   if (error) return <div className="books-standalone"><div className="books-setup-state"><span><Database /></span><h1>{error.code === "BOOKS_SCHEMA_REQUIRED" ? "Books is ready for database activation" : "Books is temporarily unavailable"}</h1><p>{error.message}</p>{error.code === "BOOKS_SCHEMA_REQUIRED" && <div><strong>Deployment action required</strong><p>Apply the Books migration and reference seed supplied with this release, then reopen the workspace.</p></div>}<footer><button className="books-secondary" onClick={() => onExit("dashboard")}><LogOut />Return to portal</button><button className="books-primary" onClick={loadBootstrap}><RefreshCw />Try again</button></footer></div></div>;
   if (!bootstrap) return null;
   if (!organisation || creatingOrganisation) return <Onboarding adminMode={adminMode} entities={bootstrap.existingEntities} onExit={() => { if (organisation) setCreatingOrganisation(false); else onExit("dashboard"); }} onCreated={(created) => { const next = { ...created, tradeName: created.tradeName || null }; setBootstrap({ ...bootstrap, organisations: [...bootstrap.organisations, next] }); setActiveOrganisationId(next.id); setCreatingOrganisation(false); navigate(`${normalizedBasePath}/dashboard`); }} />;
 
-  const content = route === "dashboard" ? <BooksDashboard organisation={organisation} onNavigate={go} />
-    : route === "customers" ? <ContactsPage organisation={organisation} type="CUSTOMER" />
-    : route === "vendors" ? <ContactsPage organisation={organisation} type="VENDOR" />
-    : route === "items" ? <ItemsPage organisation={organisation} />
-    : route === "invoices" ? <InvoicesPage organisation={organisation} onNavigate={go} />
-    : route === "bills" ? <BillsPage organisation={organisation} onNavigate={go} />
-    : route === "banking" ? <BankingPage organisation={organisation} onNavigate={go} />
-    : route === "gst" ? <GstPage organisation={organisation} />
-    : route === "reports" ? <ReportsPage organisation={organisation} />
-    : route === "settings" ? <SettingsPage organisation={organisation} />
-    : <ModuleStatus route={route} organisation={organisation} onNavigate={go} />;
+  const isTallyGateway = layoutMode === "tally" && (route === "dashboard" || route === "gateway");
 
-  return <BooksShell route={route} organisations={bootstrap.organisations} organisation={organisation} onNavigate={go} onOrganisation={setActiveOrganisationId} onCreateOrganisation={adminMode ? () => setCreatingOrganisation(true) : undefined} onExit={() => onExit("dashboard")}>{content}</BooksShell>;
+  const content = isTallyGateway ? (
+    <TallyGateway
+      organisation={organisation}
+      organisations={bootstrap.organisations}
+      onNavigate={go}
+      onOrganisation={setActiveOrganisationId}
+      onExit={() => onExit("dashboard")}
+    />
+  ) : route === "dashboard" ? (
+    <BooksDashboard organisation={organisation} onNavigate={go} />
+  ) : route === "customers" ? (
+    <ContactsPage organisation={organisation} type="CUSTOMER" />
+  ) : route === "vendors" ? (
+    <ContactsPage organisation={organisation} type="VENDOR" />
+  ) : route === "items" ? (
+    <ItemsPage organisation={organisation} />
+  ) : route === "invoices" ? (
+    <InvoicesPage organisation={organisation} onNavigate={go} />
+  ) : route === "bills" ? (
+    <BillsPage organisation={organisation} onNavigate={go} />
+  ) : route === "banking" ? (
+    <BankingPage organisation={organisation} onNavigate={go} />
+  ) : route === "gst" ? (
+    <GstPage organisation={organisation} />
+  ) : route === "reports" ? (
+    <ReportsPage organisation={organisation} />
+  ) : route === "settings" ? (
+    <SettingsPage organisation={organisation} />
+  ) : (
+    <ModuleStatus route={route} organisation={organisation} onNavigate={go} />
+  );
+
+  return (
+    <BooksShell
+      route={route}
+      organisations={bootstrap.organisations}
+      organisation={organisation}
+      onNavigate={go}
+      onOrganisation={setActiveOrganisationId}
+      onCreateOrganisation={adminMode ? () => setCreatingOrganisation(true) : undefined}
+      onExit={() => onExit("dashboard")}
+      layoutMode={layoutMode}
+      onToggleLayoutMode={toggleLayoutMode}
+    >
+      {content}
+    </BooksShell>
+  );
 }

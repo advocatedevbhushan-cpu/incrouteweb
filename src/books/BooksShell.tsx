@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import {
   BadgeIndianRupee, Banknote, Bell, BookOpen, Building2, ChevronDown, ChevronLeft, ClipboardList,
   FileBarChart, FileText, Gauge, Landmark, Menu, Package, Plus, ReceiptIndianRupee, Search, Settings,
-  ShoppingBag, ShoppingCart, Users, WalletCards, X, Moon, Sun,
+  ShoppingBag, ShoppingCart, Users, WalletCards, X, Moon, Sun, Monitor
 } from "lucide-react";
 import type { BooksOrganisation } from "./types";
 import { useTheme } from "../lib/useTheme";
+import TallyTopBar from "./TallyTopBar";
 
 const navGroups = [
   { label: "Workspace", items: [{ route: "dashboard", label: "Dashboard", icon: Gauge }] },
@@ -27,14 +28,34 @@ const navGroups = [
   ] },
 ];
 
-export default function BooksShell({ children, route, organisations, organisation, onNavigate, onOrganisation, onCreateOrganisation, onExit }:{
-  children: React.ReactNode; route: string; organisations: BooksOrganisation[]; organisation: BooksOrganisation;
-  onNavigate: (route: string) => void; onOrganisation: (id: string) => void; onCreateOrganisation?: () => void; onExit: () => void;
+export default function BooksShell({
+  children,
+  route,
+  organisations,
+  organisation,
+  onNavigate,
+  onOrganisation,
+  onCreateOrganisation,
+  onExit,
+  layoutMode = "tally",
+  onToggleLayoutMode,
+}: {
+  children: React.ReactNode;
+  route: string;
+  organisations: BooksOrganisation[];
+  organisation: BooksOrganisation;
+  onNavigate: (route: string) => void;
+  onOrganisation: (id: string) => void;
+  onCreateOrganisation?: () => void;
+  onExit: () => void;
+  layoutMode?: "tally" | "modern";
+  onToggleLayoutMode?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+
   const organisationGroups = [
     { label: "My firms", items: organisations.filter((item) => item.accessKind === "ADMIN_FIRM") },
     { label: "Client organisations", items: organisations.filter((item) => item.accessKind === "CLIENT_ORGANISATION") },
@@ -50,6 +71,9 @@ export default function BooksShell({ children, route, organisations, organisatio
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
       } else if (e.key === "Escape") {
         setSearchOpen(false);
         setQuickOpen(false);
@@ -60,18 +84,113 @@ export default function BooksShell({ children, route, organisations, organisatio
   }, []);
 
   const searchItems = [
-    { route: "dashboard", label: "Dashboard Overview", group: "General" },
-    { route: "invoices", label: "Sales Invoices & E-way Bills", group: "Sales" },
-    { route: "customers", label: "Customer Directory", group: "Sales" },
+    { route: "dashboard", label: "Gateway of INCroute", group: "General" },
+    { route: "invoices", label: "Sales Invoices & Accounting Vouchers", group: "Sales" },
+    { route: "customers", label: "Sundry Debtors / Customer Directory", group: "Sales" },
     { route: "bills", label: "Vendor Bills & Expense Vouchers", group: "Purchases" },
-    { route: "vendors", label: "Vendor Directory", group: "Purchases" },
-    { route: "items", label: "Inventory & Service Catalog (HSN/SAC)", group: "Accounting" },
-    { route: "banking", label: "Bank Accounts & Statement Reconciliation", group: "Accounting" },
-    { route: "gst", label: "GST Summary & GSTR-1 / 3B Reports", group: "Tax & Compliance" },
+    { route: "vendors", label: "Sundry Creditors / Vendor Directory", group: "Purchases" },
+    { route: "items", label: "Stock Summary & Inventory (HSN/SAC)", group: "Inventory" },
+    { route: "banking", label: "Banking & Bank Statement Reconciliation", group: "Utilities" },
+    { route: "gst", label: "Statutory & GST Returns (GSTR-1 / 3B / JSON)", group: "Tax & Compliance" },
     { route: "reports", label: "Profit & Loss, Balance Sheet & Trial Balance", group: "Reports" },
-    { route: "settings", label: "Company Profile, GSTIN & Invoice Prefixes", group: "Settings" },
+    { route: "settings", label: "Company Profile, GSTIN & Series Configuration", group: "Settings" },
   ].filter(i => !searchQuery || i.label.toLowerCase().includes(searchQuery.toLowerCase()) || i.group.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  const getBreadcrumb = (currentRoute: string) => {
+    switch (currentRoute) {
+      case "dashboard": return "Gateway of INCroute";
+      case "invoices": return "Gateway of INCroute > Accounting Vouchers (Sales / Invoices)";
+      case "bills": return "Gateway of INCroute > Accounting Vouchers (Purchases / Bills & Expenses)";
+      case "customers": return "Gateway of INCroute > Masters > Customers (Sundry Debtors)";
+      case "vendors": return "Gateway of INCroute > Masters > Vendors (Sundry Creditors)";
+      case "items": return "Gateway of INCroute > Inventory > Stock Items & Services";
+      case "banking": return "Gateway of INCroute > Utilities > Banking & Bank Reconciliation";
+      case "gst": return "Gateway of INCroute > Reports > Statutory & GST Returns (GSTR-1 / 3B)";
+      case "reports": return "Gateway of INCroute > Reports > Financial Statements & Ledgers";
+      case "settings": return "Gateway of INCroute > Company Alteration & Configuration";
+      case "documents": return "Gateway of INCroute > Data > Document Registry";
+      default: return `Gateway of INCroute > ${currentRoute.toUpperCase()}`;
+    }
+  };
+
+  // ─── INCroute Gateway Mode Layout ───
+  if (layoutMode === "tally") {
+    return (
+      <div className="tally-frame-root">
+        <TallyTopBar
+          organisation={organisation}
+          organisations={organisations}
+          onOrganisation={onOrganisation}
+          breadcrumb={getBreadcrumb(route)}
+          onBreadcrumbClose={route !== "dashboard" ? () => onNavigate("dashboard") : undefined}
+          onOpenGoTo={() => setSearchOpen(true)}
+          layoutMode="tally"
+          onToggleLayoutMode={onToggleLayoutMode || (() => {})}
+          onExit={onExit}
+          onNavigate={onNavigate}
+        />
+
+        {route === "dashboard" ? (
+          children
+        ) : (
+          <div className="tally-workspace-inner">
+            <main className="tally-inner-content">{children}</main>
+            <aside className="tally-function-dock">
+              <button className="tally-dock-btn" onClick={() => onNavigate("reports?tab=periods")} title="Date (F2)"><span>F2: Date</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("dashboard")} title="Company (F3)"><span>F3: Company</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("banking")} title="Contra (F4)"><span>F4: Contra</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("bills")} title="Payment (F5)"><span>F5: Payment</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("invoices")} title="Receipt (F6)"><span>F6: Receipt</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("reports?tab=ledger")} title="Journal (F7)"><span>F7: Journal</span></button>
+              <button className="tally-dock-btn is-highlight" onClick={() => onNavigate("invoices")} title="Sales (F8)"><span>F8: Sales</span></button>
+              <button className="tally-dock-btn is-highlight" onClick={() => onNavigate("bills")} title="Purchase (F9)"><span>F9: Purchase</span></button>
+              <button className="tally-dock-btn" onClick={() => onNavigate("gst")} title="Other Vouchers (F10)"><span>F10: Other Vouchers</span></button>
+            </aside>
+          </div>
+        )}
+
+        {/* ⌘K / Alt+G Search Command Pallet */}
+        {searchOpen && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(12, 24, 48, 0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "15vh" }} onClick={() => setSearchOpen(false)}>
+            <div style={{ width: "100%", maxWidth: "560px", background: "var(--books-surface, #FFFFFF)", borderRadius: "12px", border: "1px solid var(--books-line, #E2E8F0)", boxShadow: "0 25px 50px -12px rgba(12, 24, 48, 0.4)", overflow: "hidden" }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid var(--books-line, #E2E8F0)", gap: "10px", background: "var(--books-surface-2, #F8FAFC)" }}>
+                <Search style={{ width: 18, height: 18, color: "#6857EE" }} />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Go To: Vouchers, Ledgers, Reports, GST, Banking..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--books-text, #172033)", fontSize: "14px", fontWeight: 500 }}
+                />
+                <span style={{ fontSize: "11px", padding: "2px 6px", background: "rgba(104,87,238,0.12)", borderRadius: "4px", color: "#6857EE", fontWeight: 600 }}>ESC</span>
+              </div>
+              <div style={{ maxHeight: "320px", overflowY: "auto", padding: "6px" }}>
+                {searchItems.length === 0 ? (
+                  <div style={{ padding: "20px", textAlign: "center", color: "#657087", fontSize: "13px" }}>No matching voucher or report found</div>
+                ) : (
+                  searchItems.map(item => (
+                    <button
+                      key={item.route}
+                      onClick={() => { onNavigate(item.route); setSearchOpen(false); }}
+                      style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 12px", borderRadius: "6px", border: "none", background: "transparent", color: "var(--books-text, #172033)", cursor: "pointer", textAlign: "left" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(104,87,238,0.12)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                    >
+                      <span style={{ fontSize: "13px", fontWeight: 600 }}>{item.label}</span>
+                      <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "3px", background: "rgba(104,87,238,0.1)", color: "#6857EE", fontWeight: 700 }}>{item.group}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── Modern Cloud Mode Layout ───
   return (
     <div className="books-root">
       {mobileOpen && <button className="books-overlay" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />}
@@ -110,6 +229,17 @@ export default function BooksShell({ children, route, organisations, organisatio
             <div className="books-fy"><span>FY</span><strong>{organisation.fiscalYear || "Not set"}</strong></div>
           </div>
           <div className="books-topbar-actions">
+            {onToggleLayoutMode && (
+              <button
+                className="books-secondary"
+                onClick={onToggleLayoutMode}
+                style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 600, padding: "0 10px", height: "36px", borderRadius: "8px", background: "linear-gradient(135deg, #0C1830 0%, #172B57 100%)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.15)" }}
+                title="Switch to Gateway of INCroute Interface"
+              >
+                <Monitor size={14} style={{ color: "#FFD200" }} />
+                <span>Gateway View</span>
+              </button>
+            )}
             <button className="books-search" onClick={() => setSearchOpen(true)} aria-label="Search"><Search /><span>Search</span><kbd>⌘ K</kbd></button>
             <div className="books-quick-wrap">
               <button className="books-primary" onClick={() => setQuickOpen((value) => !value)}><Plus />Quick create<ChevronDown /></button>
