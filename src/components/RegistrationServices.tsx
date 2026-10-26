@@ -3080,15 +3080,15 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[1360px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center pt-4 pb-4 hero-section min-h-[480px] lg:min-h-[560px] overflow-hidden lg:overflow-visible"
+            className="relative w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center pt-3 sm:pt-4 pb-8 sm:pb-6 hero-section min-h-[480px] lg:min-h-[560px] overflow-hidden lg:overflow-visible"
           >
             {/* LEFT: Content */}
-            <div className="relative z-10 lg:col-span-6 xl:col-span-6 text-left space-y-3 pt-0 max-w-xl">
+            <div className="relative z-10 lg:col-span-6 xl:col-span-6 text-left space-y-3 sm:space-y-3.5 pt-0 max-w-xl">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="trust-badge group cursor-default"
+                className="trust-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-800/40 text-[11px] sm:text-[12px] font-medium text-slate-700 dark:text-slate-300 shadow-xs group cursor-default w-fit"
               >
                 <div className="relative flex items-center justify-center w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-[var(--accent)] to-indigo-500 text-white shrink-0 overflow-hidden shadow-[0_2px_8px_rgba(99,102,241,0.4)]">
                   <motion.div
@@ -3124,7 +3124,7 @@ export default function RegistrationServices({
               <RotatingInsight />
 
               {/* Bullet points */}
-              <ul className="space-y-3 pt-2 pb-1 text-[13.5px] text-[#475569] font-medium">
+              <ul className="space-y-2 sm:space-y-3 pt-1.5 pb-1 text-[12.5px] sm:text-[13.5px] text-[var(--text-secondary)] font-medium">
                 {[
                   "Entity Incorporation (Pvt Ltd, LLP, OPC)",
                   "Compliance Calendar & Reminders",
@@ -3138,7 +3138,7 @@ export default function RegistrationServices({
                     transition={{ duration: 0.4, delay: 0.2 + idx * 0.1 }}
                     className="flex items-center gap-3 group"
                   >
-                    <div className="relative flex items-center justify-center w-[22px] h-[22px] rounded-full bg-indigo-50 text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white transition-all duration-300 shadow-[0_0_0_1px_rgba(99,102,241,0.15)] group-hover:shadow-[0_4px_12px_rgba(99,102,241,0.3)] shrink-0">
+                    <div className="relative flex items-center justify-center w-[22px] h-[22px] rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white transition-all duration-300 shadow-[0_0_0_1px_rgba(99,102,241,0.15)] group-hover:shadow-[0_4px_12px_rgba(99,102,241,0.3)] shrink-0">
                       <motion.div 
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -3147,15 +3147,15 @@ export default function RegistrationServices({
                         <Check className="w-3.5 h-3.5 transition-transform duration-300 group-hover:scale-110" strokeWidth={3} />
                       </motion.div>
                     </div>
-                    <span className="group-hover:text-slate-900 transition-colors duration-300">{item}</span>
+                    <span className="group-hover:text-[var(--text-primary)] transition-colors duration-300">{item}</span>
                   </motion.li>
                 ))}
               </ul>
               
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
                 <button 
                   onClick={() => navigateToTab("catalog")}
-                  className="primary-button px-6 py-3 font-semibold text-sm cursor-pointer flex items-center gap-2"
+                  className="primary-button w-full sm:w-auto px-6 py-3 font-semibold text-sm cursor-pointer flex items-center justify-center gap-2"
                 >
                   Start Your Business <ArrowRight className="w-4 h-4" />
                 </button>
@@ -3164,23 +3164,23 @@ export default function RegistrationServices({
                     const section = document.getElementById("how-it-works");
                     if (section) section.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="secondary-button px-6 py-3 font-semibold text-sm cursor-pointer flex items-center gap-2"
+                  className="secondary-button w-full sm:w-auto px-6 py-3 font-semibold text-sm cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4 text-[var(--accent)]" /> Explore The Platform
                 </button>
               </div>
 
-              <p className="text-[13px] text-[var(--text-tertiary)]">
+              <p className="text-[12.5px] sm:text-[13px] text-[var(--text-tertiary)]">
                 Existing client?{" "}
                 <button onClick={() => navigateToTab("login")} className="text-[var(--accent)] hover:text-[var(--accent-deep)] font-medium cursor-pointer transition-colors inline-flex items-center gap-0.5">
                   Sign In <ArrowRight className="w-3 h-3" />
                 </button>
               </p>
 
-              <div className="flex flex-wrap items-center gap-5 pt-2 text-[12px] text-[var(--text-secondary)]">
-                <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Expert Support</span>
-                <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Bank-Grade Security</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> 100% Compliance</span>
+              <div className="flex flex-wrap items-center gap-3 sm:gap-5 pt-2 text-[11px] sm:text-[12px] text-[var(--text-secondary)]">
+                <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-[var(--accent)]" /> Expert Support</span>
+                <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[var(--accent)]" /> Bank-Grade Security</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 100% Compliance</span>
               </div>
             </div>
 
@@ -3188,7 +3188,7 @@ export default function RegistrationServices({
             <div className="relative hidden lg:block lg:col-span-6 xl:col-span-6 business-command-3d-container w-full max-w-[640px] ml-auto">
               <div className="dashboard-halo" />
               <div className="dashboard-platform" />
-              <div className="business-command-3d overflow-hidden flex w-full max-w-full origin-center scale-100 xl:scale-[1.02]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.78) 100%)" }}>
+              <div className="business-command-3d overflow-hidden flex w-full max-w-full origin-right lg:scale-[0.92] xl:scale-100 2xl:scale-[1.02] transition-transform duration-300" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.78) 100%)" }}>
                 <div className="w-[140px] shrink-0 bg-white/30 backdrop-blur-md border-r border-slate-100/50 p-4 flex flex-col">
                   <div className="flex items-center gap-1.5 mb-6">
                     <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)]" />
@@ -3259,7 +3259,7 @@ export default function RegistrationServices({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-[1320px] mx-auto z-20 px-4 sm:px-6 mt-[-10px] md:mt-[-30px] pb-4 business-setup-section"
+            className="relative w-full max-w-[1400px] xl:max-w-[1440px] mx-auto z-20 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 mt-4 md:mt-[-30px] pb-4 business-setup-section"
           >
             <div 
               onClick={() => {
@@ -3268,7 +3268,7 @@ export default function RegistrationServices({
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }
               }}
-              className="business-search-card rounded-2xl sm:rounded-3xl p-6 md:p-8 space-y-6 cursor-pointer group/card shadow-2xl relative overflow-hidden text-left"
+              className="business-search-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 cursor-pointer group/card shadow-2xl relative overflow-hidden text-left"
             >
               {/* Neon background decorations */}
               <div className="absolute top-[-30%] right-[-10%] w-72 h-72 bg-gradient-to-br from-[#5B6CFF]/10 to-[#8B5CF6]/0 blur-[60px] rounded-full group-hover/card:scale-110 transition-transform duration-700 pointer-events-none" />
@@ -3282,17 +3282,17 @@ export default function RegistrationServices({
               </div>
 
               {/* Card Body */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10 font-sans">
-                <div className="space-y-3.5 max-w-4xl">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[9px] font-bold font-mono tracking-wider px-3 py-1 rounded-full uppercase">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 relative z-10 font-sans">
+                <div className="space-y-2 sm:space-y-3.5 max-w-4xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[8px] sm:text-[9px] font-bold font-mono tracking-wider px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full uppercase">
                       NEW ADVANCED ADVISOR
                     </span>
-                    <span className="text-[10px] font-mono text-purple-300 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    <span className="text-[9px] sm:text-[10px] font-mono text-purple-300 font-bold uppercase tracking-widest flex items-center gap-1.5">
                       <Sparkles className="w-3 h-3 text-amber-400 animate-spin-slow" /> Gemini AI Deep-Registry Clearance
                     </span>
                   </div>
-                  <h3 className="text-xl md:text-2xl text-white serif tracking-wide leading-snug">
+                  <h3 className="text-lg sm:text-xl md:text-2xl text-white serif tracking-wide leading-snug">
                     Need a trademark-safe neologism & official pre-clearance report?
                   </h3>
                   <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-3xl font-light">
@@ -3302,7 +3302,7 @@ export default function RegistrationServices({
                 
                 <button
                   type="button"
-                  className="relative overflow-hidden bg-gradient-to-r from-[#5B6CFF] to-[#8B5CF6] hover:from-[#4A58E8] hover:to-[#7C3AED] text-white font-sans text-xs font-bold uppercase tracking-wider px-7 py-4.5 rounded-xl transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-500/25 group-hover/card:scale-[1.04] active:scale-[0.98] flex items-center gap-2.5 shrink-0 group/btn border border-indigo-400/30"
+                  className="relative overflow-hidden bg-gradient-to-r from-[#5B6CFF] to-[#8B5CF6] hover:from-[#4A58E8] hover:to-[#7C3AED] text-white font-sans text-xs font-bold uppercase tracking-wider px-5 sm:px-7 py-3.5 sm:py-4.5 rounded-xl transition-all duration-300 cursor-pointer shadow-lg shadow-indigo-500/25 group-hover/card:scale-[1.04] active:scale-[0.98] flex items-center justify-center gap-2.5 shrink-0 group/btn border border-indigo-400/30 w-full sm:w-auto"
                 >
                   {/* Animated shine line */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:animate-shine pointer-events-none" />
@@ -3317,9 +3317,9 @@ export default function RegistrationServices({
           <LogoTicker />
 
           {/* ═══ TRUST METRICS ROW ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto trust-strip pt-4 px-4 sm:px-6">
-            <div className="stats-strip px-6 py-6 border border-indigo-500/10">
-              <div className="flex flex-wrap lg:flex-nowrap justify-between items-center gap-6">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto trust-strip pt-4 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
+            <div className="stats-strip p-4 sm:p-6 border border-indigo-500/10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                 {[
                   { icon: Users, value: "50+", label: "Businesses Supported" },
                   { icon: FileText, value: "120+", label: "Compliance Filings" },
@@ -3328,41 +3328,36 @@ export default function RegistrationServices({
                   { icon: Award, value: "Qualified", label: "CA/CS Network" },
                   { icon: Clock, value: "Dedicated", label: "Client Support" },
                 ].map((m, i) => (
-                  <React.Fragment key={i}>
-                    <div className="flex items-center gap-3 stat-item flex-1 min-w-[150px] justify-center lg:justify-start">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[#4F46E5] shrink-0">
-                        <m.icon className="w-4 h-4" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-base font-extrabold text-[#080F2A] leading-none">{m.value}</p>
-                        <p className="text-[10px] text-slate-500 font-medium mt-1 leading-tight">{m.label}</p>
-                      </div>
+                  <div key={i} className="flex items-center gap-2.5 stat-item p-2 rounded-xl bg-indigo-500/5 sm:bg-transparent">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[#4F46E5] shrink-0">
+                      <m.icon className="w-4 h-4" />
                     </div>
-                    {i < 5 && (
-                      <span className="hidden lg:inline-block w-[1px] h-8 bg-slate-200/60 self-center" />
-                    )}
-                  </React.Fragment>
+                    <div className="text-left min-w-0">
+                      <p className="text-sm sm:text-base font-extrabold text-[var(--text-primary)] leading-none">{m.value}</p>
+                      <p className="text-[9px] sm:text-[10px] text-[var(--text-secondary)] font-medium mt-1 leading-tight truncate">{m.label}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
           {/* ═══ FEATURES STRIP — Built for Modern Businesses ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-8 pb-4">
-            <div className="card-glass grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 sm:p-8">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-6 sm:pt-8 pb-4">
+            <div className="card-glass grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5 sm:p-8">
               {[
                 { icon: Shield, title: "Secure & Reliable", desc: "Bank-grade security for all your documents" },
                 { icon: Clock, title: "Stay Ahead", desc: "Smart reminders so you never miss a deadline" },
                 { icon: Users, title: "Expert Support", desc: "Dedicated professionals by your side" },
                 { icon: Database, title: "All in One Place", desc: "Manage legal, tax & compliance needs seamlessly" },
               ].map((f, i) => (
-                <div key={i} className="flex items-start gap-4 text-left feature-item-col pr-4">
+                <div key={i} className="flex items-start gap-3.5 text-left feature-item-col pr-2">
                   <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[#4F46E5] shrink-0 mt-0.5">
                     <f.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-[14px] font-bold text-[#080F2A]">{f.title}</h4>
-                    <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">{f.desc}</p>
+                    <h4 className="text-[13.5px] sm:text-[14px] font-bold text-[var(--text-primary)]">{f.title}</h4>
+                    <p className="text-[11.5px] sm:text-[12px] text-[var(--text-secondary)] mt-1 leading-relaxed">{f.desc}</p>
                   </div>
                 </div>
               ))}
@@ -3370,7 +3365,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ INTERACTIVE PLATFORM PREVIEW Redesigned Animation ═══ */}
-          <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 pt-10 pb-8 text-center overflow-hidden">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-10 pb-8 text-center overflow-hidden">
             <motion.div
               initial={reduced ? {} : { opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -3405,7 +3400,7 @@ export default function RegistrationServices({
                         transition: { staggerChildren: 0.05, delayChildren: 0.15 }
                       }
                     }}
-                    className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                    className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4"
                   >
                     {[
                       { title: "Company Incorporation", icon: Building2 },
@@ -3426,14 +3421,14 @@ export default function RegistrationServices({
                             hidden: { opacity: 0, y: 12 },
                             visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
                           }}
-                          className={`platform-module-btn p-5 flex flex-col items-center justify-center gap-3 text-center relative h-32 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer ${
+                          className={`platform-module-btn p-3 sm:p-5 flex flex-col items-center justify-center gap-2 sm:gap-3 text-center relative h-24 sm:h-32 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer ${
                             isActive ? "active border-[#4F46E5] text-[#4F46E5]" : "text-[var(--text-primary)]"
-                          } ${i === 6 ? "sm:col-span-3 h-24" : ""}`}
+                          } ${i === 6 ? "col-span-2 sm:col-span-3 h-20 sm:h-24" : ""}`}
                         >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isActive ? "bg-indigo-500/10 text-[#4F46E5]" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}>
-                            <mod.icon className="w-5 h-5" />
+                          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${isActive ? "bg-indigo-500/10 text-[#4F46E5]" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}>
+                            <mod.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </div>
-                          <span className="text-xs font-bold font-sans tracking-tight">{mod.title}</span>
+                          <span className="text-[11px] sm:text-xs font-bold font-sans tracking-tight leading-tight">{mod.title}</span>
                         </motion.button>
                       );
                     })}
@@ -3445,9 +3440,9 @@ export default function RegistrationServices({
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.4 }}
-                    className="w-full py-3.5 px-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center gap-2 text-[#4F46E5] text-xs font-bold"
+                    className="w-full py-3 sm:py-3.5 px-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center gap-2 text-[#4F46E5] text-xs font-bold text-center"
                   >
-                    <Shield className="w-4 h-4" />
+                    <Shield className="w-4 h-4 shrink-0" />
                     <span>Bank-grade security with end-to-end data encryption</span>
                   </motion.div>
                 </div>
@@ -3458,30 +3453,30 @@ export default function RegistrationServices({
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="lg:col-span-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-6 text-left space-y-5 h-full"
+                  className="lg:col-span-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl p-4 sm:p-6 text-left space-y-4 sm:space-y-5 h-full"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-[14px] font-bold text-[var(--text-primary)]">Upcoming Deadlines</h3>
+                    <h3 className="text-[13.5px] sm:text-[14px] font-bold text-[var(--text-primary)]">Upcoming Deadlines</h3>
                     <button onClick={() => navigateToTab("compliance")} className="text-[11px] font-bold text-[#4F46E5] hover:underline cursor-pointer">View All</button>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3.5 sm:space-y-4">
                     {[
                       { day: "18", month: "MAY", title: "ROC Filing (AOC-4)", category: "Private Limited Company • FY 2023-24", priority: "High", priorityColor: "bg-red-500/10 text-red-500 border-red-500/20" },
                       { day: "22", month: "MAY", title: "GST Return (GSTR-1)", category: "Monthly Filing", priority: "Medium", priorityColor: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
                       { day: "28", month: "MAY", title: "TDS Return (Quarterly)", category: "Q4 • FY 2023-24", priority: "Medium", priorityColor: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
                       { day: "05", month: "JUN", title: "Board Meeting", category: "Quarterly Compliance", priority: "Low", priorityColor: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
                     ].map((item, idx) => (
-                      <div key={idx} className="deadline-item-row flex items-center gap-4">
+                      <div key={idx} className="deadline-item-row flex items-center gap-3 sm:gap-4">
                         <div className="date-chip shrink-0">
                           <span className="text-[8px] font-bold text-slate-400 leading-none">{item.month}</span>
                           <span className="text-base font-extrabold text-[#4F46E5] leading-none mt-1">{item.day}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] font-bold text-[var(--text-primary)] truncate leading-snug">{item.title}</h4>
+                          <h4 className="text-[12.5px] sm:text-[13px] font-bold text-[var(--text-primary)] truncate leading-snug">{item.title}</h4>
                           <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{item.category}</p>
                         </div>
-                        <span className={`text-[9px] font-extrabold tracking-wide uppercase px-2 py-0.5 rounded-md border shrink-0 ${item.priorityColor}`}>
+                        <span className={`text-[8.5px] sm:text-[9px] font-extrabold tracking-wide uppercase px-2 py-0.5 rounded-md border shrink-0 ${item.priorityColor}`}>
                           {item.priority}
                         </span>
                       </div>
@@ -3494,10 +3489,10 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ BUSINESS STRUCTURE SECTION ═══ */}
-          <div id="service-catalog-section" className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 space-y-6 text-left pt-10 pb-8">
+          <div id="service-catalog-section" className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 space-y-6 text-left pt-10 pb-8">
             <div className="text-center space-y-1">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Choose Your Business Structure</h2>
-              <p className="text-[13px] text-slate-500 font-medium">Select the right structure for your business goals and growth plans.</p>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Choose Your Business Structure</h2>
+              <p className="text-[13px] text-[var(--text-secondary)] font-medium">Select the right structure for your business goals and growth plans.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -3564,7 +3559,7 @@ export default function RegistrationServices({
             <div className="flex justify-center pt-2">
               <button
                 onClick={() => navigateToTab("catalog")}
-                className="px-5 py-2.5 border border-slate-200 hover:border-indigo-500 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 bg-white/40 hover:bg-white"
+                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-[var(--text-primary)] text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 bg-white/40 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10"
               >
                 View More Services <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -3572,11 +3567,11 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ COMPLIANCE DEADLINE CARDS ═══ */}
-          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 space-y-6 text-left pt-10 pb-8">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 space-y-6 text-left pt-10 pb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-[#080F2A] tracking-tight">Never Miss a Compliance Deadline</h2>
-                <p className="text-[13px] text-slate-500 font-medium mt-0.5">Stay ahead with our intelligent compliance calendar.</p>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Never Miss a Compliance Deadline</h2>
+                <p className="text-[13px] text-[var(--text-secondary)] font-medium mt-0.5">Stay ahead with our intelligent compliance calendar.</p>
               </div>
               <button
                 onClick={() => navigateToTab("compliance")}
@@ -3586,7 +3581,7 @@ export default function RegistrationServices({
               </button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
               {[
                 { due: "DUE IN 5 DAYS", category: "GST Compliance", title: "GST Return - GSTR 1", desc: "Monthly return for outward supplies.", date: "25 May 2026", penalty: "₹100 per day", color: "#EF4444", status: "Due Soon" },
                 { due: "DUE IN 8 DAYS", category: "ROC Compliance", title: "Board Meeting", desc: "First board meeting to be conducted.", date: "28 May 2026", penalty: "₹5,000 - ₹25,000", color: "#F59E0B", status: "Upcoming" },
@@ -3594,18 +3589,18 @@ export default function RegistrationServices({
                 { due: "DUE IN 18 DAYS", category: "ROC Compliance", title: "DIR-3 KYC", desc: "Director KYC annual compliance.", date: "07 Jun 2026", penalty: "₹5,000", color: "#4F46E5", status: "Upcoming" },
                 { due: "DUE IN 25 DAYS", category: "Tax Compliance", title: "PF Return", desc: "Provident fund monthly return filing.", date: "14 Jun 2026", penalty: "₹100 per day", color: "#4F46E5", status: "Upcoming" },
               ].map((c, i) => (
-                <div key={i} className="card-glass p-5 flex flex-col justify-between min-h-[220px]">
+                <div key={i} className="card-glass p-4 sm:p-5 flex flex-col justify-between min-h-[200px] sm:min-h-[220px]">
                   <div className="space-y-2.5 text-left">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                         {c.category}
                       </span>
                     </div>
-                    <h4 className="text-[14px] font-extrabold text-[#080F2A] leading-snug">{c.title}</h4>
-                    <p className="text-[11px] text-slate-500 leading-normal font-sans">{c.desc}</p>
+                    <h4 className="text-[13.5px] sm:text-[14px] font-extrabold text-[var(--text-primary)] leading-snug">{c.title}</h4>
+                    <p className="text-[11px] text-[var(--text-secondary)] leading-normal font-sans">{c.desc}</p>
                   </div>
                   
-                  <div className="space-y-2.5 pt-3.5 mt-3.5 border-t border-slate-100">
+                  <div className="space-y-2.5 pt-3.5 mt-3.5 border-t border-[var(--border-subtle)]">
                     <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
                       <span>Due: {c.date}</span>
                       <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
@@ -3639,7 +3634,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ HOW IT WORKS Redesigned ═══ */}
-          <div id="how-it-works" className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 space-y-10 text-center pt-10 pb-8 overflow-hidden">
+          <div id="how-it-works" className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 space-y-10 text-center pt-10 pb-8 overflow-hidden">
             <div className="space-y-2">
               <span className="text-[10px] text-[var(--accent)] font-extrabold uppercase tracking-[0.2em] block">Process Walkthrough</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
@@ -3702,13 +3697,13 @@ export default function RegistrationServices({
 
           {/* ═══ TRUST STATS — Animated Counter ═══ */}
           <SReveal>
-            <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-6">
+            <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-6">
               <AnimatedStats />
             </div>
           </SReveal>
 
           {/* ═══ TRUST & BENEFITS STRIP ═══ */}
-          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-6 pb-6">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-6 pb-6">
             <motion.div 
               initial={reduced ? {} : "hidden"}
               whileInView="visible"
@@ -3752,7 +3747,7 @@ export default function RegistrationServices({
           </div>
 
           {/* ═══ FAQ & REVIEWS SECTION ═══ */}
-          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-8">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
               {/* Left Column: Redesigned Startup-focused Trust Card (Col Span 5) */}
@@ -3849,7 +3844,7 @@ export default function RegistrationServices({
           {/* Testimonials rendered via TestimonialCarousel below */}
 
           {/* ═══ FINAL CTA ═══ */}
-          <div className="w-full max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 pt-10 pb-8">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-10 pb-8">
             <div className="final-cta p-8 sm:p-12 relative overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10 text-left">
                 
@@ -4091,7 +4086,7 @@ export default function RegistrationServices({
       ) : (
         <>
           {/* Service Detail Page */}
-          <div className="space-y-8 animate-in fade-in duration-300 text-left max-w-5xl mx-auto">
+          <div className="space-y-8 animate-in fade-in duration-300 text-left max-w-5xl mx-auto px-4 sm:px-6">
             {/* Header back & save panel */}
             <div className="flex items-center justify-between">
               <button

@@ -105,37 +105,39 @@ export default function TopAnnouncementBar({ onBookConsultation, onSelectService
   };
 
   return (
-    <aside aria-label="Statutory Announcement" className="relative z-30 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white border-b border-indigo-500/20 py-2 px-4 text-xs font-sans overflow-hidden">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-left">
+    <aside aria-label="Statutory Announcement" className="relative z-30 bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white border-b border-indigo-500/20 py-1.5 sm:py-2 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 text-xs font-sans overflow-hidden">
+      <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto flex items-center justify-between gap-2 sm:gap-3 text-left">
         {/* Animated Cycling Headline */}
-        <div className="flex-1 min-w-[280px] overflow-hidden py-0.5">
+        <div className="flex-1 min-w-0 overflow-hidden py-0.5">
           <AnimatePresence mode="wait">
             <motion.div
               key={current.id}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="flex items-center gap-2.5 flex-wrap"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex items-center gap-2 min-w-0"
             >
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold border shadow-sm ${current.badgeClass}`}>
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-mono text-[9px] sm:text-[10px] font-bold border shadow-xs shrink-0 ${current.badgeClass}`}>
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${current.pulseClass}`} />
                 <IconComponent className="w-3 h-3 shrink-0" />
-                <span>{current.badge}</span>
+                <span className="hidden xs:inline">{current.badge}</span>
+                <span className="xs:hidden">LIVE</span>
               </span>
 
-              <span className="text-slate-300 text-[11px] sm:text-xs leading-snug">
-                <strong className="text-white font-bold">{current.boldText}</strong> — {current.subText}
-              </span>
+              <div className="min-w-0 truncate text-[11px] sm:text-xs text-slate-300">
+                <strong className="text-white font-bold">{current.boldText}</strong>
+                <span className="hidden md:inline"> — {current.subText}</span>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Right CTA Action Links */}
-        <div className="flex items-center gap-3 font-mono text-[11px] shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 font-mono text-[10px] sm:text-[11px] shrink-0">
           <button
             onClick={handleCtaClick}
-            className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 flex items-center gap-1 font-bold cursor-pointer border-none bg-transparent p-0 transition-colors"
+            className="text-cyan-300 hover:text-cyan-200 underline underline-offset-2 flex items-center gap-1 font-bold cursor-pointer border-none bg-transparent p-0 transition-colors whitespace-nowrap"
           >
             <span>{current.ctaText}</span>
             <ArrowRight className="w-3 h-3" />
@@ -145,7 +147,7 @@ export default function TopAnnouncementBar({ onBookConsultation, onSelectService
 
           <a
             href="tel:+918707552183"
-            className="text-slate-300 hover:text-white flex items-center gap-1 font-bold no-underline hidden md:flex transition-colors"
+            className="text-slate-300 hover:text-white items-center gap-1 font-bold no-underline hidden md:flex transition-colors"
           >
             <Phone className="w-3 h-3 text-indigo-400" />
             <span>CA Helpline: +91 87075 52183</span>
@@ -154,7 +156,7 @@ export default function TopAnnouncementBar({ onBookConsultation, onSelectService
           {/* Dismiss Button */}
           <button
             onClick={handleDismiss}
-            className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer border-none bg-transparent ml-1"
+            className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer border-none bg-transparent"
             aria-label="Dismiss banner"
           >
             <X className="w-3.5 h-3.5" />

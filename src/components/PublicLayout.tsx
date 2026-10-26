@@ -147,11 +147,11 @@ export default function PublicLayout() {
         </main>
 
         {/* ─── Footer ─── */}
-        <footer className="bg-[#070D1B] border-t border-slate-800/80 pt-14 pb-12 mt-auto text-slate-400 font-sans relative overflow-hidden">
+        <footer className="bg-[#070D1B] border-t border-slate-800/80 pt-12 sm:pt-14 pb-28 sm:pb-12 mt-auto text-slate-400 font-sans relative overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#6366F1]/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#06B6D4]/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 relative z-10">
+          <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 relative z-10">
             {/* Top Live Status & Trust Seals Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 pb-10 border-b border-slate-800/60">
               <div className="flex items-center gap-3">

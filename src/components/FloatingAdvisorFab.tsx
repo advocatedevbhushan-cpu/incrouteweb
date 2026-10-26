@@ -10,7 +10,7 @@ export default function FloatingAdvisorFab({ setActiveTab }: FloatingAdvisorFabP
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-5 z-[998] pointer-events-auto">
+    <div className="hidden md:flex fixed bottom-6 right-5 z-[998] pointer-events-auto flex-col items-end">
       
       {/* Expanded Quick Action Popover */}
       <AnimatePresence>

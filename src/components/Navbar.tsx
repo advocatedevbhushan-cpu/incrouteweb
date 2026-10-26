@@ -280,7 +280,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         scrolled ? "scrolled-nav" : ""
       } ${mobileOpen ? "mobile-menu-open" : ""}`}
     >
-      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
+      <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex items-center justify-between h-full">
 
         {/* ─── Left: Logo ─── */}
         <a href="/" onClick={(e) => nav(e, "home")} className="flex items-center gap-2.5 shrink-0 cursor-pointer logo-wrapper">
@@ -363,30 +363,44 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </div>
 
-      {/* ─── Mobile Drawer ─── */}
+      {/* ─── Mobile Drawer & Backdrop ─── */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-[64px] sm:top-[72px] left-0 right-0 border-b border-[var(--border-subtle)] overflow-hidden lg:hidden z-50 shadow-[0_20px_50px_rgba(0,0,0,0.35)] glass-surface-elevated backdrop-blur-2xl"
-          >
-            <div className="p-4 space-y-2 max-h-[75vh] overflow-y-auto text-left">
-              {/* Mobile Master Accordion */}
-              <MobileMegaAccordion category={MASTER_SERVICES_CATEGORY} activeTab={activeTab} onNav={nav} />
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 top-[64px] sm:top-[72px] bg-black/60 backdrop-blur-xs lg:hidden z-40"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute top-[64px] sm:top-[72px] left-0 right-0 border-b border-[var(--border-subtle)] rounded-b-3xl overflow-hidden lg:hidden z-50 shadow-[0_25px_60px_rgba(0,0,0,0.45)] bg-[var(--bg-surface)]/98 backdrop-blur-2xl"
+            >
+              <div className="p-4 sm:p-5 space-y-2 max-h-[75vh] overflow-y-auto text-left">
+                {/* Mobile Master Accordion */}
+                <MobileMegaAccordion category={MASTER_SERVICES_CATEGORY} activeTab={activeTab} onNav={(e, tab, sId) => { setMobileOpen(false); nav(e, tab, sId); }} />
 
-              <MobileLink onClick={(e) => nav(e, "books")} active={activeTab === "books"}>INCroute Books</MobileLink>
-              <MobileLink onClick={(e) => nav(e, "about")} active={activeTab === "about"}>About</MobileLink>
-              <MobileLink onClick={(e) => nav(e, "blog")} active={activeTab === "blog"}>Blog</MobileLink>
+                <MobileLink onClick={(e) => { setMobileOpen(false); nav(e, "books"); }} active={activeTab === "books"}>INCroute Books</MobileLink>
+                <MobileLink onClick={(e) => { setMobileOpen(false); nav(e, "about"); }} active={activeTab === "about"}>About</MobileLink>
+                <MobileLink onClick={(e) => { setMobileOpen(false); nav(e, "blog"); }} active={activeTab === "blog"}>Blog</MobileLink>
 
-              <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] space-y-2">
-                <a href="/login" onClick={(e) => nav(e, "login")} className="block w-full text-center py-3 border border-[var(--border-subtle)] text-[var(--text-primary)] font-semibold text-[13px] rounded-xl cursor-pointer">Login</a>
-                <a href="/contact" onClick={(e) => nav(e, "contact")} className="block w-full text-center py-3 bg-[var(--accent)] text-[var(--on-gradient-text)] font-semibold text-[13px] rounded-xl cursor-pointer">Book Consultation</a>
+                <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] grid grid-cols-2 gap-2.5">
+                  <a href="/login" onClick={(e) => { setMobileOpen(false); nav(e, "login"); }} className="w-full text-center py-3 border border-[var(--border-subtle)] text-[var(--text-primary)] font-semibold text-[13px] rounded-xl cursor-pointer hover:bg-[var(--accent-soft)] transition-colors">
+                    Login
+                  </a>
+                  <a href="/contact" onClick={(e) => { setMobileOpen(false); nav(e, "contact"); }} className="w-full text-center py-3 bg-[var(--accent)] text-[var(--on-gradient-text)] font-semibold text-[13px] rounded-xl cursor-pointer shadow-md shadow-[var(--accent)]/25">
+                    Consultation
+                  </a>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>

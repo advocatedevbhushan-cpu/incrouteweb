@@ -769,11 +769,11 @@ a, button, input, select, textarea {
 
 /* Hero Typography */
 .hero-title {
-  font-size: clamp(2.4rem, 4.8vw, 3.8rem) !important;
-  line-height: 1.1 !important;
+  font-size: clamp(1.85rem, 5.2vw, 3.6rem) !important;
+  line-height: 1.12 !important;
   font-weight: 800 !important;
   letter-spacing: -0.03em !important;
-  color: #080F2A !important;
+  color: var(--text-primary) !important;
 }
 
 .hero-highlight-text {
@@ -785,9 +785,9 @@ a, button, input, select, textarea {
 }
 
 .hero-desc {
-  font-size: 16px !important;
+  font-size: clamp(14px, 1.8vw, 16px) !important;
   line-height: 1.6 !important;
-  color: #475569 !important;
+  color: var(--text-secondary) !important;
   font-weight: 450 !important;
 }
 
@@ -2351,4 +2351,67 @@ body {
 .bell-ring:hover {
   animation: bell-ring 0.6s ease-in-out;
 }
+
+/* ═══════════════════════════════════════════════════════
+   BESPOKE MOBILE REFINEMENT & RESPONSIVE POLISH
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Prevent horizontal scrollbars and jitter */
+  html, body {
+    overflow-x: hidden;
+    touch-action: pan-y;
+  }
+
+  /* Compact glass card padding for mobile screens */
+  .card-glass {
+    border-radius: 18px !important;
+  }
+
+  /* Ensure button touch targets feel native and responsive */
+  .primary-button, .secondary-button, .book-consultation-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Crisp mobile stats strip borders and backdrop */
+  .stats-strip {
+    border-radius: 20px !important;
+    backdrop-filter: blur(16px);
+  }
+
+  /* Business setup card padding */
+  .business-search-card {
+    border-radius: 20px !important;
+  }
+
+  /* Module buttons */
+  .platform-module-btn {
+    border-radius: 16px !important;
+  }
+
+  /* Table / horizontal scroll containers */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Refine hero title and spacing for phone screens */
+  .hero-title {
+    font-size: clamp(1.8rem, 7.2vw, 2.35rem) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  .hero-section {
+    padding-top: 1rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* Trust Badge Pill Styling */
+.trust-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
 

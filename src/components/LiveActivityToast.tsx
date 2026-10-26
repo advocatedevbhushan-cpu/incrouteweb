@@ -54,7 +54,7 @@ export default function LiveActivityToast() {
   const current = ACTIVITIES[currentIndex];
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 left-5 z-[997] pointer-events-none font-sans">
+    <div className="hidden md:block fixed bottom-6 left-5 z-[997] pointer-events-none font-sans">
       <AnimatePresence>
         {isVisible && (
           <motion.div

@@ -384,7 +384,7 @@ export default function App() {
 
           {/* Careers */}
           <Route path="/careers" element={
-            <div className="max-w-[1760px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16 py-10 w-full text-left space-y-12">
+            <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-10 text-left space-y-12">
               <div className="text-center max-w-3xl mx-auto space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-gold/10 text-brand-gold text-xs font-semibold rounded-full border border-brand-gold/20 uppercase tracking-widest font-mono">
                   ✨ Join Incroute
